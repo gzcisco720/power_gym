@@ -18,11 +18,11 @@ export async function POST(req: Request): Promise<Response> {
 
   const callerRole = session.user.role as UserRole;
 
+  if (callerRole === 'member') {
+    return Response.json({ error: 'Members cannot send invites' }, { status: 403 });
+  }
   if (role === 'trainer' && callerRole !== 'owner') {
     return Response.json({ error: 'Only owners can invite trainers' }, { status: 403 });
-  }
-  if (role === 'member' && callerRole === 'member') {
-    return Response.json({ error: 'Members cannot send invites' }, { status: 403 });
   }
 
   await connectDB();
