@@ -27,7 +27,7 @@ POWER_GYM is a gym management web application built with Next.js. It supports th
 - **Framework**: Next.js (App Router)
 - **UI**: Shadcn/ui + TailwindCSS
 - **Database**: MongoDB (via Mongoose or MongoDB driver)
-- **Auth**: JWT (access token + refresh token)
+- **Auth**: Auth.js (NextAuth v5) — session via httpOnly cookie, credentials provider, custom role callbacks
 - **Package Manager**: `pnpm`
 - **Testing**: Jest + React Testing Library (unit/integration), Playwright (E2E)
 - **Language**: TypeScript (strict mode, NO `any` or `unknown` in production code)
@@ -67,9 +67,11 @@ Ownership hierarchy: Owner > Trainer > Member. A member belongs to exactly one t
 
 ### 1. Authentication
 
-- JWT access + refresh token flow
-- Role-based middleware on all API routes
-- Tokens stored in httpOnly cookies
+- Auth.js (NextAuth v5) with Credentials provider
+- Session stored in httpOnly cookie (database strategy, session document in MongoDB)
+- Three roles (`owner` | `trainer` | `member`) encoded in session and enforced in Next.js Middleware
+- First registered user becomes `owner`; all others must register via invite link containing a signed invite token
+- Invite tokens stored in MongoDB with role, inviterId, and expiry
 
 ### 2. Training Plans
 
@@ -127,7 +129,7 @@ src/
     body-test/
   lib/
     db/               # MongoDB connection singleton
-    auth/             # JWT helpers, middleware
+    auth/             # Auth.js config (auth.ts), invite token helpers
     repositories/     # Data access interfaces + MongoDB implementations
     utils/
   types/              # Shared TypeScript interfaces/enums
@@ -140,7 +142,7 @@ e2e/                  # Playwright tests
 
 - **Repository pattern**: Define interfaces (e.g., `ITrainingPlanRepository`) in `lib/repositories/`, implement with MongoDB. Enables mocking in tests.
 - **Server Actions vs Route Handlers**: Prefer Next.js Server Actions for form mutations; use Route Handlers for REST-style API calls consumed by client components.
-- **Role guard**: Middleware checks JWT role and redirects unauthorized access before rendering.
+- **Role guard**: Next.js Middleware reads Auth.js session cookie, checks role, and redirects unauthorized requests before rendering.
 - **MongoDB singleton**: Connection is established once via `lib/db/connect.ts`; never open connections in component files.
 
 ---
@@ -222,12 +224,19 @@ Place all generated docs under `docs/YYYY-MM-DD/` (plans in `plans/`, API docs i
 
 ## Generated Document Management
 
+> **IMPORTANT — Path override**: These rules take precedence over any skill's default output path (e.g. `docs/superpowers/specs/`). Always use the layout below regardless of what a skill instructs.
+
+### Finding existing documents
+
+**Always check [`docs/INDEX.md`](docs/INDEX.md) first.** It is the single source of truth for all generated documents. Every time you create or delete a doc, update the index.
+
 ### Directory Layout
 
 ```text
 docs/
+  INDEX.md                  # ← Central registry — check here first
   YYYY-MM-DD/               # One folder per work date
-    plans/                  # Implementation plans (multi-stage feature work)
+    plans/                  # Implementation plans and design specs
     api-usage/              # How to call internal/external APIs
     config/                 # Configuration guides, env var references
     research/               # Literature lookup, formula sources, third-party docs
@@ -263,20 +272,22 @@ All generated markdown files use **lowercase kebab-case**:
 
 **Update** an existing doc in the same date folder if work continues on the same day.
 
-**Close** an implementation plan by marking all stages `Complete`, then deleting the file — do not leave completed plans around.
+**Close** an implementation plan by marking all stages `Complete`, then deleting the file — keep the index row in `INDEX.md` with status `Complete` for history.
 
 **Never**:
 
 - Write plan content directly into `CLAUDE.md`
 - Mix usage docs and config docs in the same folder
 - Leave stale plans with all stages marked Complete
+- Place files in a path dictated by a skill if it conflicts with the layout above
 
 ### Keeping Docs Current
 
 After any significant code change, check:
 
+- [ ] `docs/INDEX.md` — add/update the row for any new or changed doc
 - [ ] `CLAUDE.md` — does it reflect new patterns, commands, or conventions?
-- [ ] `plans/IMPLEMENTATION_PLAN.md` — mark completed stages, update status
+- [ ] `plans/` — mark completed stages, delete file when all done
 - [ ] `api-usage/` — update if endpoint signatures changed
 - [ ] `decisions/` — record why a non-obvious choice was made
 
