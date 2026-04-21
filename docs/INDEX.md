@@ -12,9 +12,10 @@ Central registry of all generated documents. Update this file whenever a new doc
 
 ## Specs & Designs
 
-| Topic       | File                                               | Status   |
-| ----------- | -------------------------------------------------- | -------- |
-| Auth system | [auth-design.md](2026-04-20/plans/auth-design.md) | Approved |
+| Topic                              | File                                                                                  | Status   |
+| ---------------------------------- | ------------------------------------------------------------------------------------- | -------- |
+| Auth system                        | [auth-design.md](2026-04-20/plans/auth-design.md)                                    | Approved |
+| Training Plans & Performance       | [training-plans-design.md](2026-04-21/plans/training-plans-design.md)                | Approved |
 
 ## Implementation Plans
 
