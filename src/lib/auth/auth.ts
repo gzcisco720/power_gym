@@ -1,4 +1,8 @@
+import NextAuth from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
+import { connectDB } from '@/lib/db/connect';
+import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import type { IUserRepository } from '@/lib/repositories/user.repository';
 import type { UserRole } from '@/types/auth';
 
@@ -29,3 +33,45 @@ export async function authorizeCredentials(
     trainerId: user.trainerId?.toString() ?? null,
   };
 }
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  session: { strategy: 'jwt' },
+  providers: [
+    Credentials({
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+        await connectDB();
+        const repo = new MongoUserRepository();
+        return authorizeCredentials(
+          credentials.email as string,
+          credentials.password as string,
+          repo,
+        );
+      },
+    }),
+  ],
+  callbacks: {
+    jwt({ token, user }) {
+      if (user) {
+        const u = user as AuthorizedUser;
+        token.id = u.id;
+        token.role = u.role;
+        token.trainerId = u.trainerId;
+      }
+      return token;
+    },
+    session({ session, token }) {
+      session.user.id = token.id;
+      session.user.role = token.role;
+      session.user.trainerId = token.trainerId;
+      return session;
+    },
+  },
+  pages: {
+    signIn: '/login',
+  },
+});
