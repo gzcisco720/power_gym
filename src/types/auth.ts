@@ -12,10 +12,11 @@ declare module 'next-auth' {
   }
 }
 
-declare module 'next-auth/jwt' {
-  interface JWT {
-    id: string;
-    role: UserRole;
-    trainerId: string | null;
-  }
+// JWT augmentation for next-auth v5 (beta.31)
+// token.id/role/trainerId are cast explicitly in auth.ts session callback
+// because 'next-auth/jwt' module augmentation is unreliable in bundler module resolution
+export interface AppJWT {
+  id: string;
+  role: UserRole;
+  trainerId: string | null;
 }
