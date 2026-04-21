@@ -30,6 +30,8 @@ Trainers create reusable plan templates and assign deep-copy instances to member
   muscleGroup: string | null,
   isGlobal: boolean,
   createdBy: ObjectId | null,   // null = global built-in; trainer ObjectId = custom
+  imageUrl: string | null,      // illustration or GIF URL
+  isBodyweight: boolean,        // true = no weight input needed (BW checkbox)
   createdAt: Date
 }
 ```
@@ -50,10 +52,15 @@ Unique index: `(name, createdBy)` — same name allowed if different trainer.
       name: string,              // e.g. "Day 1 — Push"
       exercises: [
         {
+          groupId: string,        // "A", "B", "C", "D" — same groupId = same group
+          isSuperset: boolean,    // true = this exercise belongs to a superset group
           exerciseId: ObjectId,
-          exerciseName: string,  // denormalized for display
+          exerciseName: string,   // denormalized for display
+          imageUrl: string | null, // copied from Exercise at plan creation time
+          isBodyweight: boolean,
           sets: number,
-          reps: number,
+          repsMin: number,        // e.g. 6 for "6-8"
+          repsMax: number,        // e.g. 8 for "6-8"; equals repsMin if fixed reps
           restSeconds: number | null
         }
       ]
@@ -94,10 +101,15 @@ When a new plan is assigned, the previous active plan is set to `isActive: false
   sets: [
     {
       exerciseId: ObjectId,
-      exerciseName: string,       // denormalized
-      setNumber: number,          // 1-based
-      prescribedReps: number,
-      actualWeight: number | null, // kg
+      exerciseName: string,        // denormalized
+      groupId: string,             // carried from plan exercise
+      isSuperset: boolean,
+      isBodyweight: boolean,
+      setNumber: number,           // 1-based; extra sets added by member get next number
+      prescribedRepsMin: number,
+      prescribedRepsMax: number,
+      isExtraSet: boolean,         // true = added by member during session (+ Add Set)
+      actualWeight: number | null, // kg; null for bodyweight exercises
       actualReps: number | null,
       completedAt: Date | null
     }
@@ -131,7 +143,7 @@ Upsert condition: update only when `weight × (1 + reps/30) > current estimatedO
 
 **Epley formula** (industry standard, good for 1–10 rep range):
 
-```
+```text
 estimatedOneRM = weight × (1 + reps / 30)
 ```
 
@@ -171,7 +183,8 @@ Implemented as a pure function in `src/lib/training/epley.ts` for easy unit test
 | ------ | ---- | ---- | ----------- |
 | POST | `/api/sessions` | member | Start new session (body: `{ memberPlanId, dayNumber }`) — server pre-populates `sets[]` from the plan day's exercises (all `actualWeight`/`actualReps` = null) |
 | GET | `/api/sessions/[id]` | owner/trainer/member(self) | Session detail with all sets |
-| PATCH | `/api/sessions/[id]/sets/[setIndex]` | member(self) | Log a set (`{ actualWeight, actualReps }`) — `setIndex` is 0-based array index; upserts PB if new estimatedOneRM exceeds current record |
+| PATCH | `/api/sessions/[id]/sets/[setIndex]` | member(self) | Log a set (`{ actualWeight, actualReps }`) — `setIndex` is 0-based; upserts PB if beaten |
+| POST | `/api/sessions/[id]/sets` | member(self) | Add an extra set to an exercise (`{ exerciseId, prescribedRepsMin, prescribedRepsMax }`) — appends with `isExtraSet: true` |
 | POST | `/api/sessions/[id]/complete` | member(self) | Mark session complete |
 | GET | `/api/sessions?memberId=xxx` | owner/trainer/member(self) | Session history |
 
@@ -212,11 +225,14 @@ Implemented as a pure function in `src/lib/training/epley.ts` for easy unit test
 | `/dashboard/member/pbs` | PB board: best set + estimated 1RM per exercise |
 
 **Session logging flow:**
+
 1. Member selects a day from their plan overview
-2. Enters session page — all exercises and prescribed sets visible
-3. Taps a set → modal/inline input for weight + reps → confirm → set is checked off; PB updated in background
-4. First-ever set for an exercise → toast: "这是你的第一次记录，将作为基准"
-5. All sets done → "完成训练" button appears → POST `/complete`
+2. Enters session page — all exercises and prescribed sets visible (superset groups shown together)
+3. Taps a set → inline input for weight + reps → confirm → set checked off; PB upserted in background
+4. Bodyweight exercise → weight input hidden, only reps recorded
+5. `+ Add Set` → appends extra set (`isExtraSet: true`) for that exercise
+6. First-ever set for an exercise → toast: "这是你的第一次记录，将作为基准"
+7. All sets done → "完成训练" button appears → POST `/complete`
 
 ---
 
@@ -299,3 +315,7 @@ __tests__/
 - trainer 只能操作自己名下学员（`member.trainerId === trainer._id`）的数据
 - 模板删除不影响已分配的 MemberPlan（深拷贝，独立存在）
 - WorkoutSession 未 complete 时可继续追加 set 记录；complete 后不可修改
+- `isBodyweight=true` 的动作不记录 actualWeight（前端隐藏重量输入框，后端允许 null）
+- Superset 组内的动作按 groupId 分组展示，groupId 相同且 isSuperset=true 的动作归为一组
+- 额外加组（`+ Add Set`）通过 `POST /api/sessions/[id]/sets` 追加，`isExtraSet=true` 标记
+- `repsMin === repsMax` 时视为固定次数；`repsMin < repsMax` 时显示范围（如 "6-8"）
