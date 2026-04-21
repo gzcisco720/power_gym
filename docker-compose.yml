@@ -1,0 +1,16 @@
+services:
+  mongodb:
+    image: mongo:8
+    container_name: power_gym_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: power_gym_user
+      MONGO_INITDB_ROOT_PASSWORD: power_gym_pass
+      MONGO_INITDB_DATABASE: power_gym
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
