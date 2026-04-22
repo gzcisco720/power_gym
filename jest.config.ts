@@ -12,6 +12,7 @@ const config: Config = {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^next-auth$': '<rootDir>/__mocks__/next-auth.ts',
     '^next-auth/providers/credentials$': '<rootDir>/__mocks__/next-auth/providers/credentials.ts',
+    '^next/link$': '<rootDir>/__mocks__/next/link.tsx',
   },
   testMatch: ['**/__tests__/**/*.test.{ts,tsx}', '**/*.test.{ts,tsx}'],
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts'],
