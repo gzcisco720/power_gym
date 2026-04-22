@@ -22,6 +22,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Topic       | File                                                                              | Status      |
 | ----------- | --------------------------------------------------------------------------------- | ----------- |
 | Auth system | [auth-implementation-plan.md](2026-04-20/plans/auth-implementation-plan.md)      | Complete |
+| Training Plans & Performance | [training-plans-implementation-plan.md](2026-04-21/plans/training-plans-implementation-plan.md) | In Progress |
 
 ## API Usage Guides
 
