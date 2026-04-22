@@ -1,5 +1,5 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
-import type { IPlanDay } from './plan-template.model';
+import type { IPlanDay, IPlanDayExercise } from './plan-template.model';
 
 export interface IMemberPlan extends Document {
   memberId: mongoose.Types.ObjectId;
@@ -11,7 +11,7 @@ export interface IMemberPlan extends Document {
   assignedAt: Date;
 }
 
-const MemberPlanDayExerciseSchema = new Schema(
+const MemberPlanDayExerciseSchema = new Schema<IPlanDayExercise>(
   {
     groupId: { type: String, required: true },
     isSuperset: { type: Boolean, required: true, default: false },
@@ -27,7 +27,7 @@ const MemberPlanDayExerciseSchema = new Schema(
   { _id: false },
 );
 
-const MemberPlanDaySchema = new Schema(
+const MemberPlanDaySchema = new Schema<IPlanDay>(
   {
     dayNumber: { type: Number, required: true },
     name: { type: String, required: true },
@@ -46,6 +46,7 @@ const MemberPlanSchema = new Schema<IMemberPlan>(
     isActive: { type: Boolean, required: true, default: true },
     assignedAt: { type: Date, required: true },
   },
+  { timestamps: false },
 );
 
 MemberPlanSchema.index({ memberId: 1, isActive: 1 });

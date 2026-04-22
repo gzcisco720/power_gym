@@ -53,6 +53,7 @@ const WorkoutSessionSchema = new Schema<IWorkoutSession>(
     completedAt: { type: Date, default: null },
     sets: [SessionSetSchema],
   },
+  { timestamps: false },
 );
 
 WorkoutSessionSchema.index({ memberId: 1, startedAt: -1 });
