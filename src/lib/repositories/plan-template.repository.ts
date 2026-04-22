@@ -47,7 +47,7 @@ export class MongoPlanTemplateRepository implements IPlanTemplateRepository {
   async deleteById(id: string, createdBy: string): Promise<boolean> {
     const result = await PlanTemplateModel.findOneAndDelete({
       _id: id,
-      createdBy: createdBy,
+      createdBy: new mongoose.Types.ObjectId(createdBy),
     });
     return result !== null;
   }

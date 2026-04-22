@@ -21,9 +21,7 @@ export interface IMemberPlanRepository {
 export class MongoMemberPlanRepository implements IMemberPlanRepository {
   async findActive(memberId: string): Promise<IMemberPlan | null> {
     return MemberPlanModel.findOne({
-      memberId: mongoose.Types.ObjectId.isValid(memberId)
-        ? new mongoose.Types.ObjectId(memberId)
-        : memberId,
+      memberId: new mongoose.Types.ObjectId(memberId),
       isActive: true,
     });
   }

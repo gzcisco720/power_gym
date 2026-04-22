@@ -78,14 +78,26 @@ describe('MongoPlanTemplateRepository', () => {
   describe('deleteById', () => {
     it('returns true when document deleted', async () => {
       mockModel.findOneAndDelete.mockResolvedValue({ _id: 't1' } as never);
-      const result = await repo.deleteById('t1', 'creator-id');
+      const createdBy = new mongoose.Types.ObjectId().toString();
+      const result = await repo.deleteById('t1', createdBy);
       expect(result).toBe(true);
     });
 
     it('returns false when document not found', async () => {
       mockModel.findOneAndDelete.mockResolvedValue(null as never);
-      const result = await repo.deleteById('t1', 'creator-id');
+      const createdBy = new mongoose.Types.ObjectId().toString();
+      const result = await repo.deleteById('t1', createdBy);
       expect(result).toBe(false);
+    });
+
+    it('queries createdBy as ObjectId', async () => {
+      mockModel.findOneAndDelete.mockResolvedValue(null as never);
+      const createdBy = new mongoose.Types.ObjectId().toString();
+      await repo.deleteById('t1', createdBy);
+      expect(mockModel.findOneAndDelete).toHaveBeenCalledWith({
+        _id: 't1',
+        createdBy: expect.any(mongoose.Types.ObjectId),
+      });
     });
   });
 });

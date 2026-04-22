@@ -34,7 +34,7 @@ describe('MongoMemberPlanRepository', () => {
     it('returns the active plan when found', async () => {
       const plan = { _id: 'p1', isActive: true };
       mockModel.findOne.mockResolvedValue(plan as never);
-      const result = await repo.findActive('member-id');
+      const result = await repo.findActive(new mongoose.Types.ObjectId().toString());
       expect(result).toEqual(plan);
     });
   });
