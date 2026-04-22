@@ -12,6 +12,7 @@ export interface CreateUserData {
 
 export interface IUserRepository {
   findByEmail(email: string): Promise<IUser | null>;
+  findById(id: string): Promise<IUser | null>;
   count(): Promise<number>;
   create(data: CreateUserData): Promise<IUser>;
 }
@@ -19,6 +20,10 @@ export interface IUserRepository {
 export class MongoUserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<IUser | null> {
     return UserModel.findOne({ email });
+  }
+
+  async findById(id: string): Promise<IUser | null> {
+    return UserModel.findById(id);
   }
 
   async count(): Promise<number> {
