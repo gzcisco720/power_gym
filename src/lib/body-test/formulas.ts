@@ -29,6 +29,11 @@ interface SevenSiteInput {
   thigh: number;
 }
 
+/**
+ * 9-site Parrillo formula input. Sex and age are carried for record-keeping purposes
+ * but are not used in the Parrillo body fat calculation, which treats all individuals
+ * the same regardless of sex or age.
+ */
 interface NineSiteInput {
   protocol: '9site';
   sex: 'male' | 'female';
@@ -104,18 +109,23 @@ export function calculateBodyFat(input: BodyFatInput): number {
     }
   }
 
-  // 9site — Parrillo (no gender distinction)
-  const sum9 =
-    input.tricep +
-    input.chest +
-    input.subscapular +
-    input.abdominal +
-    input.suprailiac +
-    input.thigh +
-    input.midaxillary +
-    input.bicep +
-    input.lumbar;
-  return sum9 * 0.1051 + 2.585;
+  if (input.protocol === '9site') {
+    // Parrillo formula — no gender or age distinction
+    const sum =
+      input.tricep +
+      input.chest +
+      input.subscapular +
+      input.abdominal +
+      input.suprailiac +
+      input.thigh +
+      input.midaxillary +
+      input.bicep +
+      input.lumbar;
+    return sum * 0.1051 + 2.585;
+  }
+
+  const _exhaustive: never = input;
+  throw new Error(`Unhandled protocol: ${JSON.stringify(_exhaustive)}`);
 }
 
 export function calculateComposition(weightKg: number, bodyFatPct: number): CompositionResult {

@@ -84,7 +84,7 @@ describe('calculateBodyFat — 7-site female (Jackson-Pollock)', () => {
 describe('calculateBodyFat — 9-site Parrillo', () => {
   it('returns correct BF% regardless of sex', () => {
     // sum9=120: BF% = 120*0.1051+2.585 = 12.612+2.585 = 15.197
-    const result = calculateBodyFat({
+    const maleResult = calculateBodyFat({
       protocol: '9site',
       sex: 'male',
       age: 30,
@@ -98,7 +98,24 @@ describe('calculateBodyFat — 9-site Parrillo', () => {
       bicep: 13,
       lumbar: 13,
     });
-    expect(result).toBeCloseTo(15.197, 2);
+    expect(maleResult).toBeCloseTo(15.197, 2);
+
+    // Verify same result with female sex to confirm sex-independence
+    const femaleResult = calculateBodyFat({
+      protocol: '9site',
+      sex: 'female',
+      age: 30,
+      tricep: 12,
+      chest: 14,
+      subscapular: 13,
+      abdominal: 16,
+      suprailiac: 14,
+      thigh: 13,
+      midaxillary: 12,
+      bicep: 13,
+      lumbar: 13,
+    });
+    expect(femaleResult).toBeCloseTo(15.197, 2);
   });
 });
 
