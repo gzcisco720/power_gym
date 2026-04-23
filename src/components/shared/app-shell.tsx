@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu } from 'lucide-react';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import type { UserRole } from '@/types/auth';
 
@@ -90,7 +90,7 @@ function SidebarContent({ role, userName, userInitials }: SidebarContentProps) {
                 href={item.href}
                 className={cn(
                   'flex items-center rounded-md px-3 py-2 text-[13px] font-medium transition-colors duration-150',
-                  pathname.startsWith(item.href)
+                  pathname === item.href || pathname.startsWith(item.href + '/')
                     ? 'bg-white text-black'
                     : 'text-[#3a3a3a] hover:bg-[#141414] hover:text-[#888]'
                 )}
@@ -145,6 +145,7 @@ export function AppShell({ role, userName, children }: AppShellProps) {
           side="left"
           className="w-[220px] border-r border-[#161616] bg-[#0a0a0a] p-0"
         >
+          <SheetTitle className="sr-only">Navigation</SheetTitle>
           <SidebarContent role={role} userName={userName} userInitials={userInitials} />
         </SheetContent>
       </Sheet>
