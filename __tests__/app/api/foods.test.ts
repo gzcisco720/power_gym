@@ -16,7 +16,7 @@ describe('GET /api/foods', () => {
   it('returns 401 when not authenticated', async () => {
     mockAuth.mockResolvedValue(null as never);
     const { GET } = await import('@/app/api/foods/route');
-    const res = await GET(new Request('http://localhost/api/foods'));
+    const res = await GET();
     expect(res.status).toBe(401);
   });
 
@@ -26,7 +26,7 @@ describe('GET /api/foods', () => {
     mockFoodRepo.findAll.mockResolvedValue(foods);
 
     const { GET } = await import('@/app/api/foods/route');
-    const res = await GET(new Request('http://localhost/api/foods'));
+    const res = await GET();
     const data = await res.json();
 
     expect(res.status).toBe(200);
@@ -39,7 +39,7 @@ describe('GET /api/foods', () => {
     mockFoodRepo.findAll.mockResolvedValue([]);
 
     const { GET } = await import('@/app/api/foods/route');
-    await GET(new Request('http://localhost/api/foods'));
+    await GET();
 
     expect(mockFoodRepo.findAll).toHaveBeenCalledWith({ creatorId: 'trainer1' });
   });

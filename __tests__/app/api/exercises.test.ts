@@ -26,7 +26,7 @@ describe('GET /api/exercises', () => {
   it('returns 401 when not authenticated', async () => {
     mockAuth.mockResolvedValue(null as never);
     const { GET } = await import('@/app/api/exercises/route');
-    const res = await GET(new Request('http://localhost/api/exercises'));
+    const res = await GET();
     expect(res.status).toBe(401);
   });
 
@@ -36,7 +36,7 @@ describe('GET /api/exercises', () => {
     mockExerciseRepo.findAll.mockResolvedValue(exercises);
 
     const { GET } = await import('@/app/api/exercises/route');
-    const res = await GET(new Request('http://localhost/api/exercises'));
+    const res = await GET();
     const data = await res.json();
 
     expect(res.status).toBe(200);
@@ -49,7 +49,7 @@ describe('GET /api/exercises', () => {
     mockExerciseRepo.findAll.mockResolvedValue([]);
 
     const { GET } = await import('@/app/api/exercises/route');
-    await GET(new Request('http://localhost/api/exercises'));
+    await GET();
 
     expect(mockExerciseRepo.findAll).toHaveBeenCalledWith({ creatorId: 'trainer1' });
   });

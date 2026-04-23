@@ -9,6 +9,7 @@ const mockBcrypt = jest.mocked(bcrypt);
 function makeRepo(user: Partial<IUser> | null): IUserRepository {
   return {
     findByEmail: jest.fn().mockResolvedValue(user),
+    findById: jest.fn().mockResolvedValue(null),
     count: jest.fn(),
     create: jest.fn(),
   };
