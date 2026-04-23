@@ -9,20 +9,20 @@ export interface CreateBodyTestData {
   sex: 'male' | 'female';
   weight: number;
   protocol: '3site' | '7site' | '9site' | 'other';
-  tricep?: number | null;
-  chest?: number | null;
-  subscapular?: number | null;
-  abdominal?: number | null;
-  suprailiac?: number | null;
-  thigh?: number | null;
-  midaxillary?: number | null;
-  bicep?: number | null;
-  lumbar?: number | null;
+  tricep: number | null;
+  chest: number | null;
+  subscapular: number | null;
+  abdominal: number | null;
+  suprailiac: number | null;
+  thigh: number | null;
+  midaxillary: number | null;
+  bicep: number | null;
+  lumbar: number | null;
   bodyFatPct: number;
   leanMassKg: number;
   fatMassKg: number;
-  targetWeight?: number | null;
-  targetBodyFatPct?: number | null;
+  targetWeight: number | null;
+  targetBodyFatPct: number | null;
 }
 
 export interface IBodyTestRepository {

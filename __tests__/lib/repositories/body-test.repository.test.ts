@@ -5,7 +5,6 @@ import { BodyTestModel } from '@/lib/db/models/body-test.model';
 jest.mock('@/lib/db/models/body-test.model', () => ({
   BodyTestModel: Object.assign(jest.fn(), {
     find: jest.fn(),
-    findOne: jest.fn(),
     deleteOne: jest.fn(),
   }),
 }));
