@@ -11,7 +11,7 @@ export default async function TrainerPlansPage() {
   await connectDB();
   const repo = new MongoPlanTemplateRepository();
   const templates = await repo.findByCreator(session.user.id);
-  const plain = JSON.parse(JSON.stringify(templates)) as typeof templates;
+  const plain = JSON.parse(JSON.stringify(templates)) as { _id: string; name: string; description: string | null; days: unknown[] }[];
 
   async function handleDelete(id: string) {
     'use server';
