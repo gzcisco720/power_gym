@@ -23,6 +23,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Auth system                        | [auth-design.md](2026-04-20/plans/auth-design.md)                                    | Approved |
 | Training Plans & Performance       | [training-plans-design.md](2026-04-21/plans/training-plans-design.md)                | Approved |
 | Body Composition Testing           | [body-test-design.md](2026-04-23/plans/body-test-design.md)                          | Approved |
+| Frontend Redesign (Phase 2)        | [frontend-redesign-design.md](2026-04-23/plans/frontend-redesign-design.md)          | Approved |
 
 ## Implementation Plans
 
