@@ -10,6 +10,12 @@ Central registry of all generated documents. Update this file whenever a new doc
 
 ---
 
+## Project Summaries
+
+| Topic | File | Status |
+| ----- | ---- | ------ |
+| Phase 1 — Full Feature Summary | [phase-one-summary.md](2026-04-23/phase-one-summary.md) | Complete |
+
 ## Specs & Designs
 
 | Topic                              | File                                                                                  | Status   |
