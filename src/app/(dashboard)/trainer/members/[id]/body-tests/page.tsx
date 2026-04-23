@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
 import { MongoBodyTestRepository } from '@/lib/repositories/body-test.repository';
-import { BodyTestClient } from './_components/body-test-client';
+import { BodyTestClient, type BodyTestRecord } from './_components/body-test-client';
 
 export default async function TrainerMemberBodyTestsPage({
   params,
@@ -16,7 +16,7 @@ export default async function TrainerMemberBodyTestsPage({
   await connectDB();
   const repo = new MongoBodyTestRepository();
   const tests = await repo.findByMember(memberId);
-  const plain = JSON.parse(JSON.stringify(tests)) as Parameters<typeof BodyTestClient>[0]['initialTests'];
+  const plain = JSON.parse(JSON.stringify(tests)) as BodyTestRecord[];
 
   return (
     <div className="container mx-auto py-8 max-w-2xl">

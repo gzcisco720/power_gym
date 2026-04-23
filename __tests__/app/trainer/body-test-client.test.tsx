@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BodyTestClient } from '@/app/(dashboard)/trainer/members/[id]/body-tests/_components/body-test-client';
 
 jest.mock('next/navigation', () => ({
-  useRouter: () => ({ refresh: jest.fn() }),
+  useRouter: jest.fn(() => ({ refresh: jest.fn() })),
 }));
 
 const memberId = 'm1';
@@ -41,6 +41,9 @@ describe('BodyTestClient', () => {
   it('shows bodyFatPct input when "other" protocol selected', () => {
     render(<BodyTestClient memberId={memberId} initialTests={[]} />);
     const select = screen.getByRole('combobox');
+    // switch away from other first
+    fireEvent.change(select, { target: { value: '3site' } });
+    // now switch back to other
     fireEvent.change(select, { target: { value: 'other' } });
     expect(screen.getByLabelText(/体脂率/i)).toBeInTheDocument();
   });
@@ -53,7 +56,19 @@ describe('BodyTestClient', () => {
     expect(screen.getByLabelText(/大腿/i)).toBeInTheDocument();
   });
 
+  it('shows 3-site female fields when 3site protocol and female sex selected', () => {
+    render(<BodyTestClient memberId={memberId} initialTests={[]} />);
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '3site' } });
+    // Switch sex to female via radio button
+    fireEvent.click(screen.getByRole('radio', { name: /女/i }));
+    expect(screen.getByLabelText(/三头肌/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/髂骨上/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/大腿/i)).toBeInTheDocument();
+  });
+
   it('submits form and calls fetch on success', async () => {
+    const mockRefresh = jest.fn();
+    jest.spyOn(require('next/navigation'), 'useRouter').mockReturnValue({ refresh: mockRefresh });
     global.fetch = jest.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({ _id: 'bt2', bodyFatPct: 20, leanMassKg: 64, fatMassKg: 16, weight: 80, protocol: 'other', date: new Date().toISOString(), targetWeight: null, targetBodyFatPct: null }) });
 
     render(<BodyTestClient memberId={memberId} initialTests={[]} />);
@@ -69,6 +84,7 @@ describe('BodyTestClient', () => {
         expect.objectContaining({ method: 'POST' }),
       ),
     );
+    await waitFor(() => expect(mockRefresh).toHaveBeenCalled());
   });
 
   it('calls DELETE API when delete button clicked', async () => {

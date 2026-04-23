@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 type Protocol = '3site' | '7site' | '9site' | 'other';
 type Sex = 'male' | 'female';
 
-interface BodyTestRecord {
+export interface BodyTestRecord {
   _id: string;
   date: string;
   protocol: Protocol;
