@@ -33,6 +33,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Training Plans & Performance | [training-plans-implementation-plan.md](2026-04-21/plans/training-plans-implementation-plan.md) | In Progress |
 | Nutrition Plans | [nutrition-implementation-plan.md](2026-04-22/plans/nutrition-implementation-plan.md) | Complete |
 | Body Composition Testing | [body-test-implementation-plan.md](2026-04-23/plans/body-test-implementation-plan.md) | Complete |
+| Frontend Redesign (Phase 2) | [frontend-redesign-implementation-plan.md](2026-04-23/plans/frontend-redesign-implementation-plan.md) | In Progress |
 
 ## API Usage Guides
 
