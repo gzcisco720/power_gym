@@ -20,6 +20,15 @@ function makeTestData(memberId: string, trainerId: string, date: Date) {
     sex: 'male' as const,
     weight: 80,
     protocol: 'other' as const,
+    tricep: null,
+    chest: null,
+    subscapular: null,
+    abdominal: null,
+    suprailiac: null,
+    thigh: null,
+    midaxillary: null,
+    bicep: null,
+    lumbar: null,
     bodyFatPct: 15,
     leanMassKg: 68,
     fatMassKg: 12,
@@ -58,8 +67,8 @@ describe('MongoBodyTestRepository', () => {
       const earlier = new Date('2026-01-01');
       const later = new Date('2026-03-01');
       const tests = [
-        { _id: 't2', date: later, ...makeTestData(memberId, trainerId, later) },
-        { _id: 't1', date: earlier, ...makeTestData(memberId, trainerId, earlier) },
+        { _id: 't2', ...makeTestData(memberId, trainerId, later) },
+        { _id: 't1', ...makeTestData(memberId, trainerId, earlier) },
       ];
       const sortMock = jest.fn().mockResolvedValue(tests);
       mockModel.find.mockReturnValue({ sort: sortMock } as never);

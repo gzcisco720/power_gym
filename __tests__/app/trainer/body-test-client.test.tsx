@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BodyTestClient } from '@/app/(dashboard)/trainer/members/[id]/body-tests/_components/body-test-client';
+import * as nextNavigation from 'next/navigation';
 
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(() => ({ refresh: jest.fn() })),
@@ -68,7 +69,7 @@ describe('BodyTestClient', () => {
 
   it('submits form and calls fetch on success', async () => {
     const mockRefresh = jest.fn();
-    jest.spyOn(require('next/navigation'), 'useRouter').mockReturnValue({ refresh: mockRefresh });
+    jest.mocked(nextNavigation.useRouter).mockReturnValue({ refresh: mockRefresh } as unknown as ReturnType<typeof nextNavigation.useRouter>);
     global.fetch = jest.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({ _id: 'bt2', bodyFatPct: 20, leanMassKg: 64, fatMassKg: 16, weight: 80, protocol: 'other', date: new Date().toISOString(), targetWeight: null, targetBodyFatPct: null }) });
 
     render(<BodyTestClient memberId={memberId} initialTests={[]} />);

@@ -1,20 +1,18 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { BodyTestViewer } from '@/app/(dashboard)/member/body-tests/_components/body-test-viewer';
 
 // Recharts uses SVG and ResizeObserver — mock them for Jest
-jest.mock('recharts', () => {
-  const React = require('react');
-  return {
-    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    LineChart: ({ children }: { children: React.ReactNode }) => <div data-testid="line-chart">{children}</div>,
-    Line: () => null,
-    XAxis: () => null,
-    YAxis: () => null,
-    CartesianGrid: () => null,
-    Tooltip: () => null,
-    Legend: () => null,
-  };
-});
+jest.mock('recharts', () => ({
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  LineChart: ({ children }: { children: React.ReactNode }) => <div data-testid="line-chart">{children}</div>,
+  Line: () => null,
+  XAxis: () => null,
+  YAxis: () => null,
+  CartesianGrid: () => null,
+  Tooltip: () => null,
+  Legend: () => null,
+}));
 
 const mockTests = [
   {
