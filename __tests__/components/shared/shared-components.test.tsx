@@ -1,7 +1,20 @@
+jest.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children, className }: React.HTMLAttributes<HTMLDivElement>) => <div className={className}>{children}</div>,
+    button: ({ children, className, onClick, 'aria-label': ariaLabel }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+      <button className={className} onClick={onClick} aria-label={ariaLabel}>{children}</button>
+    ),
+  },
+  useReducedMotion: () => false,
+}));
+
 import { render, screen } from '@testing-library/react';
 import { StatCard } from '@/components/shared/stat-card';
 import { SectionHeader } from '@/components/shared/section-header';
 import { EmptyState } from '@/components/shared/empty-state';
+import { ProgressBar } from '@/components/shared/progress-bar';
+import { SetChip } from '@/components/shared/set-chip';
+import { PageHeader } from '@/components/shared/page-header';
 
 describe('StatCard', () => {
   it('renders label and value', () => {
@@ -39,5 +52,33 @@ describe('EmptyState', () => {
     render(<EmptyState heading="No plan assigned" description="Your trainer hasn't assigned a plan yet." />);
     expect(screen.getByText('No plan assigned')).toBeInTheDocument();
     expect(screen.getByText("Your trainer hasn't assigned a plan yet.")).toBeInTheDocument();
+  });
+});
+
+describe('ProgressBar', () => {
+  it('renders with correct aria label', () => {
+    render(<ProgressBar value={60} max={100} label="3 / 5 sets completed" />);
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+    expect(screen.getByLabelText('3 / 5 sets completed')).toBeInTheDocument();
+  });
+});
+
+describe('SetChip', () => {
+  it('renders set number when pending', () => {
+    render(<SetChip setNumber={2} done={false} />);
+    expect(screen.getByText('2')).toBeInTheDocument();
+  });
+
+  it('renders checkmark when done', () => {
+    render(<SetChip setNumber={1} done={true} />);
+    expect(screen.getByText('✓')).toBeInTheDocument();
+  });
+});
+
+describe('PageHeader', () => {
+  it('renders title and subtitle', () => {
+    render(<PageHeader title="My Training Plan" subtitle="Push / Pull / Legs · Week 3" />);
+    expect(screen.getByText('My Training Plan')).toBeInTheDocument();
+    expect(screen.getByText('Push / Pull / Legs · Week 3')).toBeInTheDocument();
   });
 });
