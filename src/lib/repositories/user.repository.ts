@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import type { FilterQuery } from 'mongoose';
 import type { IUser } from '@/lib/db/models/user.model';
 import { UserModel } from '@/lib/db/models/user.model';
 import type { UserRole } from '@/types/auth';
@@ -44,7 +45,7 @@ export class MongoUserRepository implements IUserRepository {
   }
 
   async findAllMembers(trainerId?: string): Promise<IUser[]> {
-    const filter: Record<string, mongoose.Types.ObjectId | string> = { role: 'member' };
+    const filter: FilterQuery<IUser> = { role: 'member' };
     if (trainerId) {
       filter.trainerId = new mongoose.Types.ObjectId(trainerId);
     }

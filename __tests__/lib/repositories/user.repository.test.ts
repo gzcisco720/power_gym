@@ -1,5 +1,6 @@
 /** @jest-environment node */
 import mongoose from 'mongoose';
+import type { IUser } from '@/lib/db/models/user.model';
 
 jest.mock('@/lib/db/models/user.model', () => ({
   UserModel: {
@@ -29,15 +30,23 @@ describe('MongoUserRepository extensions', () => {
 
   it('findByRole returns users with given role', async () => {
     const trainers = [{ _id: TRAINER_ID, role: 'trainer' }];
-    mockFind.mockResolvedValue(trainers as never);
+    mockFind.mockResolvedValue(trainers as unknown as IUser[]);
     const result = await repo.findByRole('trainer');
     expect(mockFind).toHaveBeenCalledWith({ role: 'trainer' });
     expect(result).toEqual(trainers);
   });
 
+  it('findByRole returns users with member role', async () => {
+    const members = [{ _id: '000000000000000000000001', role: 'member' }];
+    mockFind.mockResolvedValue(members as unknown as IUser[]);
+    const result = await repo.findByRole('member');
+    expect(mockFind).toHaveBeenCalledWith({ role: 'member' });
+    expect(result).toEqual(members);
+  });
+
   it('findAllMembers with no trainerId returns all members', async () => {
     const members = [{ _id: MEMBER_ID, role: 'member' }];
-    mockFind.mockResolvedValue(members as never);
+    mockFind.mockResolvedValue(members as unknown as IUser[]);
     const result = await repo.findAllMembers();
     expect(mockFind).toHaveBeenCalledWith({ role: 'member' });
     expect(result).toEqual(members);
@@ -45,7 +54,7 @@ describe('MongoUserRepository extensions', () => {
 
   it('findAllMembers with trainerId filters by trainerId', async () => {
     const members = [{ _id: MEMBER_ID, trainerId: TRAINER_ID }];
-    mockFind.mockResolvedValue(members as never);
+    mockFind.mockResolvedValue(members as unknown as IUser[]);
     const result = await repo.findAllMembers(TRAINER_ID);
     expect(mockFind).toHaveBeenCalledWith({
       role: 'member',
