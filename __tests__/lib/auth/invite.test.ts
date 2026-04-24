@@ -7,6 +7,9 @@ function makeRepo(): jest.Mocked<IInviteRepository> {
     findByToken: jest.fn(),
     create: jest.fn(),
     markUsed: jest.fn(),
+    findAll: jest.fn(),
+    revoke: jest.fn(),
+    regenerate: jest.fn(),
   };
 }
 
