@@ -2,6 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/shared/page-header';
+import { SectionHeader } from '@/components/shared/section-header';
+import { ProgressBar } from '@/components/shared/progress-bar';
+import { SetChip } from '@/components/shared/set-chip';
 
 interface SessionSet {
   exerciseId: string;
@@ -37,9 +44,11 @@ export function SessionLogger({ session: initialSession }: { session: Session })
   const [inputs, setInputs] = useState<SetInputState[]>(
     initialSession.sets.map(() => ({ weight: '', reps: '' })),
   );
+  const [activeSetIndex, setActiveSetIndex] = useState<number | null>(null);
   const [completing, setCompleting] = useState(false);
 
-  const allDone = session.sets.every((s) => s.completedAt !== null);
+  const completedCount = session.sets.filter((s) => s.completedAt !== null).length;
+  const allDone = completedCount === session.sets.length;
 
   function groupedExercises() {
     const seen = new Set<string>();
@@ -72,6 +81,7 @@ export function SessionLogger({ session: initialSession }: { session: Session })
     if (res.ok) {
       const updated = (await res.json()) as Session;
       setSession(updated);
+      setActiveSetIndex(null);
     }
   }
 
@@ -102,74 +112,123 @@ export function SessionLogger({ session: initialSession }: { session: Session })
   }
 
   function repsLabel(min: number, max: number) {
-    return min === max ? `${min} 次` : `${min}-${max} 次`;
+    return min === max ? `${min} reps` : `${min}–${max} reps`;
   }
 
-  return (
-    <div className="max-w-lg space-y-6">
-      <h1 className="text-2xl font-bold">{session.dayName}</h1>
+  const completeButton = allDone ? (
+    <Button
+      size="sm"
+      onClick={completeSession}
+      disabled={completing}
+      className="bg-white text-black hover:bg-white/90 text-[11px] font-semibold disabled:opacity-50"
+    >
+      {completing ? 'Saving…' : 'Complete Session'}
+    </Button>
+  ) : undefined;
 
-      {groupedExercises().map(({ exerciseId, exerciseName, isBodyweight, sets }) => (
-        <div key={exerciseId} className="rounded-lg border p-4 space-y-3">
-          <h2 className="font-semibold">{exerciseName}</h2>
-          {sets.map(({ index, setNumber, prescribedRepsMin, prescribedRepsMax, completedAt, isExtraSet }) => (
-            <div key={index} className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground w-12">组 {setNumber}{isExtraSet ? ' +' : ''}</span>
-              <span className="text-sm text-muted-foreground w-16">{repsLabel(prescribedRepsMin, prescribedRepsMax)}</span>
-              {completedAt ? (
-                <span className="text-sm text-green-600">✓ {session.sets[index].actualWeight ? `${session.sets[index].actualWeight}kg × ` : ''}{session.sets[index].actualReps}次</span>
-              ) : (
-                <>
-                  {!isBodyweight && (
-                    <input
-                      placeholder="重量"
-                      value={inputs[index]?.weight ?? ''}
+  return (
+    <div>
+      <PageHeader
+        title={session.dayName}
+        subtitle={`${completedCount} / ${session.sets.length} sets done`}
+        actions={completeButton}
+      />
+
+      <div className="px-8 py-3">
+        <ProgressBar
+          value={completedCount}
+          max={session.sets.length}
+          label={`Session progress: ${completedCount} of ${session.sets.length} sets completed`}
+        />
+      </div>
+
+      <div className="px-8 py-4 space-y-4">
+        {groupedExercises().map(({ exerciseId, exerciseName, isBodyweight, sets }) => (
+          <Card key={exerciseId} className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4">
+            <SectionHeader
+              title={exerciseName}
+              action="+ Add set"
+              onAction={() => addSet(exerciseId)}
+            />
+
+            <div className="mt-3 space-y-2">
+              {sets.map(({ index, setNumber, prescribedRepsMin, prescribedRepsMax, completedAt, isExtraSet }) => (
+                <div key={index} className="flex items-center gap-2.5">
+                  <SetChip
+                    setNumber={setNumber}
+                    done={completedAt !== null}
+                    onClick={() => {
+                      if (completedAt === null) {
+                        setActiveSetIndex(activeSetIndex === index ? null : index);
+                      }
+                    }}
+                  />
+                  <span className="text-[11px] text-[#444] w-5">
+                    {isExtraSet ? '+' : ''}
+                  </span>
+                  <span className="text-[11px] text-[#555] flex-1">
+                    {repsLabel(prescribedRepsMin, prescribedRepsMax)}
+                  </span>
+                  {completedAt && (
+                    <span className="text-[11px] text-[#555]">
+                      {session.sets[index].actualWeight
+                        ? `${session.sets[index].actualWeight} kg × `
+                        : ''}
+                      {session.sets[index].actualReps} reps
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {sets.some(({ index }) => activeSetIndex === index) && (() => {
+              const activeSet = sets.find(({ index }) => activeSetIndex === index)!;
+              return (
+                <div className="mt-3 pt-3 border-t border-[#141414] space-y-2">
+                  <div className="text-[10px] font-semibold text-[#333] uppercase tracking-widest">
+                    Log Set {activeSet.setNumber}
+                  </div>
+                  <div className="flex gap-2">
+                    {!isBodyweight && (
+                      <Input
+                        aria-label="Weight (kg)"
+                        placeholder="Weight (kg)"
+                        type="number"
+                        value={inputs[activeSet.index]?.weight ?? ''}
+                        onChange={(e) => {
+                          const next = [...inputs];
+                          next[activeSet.index] = { ...next[activeSet.index], weight: e.target.value };
+                          setInputs(next);
+                        }}
+                        className="h-8 text-[12px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#333]"
+                      />
+                    )}
+                    <Input
+                      aria-label="Reps"
+                      placeholder="Reps"
+                      type="number"
+                      value={inputs[activeSet.index]?.reps ?? ''}
                       onChange={(e) => {
                         const next = [...inputs];
-                        next[index] = { ...next[index], weight: e.target.value };
+                        next[activeSet.index] = { ...next[activeSet.index], reps: e.target.value };
                         setInputs(next);
                       }}
-                      className="w-20 rounded border px-2 py-1 text-sm"
+                      className="h-8 text-[12px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#333]"
                     />
-                  )}
-                  <input
-                    placeholder="次数"
-                    value={inputs[index]?.reps ?? ''}
-                    onChange={(e) => {
-                      const next = [...inputs];
-                      next[index] = { ...next[index], reps: e.target.value };
-                      setInputs(next);
-                    }}
-                    className="w-20 rounded border px-2 py-1 text-sm"
-                  />
-                  <button
-                    onClick={() => logSet(index)}
-                    className="text-sm font-medium text-primary hover:underline"
-                  >
-                    记录
-                  </button>
-                </>
-              )}
-            </div>
-          ))}
-          <button
-            onClick={() => addSet(exerciseId)}
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            + 加组
-          </button>
-        </div>
-      ))}
-
-      {allDone && (
-        <button
-          onClick={completeSession}
-          disabled={completing}
-          className="w-full rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-        >
-          {completing ? '提交中...' : '完成训练'}
-        </button>
-      )}
+                    <Button
+                      size="sm"
+                      onClick={() => logSet(activeSet.index)}
+                      className="h-8 bg-white text-black hover:bg-white/90 text-[11px] font-semibold shrink-0"
+                    >
+                      Log Set
+                    </Button>
+                  </div>
+                </div>
+              );
+            })()}
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
