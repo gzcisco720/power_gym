@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import type { IPlanDay } from '@/lib/db/models/plan-template.model';
 
 interface FormData {
@@ -47,60 +50,85 @@ export function PlanTemplateForm({ initialData, onSubmit }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
-      <div className="space-y-2">
-        <label htmlFor="plan-name" className="text-sm font-medium">计划名称</label>
-        <input
-          id="plan-name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-        />
-      </div>
+      <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-6 space-y-5">
+        <div className="space-y-1.5">
+          <label
+            htmlFor="plan-name"
+            className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+          >
+            计划名称
+          </label>
+          <Input
+            id="plan-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white"
+          />
+        </div>
 
-      <div className="space-y-2">
-        <label htmlFor="plan-desc" className="text-sm font-medium">描述</label>
-        <textarea
-          id="plan-desc"
-          value={description ?? ''}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={2}
-          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-        />
-      </div>
+        <div className="space-y-1.5">
+          <label
+            htmlFor="plan-desc"
+            className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+          >
+            描述
+          </label>
+          <textarea
+            id="plan-desc"
+            value={description ?? ''}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={2}
+            className="w-full rounded-md border border-[#1e1e1e] bg-[#0c0c0c] px-3 py-2 text-sm text-white outline-none focus-visible:ring-1 focus-visible:ring-white resize-none"
+          />
+        </div>
+      </Card>
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-medium">训练日</h2>
-          <button type="button" onClick={addDay} className="text-sm text-primary hover:underline">
+          <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">
+            训练日
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={addDay}
+            className="border border-[#1a1a1a] text-[#444] hover:border-[#333] hover:text-[#888] text-xs"
+          >
             + 添加训练日
-          </button>
+          </Button>
         </div>
+
         {days.map((day, i) => (
-          <div key={i} className="rounded-lg border p-4 space-y-2">
+          <Card key={i} className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4 space-y-2">
             <div className="flex items-center gap-2">
-              <input
+              <Input
                 placeholder={`Day ${i + 1}`}
                 value={day.name}
                 onChange={(e) => updateDayName(i, e.target.value)}
-                className="flex-1 rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                className="flex-1 bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white"
               />
-              <button type="button" onClick={() => removeDay(i)} className="text-sm text-destructive">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => removeDay(i)}
+                className="text-[#333] hover:text-red-400 hover:bg-[#141414] text-xs"
+              >
                 删除
-              </button>
+              </Button>
             </div>
-            <p className="text-xs text-muted-foreground">{day.exercises.length} 个动作（编辑后可在此添加动作）</p>
-          </div>
+            <p className="text-xs text-[#333]">{day.exercises.length} 个动作</p>
+          </Card>
         ))}
       </div>
 
-      <button
+      <Button
         type="submit"
         disabled={saving}
-        className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        className="bg-white text-black hover:bg-white/90 font-semibold disabled:opacity-50"
       >
         {saving ? '保存中...' : '保存'}
-      </button>
+      </Button>
     </form>
   );
 }

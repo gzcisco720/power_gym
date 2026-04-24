@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { PlanTemplateForm } from '../_components/plan-template-form';
+import { PageHeader } from '@/components/shared/page-header';
 import type { IPlanDay } from '@/lib/db/models/plan-template.model';
 
 export default function NewPlanPage() {
@@ -18,8 +19,10 @@ export default function NewPlanPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">新建训练计划</h1>
-      <PlanTemplateForm onSubmit={handleSubmit} />
+      <PageHeader title="新建训练计划" />
+      <div className="px-8 py-7">
+        <PlanTemplateForm onSubmit={handleSubmit} />
+      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PlanTemplateForm } from '../../_components/plan-template-form';
+import { PageHeader } from '@/components/shared/page-header';
 import type { IPlanDay } from '@/lib/db/models/plan-template.model';
 
 interface Template {
@@ -35,12 +36,14 @@ export default function EditPlanPage({ params }: { params: Promise<{ id: string 
     if (res.ok) router.push('/dashboard/trainer/plans');
   }
 
-  if (!template) return <p>加载中...</p>;
+  if (!template) return <p className="px-8 py-7 text-[#444] text-sm">加载中...</p>;
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">编辑训练计划</h1>
-      <PlanTemplateForm initialData={template} onSubmit={handleSubmit} />
+      <PageHeader title="编辑训练计划" />
+      <div className="px-8 py-7">
+        <PlanTemplateForm initialData={template} onSubmit={handleSubmit} />
+      </div>
     </div>
   );
 }
