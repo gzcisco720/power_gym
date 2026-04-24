@@ -8,6 +8,7 @@ jest.mock('@/lib/db/models/workout-session.model', () => ({
     findById: jest.fn(),
     find: jest.fn(),
     findByIdAndUpdate: jest.fn(),
+    countDocuments: jest.fn(),
   }),
 }));
 
@@ -124,6 +125,35 @@ describe('MongoWorkoutSessionRepository', () => {
         { $set: { completedAt: expect.any(Date) } },
         { new: true },
       );
+    });
+  });
+
+  describe('countByMemberIdsSince', () => {
+    it('counts completed sessions for given member IDs since date', async () => {
+      mockModel.countDocuments.mockResolvedValue(7 as never);
+      const since = new Date('2026-04-01');
+      const memberIds = [
+        '000000000000000000000001',
+        '000000000000000000000002',
+      ];
+
+      const result = await repo.countByMemberIdsSince(memberIds, since);
+
+      expect(mockModel.countDocuments).toHaveBeenCalledWith({
+        memberId: {
+          $in: memberIds.map((id) => new mongoose.Types.ObjectId(id)),
+        },
+        completedAt: { $gte: since },
+      });
+      expect(result).toBe(7);
+    });
+
+    it('returns 0 for empty memberIds array', async () => {
+      mockModel.countDocuments.mockResolvedValue(0 as never);
+
+      const result = await repo.countByMemberIdsSince([], new Date());
+
+      expect(result).toBe(0);
     });
   });
 });

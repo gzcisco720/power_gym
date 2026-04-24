@@ -23,6 +23,7 @@ export interface IWorkoutSessionRepository {
   updateSet(id: string, setIndex: number, data: UpdateSetData): Promise<IWorkoutSession | null>;
   addExtraSet(id: string, extraSet: ISessionSet): Promise<IWorkoutSession | null>;
   complete(id: string): Promise<IWorkoutSession | null>;
+  countByMemberIdsSince(memberIds: string[], since: Date): Promise<number>;
 }
 
 export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository {
@@ -77,5 +78,12 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
       { $set: { completedAt: new Date() } },
       { new: true },
     );
+  }
+
+  async countByMemberIdsSince(memberIds: string[], since: Date): Promise<number> {
+    return WorkoutSessionModel.countDocuments({
+      memberId: { $in: memberIds.map((id) => new mongoose.Types.ObjectId(id)) },
+      completedAt: { $gte: since },
+    });
   }
 }
