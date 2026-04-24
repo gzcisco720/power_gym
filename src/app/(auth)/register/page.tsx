@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import { connectDB } from '@/lib/db/connect';
 import { MongoInviteRepository } from '@/lib/repositories/invite.repository';
 import { validateInviteToken } from '@/lib/auth/invite';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   searchParams: Promise<{ token?: string }>;
@@ -36,17 +38,19 @@ export default async function RegisterPage({ searchParams }: Props) {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background">
-      <div className="w-full max-w-sm space-y-6 rounded-xl border p-8 shadow-sm">
+    <main className="flex min-h-screen items-center justify-center bg-[#030303]">
+      <div className="w-full max-w-sm space-y-8">
         <div>
-          <h1 className="text-2xl font-bold">Create account</h1>
+          <div className="text-[11px] font-bold tracking-[3px] text-white mb-1">POWER GYM</div>
+          <h1 className="text-[24px] font-bold tracking-[-0.5px] text-white">Create account</h1>
+          <p className="mt-1 text-[13px] text-[#444]">Complete your registration to get started.</p>
           {isFirstUser && (
-            <p className="text-sm text-muted-foreground">Setting up your gym as owner</p>
+            <p className="mt-1 text-[13px] text-[#444]">Setting up your gym as owner.</p>
           )}
           {inviteRole && (
-            <p className="text-sm text-muted-foreground">
+            <p className="mt-1 text-[13px] text-[#444]">
               You were invited as a{' '}
-              <span className="font-medium capitalize">{inviteRole}</span>
+              <span className="font-medium capitalize">{inviteRole}</span>.
             </p>
           )}
         </div>
@@ -54,54 +58,51 @@ export default async function RegisterPage({ searchParams }: Props) {
         <form action="/api/auth/register" method="POST" className="space-y-4">
           {token && <input type="hidden" name="token" value={token} />}
 
-          <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium">
-              Name
+          <div className="space-y-1.5">
+            <label htmlFor="name" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">
+              Full Name
             </label>
-            <input
+            <Input
               id="name"
               name="name"
               type="text"
               required
-              className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+              autoComplete="name"
+              className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#2a2a2a] focus-visible:ring-white"
             />
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">
+          <div className="space-y-1.5">
+            <label htmlFor="email" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">
               Email
             </label>
-            <input
+            <Input
               id="email"
               name="email"
               type="email"
               required
               autoComplete="email"
-              className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+              className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#2a2a2a] focus-visible:ring-white"
             />
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">
+          <div className="space-y-1.5">
+            <label htmlFor="password" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">
               Password
             </label>
-            <input
+            <Input
               id="password"
               name="password"
               type="password"
               required
-              minLength={8}
               autoComplete="new-password"
-              className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+              className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#2a2a2a] focus-visible:ring-white"
             />
           </div>
 
-          <button
-            type="submit"
-            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          >
+          <Button type="submit" className="w-full bg-white text-black hover:bg-white/90 font-semibold mt-2">
             Create account
-          </button>
+          </Button>
         </form>
       </div>
     </main>
