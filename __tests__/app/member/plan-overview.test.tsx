@@ -1,6 +1,15 @@
 import { render, screen } from '@testing-library/react';
 import { PlanOverview } from '@/app/(dashboard)/member/plan/_components/plan-overview';
 
+jest.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children, className }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div className={className}>{children}</div>
+    ),
+  },
+  useReducedMotion: () => false,
+}));
+
 const mockPlan = {
   _id: 'mp1',
   name: 'Push Pull Legs',
@@ -24,15 +33,15 @@ describe('PlanOverview', () => {
     expect(screen.getByText('Day 3 — Legs')).toBeInTheDocument();
   });
 
-  it('shows "开始训练" link for each day', () => {
+  it('shows "Start Session" link for each day', () => {
     render(<PlanOverview plan={mockPlan} />);
-    const links = screen.getAllByRole('link', { name: /开始训练/i });
+    const links = screen.getAllByRole('link', { name: /start session/i });
     expect(links).toHaveLength(3);
     expect(links[0]).toHaveAttribute('href', '/dashboard/member/plan/session/new?day=1');
   });
 
   it('shows empty state when no active plan', () => {
     render(<PlanOverview plan={null} />);
-    expect(screen.getByText(/暂无训练计划/i)).toBeInTheDocument();
+    expect(screen.getByText('No plan assigned')).toBeInTheDocument();
   });
 });
