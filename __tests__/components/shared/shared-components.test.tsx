@@ -8,7 +8,7 @@ jest.mock('framer-motion', () => ({
   useReducedMotion: () => false,
 }));
 
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { StatCard } from '@/components/shared/stat-card';
 import { SectionHeader } from '@/components/shared/section-header';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -42,8 +42,15 @@ describe('SectionHeader', () => {
   });
 
   it('renders action text when provided', () => {
-    render(<SectionHeader title="Training Days" action="View all →" />);
+    render(<SectionHeader title="Training Days" action="View all →" onAction={() => {}} />);
     expect(screen.getByText('View all →')).toBeInTheDocument();
+  });
+
+  it('calls onAction when action button is clicked', () => {
+    const onAction = jest.fn();
+    render(<SectionHeader title="Training Days" action="View all →" onAction={onAction} />);
+    fireEvent.click(screen.getByText('View all →'));
+    expect(onAction).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -14,6 +14,7 @@ export function SetChip({ setNumber, done, onClick }: SetChipProps) {
 
   return (
     <motion.button
+      type="button"
       onClick={onClick}
       animate={done && !shouldReduce ? { scale: [0.8, 1.15, 1] } : { scale: 1 }}
       transition={{ duration: 0.2 }}

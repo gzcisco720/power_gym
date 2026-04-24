@@ -16,6 +16,7 @@ export function ProgressBar({ value, max, label }: ProgressBarProps) {
     <div
       role="progressbar"
       aria-valuenow={value}
+      aria-valuemin={0}
       aria-valuemax={max}
       aria-label={label}
       className="h-[3px] w-full overflow-hidden rounded-full bg-[#141414]"
