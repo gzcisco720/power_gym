@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { NutritionTemplateForm } from '../../_components/nutrition-template-form';
+import { PageHeader } from '@/components/shared/page-header';
 import type { IDayType } from '@/lib/db/models/nutrition-template.model';
 
 interface FoodOption {
@@ -42,8 +43,10 @@ export function EditNutritionTemplateClient({ id, initialData, foods }: Props) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">编辑营养计划</h1>
-      <NutritionTemplateForm initialData={initialData} onSubmit={handleSubmit} foods={foods} />
+      <PageHeader title="编辑营养计划" />
+      <div className="px-8 py-7">
+        <NutritionTemplateForm initialData={initialData} onSubmit={handleSubmit} foods={foods} />
+      </div>
     </div>
   );
 }

@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import type { IDayType } from '@/lib/db/models/nutrition-template.model';
 import { calculateMacros } from '@/lib/nutrition/macros';
 
@@ -148,60 +151,72 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
-      <div className="space-y-2">
-        <label htmlFor="plan-name" className="text-sm font-medium">
-          计划名称
-        </label>
-        <input
-          id="plan-name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-        />
-      </div>
+      <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-6 space-y-5">
+        <div className="space-y-1.5">
+          <label
+            htmlFor="plan-name"
+            className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+          >
+            计划名称
+          </label>
+          <Input
+            id="plan-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white"
+          />
+        </div>
 
-      <div className="space-y-2">
-        <label htmlFor="plan-desc" className="text-sm font-medium">
-          描述
-        </label>
-        <textarea
-          id="plan-desc"
-          value={description ?? ''}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={2}
-          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-        />
-      </div>
+        <div className="space-y-1.5">
+          <label
+            htmlFor="plan-desc"
+            className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+          >
+            描述
+          </label>
+          <textarea
+            id="plan-desc"
+            value={description ?? ''}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={2}
+            className="w-full rounded-md border border-[#1e1e1e] bg-[#0c0c0c] px-3 py-2 text-sm text-white outline-none focus-visible:ring-1 focus-visible:ring-white resize-none"
+          />
+        </div>
+      </Card>
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-medium">天类型</h2>
-          <button
+          <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">
+            天类型
+          </span>
+          <Button
             type="button"
+            variant="ghost"
             onClick={addDayType}
-            className="text-sm text-primary hover:underline"
+            className="border border-[#1a1a1a] text-[#444] hover:border-[#333] hover:text-[#888] text-xs"
           >
             + 添加天类型
-          </button>
+          </Button>
         </div>
 
         {dayTypes.map((day, di) => (
-          <div key={di} className="rounded-lg border p-4 space-y-4">
+          <Card key={di} className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4 space-y-4">
             <div className="flex items-center gap-2">
-              <input
+              <Input
                 placeholder="如：训练日"
                 value={day.name}
                 onChange={(e) => updateDayType(di, { name: e.target.value })}
-                className="flex-1 rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                className="flex-1 bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white"
               />
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={() => removeDayType(di)}
-                className="text-sm text-destructive"
+                className="text-[#333] hover:text-red-400 hover:bg-[#141414] text-xs"
               >
                 删除
-              </button>
+              </Button>
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -209,7 +224,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
                 ['targetKcal', 'targetProtein', 'targetCarbs', 'targetFat'] as const
               ).map((field) => (
                 <div key={field} className="space-y-1">
-                  <label className="text-xs text-muted-foreground">
+                  <label className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">
                     {field === 'targetKcal'
                       ? '千卡'
                       : field === 'targetProtein'
@@ -218,14 +233,14 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
                           ? '碳水(g)'
                           : '脂肪(g)'}
                   </label>
-                  <input
+                  <Input
                     type="number"
                     min={0}
                     value={day[field]}
                     onChange={(e) =>
                       updateDayType(di, { [field]: parseFloat(e.target.value) || 0 })
                     }
-                    className="w-full rounded-md border px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-ring"
+                    className="bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white"
                   />
                 </div>
               ))}
@@ -233,43 +248,44 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">餐食</span>
-                <button
+                <span className="text-[11px] font-semibold text-[#333]">餐食</span>
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => addMeal(di)}
-                  className="text-xs text-primary hover:underline"
+                  className="text-[#333] hover:text-[#888] text-xs"
                 >
                   + 添加餐食
-                </button>
+                </Button>
               </div>
 
               {day.meals.map((meal, mi) => (
-                <div key={mi} className="rounded-md border p-3 space-y-2">
-                  <input
+                <Card key={mi} className="bg-[#111] border-[#1a1a1a] rounded-lg p-3 space-y-2">
+                  <Input
                     placeholder="如：早餐"
                     value={meal.name}
                     onChange={(e) => updateMealName(di, mi, e.target.value)}
-                    className="w-full rounded-md border px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-ring"
+                    className="bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white text-xs"
                   />
                   {meal.items.length > 0 && (
                     <ul className="text-xs space-y-1">
                       {meal.items.map((item, ii) => (
-                        <li key={ii} className="text-muted-foreground">
+                        <li key={ii} className="text-[#444]">
                           {item.foodName} {item.quantityG}g — {item.kcal.toFixed(0)} kcal
                         </li>
                       ))}
                     </ul>
                   )}
                   <div className="flex gap-2">
-                    <input
+                    <Input
                       placeholder="搜索食物"
                       value={foodSearch}
                       onChange={(e) => setFoodSearch(e.target.value)}
-                      className="flex-1 rounded-md border px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-ring"
+                      className="flex-1 bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white text-xs"
                     />
                     {filteredFoods.length > 0 && foodSearch && (
                       <select
-                        className="rounded-md border px-2 py-1 text-xs"
+                        className="rounded-md border border-[#1e1e1e] bg-[#0c0c0c] px-2 py-1 text-xs text-white"
                         onChange={(e) => {
                           const food = foods.find((f) => f._id === e.target.value);
                           if (food) addFoodToMeal(di, mi, food, 100);
@@ -288,20 +304,20 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
                       </select>
                     )}
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
-          </div>
+          </Card>
         ))}
       </div>
 
-      <button
+      <Button
         type="submit"
         disabled={saving}
-        className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        className="bg-white text-black hover:bg-white/90 font-semibold disabled:opacity-50"
       >
         {saving ? '保存中...' : '保存'}
-      </button>
+      </Button>
     </form>
   );
 }
