@@ -44,7 +44,7 @@ export async function POST(req: Request): Promise<Response> {
     email,
     passwordHash,
     role: validation.invite.role,
-    trainerId: validation.invite.invitedBy.toString(),
+    trainerId: (validation.invite.trainerId ?? validation.invite.invitedBy).toString(),
   });
   await inviteRepo.markUsed(token);
 

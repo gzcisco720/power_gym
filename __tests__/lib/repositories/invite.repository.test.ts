@@ -1,14 +1,24 @@
-import { MongoInviteRepository } from '@/lib/repositories/invite.repository';
-import { InviteTokenModel } from '@/lib/db/models/invite-token.model';
-
+/** @jest-environment node */
 jest.mock('@/lib/db/models/invite-token.model', () => ({
-  InviteTokenModel: Object.assign(jest.fn(), {
-    findOne: jest.fn(),
-    findOneAndUpdate: jest.fn(),
-  }),
+  InviteTokenModel: Object.assign(
+    jest.fn(),
+    {
+      findOne: jest.fn(),
+      find: jest.fn(),
+      findOneAndDelete: jest.fn(),
+      findOneAndUpdate: jest.fn(),
+    },
+  ),
 }));
 
+import type { IInviteToken } from '@/lib/db/models/invite-token.model';
+import { InviteTokenModel } from '@/lib/db/models/invite-token.model';
+import { MongoInviteRepository } from '@/lib/repositories/invite.repository';
+
 const mockModel = jest.mocked(InviteTokenModel);
+const mockFind = jest.mocked(InviteTokenModel.find);
+const mockFindOneAndDelete = jest.mocked(InviteTokenModel.findOneAndDelete);
+const mockFindOneAndUpdate = jest.mocked(InviteTokenModel.findOneAndUpdate);
 
 describe('MongoInviteRepository', () => {
   let repo: MongoInviteRepository;
@@ -40,11 +50,11 @@ describe('MongoInviteRepository', () => {
 
   describe('markUsed', () => {
     it('sets usedAt on the token', async () => {
-      mockModel.findOneAndUpdate.mockResolvedValue({} as never);
+      mockFindOneAndUpdate.mockResolvedValue({} as never);
 
       await repo.markUsed('abc');
 
-      expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(
+      expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
         { token: 'abc' },
         { $set: { usedAt: expect.any(Date) } },
       );
@@ -66,5 +76,53 @@ describe('MongoInviteRepository', () => {
 
       expect(saveMock).toHaveBeenCalled();
     });
+  });
+});
+
+describe('MongoInviteRepository extensions', () => {
+  const repo = new MongoInviteRepository();
+
+  beforeEach(() => jest.clearAllMocks());
+
+  it('findAll calls find with no filter and sorts by expiresAt desc', async () => {
+    const invites = [{ token: 'abc' }];
+    const sortMock = jest.fn().mockResolvedValue(invites);
+    mockFind.mockReturnValue({ sort: sortMock } as never);
+
+    const result = await repo.findAll();
+
+    expect(mockFind).toHaveBeenCalledWith({});
+    expect(sortMock).toHaveBeenCalledWith({ expiresAt: -1 });
+    expect(result).toEqual(invites);
+  });
+
+  it('revoke deletes the invite by id', async () => {
+    mockFindOneAndDelete.mockResolvedValue({ token: 'abc' } as never);
+
+    await repo.revoke('invite-id-123');
+
+    expect(mockFindOneAndDelete).toHaveBeenCalledWith({ _id: 'invite-id-123' });
+  });
+
+  it('regenerate updates token and expiresAt and clears usedAt', async () => {
+    const updated = { token: 'new-token', expiresAt: new Date(), usedAt: null } as unknown as IInviteToken;
+    mockFindOneAndUpdate.mockResolvedValue(updated as never);
+
+    const result = await repo.regenerate('invite-id-123');
+
+    expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
+      { _id: 'invite-id-123' },
+      expect.objectContaining({
+        $set: expect.objectContaining({ usedAt: null }),
+      }),
+      { new: true },
+    );
+    expect(result).toEqual(updated);
+  });
+
+  it('regenerate throws when invite not found', async () => {
+    mockFindOneAndUpdate.mockResolvedValue(null as never);
+
+    await expect(repo.regenerate('missing-id')).rejects.toThrow('Invite missing-id not found');
   });
 });

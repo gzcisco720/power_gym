@@ -7,6 +7,7 @@ export interface IInviteToken extends Document {
   recipientEmail: string;
   expiresAt: Date;
   usedAt: Date | null;
+  trainerId: mongoose.Types.ObjectId | null;
 }
 
 const InviteTokenSchema = new Schema<IInviteToken>({
@@ -16,6 +17,7 @@ const InviteTokenSchema = new Schema<IInviteToken>({
   recipientEmail: { type: String, required: true, lowercase: true, trim: true },
   expiresAt: { type: Date, required: true },
   usedAt: { type: Date, default: null },
+  trainerId: { type: Schema.Types.ObjectId, default: null },
 });
 
 export const InviteTokenModel: Model<IInviteToken> =
