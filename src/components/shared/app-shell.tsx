@@ -37,6 +37,15 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
   ],
   owner: [
     {
+      group: 'ADMIN',
+      items: [
+        { href: '/dashboard/owner', label: 'Dashboard' },
+        { href: '/dashboard/owner/trainers', label: 'Trainers' },
+        { href: '/dashboard/owner/members', label: 'Members' },
+        { href: '/dashboard/owner/invites', label: 'Invites' },
+      ],
+    },
+    {
       group: 'TRAINING',
       items: [
         { href: '/dashboard/member/plan', label: 'My Plan' },
