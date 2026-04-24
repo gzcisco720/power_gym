@@ -3,26 +3,26 @@ import { NutritionPlanViewer } from '@/app/(dashboard)/member/nutrition/_compone
 
 const mockPlan = {
   _id: 'np1',
-  name: '减脂计划',
+  name: 'Fat Loss Plan',
   dayTypes: [
     {
-      name: '训练日',
+      name: 'Training Day',
       targetKcal: 2500,
       targetProtein: 180,
       targetCarbs: 250,
       targetFat: 60,
       meals: [
         {
-          name: '早餐',
+          name: 'Breakfast',
           order: 1,
           items: [
-            { foodName: '燕麦', quantityG: 80, kcal: 296, protein: 10.4, carbs: 48, fat: 5.6 },
+            { foodName: 'Oats', quantityG: 80, kcal: 296, protein: 10.4, carbs: 48, fat: 5.6 },
           ],
         },
       ],
     },
     {
-      name: '休息日',
+      name: 'Rest Day',
       targetKcal: 2000,
       targetProtein: 160,
       targetCarbs: 180,
@@ -35,13 +35,13 @@ const mockPlan = {
 describe('NutritionPlanViewer', () => {
   it('shows plan name', () => {
     render(<NutritionPlanViewer plan={mockPlan} />);
-    expect(screen.getByText('减脂计划')).toBeInTheDocument();
+    expect(screen.getByText('Fat Loss Plan')).toBeInTheDocument();
   });
 
   it('renders tab for each day type', () => {
     render(<NutritionPlanViewer plan={mockPlan} />);
-    expect(screen.getByRole('tab', { name: '训练日' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: '休息日' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Training Day' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Rest Day' })).toBeInTheDocument();
   });
 
   it('shows macro targets for active day type', () => {
@@ -52,14 +52,14 @@ describe('NutritionPlanViewer', () => {
 
   it('switches day type on tab click', () => {
     render(<NutritionPlanViewer plan={mockPlan} />);
-    fireEvent.click(screen.getByRole('tab', { name: '休息日' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Rest Day' }));
     expect(screen.getByText('2000')).toBeInTheDocument();
   });
 
   it('shows meal and food items', () => {
     render(<NutritionPlanViewer plan={mockPlan} />);
-    expect(screen.getByText('早餐')).toBeInTheDocument();
-    expect(screen.getByText('燕麦')).toBeInTheDocument();
+    expect(screen.getByText('Breakfast')).toBeInTheDocument();
+    expect(screen.getByText('Oats')).toBeInTheDocument();
   });
 
   it('shows empty state when no plan', () => {

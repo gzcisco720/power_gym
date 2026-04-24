@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 import { connectDB } from '@/lib/db/connect';
 import { MongoMemberPlanRepository } from '@/lib/repositories/member-plan.repository';
 import { Card } from '@/components/ui/card';
@@ -29,9 +30,13 @@ export default async function SessionNewPage({
     'use server';
     const s = await auth();
     if (!s?.user) return;
+    const cookieStore = await cookies();
     const res = await fetch(`${process.env.AUTH_URL}/api/sessions`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: '' },
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: cookieStore.toString(),
+      },
       body: JSON.stringify({ memberPlanId: plan!._id.toString(), dayNumber }),
     });
     if (res.ok) {
