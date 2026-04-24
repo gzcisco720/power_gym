@@ -32,9 +32,17 @@ export default async function OwnerDashboardPage() {
   const memberIds = members.map((m) => m._id.toString());
   const sessionsThisMonth = await sessionRepo.countByMemberIdsSince(memberIds, startOfMonth);
 
+  const membersByTrainer = new Map<string, (typeof members)[0][]>();
+  for (const member of members) {
+    const tid = member.trainerId?.toString() ?? '__none__';
+    const arr = membersByTrainer.get(tid) ?? [];
+    arr.push(member);
+    membersByTrainer.set(tid, arr);
+  }
+
   const trainerRows = await Promise.all(
     trainers.map(async (trainer) => {
-      const trainerMembers = await userRepo.findAllMembers(trainer._id.toString());
+      const trainerMembers = membersByTrainer.get(trainer._id.toString()) ?? [];
       const trainerMemberIds = trainerMembers.map((m) => m._id.toString());
       const trainerSessions = await sessionRepo.countByMemberIdsSince(
         trainerMemberIds,

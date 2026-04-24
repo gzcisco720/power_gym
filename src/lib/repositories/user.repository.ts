@@ -44,7 +44,7 @@ export class MongoUserRepository implements IUserRepository {
   }
 
   async findAllMembers(trainerId?: string): Promise<IUser[]> {
-    const filter: { role: string; trainerId?: mongoose.Types.ObjectId } = { role: 'member' };
+    const filter: { role: 'member'; trainerId?: mongoose.Types.ObjectId } = { role: 'member' };
     if (trainerId) {
       filter.trainerId = new mongoose.Types.ObjectId(trainerId);
     }
