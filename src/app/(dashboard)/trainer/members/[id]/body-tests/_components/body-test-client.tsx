@@ -2,6 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { SectionHeader } from '@/components/shared/section-header';
+import { EmptyState } from '@/components/shared/empty-state';
 
 type Protocol = '3site' | '7site' | '9site' | 'other';
 type Sex = 'male' | 'female';
@@ -111,26 +116,36 @@ export function BodyTestClient({ memberId, initialTests }: Props) {
   return (
     <div className="space-y-8">
       <section>
-        <h2 className="text-lg font-semibold mb-4">新建体测</h2>
-        <div className="space-y-4 rounded-lg border p-4">
+        <SectionHeader title="新建体测" />
+        <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-5 mt-3 space-y-5">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="date" className="block text-sm font-medium mb-1">测试日期</label>
-              <input
+            <div className="space-y-1.5">
+              <label
+                htmlFor="date"
+                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+              >
+                测试日期
+              </label>
+              <Input
                 id="date"
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full rounded-md border px-3 py-2 text-sm"
+                className="bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white"
               />
             </div>
-            <div>
-              <label htmlFor="protocol" className="block text-sm font-medium mb-1">测量协议</label>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="protocol"
+                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+              >
+                测量协议
+              </label>
               <select
                 id="protocol"
                 value={protocol}
                 onChange={(e) => setProtocol(e.target.value as Protocol)}
-                className="w-full rounded-md border px-3 py-2 text-sm"
+                className="w-full rounded-md border border-[#1e1e1e] bg-[#0c0c0c] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white"
               >
                 {(Object.entries(PROTOCOL_LABELS) as [Protocol, string][]).map(([k, v]) => (
                   <option key={k} value={k}>{v}</option>
@@ -140,84 +155,104 @@ export function BodyTestClient({ memberId, initialTests }: Props) {
           </div>
 
           <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label htmlFor="age" className="block text-sm font-medium mb-1">年龄</label>
-              <input
+            <div className="space-y-1.5">
+              <label
+                htmlFor="age"
+                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+              >
+                年龄
+              </label>
+              <Input
                 id="age"
                 type="number"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
-                className="w-full rounded-md border px-3 py-2 text-sm"
                 placeholder="岁"
+                className="bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white"
               />
             </div>
-            <div>
-              <p className="block text-sm font-medium mb-1">性别</p>
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">性别</p>
               <div className="flex gap-3 pt-1">
-                <label className="flex items-center gap-1 text-sm cursor-pointer">
+                <label className="flex items-center gap-1.5 text-sm cursor-pointer text-[#888]">
                   <input
                     type="radio"
                     name="sex"
                     value="male"
                     checked={sex === 'male'}
                     onChange={() => setSex('male')}
+                    className="accent-white"
                   />
                   男
                 </label>
-                <label className="flex items-center gap-1 text-sm cursor-pointer">
+                <label className="flex items-center gap-1.5 text-sm cursor-pointer text-[#888]">
                   <input
                     type="radio"
                     name="sex"
                     value="female"
                     checked={sex === 'female'}
                     onChange={() => setSex('female')}
+                    className="accent-white"
                   />
                   女
                 </label>
               </div>
             </div>
-            <div>
-              <label htmlFor="weight" className="block text-sm font-medium mb-1">体重 (kg)</label>
-              <input
+            <div className="space-y-1.5">
+              <label
+                htmlFor="weight"
+                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+              >
+                体重 (kg)
+              </label>
+              <Input
                 id="weight"
                 type="number"
                 step="0.1"
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
-                className="w-full rounded-md border px-3 py-2 text-sm"
                 placeholder="kg"
+                className="bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white"
               />
             </div>
           </div>
 
           {protocol === 'other' ? (
-            <div>
-              <label htmlFor="bodyFatPct" className="block text-sm font-medium mb-1">体脂率 (%)</label>
-              <input
+            <div className="space-y-1.5">
+              <label
+                htmlFor="bodyFatPct"
+                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+              >
+                体脂率 (%)
+              </label>
+              <Input
                 id="bodyFatPct"
                 type="number"
                 step="0.1"
                 value={bodyFatPct}
                 onChange={(e) => setBodyFatPct(e.target.value)}
-                className="w-full rounded-md border px-3 py-2 text-sm"
                 placeholder="%"
+                className="bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white"
               />
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-3">
               {requiredSites.map((site) => (
-                <div key={site}>
-                  <label htmlFor={site} className="block text-sm font-medium mb-1">
+                <div key={site} className="space-y-1.5">
+                  <label
+                    htmlFor={site}
+                    className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+                  >
                     {SITE_LABELS[site]} (mm)
                   </label>
-                  <input
+                  <Input
                     id={site}
                     type="number"
                     step="0.1"
                     value={sites[site] ?? ''}
                     onChange={(e) => setSites((prev) => ({ ...prev, [site]: e.target.value }))}
-                    className="w-full rounded-md border px-3 py-2 text-sm"
                     placeholder="mm"
+                    className="bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white"
                   />
                 </div>
               ))}
@@ -225,76 +260,93 @@ export function BodyTestClient({ memberId, initialTests }: Props) {
           )}
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="targetWeight" className="block text-sm font-medium mb-1">目标体重 (kg, 可选)</label>
-              <input
+            <div className="space-y-1.5">
+              <label
+                htmlFor="targetWeight"
+                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+              >
+                目标体重 (kg, 可选)
+              </label>
+              <Input
                 id="targetWeight"
                 type="number"
                 step="0.1"
                 value={targetWeight}
                 onChange={(e) => setTargetWeight(e.target.value)}
-                className="w-full rounded-md border px-3 py-2 text-sm"
                 placeholder="kg"
+                className="bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white"
               />
             </div>
-            <div>
-              <label htmlFor="targetBodyFatPct" className="block text-sm font-medium mb-1">目标体脂 (%, 可选)</label>
-              <input
+            <div className="space-y-1.5">
+              <label
+                htmlFor="targetBodyFatPct"
+                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+              >
+                目标体脂 (%, 可选)
+              </label>
+              <Input
                 id="targetBodyFatPct"
                 type="number"
                 step="0.1"
                 value={targetBodyFatPct}
                 onChange={(e) => setTargetBodyFatPct(e.target.value)}
-                className="w-full rounded-md border px-3 py-2 text-sm"
                 placeholder="%"
+                className="bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white"
               />
             </div>
           </div>
 
-          <button
+          <Button
             onClick={handleSubmit}
             disabled={saving}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            className="bg-white text-black hover:bg-white/90 font-semibold disabled:opacity-50"
           >
             {saving ? '保存中...' : '保存'}
-          </button>
-        </div>
+          </Button>
+        </Card>
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold mb-4">体测记录</h2>
+        <SectionHeader title="体测记录" />
         {tests.length === 0 ? (
-          <p className="text-muted-foreground">暂无体测记录</p>
+          <EmptyState
+            heading="暂无体测记录"
+            description="为会员新建第一条体测记录。"
+          />
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 mt-3">
             {tests.map((t) => (
-              <div key={t._id} className="rounded-lg border p-4 flex items-start justify-between">
+              <Card
+                key={t._id}
+                className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4 flex items-start justify-between"
+              >
                 <div>
-                  <p className="font-medium">
+                  <p className="text-[14px] font-semibold text-white">
                     <time dateTime={t.date}>
                       {new Date(t.date).toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' })}
                     </time>
                   </p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-[12px] text-[#555] mt-1">
                     体重 {t.weight} kg · 体脂率 {t.bodyFatPct.toFixed(1)}%
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-[12px] text-[#555]">
                     瘦体重 {t.leanMassKg.toFixed(1)} kg · 脂肪量 {t.fatMassKg.toFixed(1)} kg
                   </p>
                   {(t.targetWeight ?? t.targetBodyFatPct) && (
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-[11px] text-[#333] mt-1">
                       目标: {t.targetWeight ? `体重 ${t.targetWeight} kg` : ''}
                       {t.targetBodyFatPct ? ` 体脂率 ${t.targetBodyFatPct}%` : ''}
                     </p>
                   )}
                 </div>
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => handleDelete(t._id)}
-                  className="text-sm text-destructive hover:underline ml-4"
+                  className="text-[#333] hover:text-red-400 hover:bg-[#141414] text-xs ml-4"
                 >
                   删除
-                </button>
-              </div>
+                </Button>
+              </Card>
             ))}
           </div>
         )}
