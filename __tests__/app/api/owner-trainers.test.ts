@@ -61,6 +61,16 @@ describe('GET /api/owner/trainers', () => {
 describe('DELETE /api/owner/trainers/[id]', () => {
   beforeEach(() => jest.clearAllMocks());
 
+  it('returns 401 when unauthenticated', async () => {
+    mockAuth.mockResolvedValue(null as never);
+    const { DELETE } = await import('@/app/api/owner/trainers/[id]/route');
+    const res = await DELETE(
+      new Request('http://localhost', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reassignToId: 'o1' }) }),
+      { params: Promise.resolve({ id: 't1' }) },
+    );
+    expect(res.status).toBe(401);
+  });
+
   it('returns 403 for non-owner', async () => {
     mockAuth.mockResolvedValue({ user: { role: 'trainer', id: 't1' } } as never);
     const { DELETE } = await import('@/app/api/owner/trainers/[id]/route');

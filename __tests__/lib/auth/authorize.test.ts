@@ -12,6 +12,9 @@ function makeRepo(user: Partial<IUser> | null): IUserRepository {
     findById: jest.fn().mockResolvedValue(null),
     count: jest.fn(),
     create: jest.fn(),
+    findByRole: jest.fn(),
+    findAllMembers: jest.fn(),
+    updateTrainerId: jest.fn(),
   };
 }
 
