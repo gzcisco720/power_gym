@@ -11,7 +11,17 @@ export async function PATCH(
   if (session.user.role !== 'owner') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
   const { id } = await params;
-  const { trainerId } = (await req.json()) as { trainerId: string };
+
+  let trainerId: string;
+  try {
+    const body = (await req.json()) as { trainerId?: unknown };
+    if (typeof body.trainerId !== 'string' || !body.trainerId) {
+      return Response.json({ error: 'trainerId is required' }, { status: 400 });
+    }
+    trainerId = body.trainerId;
+  } catch {
+    return Response.json({ error: 'Invalid request body' }, { status: 400 });
+  }
 
   await connectDB();
   const userRepo = new MongoUserRepository();
