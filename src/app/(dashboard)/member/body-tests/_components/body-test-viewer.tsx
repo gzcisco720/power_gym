@@ -1,14 +1,18 @@
 'use client';
 
+import { motion, useReducedMotion } from 'framer-motion';
+import { Card } from '@/components/ui/card';
+import { PageHeader } from '@/components/shared/page-header';
+import { StatCard } from '@/components/shared/stat-card';
+import { EmptyState } from '@/components/shared/empty-state';
+import { SectionHeader } from '@/components/shared/section-header';
 import {
   ResponsiveContainer,
   LineChart,
   Line,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
-  Legend,
 } from 'recharts';
 
 interface BodyTestRecord {
@@ -28,97 +32,143 @@ interface Props {
 }
 
 export function BodyTestViewer({ tests }: Props) {
+  const shouldReduce = useReducedMotion();
+
   if (tests.length === 0) {
-    return <p className="text-muted-foreground">暂无体测记录</p>;
+    return (
+      <div>
+        <PageHeader title="Body Composition" />
+        <div className="px-8 py-28">
+          <EmptyState
+            heading="No body tests yet"
+            description="Your trainer hasn't recorded a body composition test yet."
+          />
+        </div>
+      </div>
+    );
   }
+
+  const sorted = [...tests].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const latest = sorted[0];
 
   const chartData = [...tests]
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .map((t) => ({
-      date: new Date(t.date).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }),
-      体重: t.weight,
-      体脂率: parseFloat(t.bodyFatPct.toFixed(1)),
+      date: new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      Weight: t.weight,
+      'Body Fat': parseFloat(t.bodyFatPct.toFixed(1)),
     }));
 
   return (
-    <div className="space-y-8">
-      <section>
-        <h2 className="text-lg font-semibold mb-4">趋势图表</h2>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-              <YAxis yAxisId="weight" orientation="left" unit="kg" tick={{ fontSize: 12 }} />
-              <YAxis yAxisId="bf" orientation="right" unit="%" tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Legend />
-              <Line yAxisId="weight" type="monotone" dataKey="体重" stroke="#2563eb" dot />
-              <Line yAxisId="bf" type="monotone" dataKey="体脂率" stroke="#dc2626" dot />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </section>
+    <div>
+      <PageHeader title="Body Composition" />
 
-      <section>
-        <h2 className="text-lg font-semibold mb-4">历史记录</h2>
-        <div className="space-y-3">
-          {tests.map((t) => (
-            <div key={t._id} className="rounded-lg border p-4">
-              <p className="font-medium">{new Date(t.date).toLocaleDateString('zh-CN')}</p>
-              <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-                <div>
-                  <span className="text-muted-foreground">体重</span>
-                  <span className="ml-2 font-medium">{t.weight} kg</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">体脂率</span>
-                  <span className="ml-2 font-medium">{t.bodyFatPct.toFixed(1)}%</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">瘦体重</span>
-                  <span className="ml-2 font-medium">{t.leanMassKg.toFixed(1)} kg</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">脂肪量</span>
-                  <span className="ml-2 font-medium">{t.fatMassKg.toFixed(1)} kg</span>
-                </div>
-              </div>
-              {(t.targetWeight ?? t.targetBodyFatPct) && (
-                <div className="mt-3 pt-3 border-t text-sm">
-                  <p className="text-muted-foreground font-medium mb-1">目标</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {t.targetWeight && (
-                      <div>
-                        <span className="text-muted-foreground">体重</span>
-                        <span className="ml-2">{t.targetWeight} kg</span>
-                        <span
-                          className={`ml-2 text-xs ${t.weight - t.targetWeight > 0 ? 'text-destructive' : 'text-green-600'}`}
-                        >
-                          ({t.weight - t.targetWeight > 0 ? '+' : ''}
-                          {(t.weight - t.targetWeight).toFixed(1)} kg)
-                        </span>
-                      </div>
-                    )}
-                    {t.targetBodyFatPct && (
-                      <div>
-                        <span className="text-muted-foreground">体脂率</span>
-                        <span className="ml-2">{t.targetBodyFatPct}%</span>
-                        <span
-                          className={`ml-2 text-xs ${t.bodyFatPct - t.targetBodyFatPct > 0 ? 'text-destructive' : 'text-green-600'}`}
-                        >
-                          ({t.bodyFatPct - t.targetBodyFatPct > 0 ? '+' : ''}
-                          {(t.bodyFatPct - t.targetBodyFatPct).toFixed(1)}%)
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+      <div className="px-8 py-7 space-y-7">
+        {/* Latest stats */}
+        <div>
+          <SectionHeader title="Latest Results" />
+          <div className="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+            <StatCard label="Body Weight" value={String(latest.weight)} unit="kg" />
+            <StatCard label="Body Fat" value={latest.bodyFatPct.toFixed(1)} unit="%" />
+            <StatCard label="Lean Mass" value={latest.leanMassKg.toFixed(1)} unit="kg" />
+            <StatCard label="Fat Mass" value={latest.fatMassKg.toFixed(1)} unit="kg" />
+          </div>
         </div>
-      </section>
+
+        {/* History chart — only when multiple tests */}
+        {tests.length > 1 && (
+          <div>
+            <SectionHeader title="History" />
+            <Card className="mt-3 bg-[#0c0c0c] border-[#141414] rounded-xl p-4">
+              <div className="h-52">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#333' }} />
+                    <YAxis yAxisId="weight" orientation="left" unit="kg" tick={{ fontSize: 10, fill: '#333' }} />
+                    <YAxis yAxisId="bf" orientation="right" unit="%" tick={{ fontSize: 10, fill: '#333' }} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#0c0c0c', border: '1px solid #141414', borderRadius: 8 }}
+                      labelStyle={{ color: '#666', fontSize: 10 }}
+                      itemStyle={{ color: '#ccc', fontSize: 11 }}
+                    />
+                    <Line yAxisId="weight" type="monotone" dataKey="Weight" stroke="#fff" dot={{ fill: '#fff', r: 3 }} />
+                    <Line yAxisId="bf" type="monotone" dataKey="Body Fat" stroke="#666" dot={{ fill: '#666', r: 3 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* All tests list */}
+        <div>
+          <SectionHeader title="All Records" />
+          <div className="mt-3 space-y-2">
+            {sorted.map((t, i) => (
+              <motion.div
+                key={t._id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: shouldReduce ? 0 : i * 0.04 }}
+              >
+                <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-[12px] font-semibold text-white">
+                      {new Date(t.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </div>
+                    <div className="text-[9px] font-semibold uppercase tracking-[2px] text-[#2a2a2a]">
+                      {t.protocol}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
+                    <div className="flex justify-between">
+                      <span className="text-[#333]">Weight</span>
+                      <span className="text-[#888]">{t.weight} kg</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#333]">Body Fat</span>
+                      <span className="text-[#888]">{t.bodyFatPct.toFixed(1)}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#333]">Lean Mass</span>
+                      <span className="text-[#888]">{t.leanMassKg.toFixed(1)} kg</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#333]">Fat Mass</span>
+                      <span className="text-[#888]">{t.fatMassKg.toFixed(1)} kg</span>
+                    </div>
+                  </div>
+                  {(t.targetWeight ?? t.targetBodyFatPct) && (
+                    <div className="mt-3 pt-3 border-t border-[#0f0f0f] text-[11px]">
+                      <div className="text-[9px] font-semibold uppercase tracking-[2px] text-[#2a2a2a] mb-1.5">
+                        Goal
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                        {t.targetWeight && (
+                          <div className="flex justify-between">
+                            <span className="text-[#333]">Weight</span>
+                            <span className={t.weight - t.targetWeight > 0 ? 'text-[#555]' : 'text-[#888]'}>
+                              {t.targetWeight} kg
+                            </span>
+                          </div>
+                        )}
+                        {t.targetBodyFatPct && (
+                          <div className="flex justify-between">
+                            <span className="text-[#333]">Body Fat</span>
+                            <span className={t.bodyFatPct - t.targetBodyFatPct > 0 ? 'text-[#555]' : 'text-[#888]'}>
+                              {t.targetBodyFatPct}%
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

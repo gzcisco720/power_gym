@@ -14,6 +14,15 @@ jest.mock('recharts', () => ({
   Legend: () => null,
 }));
 
+jest.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children, className }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div className={className}>{children}</div>
+    ),
+  },
+  useReducedMotion: () => false,
+}));
+
 const mockTests = [
   {
     _id: 'bt1',
@@ -40,9 +49,9 @@ const mockTests = [
 ];
 
 describe('BodyTestViewer', () => {
-  it('shows "暂无体测记录" when no tests', () => {
+  it('shows empty state when no tests', () => {
     render(<BodyTestViewer tests={[]} />);
-    expect(screen.getByText(/暂无体测记录/i)).toBeInTheDocument();
+    expect(screen.getByText('No body tests yet')).toBeInTheDocument();
   });
 
   it('renders test records with body fat percentage', () => {
@@ -51,18 +60,24 @@ describe('BodyTestViewer', () => {
     expect(screen.getAllByText(/22/).length).toBeGreaterThan(0);
   });
 
-  it('renders the Recharts line chart when tests exist', () => {
+  it('renders the history chart when multiple tests exist', () => {
     render(<BodyTestViewer tests={mockTests} />);
     expect(screen.getByTestId('line-chart')).toBeInTheDocument();
   });
 
-  it('shows target comparison when targets are set', () => {
-    render(<BodyTestViewer tests={mockTests} />);
-    expect(screen.getByText(/目标/i)).toBeInTheDocument();
+  it('does not show history chart when only one test', () => {
+    render(<BodyTestViewer tests={[mockTests[0]]} />);
+    expect(screen.queryByTestId('line-chart')).not.toBeInTheDocument();
   });
 
-  it('shows weight and lean/fat mass for each record', () => {
+  it('shows goal section when targets are set', () => {
     render(<BodyTestViewer tests={mockTests} />);
+    expect(screen.getByText('Goal')).toBeInTheDocument();
+  });
+
+  it('shows latest stats in stat cards', () => {
+    render(<BodyTestViewer tests={mockTests} />);
+    // Latest is bt1 (Apr 1 > Mar 1) — weight 80, body fat 20
     expect(screen.getAllByText(/80/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/64/).length).toBeGreaterThan(0);
   });
