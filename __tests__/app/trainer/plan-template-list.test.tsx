@@ -1,6 +1,15 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PlanTemplateList } from '@/app/(dashboard)/trainer/plans/_components/plan-template-list';
 
+jest.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children, className }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div className={className}>{children}</div>
+    ),
+  },
+  useReducedMotion: () => false,
+}));
+
 const mockTemplates = [
   { _id: 'tpl1', name: 'Push Pull Legs', description: 'Classic PPL split', days: [] },
   { _id: 'tpl2', name: 'Upper Lower', description: null, days: [] },
@@ -20,7 +29,8 @@ describe('PlanTemplateList', () => {
 
   it('shows "新建计划" link', async () => {
     render(<PlanTemplateList templates={mockTemplates} />);
-    expect(await screen.findByRole('link', { name: /新建计划/i })).toBeInTheDocument();
+    const links = await screen.findAllByRole('link', { name: /新建计划/i });
+    expect(links.length).toBeGreaterThan(0);
   });
 
   it('shows empty state when no templates', async () => {
