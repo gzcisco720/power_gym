@@ -24,16 +24,18 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Training Plans & Performance       | [training-plans-design.md](2026-04-21/plans/training-plans-design.md)                | Approved |
 | Body Composition Testing           | [body-test-design.md](2026-04-23/plans/body-test-design.md)                          | Approved |
 | Frontend Redesign (Phase 2)        | [frontend-redesign-design.md](2026-04-23/plans/frontend-redesign-design.md)          | Approved |
+| Owner Admin Dashboard              | [owner-dashboard-design.md](2026-04-24/plans/owner-dashboard-design.md)              | Approved |
 
 ## Implementation Plans
 
 | Topic       | File                                                                              | Status      |
 | ----------- | --------------------------------------------------------------------------------- | ----------- |
 | Auth system | [auth-implementation-plan.md](2026-04-20/plans/auth-implementation-plan.md)      | Complete |
-| Training Plans & Performance | [training-plans-implementation-plan.md](2026-04-21/plans/training-plans-implementation-plan.md) | In Progress |
+| Training Plans & Performance | [training-plans-implementation-plan.md](2026-04-21/plans/training-plans-implementation-plan.md) | Complete |
 | Nutrition Plans | [nutrition-implementation-plan.md](2026-04-22/plans/nutrition-implementation-plan.md) | Complete |
 | Body Composition Testing | [body-test-implementation-plan.md](2026-04-23/plans/body-test-implementation-plan.md) | Complete |
 | Frontend Redesign (Phase 2) | [frontend-redesign-implementation-plan.md](2026-04-23/plans/frontend-redesign-implementation-plan.md) | Complete |
+| Owner Admin Dashboard | [owner-dashboard-implementation-plan.md](2026-04-24/plans/owner-dashboard-implementation-plan.md) | Complete |
 
 ## API Usage Guides
 
