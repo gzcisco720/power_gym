@@ -6,6 +6,7 @@ interface CreateInviteParams {
   role: 'trainer' | 'member';
   invitedBy: string;
   recipientEmail: string;
+  trainerId?: string;
 }
 
 type ValidationResult =
@@ -25,6 +26,7 @@ export async function createInviteToken(
     invitedBy: params.invitedBy,
     recipientEmail: params.recipientEmail.toLowerCase(),
     expiresAt,
+    trainerId: params.trainerId,
   });
 }
 
