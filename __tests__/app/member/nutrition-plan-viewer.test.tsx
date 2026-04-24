@@ -40,8 +40,8 @@ describe('NutritionPlanViewer', () => {
 
   it('renders tab for each day type', () => {
     render(<NutritionPlanViewer plan={mockPlan} />);
-    expect(screen.getByRole('button', { name: '训练日' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '休息日' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: '训练日' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: '休息日' })).toBeInTheDocument();
   });
 
   it('shows macro targets for active day type', () => {
@@ -52,7 +52,7 @@ describe('NutritionPlanViewer', () => {
 
   it('switches day type on tab click', () => {
     render(<NutritionPlanViewer plan={mockPlan} />);
-    fireEvent.click(screen.getByRole('button', { name: '休息日' }));
+    fireEvent.click(screen.getByRole('tab', { name: '休息日' }));
     expect(screen.getByText('2000')).toBeInTheDocument();
   });
 
@@ -64,6 +64,6 @@ describe('NutritionPlanViewer', () => {
 
   it('shows empty state when no plan', () => {
     render(<NutritionPlanViewer plan={null} />);
-    expect(screen.getByText(/暂无营养计划/i)).toBeInTheDocument();
+    expect(screen.getByText('No nutrition plan assigned')).toBeInTheDocument();
   });
 });

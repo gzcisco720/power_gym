@@ -1,6 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card } from '@/components/ui/card';
+import { PageHeader } from '@/components/shared/page-header';
+import { StatCard } from '@/components/shared/stat-card';
+import { EmptyState } from '@/components/shared/empty-state';
+import { SectionHeader } from '@/components/shared/section-header';
 
 interface MealItem {
   foodName: string;
@@ -33,98 +38,85 @@ interface Plan {
 }
 
 export function NutritionPlanViewer({ plan }: { plan: Plan | null }) {
-  const [activeIndex, setActiveIndex] = useState(0);
-
   if (!plan) {
     return (
-      <div className="text-center py-16 text-muted-foreground">
-        <p>暂无营养计划</p>
-        <p className="text-sm mt-2">请联系您的教练分配营养计划</p>
+      <div>
+        <PageHeader title="Nutrition Plan" />
+        <div className="px-8 py-28">
+          <EmptyState
+            heading="No nutrition plan assigned"
+            description="Your trainer hasn't assigned a nutrition plan yet. Check back soon."
+          />
+        </div>
       </div>
     );
   }
 
-  const activeDayType = plan.dayTypes[activeIndex];
-  const sortedMeals = [...(activeDayType?.meals ?? [])].sort((a, b) => a.order - b.order);
-
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{plan.name}</h1>
+      <PageHeader title="Nutrition Plan" subtitle={plan.name} />
 
-      <div className="flex gap-2 mb-6 flex-wrap">
-        {plan.dayTypes.map((dt, i) => (
-          <button
-            key={i}
-            onClick={() => setActiveIndex(i)}
-            className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-              i === activeIndex
-                ? 'bg-primary text-primary-foreground'
-                : 'border hover:bg-muted'
-            }`}
-          >
-            {dt.name}
-          </button>
-        ))}
-      </div>
-
-      {activeDayType && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 rounded-lg border p-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold">{activeDayType.targetKcal}</p>
-              <p className="text-xs text-muted-foreground">千卡</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold">{activeDayType.targetProtein}</p>
-              <p className="text-xs text-muted-foreground">蛋白质(g)</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold">{activeDayType.targetCarbs}</p>
-              <p className="text-xs text-muted-foreground">碳水(g)</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold">{activeDayType.targetFat}</p>
-              <p className="text-xs text-muted-foreground">脂肪(g)</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {sortedMeals.map((meal, mi) => (
-              <div key={mi} className="rounded-lg border p-4">
-                <h2 className="font-semibold mb-3">{meal.name}</h2>
-                {meal.items.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">暂无食物</p>
-                ) : (
-                  <table className="w-full text-sm border-collapse">
-                    <thead>
-                      <tr className="border-b text-left text-muted-foreground">
-                        <th className="py-1 pr-4">食物</th>
-                        <th className="py-1 pr-4">克数</th>
-                        <th className="py-1 pr-4">千卡</th>
-                        <th className="py-1 pr-4">蛋白质</th>
-                        <th className="py-1 pr-4">碳水</th>
-                        <th className="py-1">脂肪</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {meal.items.map((item, ii) => (
-                        <tr key={ii} className="border-b">
-                          <td className="py-1 pr-4 font-medium">{item.foodName}</td>
-                          <td className="py-1 pr-4">{item.quantityG}g</td>
-                          <td className="py-1 pr-4">{item.kcal.toFixed(0)}</td>
-                          <td className="py-1 pr-4">{item.protein.toFixed(1)}g</td>
-                          <td className="py-1 pr-4">{item.carbs.toFixed(1)}g</td>
-                          <td className="py-1">{item.fat.toFixed(1)}g</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
+      <div className="px-8 py-7">
+        <Tabs defaultValue={plan.dayTypes[0]?.name ?? ''}>
+          <TabsList className="mb-6 bg-[#0c0c0c] border border-[#141414] rounded-lg p-1 h-auto w-auto">
+            {plan.dayTypes.map((dt) => (
+              <TabsTrigger
+                key={dt.name}
+                value={dt.name}
+                className="text-[11px] font-semibold rounded-md px-3 py-1.5 data-active:bg-white data-active:text-black text-[#444]"
+              >
+                {dt.name}
+              </TabsTrigger>
             ))}
-          </div>
-        </div>
-      )}
+          </TabsList>
+
+          {plan.dayTypes.map((dt) => {
+            const sortedMeals = [...dt.meals].sort((a, b) => a.order - b.order);
+            return (
+              <TabsContent key={dt.name} value={dt.name} className="space-y-6">
+                <div>
+                  <SectionHeader title="Daily Targets" />
+                  <div className="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                    <StatCard label="Calories" value={String(dt.targetKcal)} unit="kcal" />
+                    <StatCard label="Protein" value={String(dt.targetProtein)} unit="g" />
+                    <StatCard label="Carbs" value={String(dt.targetCarbs)} unit="g" />
+                    <StatCard label="Fat" value={String(dt.targetFat)} unit="g" />
+                  </div>
+                </div>
+
+                {sortedMeals.length > 0 && (
+                  <div className="space-y-3">
+                    <SectionHeader title="Meals" />
+                    {sortedMeals.map((meal, mi) => (
+                      <Card key={mi} className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4">
+                        <div className="text-[13px] font-semibold text-white mb-3">{meal.name}</div>
+                        {meal.items.length === 0 ? (
+                          <p className="text-[11px] text-[#333]">No foods added</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {meal.items.map((item, ii) => (
+                              <div key={ii} className="flex items-center justify-between">
+                                <span className="text-[12px] text-[#666]">{item.foodName}</span>
+                                <div className="flex items-center gap-3 text-[10px] text-[#333]">
+                                  <span>{item.quantityG}g</span>
+                                  <span>{item.kcal.toFixed(0)} kcal</span>
+                                  <span>P {item.protein.toFixed(1)}g</span>
+                                  <span>C {item.carbs.toFixed(1)}g</span>
+                                  <span>F {item.fat.toFixed(1)}g</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            );
+          })}
+        </Tabs>
+      </div>
     </div>
   );
 }
