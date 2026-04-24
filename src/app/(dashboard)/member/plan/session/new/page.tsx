@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { connectDB } from '@/lib/db/connect';
 import { MongoMemberPlanRepository } from '@/lib/repositories/member-plan.repository';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/shared/page-header';
 
 export default async function SessionNewPage({
   searchParams,
@@ -38,20 +41,39 @@ export default async function SessionNewPage({
   }
 
   return (
-    <div className="max-w-sm mx-auto text-center space-y-6 py-16">
-      <h1 className="text-2xl font-bold">{planDay.name}</h1>
-      <p className="text-muted-foreground">{planDay.exercises.length} 个动作</p>
-      <form action={startSession}>
-        <button
-          type="submit"
-          className="w-full rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          开始训练
-        </button>
-      </form>
-      <Link href="/dashboard/member/plan" className="text-sm text-muted-foreground hover:underline">
-        返回
-      </Link>
+    <div>
+      <PageHeader
+        title={`Start ${planDay.name}`}
+        subtitle={`Day ${dayNumber} · ${planDay.exercises.length} exercises`}
+      />
+      <div className="px-8 py-7">
+        <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-6 max-w-md">
+          <div className="text-[13px] font-semibold text-white mb-4">{plan.name}</div>
+          <div className="space-y-2 mb-6">
+            {planDay.exercises.map((ex) => (
+              <div key={ex.exerciseName} className="flex items-center justify-between">
+                <span className="text-[12px] text-[#666]">{ex.exerciseName}</span>
+              </div>
+            ))}
+          </div>
+          <form action={startSession}>
+            <Button
+              type="submit"
+              className="w-full bg-white text-black hover:bg-white/90 text-[11px] font-semibold"
+            >
+              Start Session
+            </Button>
+          </form>
+          <div className="mt-4 text-center">
+            <Link
+              href="/dashboard/member/plan"
+              className="text-[11px] text-[#2a2a2a] hover:text-[#555] transition-colors"
+            >
+              Back to plan
+            </Link>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }
