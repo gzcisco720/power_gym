@@ -7,14 +7,14 @@ jest.mock('next/navigation', () => ({ useRouter: () => ({ push: jest.fn() }) }))
 describe('NutritionTemplateForm', () => {
   it('renders name and description fields', () => {
     render(<NutritionTemplateForm onSubmit={jest.fn()} foods={[]} />);
-    expect(screen.getByLabelText(/计划名称/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/描述/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Plan Name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Description/i)).toBeInTheDocument();
   });
 
   it('can add a day type', () => {
     render(<NutritionTemplateForm onSubmit={jest.fn()} foods={[]} />);
-    fireEvent.click(screen.getByRole('button', { name: /添加天类型/i }));
-    expect(screen.getByPlaceholderText(/如：训练日/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Add Day Type/i }));
+    expect(screen.getByPlaceholderText(/e\.g\. Training Day/i)).toBeInTheDocument();
   });
 
   it('calls onSubmit with plan data', async () => {
@@ -22,8 +22,8 @@ describe('NutritionTemplateForm', () => {
     const onSubmit = jest.fn().mockResolvedValue(undefined);
     render(<NutritionTemplateForm onSubmit={onSubmit} foods={[]} />);
 
-    await user.type(screen.getByLabelText(/计划名称/i), '减脂计划');
-    fireEvent.click(screen.getByRole('button', { name: /保存/i }));
+    await user.type(screen.getByLabelText(/Plan Name/i), '减脂计划');
+    fireEvent.click(screen.getByRole('button', { name: /^Save$/i }));
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({ name: '减脂计划' }),

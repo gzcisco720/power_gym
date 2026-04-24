@@ -34,7 +34,7 @@ describe('TrainerMemberPlanClient', () => {
     expect(screen.getAllByText('Push Pull Legs').length).toBeGreaterThan(0);
   });
 
-  it('shows "未分配计划" when no active plan', () => {
+  it('shows "No plan assigned" when no active plan', () => {
     render(
       <TrainerMemberPlanClient
         memberId="m1"
@@ -44,7 +44,7 @@ describe('TrainerMemberPlanClient', () => {
         pbs={[]}
       />,
     );
-    expect(screen.getByText(/未分配计划/i)).toBeInTheDocument();
+    expect(screen.getByText(/No plan assigned/i)).toBeInTheDocument();
   });
 
   it('shows template select and assign button', () => {
@@ -58,7 +58,7 @@ describe('TrainerMemberPlanClient', () => {
       />,
     );
     expect(screen.getByRole('combobox')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /分配计划/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Assign$/i })).toBeInTheDocument();
   });
 
   it('calls assign API when button clicked', async () => {
@@ -75,7 +75,7 @@ describe('TrainerMemberPlanClient', () => {
     );
 
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'tpl1' } });
-    fireEvent.click(screen.getByRole('button', { name: /分配计划/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^Assign$/i }));
 
     await waitFor(() =>
       expect(global.fetch).toHaveBeenCalledWith(

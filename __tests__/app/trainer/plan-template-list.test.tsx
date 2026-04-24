@@ -27,22 +27,22 @@ describe('PlanTemplateList', () => {
     expect(await screen.findByText('Classic PPL split')).toBeInTheDocument();
   });
 
-  it('shows "新建计划" link', async () => {
+  it('shows "New Template" link', async () => {
     render(<PlanTemplateList templates={mockTemplates} />);
-    const links = await screen.findAllByRole('link', { name: /新建计划/i });
+    const links = await screen.findAllByRole('link', { name: /New Template/i });
     expect(links.length).toBeGreaterThan(0);
   });
 
   it('shows empty state when no templates', async () => {
     render(<PlanTemplateList templates={[]} />);
-    expect(await screen.findByText(/还没有训练计划/i)).toBeInTheDocument();
+    expect(await screen.findByText(/No templates yet/i)).toBeInTheDocument();
   });
 
   it('calls onDelete when delete button clicked', async () => {
     const onDelete = jest.fn().mockResolvedValue(undefined);
     render(<PlanTemplateList templates={mockTemplates} onDelete={onDelete} />);
 
-    const deleteButtons = await screen.findAllByRole('button', { name: /删除/i });
+    const deleteButtons = await screen.findAllByRole('button', { name: /Delete/i });
     fireEvent.click(deleteButtons[0]);
 
     await waitFor(() => expect(onDelete).toHaveBeenCalledWith('tpl1'));

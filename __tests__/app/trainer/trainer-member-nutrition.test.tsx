@@ -29,11 +29,11 @@ describe('TrainerMemberNutritionClient', () => {
     expect(screen.getAllByText('减脂计划').length).toBeGreaterThan(0);
   });
 
-  it('shows "未分配营养计划" when no active plan', () => {
+  it('shows "No nutrition plan assigned" when no active plan', () => {
     render(
       <TrainerMemberNutritionClient memberId="m1" templates={mockTemplates} activePlan={null} />,
     );
-    expect(screen.getByText(/未分配营养计划/i)).toBeInTheDocument();
+    expect(screen.getByText(/No nutrition plan assigned/i)).toBeInTheDocument();
   });
 
   it('shows template select and assign button', () => {
@@ -41,7 +41,7 @@ describe('TrainerMemberNutritionClient', () => {
       <TrainerMemberNutritionClient memberId="m1" templates={mockTemplates} activePlan={null} />,
     );
     expect(screen.getByRole('combobox')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /分配计划/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Assign$/i })).toBeInTheDocument();
   });
 
   it('calls assign API when button clicked', async () => {
@@ -52,7 +52,7 @@ describe('TrainerMemberNutritionClient', () => {
     );
 
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'tpl1' } });
-    fireEvent.click(screen.getByRole('button', { name: /分配计划/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^Assign$/i }));
 
     await waitFor(() =>
       expect(global.fetch).toHaveBeenCalledWith(

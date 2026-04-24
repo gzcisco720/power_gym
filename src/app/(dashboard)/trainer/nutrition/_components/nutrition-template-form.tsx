@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import type { IDayType } from '@/lib/db/models/nutrition-template.model';
 import { calculateMacros } from '@/lib/nutrition/macros';
 
@@ -157,7 +158,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
             htmlFor="plan-name"
             className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
           >
-            计划名称
+            Plan Name
           </label>
           <Input
             id="plan-name"
@@ -173,14 +174,14 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
             htmlFor="plan-desc"
             className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
           >
-            描述
+            Description
           </label>
-          <textarea
+          <Textarea
             id="plan-desc"
             value={description ?? ''}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
-            className="w-full rounded-md border border-[#1e1e1e] bg-[#0c0c0c] px-3 py-2 text-sm text-white outline-none focus-visible:ring-1 focus-visible:ring-white resize-none"
+            className="bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white resize-none"
           />
         </div>
       </Card>
@@ -188,7 +189,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">
-            天类型
+            Day Types
           </span>
           <Button
             type="button"
@@ -196,7 +197,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
             onClick={addDayType}
             className="border border-[#1a1a1a] text-[#444] hover:border-[#333] hover:text-[#888] text-xs"
           >
-            + 添加天类型
+            + Add Day Type
           </Button>
         </div>
 
@@ -204,7 +205,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
           <Card key={di} className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4 space-y-4">
             <div className="flex items-center gap-2">
               <Input
-                placeholder="如：训练日"
+                placeholder="e.g. Training Day"
                 value={day.name}
                 onChange={(e) => updateDayType(di, { name: e.target.value })}
                 className="flex-1 bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white"
@@ -215,7 +216,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
                 onClick={() => removeDayType(di)}
                 className="text-[#333] hover:text-red-400 hover:bg-[#141414] text-xs"
               >
-                删除
+                Delete
               </Button>
             </div>
 
@@ -226,12 +227,12 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
                 <div key={field} className="space-y-1">
                   <label className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">
                     {field === 'targetKcal'
-                      ? '千卡'
+                      ? 'Calories (kcal)'
                       : field === 'targetProtein'
-                        ? '蛋白质(g)'
+                        ? 'Protein (g)'
                         : field === 'targetCarbs'
-                          ? '碳水(g)'
-                          : '脂肪(g)'}
+                          ? 'Carbs (g)'
+                          : 'Fat (g)'}
                   </label>
                   <Input
                     type="number"
@@ -248,21 +249,21 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-[#333]">餐食</span>
+                <span className="text-[11px] font-semibold text-[#333]">Meals</span>
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={() => addMeal(di)}
                   className="text-[#333] hover:text-[#888] text-xs"
                 >
-                  + 添加餐食
+                  + Add Meal
                 </Button>
               </div>
 
               {day.meals.map((meal, mi) => (
                 <Card key={mi} className="bg-[#111] border-[#1a1a1a] rounded-lg p-3 space-y-2">
                   <Input
-                    placeholder="如：早餐"
+                    placeholder="e.g. Breakfast"
                     value={meal.name}
                     onChange={(e) => updateMealName(di, mi, e.target.value)}
                     className="bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white text-xs"
@@ -278,7 +279,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
                   )}
                   <div className="flex gap-2">
                     <Input
-                      placeholder="搜索食物"
+                      placeholder="Search food..."
                       value={foodSearch}
                       onChange={(e) => setFoodSearch(e.target.value)}
                       className="flex-1 bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white text-xs"
@@ -294,7 +295,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
                         defaultValue=""
                       >
                         <option value="" disabled>
-                          选择食物
+                          Select food
                         </option>
                         {filteredFoods.map((f) => (
                           <option key={f._id} value={f._id}>
@@ -316,7 +317,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
         disabled={saving}
         className="bg-white text-black hover:bg-white/90 font-semibold disabled:opacity-50"
       >
-        {saving ? '保存中...' : '保存'}
+        {saving ? 'Saving...' : 'Save'}
       </Button>
     </form>
   );

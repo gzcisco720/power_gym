@@ -5,13 +5,13 @@ import { PlanTemplateForm } from '@/app/(dashboard)/trainer/plans/_components/pl
 describe('PlanTemplateForm', () => {
   it('renders name and description fields', async () => {
     render(<PlanTemplateForm onSubmit={jest.fn()} />);
-    expect(await screen.findByLabelText(/计划名称/i)).toBeInTheDocument();
-    expect(await screen.findByLabelText(/描述/i)).toBeInTheDocument();
+    expect(await screen.findByLabelText(/Plan Name/i)).toBeInTheDocument();
+    expect(await screen.findByLabelText(/Description/i)).toBeInTheDocument();
   });
 
   it('can add a day', async () => {
     render(<PlanTemplateForm onSubmit={jest.fn()} />);
-    const addDayBtn = await screen.findByRole('button', { name: /添加训练日/i });
+    const addDayBtn = await screen.findByRole('button', { name: /Add Day/i });
     fireEvent.click(addDayBtn);
     expect(await screen.findByPlaceholderText(/Day 1/i)).toBeInTheDocument();
   });
@@ -21,8 +21,8 @@ describe('PlanTemplateForm', () => {
     const onSubmit = jest.fn().mockResolvedValue(undefined);
     render(<PlanTemplateForm onSubmit={onSubmit} />);
 
-    await user.type(await screen.findByLabelText(/计划名称/i), 'Push Pull Legs');
-    fireEvent.click(await screen.findByRole('button', { name: /保存/i }));
+    await user.type(await screen.findByLabelText(/Plan Name/i), 'Push Pull Legs');
+    fireEvent.click(await screen.findByRole('button', { name: /^Save$/i }));
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({ name: 'Push Pull Legs' }),

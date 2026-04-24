@@ -2,7 +2,6 @@
 
 import { motion, useReducedMotion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { SectionHeader } from '@/components/shared/section-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
@@ -60,15 +59,12 @@ export function PlanOverview({ plan }: PlanOverviewProps) {
                   <div className="mt-1 text-[10px] text-[#2e2e2e]">
                     {day.exercises.length} exercises
                   </div>
-                  <Button
-                    size="sm"
-                    className="mt-3 w-full bg-white text-black hover:bg-white/90 text-[11px] font-semibold"
-                    asChild
+                  <a
+                    href={`/dashboard/member/plan/session/new?day=${day.dayNumber}`}
+                    className="mt-3 flex w-full items-center justify-center rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-black hover:bg-white/90 transition-all"
                   >
-                    <a href={`/dashboard/member/plan/session/new?day=${day.dayNumber}`}>
-                      Start Session
-                    </a>
-                  </Button>
+                    Start Session
+                  </a>
                 </Card>
               </motion.div>
             ))}

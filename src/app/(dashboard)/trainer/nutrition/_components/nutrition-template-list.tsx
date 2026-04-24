@@ -27,27 +27,31 @@ export function NutritionTemplateList({ templates, onDelete }: Props) {
   return (
     <div>
       <PageHeader
-        title="营养计划模板"
-        subtitle={`${templates.length} 个模板`}
+        title="Nutrition Templates"
+        subtitle={`${templates.length} template${templates.length !== 1 ? 's' : ''}`}
         actions={
-          <Button asChild className="bg-white text-black hover:bg-white/90 font-semibold">
-            <Link href="/dashboard/trainer/nutrition/new">
-              <Plus className="h-4 w-4 mr-1.5" />
-              新建营养计划
-            </Link>
-          </Button>
+          <Link
+            href="/dashboard/trainer/nutrition/new"
+            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-transparent bg-white px-2.5 text-sm font-semibold text-black hover:bg-white/90 transition-all"
+          >
+            <Plus className="h-4 w-4" />
+            New Template
+          </Link>
         }
       />
 
       <div className="px-8 py-7">
         {templates.length === 0 ? (
           <EmptyState
-            heading="还没有营养计划"
-            description="创建你的第一个营养计划模板，分配给会员使用。"
+            heading="No templates yet"
+            description="Create your first nutrition plan template to assign to members."
             action={
-              <Button asChild className="bg-white text-black hover:bg-white/90 font-semibold">
-                <Link href="/dashboard/trainer/nutrition/new">新建营养计划</Link>
-              </Button>
+              <Link
+                href="/dashboard/trainer/nutrition/new"
+                className="inline-flex h-8 items-center justify-center rounded-lg border border-transparent bg-white px-2.5 text-sm font-semibold text-black hover:bg-white/90 transition-all"
+              >
+                New Template
+              </Link>
             }
           />
         ) : (
@@ -67,32 +71,29 @@ export function NutritionTemplateList({ templates, onDelete }: Props) {
                     )}
                     <div className="mt-1 flex items-center gap-2">
                       <Badge className="bg-[#1a1a1a] text-[#555] border-0 text-[10px]">
-                        {template.dayTypes.length} 种天类型
+                        {template.dayTypes.length} {template.dayTypes.length !== 1 ? 'day types' : 'day type'}
                       </Badge>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      asChild
-                      className="text-[#333] hover:text-[#888] hover:bg-[#141414]"
+                    <Link
+                      href={`/dashboard/trainer/nutrition/${template._id}/edit`}
+                      className="inline-flex size-8 items-center justify-center rounded-lg border border-transparent text-[#333] hover:text-[#888] hover:bg-[#141414] transition-all"
+                      aria-label="Edit"
                     >
-                      <Link href={`/dashboard/trainer/nutrition/${template._id}/edit`}>
-                        <Pencil className="h-4 w-4" />
-                        <span className="sr-only">编辑</span>
-                      </Link>
-                    </Button>
+                      <Pencil className="h-4 w-4" />
+                      <span className="sr-only">Edit</span>
+                    </Link>
                     {onDelete && (
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => onDelete(template._id)}
                         className="text-[#333] hover:text-red-400 hover:bg-[#141414]"
-                        aria-label="删除"
+                        aria-label="Delete"
                       >
                         <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">删除</span>
+                        <span className="sr-only">Delete</span>
                       </Button>
                     )}
                   </div>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import type { IPlanDay } from '@/lib/db/models/plan-template.model';
 
 interface FormData {
@@ -56,7 +57,7 @@ export function PlanTemplateForm({ initialData, onSubmit }: Props) {
             htmlFor="plan-name"
             className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
           >
-            计划名称
+            Plan Name
           </label>
           <Input
             id="plan-name"
@@ -72,14 +73,14 @@ export function PlanTemplateForm({ initialData, onSubmit }: Props) {
             htmlFor="plan-desc"
             className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
           >
-            描述
+            Description
           </label>
-          <textarea
+          <Textarea
             id="plan-desc"
             value={description ?? ''}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
-            className="w-full rounded-md border border-[#1e1e1e] bg-[#0c0c0c] px-3 py-2 text-sm text-white outline-none focus-visible:ring-1 focus-visible:ring-white resize-none"
+            className="bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white resize-none"
           />
         </div>
       </Card>
@@ -87,7 +88,7 @@ export function PlanTemplateForm({ initialData, onSubmit }: Props) {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">
-            训练日
+            Training Days
           </span>
           <Button
             type="button"
@@ -95,7 +96,7 @@ export function PlanTemplateForm({ initialData, onSubmit }: Props) {
             onClick={addDay}
             className="border border-[#1a1a1a] text-[#444] hover:border-[#333] hover:text-[#888] text-xs"
           >
-            + 添加训练日
+            + Add Day
           </Button>
         </div>
 
@@ -114,10 +115,10 @@ export function PlanTemplateForm({ initialData, onSubmit }: Props) {
                 onClick={() => removeDay(i)}
                 className="text-[#333] hover:text-red-400 hover:bg-[#141414] text-xs"
               >
-                删除
+                Delete
               </Button>
             </div>
-            <p className="text-xs text-[#333]">{day.exercises.length} 个动作</p>
+            <p className="text-xs text-[#333]">{day.exercises.length} exercise{day.exercises.length !== 1 ? 's' : ''}</p>
           </Card>
         ))}
       </div>
@@ -127,7 +128,7 @@ export function PlanTemplateForm({ initialData, onSubmit }: Props) {
         disabled={saving}
         className="bg-white text-black hover:bg-white/90 font-semibold disabled:opacity-50"
       >
-        {saving ? '保存中...' : '保存'}
+        {saving ? 'Saving...' : 'Save'}
       </Button>
     </form>
   );

@@ -29,9 +29,9 @@ describe('BodyTestClient', () => {
     expect(screen.getByText(/80/)).toBeInTheDocument();
   });
 
-  it('shows "暂无体测记录" when no tests', () => {
+  it('shows "No body tests yet" when no tests', () => {
     render(<BodyTestClient memberId={memberId} initialTests={[]} />);
-    expect(screen.getByText(/暂无体测记录/i)).toBeInTheDocument();
+    expect(screen.getByText(/No body tests yet/i)).toBeInTheDocument();
   });
 
   it('shows new test form with protocol select', () => {
@@ -46,25 +46,25 @@ describe('BodyTestClient', () => {
     fireEvent.change(select, { target: { value: '3site' } });
     // now switch back to other
     fireEvent.change(select, { target: { value: 'other' } });
-    expect(screen.getByLabelText(/体脂率/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('Body Fat (%)')).toBeInTheDocument();
   });
 
   it('shows 3-site male fields when 3site protocol selected (default male sex)', () => {
     render(<BodyTestClient memberId={memberId} initialTests={[]} />);
     fireEvent.change(screen.getByRole('combobox'), { target: { value: '3site' } });
-    expect(screen.getByLabelText(/胸部/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/腹部/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/大腿/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Chest/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Abdominal/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Thigh/i)).toBeInTheDocument();
   });
 
   it('shows 3-site female fields when 3site protocol and female sex selected', () => {
     render(<BodyTestClient memberId={memberId} initialTests={[]} />);
     fireEvent.change(screen.getByRole('combobox'), { target: { value: '3site' } });
     // Switch sex to female via radio button
-    fireEvent.click(screen.getByRole('radio', { name: /女/i }));
-    expect(screen.getByLabelText(/三头肌/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/髂骨上/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/大腿/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('radio', { name: /Female/i }));
+    expect(screen.getByLabelText(/Tricep/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Suprailiac/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Thigh/i)).toBeInTheDocument();
   });
 
   it('submits form and calls fetch on success', async () => {
@@ -75,9 +75,9 @@ describe('BodyTestClient', () => {
     render(<BodyTestClient memberId={memberId} initialTests={[]} />);
 
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'other' } });
-    fireEvent.change(screen.getByLabelText(/体脂率/i), { target: { value: '20' } });
+    fireEvent.change(screen.getByLabelText('Body Fat (%)'), { target: { value: '20' } });
 
-    fireEvent.click(screen.getByRole('button', { name: /保存/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^Save$/i }));
 
     await waitFor(() =>
       expect(global.fetch).toHaveBeenCalledWith(
@@ -91,7 +91,7 @@ describe('BodyTestClient', () => {
   it('calls DELETE API when delete button clicked', async () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: true });
     render(<BodyTestClient memberId={memberId} initialTests={mockTests} />);
-    fireEvent.click(screen.getByRole('button', { name: /删除/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Delete/i }));
 
     await waitFor(() =>
       expect(global.fetch).toHaveBeenCalledWith(

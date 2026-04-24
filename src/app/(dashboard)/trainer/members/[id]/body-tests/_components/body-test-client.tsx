@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SectionHeader } from '@/components/shared/section-header';
 import { EmptyState } from '@/components/shared/empty-state';
+import { PageHeader } from '@/components/shared/page-header';
 
 type Protocol = '3site' | '7site' | '9site' | 'other';
 type Sex = 'male' | 'female';
@@ -25,14 +26,15 @@ export interface BodyTestRecord {
 
 interface Props {
   memberId: string;
+  memberName?: string;
   initialTests: BodyTestRecord[];
 }
 
 const PROTOCOL_LABELS: Record<Protocol, string> = {
-  '3site': '3点法 (Jackson-Pollock)',
-  '7site': '7点法 (Jackson-Pollock)',
-  '9site': '9点法 (Parrillo)',
-  other: '直接输入体脂率',
+  '3site': '3-Site (Jackson-Pollock)',
+  '7site': '7-Site (Jackson-Pollock)',
+  '9site': '9-Site (Parillo)',
+  other: 'Other (manual entry)',
 };
 
 function getRequiredSites(protocol: Protocol, sex: Sex): string[] {
@@ -44,18 +46,18 @@ function getRequiredSites(protocol: Protocol, sex: Sex): string[] {
 }
 
 const SITE_LABELS: Record<string, string> = {
-  chest: '胸部',
-  abdominal: '腹部',
-  thigh: '大腿',
-  tricep: '三头肌',
-  suprailiac: '髂骨上',
-  subscapular: '肩胛下',
-  midaxillary: '腋中线',
-  bicep: '二头肌',
-  lumbar: '腰部',
+  chest: 'Chest',
+  abdominal: 'Abdominal',
+  thigh: 'Thigh',
+  tricep: 'Tricep',
+  suprailiac: 'Suprailiac',
+  subscapular: 'Subscapular',
+  midaxillary: 'Midaxillary',
+  bicep: 'Bicep',
+  lumbar: 'Lumbar',
 };
 
-export function BodyTestClient({ memberId, initialTests }: Props) {
+export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
   const router = useRouter();
   const [tests, setTests] = useState(initialTests);
   const [protocol, setProtocol] = useState<Protocol>('other');
@@ -115,8 +117,10 @@ export function BodyTestClient({ memberId, initialTests }: Props) {
 
   return (
     <div className="space-y-8">
-      <section>
-        <SectionHeader title="新建体测" />
+      <PageHeader title={memberName ? `${memberName}'s Body Tests` : 'Body Tests'} />
+
+      <section className="px-8">
+        <SectionHeader title="New Body Test" />
         <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-5 mt-3 space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -124,7 +128,7 @@ export function BodyTestClient({ memberId, initialTests }: Props) {
                 htmlFor="date"
                 className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
               >
-                测试日期
+                Test Date
               </label>
               <Input
                 id="date"
@@ -139,7 +143,7 @@ export function BodyTestClient({ memberId, initialTests }: Props) {
                 htmlFor="protocol"
                 className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
               >
-                测量协议
+                Protocol
               </label>
               <select
                 id="protocol"
@@ -160,19 +164,19 @@ export function BodyTestClient({ memberId, initialTests }: Props) {
                 htmlFor="age"
                 className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
               >
-                年龄
+                Age
               </label>
               <Input
                 id="age"
                 type="number"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
-                placeholder="岁"
+                placeholder="years"
                 className="bg-[#0c0c0c] border-[#1e1e1e] text-white focus-visible:ring-white"
               />
             </div>
             <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">性别</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">Sex</p>
               <div className="flex gap-3 pt-1">
                 <label className="flex items-center gap-1.5 text-sm cursor-pointer text-[#888]">
                   <input
@@ -183,7 +187,7 @@ export function BodyTestClient({ memberId, initialTests }: Props) {
                     onChange={() => setSex('male')}
                     className="accent-white"
                   />
-                  男
+                  Male
                 </label>
                 <label className="flex items-center gap-1.5 text-sm cursor-pointer text-[#888]">
                   <input
@@ -194,7 +198,7 @@ export function BodyTestClient({ memberId, initialTests }: Props) {
                     onChange={() => setSex('female')}
                     className="accent-white"
                   />
-                  女
+                  Female
                 </label>
               </div>
             </div>
@@ -203,7 +207,7 @@ export function BodyTestClient({ memberId, initialTests }: Props) {
                 htmlFor="weight"
                 className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
               >
-                体重 (kg)
+                Weight (kg)
               </label>
               <Input
                 id="weight"
@@ -223,7 +227,7 @@ export function BodyTestClient({ memberId, initialTests }: Props) {
                 htmlFor="bodyFatPct"
                 className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
               >
-                体脂率 (%)
+                Body Fat (%)
               </label>
               <Input
                 id="bodyFatPct"
@@ -265,7 +269,7 @@ export function BodyTestClient({ memberId, initialTests }: Props) {
                 htmlFor="targetWeight"
                 className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
               >
-                目标体重 (kg, 可选)
+                Target Weight (kg, optional)
               </label>
               <Input
                 id="targetWeight"
@@ -282,7 +286,7 @@ export function BodyTestClient({ memberId, initialTests }: Props) {
                 htmlFor="targetBodyFatPct"
                 className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
               >
-                目标体脂 (%, 可选)
+                Target Body Fat (%, optional)
               </label>
               <Input
                 id="targetBodyFatPct"
@@ -301,17 +305,17 @@ export function BodyTestClient({ memberId, initialTests }: Props) {
             disabled={saving}
             className="bg-white text-black hover:bg-white/90 font-semibold disabled:opacity-50"
           >
-            {saving ? '保存中...' : '保存'}
+            {saving ? 'Saving...' : 'Save'}
           </Button>
         </Card>
       </section>
 
-      <section>
-        <SectionHeader title="体测记录" />
+      <section className="px-8">
+        <SectionHeader title="Test History" />
         {tests.length === 0 ? (
           <EmptyState
-            heading="暂无体测记录"
-            description="为会员新建第一条体测记录。"
+            heading="No body tests yet"
+            description="Record the first body test for this member."
           />
         ) : (
           <div className="space-y-3 mt-3">
@@ -323,19 +327,19 @@ export function BodyTestClient({ memberId, initialTests }: Props) {
                 <div>
                   <p className="text-[14px] font-semibold text-white">
                     <time dateTime={t.date}>
-                      {new Date(t.date).toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' })}
+                      {new Date(t.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
                     </time>
                   </p>
                   <p className="text-[12px] text-[#555] mt-1">
-                    体重 {t.weight} kg · 体脂率 {t.bodyFatPct.toFixed(1)}%
+                    Weight {t.weight} kg · Body Fat {t.bodyFatPct.toFixed(1)}%
                   </p>
                   <p className="text-[12px] text-[#555]">
-                    瘦体重 {t.leanMassKg.toFixed(1)} kg · 脂肪量 {t.fatMassKg.toFixed(1)} kg
+                    Lean Mass {t.leanMassKg.toFixed(1)} kg · Fat Mass {t.fatMassKg.toFixed(1)} kg
                   </p>
                   {(t.targetWeight ?? t.targetBodyFatPct) && (
                     <p className="text-[11px] text-[#333] mt-1">
-                      目标: {t.targetWeight ? `体重 ${t.targetWeight} kg` : ''}
-                      {t.targetBodyFatPct ? ` 体脂率 ${t.targetBodyFatPct}%` : ''}
+                      Goal: {t.targetWeight ? `Weight ${t.targetWeight} kg` : ''}
+                      {t.targetBodyFatPct ? ` Body Fat ${t.targetBodyFatPct}%` : ''}
                     </p>
                   )}
                 </div>
@@ -344,7 +348,7 @@ export function BodyTestClient({ memberId, initialTests }: Props) {
                   onClick={() => handleDelete(t._id)}
                   className="text-[#333] hover:text-red-400 hover:bg-[#141414] text-xs ml-4"
                 >
-                  删除
+                  Delete
                 </Button>
               </Card>
             ))}
