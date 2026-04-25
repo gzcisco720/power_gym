@@ -4,15 +4,10 @@ import bcrypt from 'bcryptjs';
 import { connectDB } from '@/lib/db/connect';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import type { IUserRepository } from '@/lib/repositories/user.repository';
-import type { UserRole } from '@/types/auth';
+import { authConfig } from './auth.config';
+import type { AuthorizedUser } from './auth.config';
 
-export interface AuthorizedUser {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  trainerId: string | null;
-}
+export type { AuthorizedUser };
 
 export async function authorizeCredentials(
   email: string,
@@ -35,7 +30,7 @@ export async function authorizeCredentials(
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: 'jwt' },
+  ...authConfig,
   providers: [
     Credentials({
       credentials: {
@@ -54,24 +49,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    jwt({ token, user }) {
-      if (user) {
-        const u = user as AuthorizedUser;
-        token.id = u.id;
-        token.role = u.role;
-        token.trainerId = u.trainerId;
-      }
-      return token;
-    },
-    session({ session, token }) {
-      session.user.id = token.id as string;
-      session.user.role = token.role as UserRole;
-      session.user.trainerId = token.trainerId as string | null;
-      return session;
-    },
-  },
-  pages: {
-    signIn: '/login',
-  },
 });

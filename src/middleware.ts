@@ -1,9 +1,10 @@
+import NextAuth from 'next-auth';
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/auth';
+import { authConfig } from '@/lib/auth/auth.config';
 import { getRedirectForRole } from '@/lib/auth/middleware-helpers';
 import type { UserRole } from '@/types/auth';
 
-export default auth((req) => {
+export default NextAuth(authConfig).auth((req) => {
   if (!req.auth) {
     return NextResponse.redirect(new URL('/login', req.nextUrl));
   }
