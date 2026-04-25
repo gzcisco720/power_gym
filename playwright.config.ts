@@ -14,6 +14,7 @@ export default defineConfig({
   globalTeardown: './e2e/global-teardown.ts',
   webServer: {
     command: 'pnpm dev',
+    cwd: __dirname,
     url: 'http://localhost:3000',
     reuseExistingServer: true,
     env: {
