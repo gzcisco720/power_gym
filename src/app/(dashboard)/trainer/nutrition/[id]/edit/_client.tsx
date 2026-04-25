@@ -38,7 +38,7 @@ export function EditNutritionTemplateClient({ id, initialData, foods }: Props) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (res.ok) router.push('/dashboard/trainer/nutrition');
+    if (res.ok) router.push('/trainer/nutrition');
   }
 
   return (

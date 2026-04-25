@@ -59,13 +59,17 @@ export async function POST(req: Request): Promise<Response> {
   const baseUrl = process.env.AUTH_URL ?? 'http://localhost:3000';
   const inviteUrl = `${baseUrl}/register?token=${inviteToken.token}`;
 
-  const emailService = getEmailService();
-  await emailService.sendInvite({
-    to: recipientEmail,
-    inviterName: session.user.name ?? 'Owner',
-    role,
-    inviteUrl,
-  });
+  try {
+    const emailService = getEmailService();
+    await emailService.sendInvite({
+      to: recipientEmail,
+      inviterName: session.user.name ?? 'Owner',
+      role,
+      inviteUrl,
+    });
+  } catch (e) {
+    console.error('Failed to send invite email:', e);
+  }
 
   return Response.json({ inviteUrl });
 }

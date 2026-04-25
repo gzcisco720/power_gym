@@ -5,7 +5,7 @@ test.use({ storageState: 'e2e/.auth/owner.json' });
 test.describe('Owner: Trainers', () => {
   test('trainer list shows trainer email', async ({ page }) => {
     await page.goto('/owner/trainers');
-    await expect(page.getByText('trainer@test.com')).toBeVisible();
+    await expect(page.getByText('trainer@test.com', { exact: true })).toBeVisible();
   });
 
   test('expand Members shows member@test.com', async ({ page }) => {

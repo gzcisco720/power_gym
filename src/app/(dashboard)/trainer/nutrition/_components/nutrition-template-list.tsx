@@ -31,7 +31,7 @@ export function NutritionTemplateList({ templates, onDelete }: Props) {
         subtitle={`${templates.length} template${templates.length !== 1 ? 's' : ''}`}
         actions={
           <Link
-            href="/dashboard/trainer/nutrition/new"
+            href="/trainer/nutrition/new"
             className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-transparent bg-white px-2.5 text-sm font-semibold text-black hover:bg-white/90 transition-all"
           >
             <Plus className="h-4 w-4" />
@@ -47,7 +47,7 @@ export function NutritionTemplateList({ templates, onDelete }: Props) {
             description="Create your first nutrition plan template to assign to members."
             action={
               <Link
-                href="/dashboard/trainer/nutrition/new"
+                href="/trainer/nutrition/new"
                 className="inline-flex h-8 items-center justify-center rounded-lg border border-transparent bg-white px-2.5 text-sm font-semibold text-black hover:bg-white/90 transition-all"
               >
                 New Template
@@ -77,7 +77,7 @@ export function NutritionTemplateList({ templates, onDelete }: Props) {
                   </div>
                   <div className="flex items-center gap-2">
                     <Link
-                      href={`/dashboard/trainer/nutrition/${template._id}/edit`}
+                      href={`/trainer/nutrition/${template._id}/edit`}
                       className="inline-flex size-8 items-center justify-center rounded-lg border border-transparent text-[#333] hover:text-[#888] hover:bg-[#141414] transition-all"
                       aria-label="Edit"
                     >

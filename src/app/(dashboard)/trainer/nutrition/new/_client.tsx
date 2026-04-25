@@ -32,7 +32,7 @@ export function NewNutritionTemplateClient({ foods }: { foods: FoodOption[] }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (res.ok) router.push('/dashboard/trainer/nutrition');
+    if (res.ok) router.push('/trainer/nutrition');
   }
 
   return (

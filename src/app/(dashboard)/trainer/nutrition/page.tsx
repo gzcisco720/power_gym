@@ -25,7 +25,7 @@ export default async function TrainerNutritionPage() {
     await connectDB();
     const r = new MongoNutritionTemplateRepository();
     await r.deleteById(id, s.user.id);
-    revalidatePath('/dashboard/trainer/nutrition');
+    revalidatePath('/trainer/nutrition');
   }
 
   return <NutritionTemplateList templates={plain} onDelete={handleDelete} />;

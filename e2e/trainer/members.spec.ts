@@ -23,6 +23,6 @@ test.describe('Trainer: Members', () => {
     await page.selectOption('select', { label: 'E2E Test Plan' });
     await page.getByRole('button', { name: 'Assign' }).click();
 
-    await expect(page.getByText('E2E Test Plan')).toBeVisible();
+    await expect(page.getByRole('paragraph').filter({ hasText: 'E2E Test Plan' })).toBeVisible();
   });
 });

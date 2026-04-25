@@ -1,6 +1,15 @@
 import { signIn } from '@/lib/auth/auth';
+import { connectDB } from '@/lib/db/connect';
+import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import type { UserRole } from '@/types/auth';
+
+const ROLE_REDIRECT: Record<UserRole, string> = {
+  owner: '/owner',
+  trainer: '/trainer/members',
+  member: '/member/plan',
+};
 
 export default function LoginPage() {
   return (
@@ -15,11 +24,22 @@ export default function LoginPage() {
         <form
           action={async (formData: FormData) => {
             'use server';
-            await signIn('credentials', {
-              email: formData.get('email') as string,
-              password: formData.get('password') as string,
-              redirectTo: '/dashboard',
-            });
+            const email = formData.get('email') as string;
+            const password = formData.get('password') as string;
+
+            // Look up role first so we can redirect directly — avoids a
+            // /dashboard → /owner redirect chain that breaks in Playwright.
+            let redirectTo = '/dashboard';
+            try {
+              await connectDB();
+              const repo = new MongoUserRepository();
+              const user = await repo.findByEmail(email);
+              if (user) redirectTo = ROLE_REDIRECT[user.role] ?? '/dashboard';
+            } catch {
+              // If lookup fails, fall through; signIn will handle the error.
+            }
+
+            await signIn('credentials', { email, password, redirectTo });
           }}
           className="space-y-4"
         >

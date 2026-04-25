@@ -13,56 +13,56 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
     {
       group: 'TRAINING',
       items: [
-        { href: '/dashboard/member/plan', label: 'My Plan' },
-        { href: '/dashboard/member/pbs', label: 'Personal Bests' },
+        { href: '/member/plan', label: 'My Plan' },
+        { href: '/member/pbs', label: 'Personal Bests' },
       ],
     },
     {
       group: 'HEALTH',
       items: [
-        { href: '/dashboard/member/nutrition', label: 'Nutrition' },
-        { href: '/dashboard/member/body-tests', label: 'Body Tests' },
+        { href: '/member/nutrition', label: 'Nutrition' },
+        { href: '/member/body-tests', label: 'Body Tests' },
       ],
     },
   ],
   trainer: [
     {
       group: 'MEMBERS',
-      items: [{ href: '/dashboard/trainer/members', label: 'Members' }],
+      items: [{ href: '/trainer/members', label: 'Members' }],
     },
     {
       group: 'TRAINING',
-      items: [{ href: '/dashboard/trainer/plans', label: 'Plan Templates' }],
+      items: [{ href: '/trainer/plans', label: 'Plan Templates' }],
     },
     {
       group: 'HEALTH',
-      items: [{ href: '/dashboard/trainer/nutrition', label: 'Nutrition Templates' }],
+      items: [{ href: '/trainer/nutrition', label: 'Nutrition Templates' }],
     },
   ],
   owner: [
     {
       group: 'ADMIN',
       items: [
-        { href: '/dashboard/owner', label: 'Dashboard' },
-        { href: '/dashboard/owner/trainers', label: 'Trainers' },
-        { href: '/dashboard/owner/members', label: 'Members' },
-        { href: '/dashboard/owner/invites', label: 'Invites' },
+        { href: '/owner', label: 'Dashboard' },
+        { href: '/owner/trainers', label: 'Trainers' },
+        { href: '/owner/members', label: 'Members' },
+        { href: '/owner/invites', label: 'Invites' },
       ],
     },
     {
       group: 'TRAINING',
       items: [
-        { href: '/dashboard/member/plan', label: 'My Plan' },
-        { href: '/dashboard/member/pbs', label: 'Personal Bests' },
-        { href: '/dashboard/trainer/plans', label: 'Plan Templates' },
+        { href: '/member/plan', label: 'My Plan' },
+        { href: '/member/pbs', label: 'Personal Bests' },
+        { href: '/trainer/plans', label: 'Plan Templates' },
       ],
     },
     {
       group: 'HEALTH',
       items: [
-        { href: '/dashboard/member/nutrition', label: 'Nutrition' },
-        { href: '/dashboard/member/body-tests', label: 'Body Tests' },
-        { href: '/dashboard/trainer/nutrition', label: 'Nutrition Templates' },
+        { href: '/member/nutrition', label: 'Nutrition' },
+        { href: '/member/body-tests', label: 'Body Tests' },
+        { href: '/trainer/nutrition', label: 'Nutrition Templates' },
       ],
     },
   ],

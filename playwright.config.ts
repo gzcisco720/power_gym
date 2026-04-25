@@ -15,7 +15,7 @@ export default defineConfig({
   webServer: {
     command: 'pnpm dev',
     url: 'http://localhost:3000',
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     env: {
       MONGODB_URI:
         'mongodb://power_gym_user:power_gym_pass@localhost:27017/power_gym_test?authSource=admin',

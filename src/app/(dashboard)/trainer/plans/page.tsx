@@ -20,7 +20,7 @@ export default async function TrainerPlansPage() {
     await connectDB();
     const r = new MongoPlanTemplateRepository();
     await r.deleteById(id, s.user.id);
-    revalidatePath('/dashboard/trainer/plans');
+    revalidatePath('/trainer/plans');
   }
 
   return <PlanTemplateList templates={plain} onDelete={handleDelete} />;

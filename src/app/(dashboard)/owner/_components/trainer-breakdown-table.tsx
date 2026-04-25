@@ -48,7 +48,7 @@ export function TrainerBreakdownTable({ trainers }: Props) {
           </div>
           <div>
             <Link
-              href="/dashboard/owner/trainers"
+              href="/owner/trainers"
               className="text-[10px] text-[#333] hover:text-[#666] transition-colors"
             >
               Manage →

@@ -37,7 +37,7 @@ describe('PlanOverview', () => {
     render(<PlanOverview plan={mockPlan} />);
     const links = screen.getAllByRole('link', { name: /start session/i });
     expect(links).toHaveLength(3);
-    expect(links[0]).toHaveAttribute('href', '/dashboard/member/plan/session/new?day=1');
+    expect(links[0]).toHaveAttribute('href', '/member/plan/session/new?day=1');
   });
 
   it('shows empty state when no active plan', () => {

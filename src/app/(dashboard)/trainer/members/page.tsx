@@ -38,19 +38,19 @@ export default async function TrainerMembersPage() {
                 </div>
                 <div className="flex items-center gap-4">
                   <Link
-                    href={`/dashboard/trainer/members/${member._id}/plan`}
+                    href={`/trainer/members/${member._id}/plan`}
                     className="text-[11px] text-[#555] hover:text-[#888] transition-colors"
                   >
                     Plan →
                   </Link>
                   <Link
-                    href={`/dashboard/trainer/members/${member._id}/body-tests`}
+                    href={`/trainer/members/${member._id}/body-tests`}
                     className="text-[11px] text-[#555] hover:text-[#888] transition-colors"
                   >
                     Body Tests →
                   </Link>
                   <Link
-                    href={`/dashboard/trainer/members/${member._id}/nutrition`}
+                    href={`/trainer/members/${member._id}/nutrition`}
                     className="text-[11px] text-[#555] hover:text-[#888] transition-colors"
                   >
                     Nutrition →

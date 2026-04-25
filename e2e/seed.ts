@@ -217,12 +217,24 @@ export async function seed(): Promise<void> {
     targetBodyFatPct: null,
   });
 
-  // ── Invite Token ──────────────────────────────────────────────────────────
+  // ── Invite Tokens ─────────────────────────────────────────────────────────
+  // Used by auth.spec.ts register test
   await InviteTokenModel.create({
     token: 'e2e-test-invite-token',
     role: 'trainer',
     invitedBy: owner._id,
     recipientEmail: 'newtrainer@test.com',
+    expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
+    usedAt: null,
+    trainerId: null,
+  });
+
+  // Stable pending invite checked by owner/invites.spec.ts
+  await InviteTokenModel.create({
+    token: 'e2e-pending-invite-token',
+    role: 'trainer',
+    invitedBy: owner._id,
+    recipientEmail: 'pending@test.com',
     expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
     usedAt: null,
     trainerId: null,

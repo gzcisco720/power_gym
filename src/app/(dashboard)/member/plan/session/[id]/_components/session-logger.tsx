@@ -107,7 +107,7 @@ export function SessionLogger({ session: initialSession }: { session: Session })
   async function completeSession() {
     setCompleting(true);
     const res = await fetch(`/api/sessions/${session._id}/complete`, { method: 'POST' });
-    if (res.ok) router.push('/dashboard/member/plan');
+    if (res.ok) router.push('/member/plan');
     else setCompleting(false);
   }
 

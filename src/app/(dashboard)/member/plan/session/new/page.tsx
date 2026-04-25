@@ -21,10 +21,15 @@ export default async function SessionNewPage({
 
   await connectDB();
   const plan = await new MongoMemberPlanRepository().findActive(session.user.id);
-  if (!plan) redirect('/dashboard/member/plan');
+  if (!plan) redirect('/member/plan');
 
   const planDay = plan.days.find((d) => d.dayNumber === dayNumber);
-  if (!planDay) redirect('/dashboard/member/plan');
+  if (!planDay) redirect('/member/plan');
+
+  // Extract primitive values before the server action to avoid Mongoose
+  // circular-reference serialization errors in Next.js progressive enhancement.
+  const planIdStr = plan._id.toString();
+  const planName = plan.name;
 
   async function startSession() {
     'use server';
@@ -37,11 +42,11 @@ export default async function SessionNewPage({
         'Content-Type': 'application/json',
         Cookie: cookieStore.toString(),
       },
-      body: JSON.stringify({ memberPlanId: plan!._id.toString(), dayNumber }),
+      body: JSON.stringify({ memberPlanId: planIdStr, dayNumber }),
     });
     if (res.ok) {
       const data = (await res.json()) as { _id: string };
-      redirect(`/dashboard/member/plan/session/${data._id}`);
+      redirect(`/member/plan/session/${data._id}`);
     }
   }
 
@@ -53,7 +58,7 @@ export default async function SessionNewPage({
       />
       <div className="px-8 py-7">
         <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-6 max-w-md">
-          <div className="text-[13px] font-semibold text-white mb-4">{plan.name}</div>
+          <div className="text-[13px] font-semibold text-white mb-4">{planName}</div>
           <div className="space-y-2 mb-6">
             {planDay.exercises.map((ex) => (
               <div key={ex.exerciseName} className="flex items-center justify-between">
@@ -71,7 +76,7 @@ export default async function SessionNewPage({
           </form>
           <div className="mt-4 text-center">
             <Link
-              href="/dashboard/member/plan"
+              href="/member/plan"
               className="text-[11px] text-[#2a2a2a] hover:text-[#555] transition-colors"
             >
               Back to plan

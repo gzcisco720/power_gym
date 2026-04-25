@@ -6,10 +6,17 @@ import { connectDB } from '@/lib/db/connect';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { MongoInviteRepository } from '@/lib/repositories/invite.repository';
 import { validateInviteToken } from '@/lib/auth/invite';
+import type { UserRole } from '@/types/auth';
 
 export interface RegisterState {
   error: string;
 }
+
+const ROLE_REDIRECT: Record<UserRole, string> = {
+  owner: '/owner',
+  trainer: '/trainer/members',
+  member: '/member/plan',
+};
 
 function isNextRedirect(err: unknown): boolean {
   return (
@@ -33,12 +40,14 @@ export async function registerAction(
   try {
     await connectDB();
     const userRepo = new MongoUserRepository();
+    let role: UserRole = 'owner';
 
     if (!token) {
       const count = await userRepo.count();
       if (count > 0) return { error: 'Must use an invite link' };
       const passwordHash = await bcrypt.hash(password, 12);
       await userRepo.create({ name, email, passwordHash, role: 'owner', trainerId: null });
+      role = 'owner';
     } else {
       const inviteRepo = new MongoInviteRepository();
       const invite = await inviteRepo.findByToken(token);
@@ -48,17 +57,18 @@ export async function registerAction(
         return { error: 'Email does not match invite' };
       }
       const passwordHash = await bcrypt.hash(password, 12);
+      role = validation.invite.role;
       await userRepo.create({
         name,
         email,
         passwordHash,
-        role: validation.invite.role,
+        role,
         trainerId: (validation.invite.trainerId ?? validation.invite.invitedBy).toString(),
       });
       await inviteRepo.markUsed(token);
     }
 
-    await signIn('credentials', { email, password, redirectTo: '/dashboard' });
+    await signIn('credentials', { email, password, redirectTo: ROLE_REDIRECT[role] });
   } catch (err) {
     if (isNextRedirect(err)) throw err;
     return { error: err instanceof Error ? err.message : 'Registration failed' };

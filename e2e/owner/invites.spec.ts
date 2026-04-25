@@ -5,7 +5,7 @@ test.use({ storageState: 'e2e/.auth/owner.json' });
 test.describe('Owner: Invites', () => {
   test('pending invite appears in list', async ({ page }) => {
     await page.goto('/owner/invites');
-    await expect(page.getByText('newtrainer@test.com')).toBeVisible();
+    await expect(page.getByText('pending@test.com')).toBeVisible();
   });
 
   test('full invite flow: create invite, register, login succeeds', async ({ page, browser }) => {

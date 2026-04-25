@@ -14,7 +14,7 @@ export default function NewPlanPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (res.ok) router.push('/dashboard/trainer/plans');
+    if (res.ok) router.push('/trainer/plans');
   }
 
   return (

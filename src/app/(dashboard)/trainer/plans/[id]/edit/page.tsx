@@ -33,7 +33,7 @@ export default function EditPlanPage({ params }: { params: Promise<{ id: string 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (res.ok) router.push('/dashboard/trainer/plans');
+    if (res.ok) router.push('/trainer/plans');
   }
 
   if (!template) return <p className="px-8 py-7 text-[#444] text-sm">加载中...</p>;
