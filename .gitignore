@@ -41,3 +41,9 @@ yarn-error.log*
 next-env.d.ts
 
 .superpowers
+
+# E2E
+.env.e2e
+e2e/.auth/
+playwright-report/
+test-results/
