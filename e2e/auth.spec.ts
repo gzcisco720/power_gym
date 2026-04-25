@@ -1,31 +1,31 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Authentication', () => {
-  test('owner login redirects to /dashboard/owner', async ({ page }) => {
+  test('owner login redirects to /owner', async ({ page }) => {
     await page.goto('/login');
     await page.fill('#email', 'owner@test.com');
     await page.fill('#password', 'TestPass123!');
     await page.getByRole('button', { name: 'Sign in' }).click();
-    await page.waitForURL(/\/dashboard\/owner/);
-    await expect(page).toHaveURL(/\/dashboard\/owner/);
+    await page.waitForURL('/owner');
+    await expect(page).toHaveURL('/owner');
   });
 
-  test('trainer login redirects to /dashboard/trainer/members', async ({ page }) => {
+  test('trainer login redirects to /trainer/members', async ({ page }) => {
     await page.goto('/login');
     await page.fill('#email', 'trainer@test.com');
     await page.fill('#password', 'TestPass123!');
     await page.getByRole('button', { name: 'Sign in' }).click();
-    await page.waitForURL(/\/dashboard\/trainer/);
-    await expect(page).toHaveURL(/\/dashboard\/trainer\/members/);
+    await page.waitForURL('/trainer/members');
+    await expect(page).toHaveURL('/trainer/members');
   });
 
-  test('member login redirects to /dashboard/member/plan', async ({ page }) => {
+  test('member login redirects to /member/plan', async ({ page }) => {
     await page.goto('/login');
     await page.fill('#email', 'member@test.com');
     await page.fill('#password', 'TestPass123!');
     await page.getByRole('button', { name: 'Sign in' }).click();
-    await page.waitForURL(/\/dashboard\/member/);
-    await expect(page).toHaveURL(/\/dashboard\/member\/plan/);
+    await page.waitForURL('/member/plan');
+    await expect(page).toHaveURL('/member/plan');
   });
 
   test('logout redirects to /login', async ({ page }) => {
@@ -33,7 +33,7 @@ test.describe('Authentication', () => {
     await page.fill('#email', 'member@test.com');
     await page.fill('#password', 'TestPass123!');
     await page.getByRole('button', { name: 'Sign in' }).click();
-    await page.waitForURL(/\/dashboard\//);
+    await page.waitForURL(/\/(owner|trainer|member)(\/|$)/);
 
     await page.getByRole('button', { name: /sign out/i }).click();
     await page.waitForURL('/login');
@@ -53,7 +53,7 @@ test.describe('Authentication', () => {
     await page.fill('#email', 'newtrainer@test.com');
     await page.fill('#password', 'TestPass123!');
     await page.getByRole('button', { name: 'Sign in' }).click();
-    await page.waitForURL(/\/dashboard\/trainer/);
-    await expect(page).toHaveURL(/\/dashboard\/trainer\/members/);
+    await page.waitForURL('/trainer/members');
+    await expect(page).toHaveURL('/trainer/members');
   });
 });

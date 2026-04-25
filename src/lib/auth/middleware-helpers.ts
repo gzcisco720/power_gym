@@ -1,15 +1,15 @@
 import type { UserRole } from '@/types/auth';
 
 const ROLE_ALLOWED_PREFIXES: Record<UserRole, string[]> = {
-  owner: ['/dashboard/owner', '/dashboard/trainer', '/dashboard/member'],
-  trainer: ['/dashboard/trainer', '/dashboard/member'],
-  member: ['/dashboard/member'],
+  owner: ['/owner', '/trainer', '/member'],
+  trainer: ['/trainer', '/member'],
+  member: ['/member'],
 };
 
 const ROLE_DEFAULT_PATH: Record<UserRole, string> = {
-  owner: '/dashboard/owner',
-  trainer: '/dashboard/trainer/members',
-  member: '/dashboard/member/plan',
+  owner: '/owner',
+  trainer: '/trainer/members',
+  member: '/member/plan',
 };
 
 export function getRedirectForRole(role: UserRole, path: string): string | null {

@@ -4,7 +4,7 @@ test.use({ storageState: 'e2e/.auth/trainer.json' });
 
 test.describe('Trainer: Body Tests', () => {
   test('add new body test for member', async ({ page }) => {
-    await page.goto('/dashboard/trainer/members');
+    await page.goto('/trainer/members');
     const bodyTestsLink = page.getByRole('link', { name: 'Body Tests →' });
     const href = await bodyTestsLink.getAttribute('href');
     await page.goto(href!);

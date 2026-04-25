@@ -4,7 +4,7 @@ test.use({ storageState: 'e2e/.auth/owner.json' });
 
 test.describe('Owner: Invites', () => {
   test('pending invite appears in list', async ({ page }) => {
-    await page.goto('/dashboard/owner/invites');
+    await page.goto('/owner/invites');
     await expect(page.getByText('newtrainer@test.com')).toBeVisible();
   });
 
@@ -30,8 +30,8 @@ test.describe('Owner: Invites', () => {
     await freshPage.fill('#email', 'e2einvite@test.com');
     await freshPage.fill('#password', 'TestPass123!');
     await freshPage.getByRole('button', { name: 'Sign in' }).click();
-    await freshPage.waitForURL(/\/dashboard\/trainer/);
-    await expect(freshPage).toHaveURL(/\/dashboard\/trainer\/members/);
+    await freshPage.waitForURL('/trainer/members');
+    await expect(freshPage).toHaveURL('/trainer/members');
 
     await freshCtx.close();
   });

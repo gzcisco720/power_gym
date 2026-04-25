@@ -4,7 +4,7 @@ test.use({ storageState: 'e2e/.auth/owner.json' });
 
 test.describe('Owner: Dashboard', () => {
   test('shows stat cards and trainer breakdown', async ({ page }) => {
-    await page.goto('/dashboard/owner');
+    await page.goto('/owner');
 
     await expect(page.getByText('Trainers')).toBeVisible();
     await expect(page.getByText('Members')).toBeVisible();

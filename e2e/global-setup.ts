@@ -19,7 +19,7 @@ async function loginAs(email: string, password: string, outFile: string): Promis
   await page.fill('#email', email);
   await page.fill('#password', password);
   await page.getByRole('button', { name: 'Sign in' }).click();
-  await page.waitForURL(/\/dashboard\//);
+  await page.waitForURL(/\/(owner|trainer|member)(\/|$)/);
 
   await context.storageState({ path: outFile });
   await browser.close();
