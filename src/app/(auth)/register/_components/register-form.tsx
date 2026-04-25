@@ -20,24 +20,29 @@ export function RegisterForm({ token, inviteRole, isFirstUser }: Props) {
     e.preventDefault();
     setSubmitting(true);
     setError('');
-    const fd = new FormData(e.currentTarget);
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: fd.get('name') as string,
-        email: fd.get('email') as string,
-        password: fd.get('password') as string,
-        token,
-      }),
-    });
-    const data = (await res.json()) as { success?: boolean; error?: string };
-    if (!res.ok) {
-      setError(data.error ?? 'Registration failed');
+    try {
+      const fd = new FormData(e.currentTarget);
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: (fd.get('name') ?? '') as string,
+          email: (fd.get('email') ?? '') as string,
+          password: (fd.get('password') ?? '') as string,
+          token,
+        }),
+      });
+      const data = (await res.json()) as { success?: boolean; error?: string };
+      if (!res.ok) {
+        setError(data.error ?? 'Registration failed');
+        return;
+      }
+      router.push('/login');
+    } catch {
+      setError('Network error — please try again.');
+    } finally {
       setSubmitting(false);
-      return;
     }
-    router.push('/login');
   }
 
   return (
