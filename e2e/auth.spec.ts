@@ -48,11 +48,6 @@ test.describe('Authentication', () => {
     await page.fill('#email', 'newtrainer@test.com');
     await page.fill('#password', 'TestPass123!');
     await page.getByRole('button', { name: /create account/i }).click();
-    await page.waitForURL('/login');
-
-    await page.fill('#email', 'newtrainer@test.com');
-    await page.fill('#password', 'TestPass123!');
-    await page.getByRole('button', { name: 'Sign in' }).click();
     await page.waitForURL('/trainer/members');
     await expect(page).toHaveURL('/trainer/members');
   });

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { registerAction, type RegisterState } from '../actions';
 
 interface Props {
   token?: string;
@@ -11,42 +12,26 @@ interface Props {
   isFirstUser: boolean;
 }
 
-export function RegisterForm({ token, inviteRole, isFirstUser }: Props) {
-  const router = useRouter();
-  const [error, setError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button
+      type="submit"
+      disabled={pending}
+      className="w-full bg-white text-black hover:bg-white/90 font-semibold mt-2 disabled:opacity-50"
+    >
+      {pending ? 'Creating account...' : 'Create account'}
+    </Button>
+  );
+}
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setSubmitting(true);
-    setError('');
-    try {
-      const fd = new FormData(e.currentTarget);
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: (fd.get('name') ?? '') as string,
-          email: (fd.get('email') ?? '') as string,
-          password: (fd.get('password') ?? '') as string,
-          token,
-        }),
-      });
-      const data = (await res.json()) as { success?: boolean; error?: string };
-      if (!res.ok) {
-        setError(data.error ?? 'Registration failed');
-        return;
-      }
-      router.push('/login');
-    } catch {
-      setError('Network error — please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  }
+export function RegisterForm({ token, inviteRole, isFirstUser }: Props) {
+  const [state, action] = useActionState<RegisterState, FormData>(registerAction, { error: '' });
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form action={action} className="space-y-4">
+      <input type="hidden" name="token" value={token ?? ''} />
+
       {inviteRole && (
         <p className="text-[13px] text-[#444]">
           You were invited as a{' '}
@@ -108,15 +93,9 @@ export function RegisterForm({ token, inviteRole, isFirstUser }: Props) {
         />
       </div>
 
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {state.error && <p className="text-sm text-red-400">{state.error}</p>}
 
-      <Button
-        type="submit"
-        disabled={submitting}
-        className="w-full bg-white text-black hover:bg-white/90 font-semibold mt-2 disabled:opacity-50"
-      >
-        {submitting ? 'Creating account...' : 'Create account'}
-      </Button>
+      <SubmitButton />
     </form>
   );
 }

@@ -1,53 +1,59 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { RegisterForm } from '@/app/(auth)/register/_components/register-form';
 
-const mockPush = jest.fn();
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({ push: mockPush }),
-}));
-
-beforeEach(() => {
-  jest.resetAllMocks();
-  global.fetch = jest.fn();
+// useActionState is not supported in the Jest/jsdom environment; provide a
+// minimal shim that lets the component render without crashing.
+let mockActionState: [unknown, jest.Mock] = [{ error: '' }, jest.fn()];
+jest.mock('react', () => {
+  const actual = jest.requireActual<typeof import('react')>('react');
+  return {
+    ...actual,
+    useActionState: jest.fn((_action: unknown, initialState: unknown) => {
+      return mockActionState[0] !== undefined ? mockActionState : [initialState, jest.fn()];
+    }),
+  };
 });
 
-test('submits JSON to /api/auth/register and redirects to /login on success', async () => {
-  (global.fetch as jest.Mock).mockResolvedValueOnce({
-    ok: true,
-    json: async () => ({ success: true }),
-  });
-
-  render(<RegisterForm isFirstUser={false} />);
-
-  fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'Test User' } });
-  fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@test.com' } });
-  fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'TestPass123!' } });
-  fireEvent.click(screen.getByRole('button', { name: /create account/i }));
-
-  await waitFor(() => {
-    expect(global.fetch).toHaveBeenCalledWith('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: 'Test User', email: 'test@test.com', password: 'TestPass123!', token: undefined }),
-    });
-    expect(mockPush).toHaveBeenCalledWith('/login');
-  });
+// useFormStatus lives in react-dom; pending is always false in tests.
+jest.mock('react-dom', () => {
+  const actual = jest.requireActual<typeof import('react-dom')>('react-dom');
+  return {
+    ...actual,
+    useFormStatus: () => ({ pending: false }),
+  };
 });
 
-test('displays error message on failure', async () => {
-  (global.fetch as jest.Mock).mockResolvedValueOnce({
-    ok: false,
-    json: async () => ({ error: 'Email does not match invite' }),
+describe('RegisterForm', () => {
+  it('renders all form fields', () => {
+    render(<RegisterForm isFirstUser={false} />);
+    expect(screen.getByLabelText(/full name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
   });
 
-  render(<RegisterForm isFirstUser={false} />);
+  it('shows invite role message when inviteRole is provided', () => {
+    render(<RegisterForm isFirstUser={false} inviteRole="trainer" />);
+    expect(screen.getByText(/invited as a/i)).toBeInTheDocument();
+    expect(screen.getByText(/trainer/i)).toBeInTheDocument();
+  });
 
-  fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'Test User' } });
-  fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'wrong@test.com' } });
-  fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'TestPass123!' } });
-  fireEvent.click(screen.getByRole('button', { name: /create account/i }));
+  it('shows first-user setup message', () => {
+    render(<RegisterForm isFirstUser={true} />);
+    expect(screen.getByText(/setting up your gym as owner/i)).toBeInTheDocument();
+  });
 
-  await waitFor(() => {
+  it('shows error from action state', () => {
+    mockActionState = [{ error: 'Email does not match invite' }, jest.fn()];
+    render(<RegisterForm isFirstUser={false} />);
     expect(screen.getByText('Email does not match invite')).toBeInTheDocument();
+    mockActionState = [{ error: '' }, jest.fn()];
+  });
+
+  it('includes hidden token field', () => {
+    const { container } = render(<RegisterForm isFirstUser={false} token="test-token" />);
+    const hidden = container.querySelector('input[name="token"]') as HTMLInputElement;
+    expect(hidden).toBeTruthy();
+    expect(hidden.value).toBe('test-token');
   });
 });

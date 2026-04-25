@@ -25,11 +25,6 @@ test.describe('Owner: Invites', () => {
     await freshPage.fill('#email', 'e2einvite@test.com');
     await freshPage.fill('#password', 'TestPass123!');
     await freshPage.getByRole('button', { name: /create account/i }).click();
-    await freshPage.waitForURL('/login');
-
-    await freshPage.fill('#email', 'e2einvite@test.com');
-    await freshPage.fill('#password', 'TestPass123!');
-    await freshPage.getByRole('button', { name: 'Sign in' }).click();
     await freshPage.waitForURL('/trainer/members');
     await expect(freshPage).toHaveURL('/trainer/members');
 
