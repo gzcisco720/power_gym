@@ -14,11 +14,11 @@ describe('getRedirectForRole', () => {
   });
 
   it('returns member redirect when trainer accesses owner dashboard', () => {
-    expect(getRedirectForRole('trainer', '/dashboard/owner')).toBe('/dashboard/trainer');
+    expect(getRedirectForRole('trainer', '/dashboard/owner')).toBe('/dashboard/trainer/members');
   });
 
   it('returns member redirect when member accesses trainer dashboard', () => {
-    expect(getRedirectForRole('member', '/dashboard/trainer')).toBe('/dashboard/member');
+    expect(getRedirectForRole('member', '/dashboard/trainer')).toBe('/dashboard/member/plan');
   });
 
   it('returns null when member accesses member dashboard', () => {

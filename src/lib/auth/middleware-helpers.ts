@@ -6,9 +6,15 @@ const ROLE_ALLOWED_PREFIXES: Record<UserRole, string[]> = {
   member: ['/dashboard/member'],
 };
 
+const ROLE_DEFAULT_PATH: Record<UserRole, string> = {
+  owner: '/dashboard/owner',
+  trainer: '/dashboard/trainer/members',
+  member: '/dashboard/member/plan',
+};
+
 export function getRedirectForRole(role: UserRole, path: string): string | null {
   const allowed = ROLE_ALLOWED_PREFIXES[role];
   const isAllowed = allowed.some((prefix) => path.startsWith(prefix));
   if (isAllowed) return null;
-  return `/dashboard/${role}`;
+  return ROLE_DEFAULT_PATH[role];
 }

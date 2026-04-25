@@ -27,6 +27,10 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
   ],
   trainer: [
     {
+      group: 'MEMBERS',
+      items: [{ href: '/dashboard/trainer/members', label: 'Members' }],
+    },
+    {
       group: 'TRAINING',
       items: [{ href: '/dashboard/trainer/plans', label: 'Plan Templates' }],
     },
@@ -68,9 +72,10 @@ interface SidebarContentProps {
   role: UserRole;
   userName: string;
   userInitials: string;
+  logoutSlot?: React.ReactNode;
 }
 
-function SidebarContent({ role, userName, userInitials }: SidebarContentProps) {
+function SidebarContent({ role, userName, userInitials, logoutSlot }: SidebarContentProps) {
   const pathname = usePathname();
   const groups = NAV[role] ?? [];
 
@@ -121,6 +126,7 @@ function SidebarContent({ role, userName, userInitials }: SidebarContentProps) {
             <div className="text-[10px] capitalize text-[#2a2a2a]">{role}</div>
           </div>
         </div>
+        {logoutSlot && <div className="mt-3">{logoutSlot}</div>}
       </div>
     </div>
   );
@@ -130,9 +136,10 @@ interface AppShellProps {
   role: UserRole;
   userName: string;
   children: React.ReactNode;
+  logoutSlot?: React.ReactNode;
 }
 
-export function AppShell({ role, userName, children }: AppShellProps) {
+export function AppShell({ role, userName, children, logoutSlot }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const userInitials = userName
     .split(' ')
@@ -145,7 +152,7 @@ export function AppShell({ role, userName, children }: AppShellProps) {
     <div className="flex h-screen bg-[#030303]">
       {/* Desktop sidebar */}
       <aside className="hidden w-[220px] shrink-0 flex-col border-r border-[#161616] bg-[#0a0a0a] lg:flex">
-        <SidebarContent role={role} userName={userName} userInitials={userInitials} />
+        <SidebarContent role={role} userName={userName} userInitials={userInitials} logoutSlot={logoutSlot} />
       </aside>
 
       {/* Mobile drawer */}
@@ -155,7 +162,7 @@ export function AppShell({ role, userName, children }: AppShellProps) {
           className="w-[220px] border-r border-[#161616] bg-[#0a0a0a] p-0"
         >
           <SheetTitle className="sr-only">Navigation</SheetTitle>
-          <SidebarContent role={role} userName={userName} userInitials={userInitials} />
+          <SidebarContent role={role} userName={userName} userInitials={userInitials} logoutSlot={logoutSlot} />
         </SheetContent>
       </Sheet>
 

@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/shared/app-shell';
 import { PageTransition } from '@/components/shared/page-transition';
+import { LogoutButton } from '@/components/shared/logout-button';
 import type { UserRole } from '@/types/auth';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -12,6 +13,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <AppShell
       role={session.user.role as UserRole}
       userName={session.user.name ?? 'User'}
+      logoutSlot={<LogoutButton />}
     >
       <PageTransition>{children}</PageTransition>
     </AppShell>
