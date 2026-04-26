@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -42,13 +43,24 @@ export function TrainerListClient({ trainers, allTrainers }: Props) {
     if (!confirmed) return;
 
     setRemoving(trainerId);
-    await fetch(`/api/owner/trainers/${trainerId}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reassignToId }),
-    });
-    setRemoving(null);
-    router.refresh();
+    try {
+      const res = await fetch(`/api/owner/trainers/${trainerId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reassignToId }),
+      });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        toast.error(data.error ?? 'Failed to remove trainer');
+        return;
+      }
+      toast.success('Trainer removed');
+      router.refresh();
+    } catch {
+      toast.error('Something went wrong');
+    } finally {
+      setRemoving(null);
+    }
   }
 
   if (trainers.length === 0) {

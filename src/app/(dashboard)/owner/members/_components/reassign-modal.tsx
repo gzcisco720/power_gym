@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -27,14 +28,25 @@ export function ReassignModal({ memberId, memberName, currentTrainerId, trainers
 
   async function handleConfirm() {
     setSaving(true);
-    await fetch(`/api/owner/members/${memberId}/trainer`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ trainerId: selectedTrainerId }),
-    });
-    setSaving(false);
-    onClose();
-    router.refresh();
+    try {
+      const res = await fetch(`/api/owner/members/${memberId}/trainer`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trainerId: selectedTrainerId }),
+      });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        toast.error(data.error ?? 'Failed to reassign member');
+        return;
+      }
+      toast.success('Member reassigned');
+      onClose();
+      router.refresh();
+    } catch {
+      toast.error('Something went wrong');
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
