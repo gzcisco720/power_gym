@@ -38,6 +38,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Frontend Redesign (Phase 2) | [frontend-redesign-implementation-plan.md](2026-04-23/plans/frontend-redesign-implementation-plan.md) | Complete |
 | Owner Admin Dashboard | [owner-dashboard-implementation-plan.md](2026-04-24/plans/owner-dashboard-implementation-plan.md) | Complete |
 | E2E Test Suite | [e2e-implementation-plan.md](2026-04-25/plans/e2e-implementation-plan.md) | Complete |
+| Error Handling (toasts + error pages) | [error-handling-implementation-plan.md](2026-04-26/plans/error-handling-implementation-plan.md) | In Progress |
 
 ## API Usage Guides
 
