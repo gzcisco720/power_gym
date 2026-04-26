@@ -32,9 +32,26 @@ export async function seed(): Promise<void> {
     trainerId: owner._id,
   });
 
+  await UserModel.create({
+    name: 'Test Trainer 2',
+    email: 'trainer2@test.com',
+    passwordHash,
+    role: 'trainer',
+    trainerId: owner._id,
+  });
+
   const member = await UserModel.create({
     name: 'Test Member',
     email: 'member@test.com',
+    passwordHash,
+    role: 'member',
+    trainerId: trainer._id,
+  });
+
+  // Dedicated member for reassign test — keeps member@test.com's assignment stable
+  await UserModel.create({
+    name: 'Reassign Member',
+    email: 'reassign-member@test.com',
     passwordHash,
     role: 'member',
     trainerId: trainer._id,
@@ -145,6 +162,20 @@ export async function seed(): Promise<void> {
     sessionId: session._id,
   });
 
+  // ── Edit-only Plan Template (used by trainer/plans edit test) ────────────
+  await PlanTemplateModel.create({
+    name: 'E2E Edit Plan',
+    description: null,
+    createdBy: trainer._id,
+    days: [
+      {
+        dayNumber: 1,
+        name: 'Pull',
+        exercises: [],
+      },
+    ],
+  });
+
   // ── Nutrition Template ────────────────────────────────────────────────────
   const nutritionTemplate = await NutritionTemplateModel.create({
     name: 'E2E Nutrition Template',
@@ -185,6 +216,14 @@ export async function seed(): Promise<void> {
         ],
       },
     ],
+  });
+
+  // ── Edit-only Nutrition Template (used by trainer/nutrition edit test) ───
+  await NutritionTemplateModel.create({
+    name: 'E2E Edit Nutrition',
+    description: null,
+    createdBy: trainer._id,
+    dayTypes: [],
   });
 
   // ── Member Nutrition Plan (deep copy) ────────────────────────────────────

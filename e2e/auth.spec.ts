@@ -40,6 +40,14 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL('/login');
   });
 
+  test('wrong password shows error message', async ({ page }) => {
+    await page.goto('/login');
+    await page.fill('#email', 'owner@test.com');
+    await page.fill('#password', 'WrongPassword!');
+    await page.getByRole('button', { name: 'Sign in' }).click();
+    await expect(page.getByText('Invalid email or password.')).toBeVisible();
+  });
+
   test('register via invite token creates trainer account', async ({ page }) => {
     await page.goto('/register?token=e2e-test-invite-token');
     await expect(page.getByText(/invited as a/i)).toBeVisible();

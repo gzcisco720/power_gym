@@ -10,7 +10,8 @@ test.describe('Owner: Trainers', () => {
 
   test('expand Members shows member@test.com', async ({ page }) => {
     await page.goto('/owner/trainers');
-    await page.getByRole('button', { name: /members/i }).first().click();
-    await expect(page.getByText('member@test.com')).toBeVisible();
+    const trainerRow = page.getByText('trainer@test.com', { exact: true }).locator('..').locator('..');
+    await trainerRow.getByRole('button', { name: /members/i }).click();
+    await expect(page.getByText('member@test.com', { exact: true })).toBeVisible();
   });
 });

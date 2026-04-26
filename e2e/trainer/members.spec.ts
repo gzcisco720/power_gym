@@ -5,7 +5,7 @@ test.use({ storageState: 'e2e/.auth/trainer.json' });
 test.describe('Trainer: Members', () => {
   test('member list shows member email', async ({ page }) => {
     await page.goto('/trainer/members');
-    await expect(page.getByText('member@test.com')).toBeVisible();
+    await expect(page.getByText('member@test.com', { exact: true })).toBeVisible();
   });
 
   test('click Plan link navigates to plan assignment page', async ({ page }) => {

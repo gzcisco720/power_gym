@@ -8,6 +8,19 @@ test.describe('Trainer: Nutrition Templates', () => {
     await expect(page.getByText('E2E Nutrition Template')).toBeVisible();
   });
 
+  test('edit existing nutrition template and verify updated name', async ({ page }) => {
+    await page.goto('/trainer/nutrition');
+    const card = page.getByText('E2E Edit Nutrition', { exact: true }).locator('..').locator('..');
+    await card.getByRole('link', { name: 'Edit' }).click();
+    await page.waitForURL(/\/trainer\/nutrition\/.*\/edit/);
+
+    await page.fill('#plan-name', 'E2E Edit Nutrition Updated');
+    await page.getByRole('button', { name: /^save$/i }).click();
+    await page.waitForURL('/trainer/nutrition');
+
+    await expect(page.getByText('E2E Edit Nutrition Updated')).toBeVisible();
+  });
+
   test('create new nutrition template and verify it appears', async ({ page }) => {
     await page.goto('/trainer/nutrition/new');
 

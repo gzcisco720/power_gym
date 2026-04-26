@@ -1,3 +1,5 @@
+import { AuthError } from 'next-auth';
+import { redirect } from 'next/navigation';
 import { signIn } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
@@ -11,7 +13,13 @@ const ROLE_REDIRECT: Record<UserRole, string> = {
   member: '/member/plan',
 };
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#030303]">
       <div className="w-full max-w-sm space-y-8">
@@ -20,6 +28,10 @@ export default function LoginPage() {
           <h1 className="text-[24px] font-bold tracking-[-0.5px] text-white">Sign in</h1>
           <p className="mt-1 text-[13px] text-[#444]">Enter your credentials to continue.</p>
         </div>
+
+        {error === 'CredentialsSignin' && (
+          <p className="text-[13px] text-red-400">Invalid email or password.</p>
+        )}
 
         <form
           action={async (formData: FormData) => {
@@ -39,7 +51,14 @@ export default function LoginPage() {
               // If lookup fails, fall through; signIn will handle the error.
             }
 
-            await signIn('credentials', { email, password, redirectTo });
+            try {
+              await signIn('credentials', { email, password, redirectTo });
+            } catch (error) {
+              if (error instanceof AuthError) {
+                redirect(`/login?error=${error.type}`);
+              }
+              throw error;
+            }
           }}
           className="space-y-4"
         >
