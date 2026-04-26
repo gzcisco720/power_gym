@@ -42,4 +42,25 @@ describe('ReassignModal', () => {
       expect(toast.error).toHaveBeenCalledWith('Member not found'),
     );
   });
+
+  it('calls toast.error with fallback when server returns no error message', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({}),
+    });
+    render(<ReassignModal {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button', { name: /confirm/i }));
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith('Failed to reassign member'),
+    );
+  });
+
+  it('calls toast.error when fetch throws', async () => {
+    global.fetch = jest.fn().mockRejectedValue(new Error('Network error'));
+    render(<ReassignModal {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button', { name: /confirm/i }));
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith('Something went wrong'),
+    );
+  });
 });
