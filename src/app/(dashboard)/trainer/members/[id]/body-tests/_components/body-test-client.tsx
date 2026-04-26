@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -97,21 +98,33 @@ export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (res.ok) {
-        const created = (await res.json()) as BodyTestRecord;
-        setTests((prev) => [created, ...prev]);
-        router.refresh();
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        toast.error(data.error ?? 'Failed to save body test');
+        return;
       }
+      const created = (await res.json()) as BodyTestRecord;
+      setTests((prev) => [created, ...prev]);
+      toast.success('Body test saved');
+      router.refresh();
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(testId: string) {
-    const res = await fetch(`/api/members/${memberId}/body-tests/${testId}`, { method: 'DELETE' });
-    if (res.ok) {
+    try {
+      const res = await fetch(`/api/members/${memberId}/body-tests/${testId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        toast.error(data.error ?? 'Failed to delete test');
+        return;
+      }
       setTests((prev) => prev.filter((t) => t._id !== testId));
+      toast.success('Body test deleted');
       router.refresh();
+    } catch {
+      toast.error('Something went wrong');
     }
   }
 
