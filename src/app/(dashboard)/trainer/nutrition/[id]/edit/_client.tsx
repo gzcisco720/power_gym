@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { NutritionTemplateForm } from '../../_components/nutrition-template-form';
 import { PageHeader } from '@/components/shared/page-header';
 import type { IDayType } from '@/lib/db/models/nutrition-template.model';
@@ -38,7 +39,13 @@ export function EditNutritionTemplateClient({ id, initialData, foods }: Props) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (res.ok) router.push('/trainer/nutrition');
+    if (!res.ok) {
+      const body = (await res.json()) as { error?: string };
+      toast.error(body.error ?? 'Failed to save nutrition plan');
+      return;
+    }
+    toast.success('Nutrition plan saved');
+    router.push('/trainer/nutrition');
   }
 
   return (

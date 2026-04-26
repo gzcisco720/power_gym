@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { PlanTemplateForm } from '../../_components/plan-template-form';
 import { PageHeader } from '@/components/shared/page-header';
 import type { IPlanDay } from '@/lib/db/models/plan-template.model';
@@ -33,7 +34,13 @@ export default function EditPlanPage({ params }: { params: Promise<{ id: string 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (res.ok) router.push('/trainer/plans');
+    if (!res.ok) {
+      const body = (await res.json()) as { error?: string };
+      toast.error(body.error ?? 'Failed to save plan');
+      return;
+    }
+    toast.success('Plan saved');
+    router.push('/trainer/plans');
   }
 
   if (!template) return <p className="px-8 py-7 text-[#444] text-sm">加载中...</p>;

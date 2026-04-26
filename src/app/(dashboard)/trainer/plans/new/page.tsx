@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { PlanTemplateForm } from '../_components/plan-template-form';
 import { PageHeader } from '@/components/shared/page-header';
 import type { IPlanDay } from '@/lib/db/models/plan-template.model';
@@ -14,7 +15,13 @@ export default function NewPlanPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (res.ok) router.push('/trainer/plans');
+    if (!res.ok) {
+      const body = (await res.json()) as { error?: string };
+      toast.error(body.error ?? 'Failed to save plan');
+      return;
+    }
+    toast.success('Plan saved');
+    router.push('/trainer/plans');
   }
 
   return (
