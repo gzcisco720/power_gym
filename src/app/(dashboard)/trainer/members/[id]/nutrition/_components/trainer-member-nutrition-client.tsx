@@ -44,7 +44,7 @@ export function TrainerMemberNutritionClient({ memberId, memberName, templates, 
       });
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
-        toast.error(data.error ?? 'Failed to assign plan');
+        toast.error(data.error ?? 'Failed to assign nutrition plan');
         return;
       }
       toast.success('Nutrition plan assigned');
