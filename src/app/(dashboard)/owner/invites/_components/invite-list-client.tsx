@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -27,15 +28,35 @@ export function InviteListClient({ invites }: Props) {
 
   async function handleRevoke(id: string) {
     if (!confirm('Revoke this invite? The link will no longer work.')) return;
-    await fetch(`/api/owner/invites/${id}`, { method: 'DELETE' });
-    router.refresh();
+    try {
+      const res = await fetch(`/api/owner/invites/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        toast.error(data.error ?? 'Failed to revoke invite');
+        return;
+      }
+      toast.success('Invite revoked');
+      router.refresh();
+    } catch {
+      toast.error('Something went wrong');
+    }
   }
 
   async function handleResend(id: string) {
-    const res = await fetch(`/api/owner/invites/${id}/resend`, { method: 'POST' });
-    const data = (await res.json()) as { inviteUrl: string };
-    await navigator.clipboard.writeText(data.inviteUrl).catch(() => undefined);
-    router.refresh();
+    try {
+      const res = await fetch(`/api/owner/invites/${id}/resend`, { method: 'POST' });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        toast.error(data.error ?? 'Failed to resend invite');
+        return;
+      }
+      const data = (await res.json()) as { inviteUrl: string };
+      await navigator.clipboard.writeText(data.inviteUrl).catch(() => undefined);
+      toast.success('Link copied to clipboard');
+      router.refresh();
+    } catch {
+      toast.error('Something went wrong');
+    }
   }
 
   function renderRows(rows: InviteRow[], showRevoke: boolean) {

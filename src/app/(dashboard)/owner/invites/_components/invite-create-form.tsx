@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,15 +30,26 @@ export function InviteCreateForm({ trainers }: Props) {
     const body: Record<string, string> = { role, recipientEmail: email };
     if (role === 'member' && trainerId) body.trainerId = trainerId;
 
-    const res = await fetch('/api/owner/invites', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    const data = (await res.json()) as { inviteUrl: string };
-    setGeneratedUrl(data.inviteUrl);
-    setSaving(false);
-    router.refresh();
+    try {
+      const res = await fetch('/api/owner/invites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        toast.error(data.error ?? 'Failed to create invite');
+        return;
+      }
+      const data = (await res.json()) as { inviteUrl: string };
+      setGeneratedUrl(data.inviteUrl);
+      toast.success('Invite link generated');
+      router.refresh();
+    } catch {
+      toast.error('Something went wrong');
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
