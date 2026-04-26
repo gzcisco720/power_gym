@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,7 +42,15 @@ export function TrainerMemberNutritionClient({ memberId, memberName, templates, 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ templateId: selectedTemplate }),
       });
-      if (res.ok) router.refresh();
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        toast.error(data.error ?? 'Failed to assign plan');
+        return;
+      }
+      toast.success('Nutrition plan assigned');
+      router.refresh();
+    } catch {
+      toast.error('Something went wrong');
     } finally {
       setAssigning(false);
     }
