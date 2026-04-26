@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,45 +71,71 @@ export function SessionLogger({ session: initialSession }: { session: Session })
   async function logSet(setIndex: number) {
     const input = inputs[setIndex];
     const set = session.sets[setIndex];
-    const res = await fetch(`/api/sessions/${session._id}/sets/${setIndex}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        actualWeight: set.isBodyweight ? null : parseFloat(input.weight) || null,
-        actualReps: parseInt(input.reps, 10) || null,
-      }),
-    });
-    if (res.ok) {
+    try {
+      const res = await fetch(`/api/sessions/${session._id}/sets/${setIndex}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          actualWeight: set.isBodyweight ? null : parseFloat(input.weight) || null,
+          actualReps: parseInt(input.reps, 10) || null,
+        }),
+      });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        toast.error(data.error ?? 'Failed to log set');
+        return;
+      }
       const updated = (await res.json()) as Session;
       setSession(updated);
       setActiveSetIndex(null);
+      toast.success('Set logged');
+    } catch {
+      toast.error('Something went wrong');
     }
   }
 
   async function addSet(exerciseId: string) {
     const exercise = session.sets.find((s) => s.exerciseId === exerciseId);
     if (!exercise) return;
-    const res = await fetch(`/api/sessions/${session._id}/sets`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        exerciseId,
-        prescribedRepsMin: exercise.prescribedRepsMin,
-        prescribedRepsMax: exercise.prescribedRepsMax,
-      }),
-    });
-    if (res.ok) {
+    try {
+      const res = await fetch(`/api/sessions/${session._id}/sets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          exerciseId,
+          prescribedRepsMin: exercise.prescribedRepsMin,
+          prescribedRepsMax: exercise.prescribedRepsMax,
+        }),
+      });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        toast.error(data.error ?? 'Failed to add set');
+        return;
+      }
       const updated = (await res.json()) as Session;
       setSession(updated);
       setInputs((prev) => [...prev, { weight: '', reps: '' }]);
+    } catch {
+      toast.error('Something went wrong');
     }
   }
 
   async function completeSession() {
     setCompleting(true);
-    const res = await fetch(`/api/sessions/${session._id}/complete`, { method: 'POST' });
-    if (res.ok) router.push('/member/plan');
-    else setCompleting(false);
+    try {
+      const res = await fetch(`/api/sessions/${session._id}/complete`, { method: 'POST' });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        toast.error(data.error ?? 'Failed to complete session');
+        setCompleting(false);
+        return;
+      }
+      toast.success('Session complete!');
+      router.push('/member/plan');
+    } catch {
+      toast.error('Something went wrong');
+      setCompleting(false);
+    }
   }
 
   function repsLabel(min: number, max: number) {

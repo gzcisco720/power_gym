@@ -1,6 +1,9 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SessionLogger } from '@/app/(dashboard)/member/plan/session/[id]/_components/session-logger';
+import { toast } from 'sonner';
+
+jest.mock('sonner', () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
 
 jest.mock('framer-motion', () => ({
   motion: {
@@ -65,6 +68,7 @@ const mockSession = {
 
 describe('SessionLogger', () => {
   beforeEach(() => {
+    jest.clearAllMocks();
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ ...mockSession }),
@@ -119,5 +123,44 @@ describe('SessionLogger', () => {
         expect.objectContaining({ method: 'PATCH' }),
       ),
     );
+  });
+
+  it('calls toast.success when a set is logged successfully', async () => {
+    const updatedSession = {
+      ...mockSession,
+      sets: [
+        { ...mockSession.sets[0], completedAt: new Date().toISOString(), actualReps: 10, actualWeight: 60 },
+        mockSession.sets[1],
+      ],
+    };
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => updatedSession,
+    });
+    render(<SessionLogger session={mockSession} />);
+
+    const setChips = screen.getAllByRole('button', { name: /set 1/i });
+    fireEvent.click(setChips[0]);
+
+    fireEvent.change(screen.getByRole('spinbutton', { name: /reps/i }), { target: { value: '10' } });
+    fireEvent.click(screen.getByRole('button', { name: /log set/i }));
+
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Set logged'));
+  });
+
+  it('calls toast.error with server message when logSet fails', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({ error: 'Session not found' }),
+    });
+    render(<SessionLogger session={mockSession} />);
+
+    const setChips = screen.getAllByRole('button', { name: /set 1/i });
+    fireEvent.click(setChips[0]);
+
+    fireEvent.change(screen.getByRole('spinbutton', { name: /reps/i }), { target: { value: '10' } });
+    fireEvent.click(screen.getByRole('button', { name: /log set/i }));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Session not found'));
   });
 });
