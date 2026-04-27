@@ -113,13 +113,13 @@ export class MongoScheduledSessionRepository implements IScheduledSessionReposit
 
   async updateFuture(seriesId: string, fromDate: Date, data: UpdateScheduledSessionData): Promise<void> {
     await ScheduledSessionModel.updateMany(
-      { seriesId: toOid(seriesId), date: { $gte: fromDate } },
+      { seriesId: toOid(seriesId), date: { $gte: fromDate }, status: 'scheduled' },
       buildUpdateSet(data),
     );
   }
 
   async updateAll(seriesId: string, data: UpdateScheduledSessionData): Promise<void> {
-    await ScheduledSessionModel.updateMany({ seriesId: toOid(seriesId) }, buildUpdateSet(data));
+    await ScheduledSessionModel.updateMany({ seriesId: toOid(seriesId), status: 'scheduled' }, buildUpdateSet(data));
   }
 
   async cancelOne(id: string): Promise<void> {
