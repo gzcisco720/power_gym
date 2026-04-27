@@ -11,6 +11,11 @@ jest.mock('@/lib/repositories/user.repository', () => ({
   MongoUserRepository: jest.fn(() => mockUserRepo),
 }));
 
+const mockScheduleRepo = { removeMemberFromFutureSessions: jest.fn() };
+jest.mock('@/lib/repositories/scheduled-session.repository', () => ({
+  MongoScheduledSessionRepository: jest.fn(() => mockScheduleRepo),
+}));
+
 import { auth } from '@/lib/auth/auth';
 const mockAuth = jest.mocked(auth);
 
@@ -90,6 +95,7 @@ describe('PATCH /api/owner/members/[id]/trainer', () => {
     mockAuth.mockResolvedValue({ user: { role: 'owner', id: 'o1' } } as unknown as Awaited<ReturnType<typeof auth>>);
     mockUserRepo.findById.mockResolvedValue({ _id: 'm1', role: 'member' });
     mockUserRepo.updateTrainerId.mockResolvedValue(undefined);
+    mockScheduleRepo.removeMemberFromFutureSessions.mockResolvedValue(undefined);
     const { PATCH } = await import('@/app/api/owner/members/[id]/trainer/route');
     const res = await PATCH(
       new Request('http://localhost', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trainerId: 't2' }) }),
@@ -97,5 +103,20 @@ describe('PATCH /api/owner/members/[id]/trainer', () => {
     );
     expect(res.status).toBe(200);
     expect(mockUserRepo.updateTrainerId).toHaveBeenCalledWith('m1', 't2');
+  });
+});
+
+describe('PATCH /api/owner/members/[id]/trainer — unassign side effect', () => {
+  it('calls removeMemberFromFutureSessions after updateTrainerId', async () => {
+    mockAuth.mockResolvedValue({ user: { role: 'owner', id: 'o1' } } as unknown as Awaited<ReturnType<typeof auth>>);
+    mockUserRepo.findById.mockResolvedValue({ _id: 'm1', role: 'member' });
+    mockUserRepo.updateTrainerId.mockResolvedValue(undefined);
+    mockScheduleRepo.removeMemberFromFutureSessions.mockResolvedValue(undefined);
+    const { PATCH } = await import('@/app/api/owner/members/[id]/trainer/route');
+    await PATCH(
+      new Request('http://localhost', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trainerId: 't2' }) }),
+      { params: Promise.resolve({ id: 'm1' }) },
+    );
+    expect(mockScheduleRepo.removeMemberFromFutureSessions).toHaveBeenCalledWith('m1');
   });
 });

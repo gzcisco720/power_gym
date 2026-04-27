@@ -1,6 +1,7 @@
 import { connectDB } from '@/lib/db/connect';
 import { auth } from '@/lib/auth/auth';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
+import { MongoScheduledSessionRepository } from '@/lib/repositories/scheduled-session.repository';
 
 export async function PATCH(
   req: Request,
@@ -32,5 +33,7 @@ export async function PATCH(
   }
 
   await userRepo.updateTrainerId(id, trainerId);
+  const scheduleRepo = new MongoScheduledSessionRepository();
+  await scheduleRepo.removeMemberFromFutureSessions(id);
   return Response.json({ success: true });
 }
