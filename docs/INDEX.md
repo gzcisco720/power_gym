@@ -27,6 +27,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Owner Admin Dashboard              | [owner-dashboard-design.md](2026-04-24/plans/owner-dashboard-design.md)              | Approved |
 | E2E Test Suite                     | [e2e-design.md](2026-04-25/plans/e2e-design.md)                                      | Approved |
 | Mobile Responsive Design           | [mobile-responsive-design.md](2026-04-26/plans/mobile-responsive-design.md)          | Approved |
+| Calendar & Session Scheduling      | [calendar-design.md](2026-04-27/plans/calendar-design.md)                            | Approved |
 
 ## Implementation Plans
 
