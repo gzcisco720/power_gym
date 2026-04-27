@@ -18,6 +18,10 @@ interface DeleteBody {
   scope?: string;
 }
 
+function isScope(s: string | undefined): s is Scope {
+  return s === 'one' || s === 'future' || s === 'all';
+}
+
 export async function PATCH(req: Request, { params }: RouteContext): Promise<Response> {
   const session = await auth();
   if (!session?.user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -31,35 +35,38 @@ export async function PATCH(req: Request, { params }: RouteContext): Promise<Res
     return Response.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  const scope = body.scope as Scope;
-  if (!['one', 'future', 'all'].includes(scope)) {
+  if (!isScope(body.scope)) {
     return Response.json({ error: 'scope must be one of: one, future, all' }, { status: 400 });
   }
+  const scope = body.scope;
 
-  await connectDB();
-  const repo = new MongoScheduledSessionRepository();
-  const existing = await repo.findById(id);
-  if (!existing) return Response.json({ error: 'Not found' }, { status: 404 });
+  try {
+    await connectDB();
+    const repo = new MongoScheduledSessionRepository();
+    const existing = await repo.findById(id);
+    if (!existing) return Response.json({ error: 'Not found' }, { status: 404 });
 
-  const update: UpdateScheduledSessionData = {};
-  if (typeof body.trainerId === 'string') update.trainerId = body.trainerId;
-  if (Array.isArray(body.memberIds)) update.memberIds = body.memberIds;
-  if (typeof body.startTime === 'string') update.startTime = body.startTime;
-  if (typeof body.endTime === 'string') update.endTime = body.endTime;
+    const update: UpdateScheduledSessionData = {};
+    if (typeof body.trainerId === 'string') update.trainerId = body.trainerId;
+    if (Array.isArray(body.memberIds)) update.memberIds = body.memberIds;
+    if (typeof body.startTime === 'string') update.startTime = body.startTime;
+    if (typeof body.endTime === 'string') update.endTime = body.endTime;
 
-  const seriesId = existing.seriesId?.toString();
+    const seriesId = existing.seriesId?.toString();
 
-  if (scope === 'one') {
-    await repo.updateOne(id, update);
-  } else if (scope === 'future' && seriesId) {
-    await repo.updateFuture(seriesId, existing.date, update);
-  } else if (scope === 'all' && seriesId) {
-    await repo.updateAll(seriesId, update);
-  } else {
-    await repo.updateOne(id, update);
+    if (scope === 'one') {
+      await repo.updateOne(id, update);
+    } else if (seriesId) {
+      if (scope === 'future') await repo.updateFuture(seriesId, existing.date, update);
+      else await repo.updateAll(seriesId, update);
+    } else {
+      return Response.json({ error: 'Session is not part of a recurring series' }, { status: 400 });
+    }
+
+    return Response.json({ success: true });
+  } catch {
+    return Response.json({ error: 'Internal server error' }, { status: 500 });
   }
-
-  return Response.json({ success: true });
 }
 
 export async function DELETE(req: Request, { params }: RouteContext): Promise<Response> {
@@ -75,27 +82,30 @@ export async function DELETE(req: Request, { params }: RouteContext): Promise<Re
     return Response.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  const scope = body.scope as Scope;
-  if (!['one', 'future', 'all'].includes(scope)) {
+  if (!isScope(body.scope)) {
     return Response.json({ error: 'scope must be one of: one, future, all' }, { status: 400 });
   }
+  const scope = body.scope;
 
-  await connectDB();
-  const repo = new MongoScheduledSessionRepository();
-  const existing = await repo.findById(id);
-  if (!existing) return Response.json({ error: 'Not found' }, { status: 404 });
+  try {
+    await connectDB();
+    const repo = new MongoScheduledSessionRepository();
+    const existing = await repo.findById(id);
+    if (!existing) return Response.json({ error: 'Not found' }, { status: 404 });
 
-  const seriesId = existing.seriesId?.toString();
+    const seriesId = existing.seriesId?.toString();
 
-  if (scope === 'one') {
-    await repo.cancelOne(id);
-  } else if (scope === 'future' && seriesId) {
-    await repo.cancelFuture(seriesId, existing.date);
-  } else if (scope === 'all' && seriesId) {
-    await repo.cancelAll(seriesId);
-  } else {
-    await repo.cancelOne(id);
+    if (scope === 'one') {
+      await repo.cancelOne(id);
+    } else if (seriesId) {
+      if (scope === 'future') await repo.cancelFuture(seriesId, existing.date);
+      else await repo.cancelAll(seriesId);
+    } else {
+      return Response.json({ error: 'Session is not part of a recurring series' }, { status: 400 });
+    }
+
+    return Response.json({ success: true });
+  } catch {
+    return Response.json({ error: 'Internal server error' }, { status: 500 });
   }
-
-  return Response.json({ success: true });
 }

@@ -90,6 +90,29 @@ describe('PATCH /api/schedule/[id]', () => {
     }), params);
     expect(mockRepo.updateAll).toHaveBeenCalledWith('sid1', { startTime: '10:00' });
   });
+
+  it('returns 400 when scope is missing', async () => {
+    mockAuth.mockResolvedValue(makeSession('trainer', 't1'));
+    const { PATCH } = await import('@/app/api/schedule/[id]/route');
+    const res = await PATCH(new Request('http://localhost', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ startTime: '10:00' }),
+    }), params);
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when scope=future but session has no seriesId', async () => {
+    mockAuth.mockResolvedValue(makeSession('trainer', 't1'));
+    mockRepo.findById.mockResolvedValue({ _id: 'sess1', trainerId: { toString: () => 't1' }, seriesId: null, date: new Date() });
+    const { PATCH } = await import('@/app/api/schedule/[id]/route');
+    const res = await PATCH(new Request('http://localhost', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scope: 'future', startTime: '10:00' }),
+    }), params);
+    expect(res.status).toBe(400);
+  });
 });
 
 describe('DELETE /api/schedule/[id]', () => {
@@ -157,5 +180,17 @@ describe('DELETE /api/schedule/[id]', () => {
       body: JSON.stringify({ scope: 'all' }),
     }), params);
     expect(mockRepo.cancelAll).toHaveBeenCalledWith('sid1');
+  });
+
+  it('returns 400 when scope=future but session has no seriesId', async () => {
+    mockAuth.mockResolvedValue(makeSession('trainer', 't1'));
+    mockRepo.findById.mockResolvedValue({ _id: 'sess1', trainerId: { toString: () => 't1' }, seriesId: null, date: new Date() });
+    const { DELETE } = await import('@/app/api/schedule/[id]/route');
+    const res = await DELETE(new Request('http://localhost', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scope: 'future' }),
+    }), params);
+    expect(res.status).toBe(400);
   });
 });
