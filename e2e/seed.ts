@@ -11,6 +11,7 @@ import { NutritionTemplateModel } from '../src/lib/db/models/nutrition-template.
 import { MemberNutritionPlanModel } from '../src/lib/db/models/member-nutrition-plan.model';
 import { BodyTestModel } from '../src/lib/db/models/body-test.model';
 import { InviteTokenModel } from '../src/lib/db/models/invite-token.model';
+import { ScheduledSessionModel } from '../src/lib/db/models/scheduled-session.model';
 
 export async function seed(): Promise<void> {
   const passwordHash = await bcrypt.hash('TestPass123!', 10);
@@ -254,6 +255,51 @@ export async function seed(): Promise<void> {
     fatMassKg: 13.5,
     targetWeight: null,
     targetBodyFatPct: null,
+  });
+
+  // ── Scheduled Sessions ────────────────────────────────────────────────────
+  // Always seed on "next Monday" so navigating forward one week always reveals them
+  const nextMon = new Date();
+  const dow = nextMon.getDay(); // 0=Sun … 6=Sat
+  nextMon.setDate(nextMon.getDate() + (dow === 0 ? 1 : 8 - dow));
+  nextMon.setHours(0, 0, 0, 0);
+
+  // Session A — used by view/edit tests (never cancelled by any spec)
+  await ScheduledSessionModel.create({
+    seriesId: null,
+    trainerId: trainer._id,
+    memberIds: [member._id],
+    date: nextMon,
+    startTime: '09:00',
+    endTime: '10:00',
+    status: 'scheduled',
+    reminderSentAt: null,
+  });
+
+  // Session B — used by owner cancel test (same member, different time)
+  await ScheduledSessionModel.create({
+    seriesId: null,
+    trainerId: trainer._id,
+    memberIds: [member._id],
+    date: nextMon,
+    startTime: '14:00',
+    endTime: '15:00',
+    status: 'scheduled',
+    reminderSentAt: null,
+  });
+
+  // Past session — appears in member history
+  const lastWeek = new Date();
+  lastWeek.setDate(lastWeek.getDate() - 7);
+  await ScheduledSessionModel.create({
+    seriesId: null,
+    trainerId: trainer._id,
+    memberIds: [member._id],
+    date: lastWeek,
+    startTime: '10:00',
+    endTime: '11:00',
+    status: 'scheduled',
+    reminderSentAt: null,
   });
 
   // ── Invite Tokens ─────────────────────────────────────────────────────────
