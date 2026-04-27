@@ -17,7 +17,7 @@ const ScheduledSessionSchema = new Schema<IScheduledSession>(
   {
     seriesId: { type: Schema.Types.ObjectId, default: null },
     trainerId: { type: Schema.Types.ObjectId, required: true },
-    memberIds: [{ type: Schema.Types.ObjectId }],
+    memberIds: { type: [Schema.Types.ObjectId], default: [] },
     date: { type: Date, required: true },
     startTime: { type: String, required: true },
     endTime: { type: String, required: true },
