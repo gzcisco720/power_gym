@@ -15,6 +15,7 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
       items: [
         { href: '/member/plan', label: 'My Plan' },
         { href: '/member/pbs', label: 'Personal Bests' },
+        { href: '/member/schedule', label: 'My Schedule' },
       ],
     },
     {
@@ -28,7 +29,10 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
   trainer: [
     {
       group: 'MEMBERS',
-      items: [{ href: '/trainer/members', label: 'Members' }],
+      items: [
+        { href: '/trainer/members', label: 'Members' },
+        { href: '/trainer/calendar', label: 'Calendar' },
+      ],
     },
     {
       group: 'TRAINING',
@@ -47,6 +51,7 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
         { href: '/owner/trainers', label: 'Trainers' },
         { href: '/owner/members', label: 'Members' },
         { href: '/owner/invites', label: 'Invites' },
+        { href: '/owner/calendar', label: 'Calendar' },
       ],
     },
     {
