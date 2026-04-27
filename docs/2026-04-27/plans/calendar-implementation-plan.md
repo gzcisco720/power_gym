@@ -52,7 +52,7 @@
 
 **Goal:** Data layer for all schedule operations  
 **Success Criteria:** All repository methods covered by passing unit tests  
-**Status:** Not Started
+**Status:** Complete
 
 ### Task 1.1 — Model
 
@@ -442,7 +442,7 @@ git commit -m "feat: add ScheduledSession repository"
 ## Stage 2: POST + GET /api/schedule
 
 **Goal:** Create sessions (single or recurring) and list by date range  
-**Status:** Not Started
+**Status:** Complete
 
 ### Task 2.1 — POST + GET route
 
@@ -722,7 +722,7 @@ git commit -m "feat: add POST+GET /api/schedule"
 ## Stage 3: PATCH + DELETE /api/schedule/[id]
 
 **Goal:** Edit and cancel sessions with one/future/all scope  
-**Status:** Not Started
+**Status:** Complete
 
 ### Task 3.1 — PATCH + DELETE [id] route
 
@@ -980,7 +980,7 @@ git commit -m "feat: add PATCH+DELETE /api/schedule/[id] with scope"
 ## Stage 4: GET /api/schedule/member/[memberId]
 
 **Goal:** Member schedule list endpoint  
-**Status:** Not Started
+**Status:** Complete
 
 **Files:**
 - Create: `src/app/api/schedule/member/[memberId]/route.ts`
@@ -1097,7 +1097,7 @@ git commit -m "feat: add GET /api/schedule/member/[memberId]"
 ## Stage 5: Email Reminder Template
 
 **Goal:** Extend IEmailService with sendSessionReminder, implement template  
-**Status:** Not Started
+**Status:** Complete
 
 **Files:**
 - Modify: `src/lib/email/index.ts`
@@ -1190,7 +1190,7 @@ git commit -m "feat: add sendSessionReminder email template and service method"
 ## Stage 6: Cron API Routes
 
 **Goal:** Hourly reminder cron + weekly series-extension cron  
-**Status:** Not Started
+**Status:** Complete
 
 Add `CRON_SECRET` env var (string, any random value) to `.env.local`. Both cron routes validate `Authorization: Bearer <CRON_SECRET>`.
 
@@ -1447,7 +1447,7 @@ git commit -m "feat: add cron route for weekly series extension"
 ## Stage 7: Member Unassign Side Effect
 
 **Goal:** When a member is reassigned, cancel their future sessions  
-**Status:** Not Started
+**Status:** Complete
 
 **Files:**
 - Modify: `src/app/api/owner/members/[id]/trainer/route.ts`
@@ -1519,7 +1519,7 @@ git commit -m "feat: cancel future sessions when member is reassigned"
 ## Stage 8: Calendar Grid UI Components
 
 **Goal:** WeekCalendarGrid and SessionEventCard — the visual core of the calendar  
-**Status:** Not Started
+**Status:** Complete
 
 **Files:**
 - Create: `src/components/calendar/session-event-card.tsx`
@@ -1780,7 +1780,7 @@ git commit -m "feat: add WeekCalendarGrid and SessionEventCard components"
 ## Stage 9: Create / Edit Modals
 
 **Goal:** Create session modal, recurring scope dialog, edit modal  
-**Status:** Not Started
+**Status:** Complete
 
 **Files:**
 - Create: `src/components/calendar/recurring-scope-dialog.tsx`
@@ -2233,7 +2233,7 @@ git commit -m "feat: add CreateSessionModal, EditSessionModal, RecurringScopeDia
 ## Stage 10: Pages + Navigation
 
 **Goal:** Wire up owner/trainer calendar pages and member schedule list; update sidebar nav  
-**Status:** Not Started
+**Status:** Complete
 
 ### Task 10.1 — Shared CalendarClient component
 

@@ -42,7 +42,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | E2E Test Suite | [e2e-implementation-plan.md](2026-04-25/plans/e2e-implementation-plan.md) | Complete |
 | Error Handling (toasts + error pages) | [error-handling-implementation-plan.md](2026-04-26/plans/error-handling-implementation-plan.md) | Complete |
 | Mobile Responsive Design | [mobile-responsive-implementation-plan.md](2026-04-26/plans/mobile-responsive-implementation-plan.md) | Complete |
-| Calendar & Session Scheduling | [calendar-implementation-plan.md](2026-04-27/plans/calendar-implementation-plan.md) | In Progress |
+| Calendar & Session Scheduling | [calendar-implementation-plan.md](2026-04-27/plans/calendar-implementation-plan.md) | Complete |
 
 ## API Usage Guides
 
