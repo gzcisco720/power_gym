@@ -1,15 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { PageHeader } from '@/components/shared/page-header';
 import { SectionHeader } from '@/components/shared/section-header';
 import { ProgressBar } from '@/components/shared/progress-bar';
 import { SetChip } from '@/components/shared/set-chip';
+import { cn } from '@/lib/utils';
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  return isMobile;
+}
 
 interface SessionSet {
   exerciseId: string;
@@ -41,6 +54,7 @@ interface SetInputState {
 
 export function SessionLogger({ session: initialSession }: { session: Session }) {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [session, setSession] = useState(initialSession);
   const [inputs, setInputs] = useState<SetInputState[]>(
     initialSession.sets.map(() => ({ weight: '', reps: '' })),
@@ -161,7 +175,7 @@ export function SessionLogger({ session: initialSession }: { session: Session })
         actions={completeButton}
       />
 
-      <div className="px-8 py-3">
+      <div className="px-4 sm:px-8 py-3">
         <ProgressBar
           value={completedCount}
           max={session.sets.length}
@@ -169,7 +183,7 @@ export function SessionLogger({ session: initialSession }: { session: Session })
         />
       </div>
 
-      <div className="px-8 py-4 space-y-4">
+      <div className="px-4 sm:px-8 py-4 space-y-4">
         {groupedExercises().map(({ exerciseId, exerciseName, isBodyweight, sets }) => (
           <Card key={exerciseId} className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4">
             <SectionHeader
@@ -211,7 +225,7 @@ export function SessionLogger({ session: initialSession }: { session: Session })
             {sets.some(({ index }) => activeSetIndex === index) && (() => {
               const activeSet = sets.find(({ index }) => activeSetIndex === index)!;
               return (
-                <div className="mt-3 pt-3 border-t border-[#141414] space-y-2">
+                <div className="hidden sm:block mt-3 pt-3 border-t border-[#141414] space-y-2">
                   <div className="text-[10px] font-semibold text-[#333] uppercase tracking-widest">
                     Log Set {activeSet.setNumber}
                   </div>
@@ -256,6 +270,78 @@ export function SessionLogger({ session: initialSession }: { session: Session })
           </Card>
         ))}
       </div>
+
+      <Sheet
+        open={isMobile && activeSetIndex !== null}
+        onOpenChange={(open) => { if (!open) setActiveSetIndex(null); }}
+      >
+        <SheetContent
+          side="bottom"
+          showCloseButton={false}
+          className="bg-[#0f0f0f] border-t border-[#1e1e1e] px-5 pb-8 pt-5 rounded-t-xl"
+        >
+          <SheetTitle className="sr-only">Log Set</SheetTitle>
+          {activeSetIndex !== null && (() => {
+            const set = session.sets[activeSetIndex];
+            return (
+              <div className="space-y-4">
+                <div>
+                  <div className="text-[10px] font-semibold uppercase tracking-[2px] text-[#444]">
+                    {set.exerciseName}
+                  </div>
+                  <div className="text-[15px] font-bold text-white mt-0.5">
+                    Set {set.setNumber} — {repsLabel(set.prescribedRepsMin, set.prescribedRepsMax)}
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  {!set.isBodyweight && (
+                    <div className="flex-1 space-y-1.5">
+                      <label className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#444]">
+                        Weight (kg)
+                      </label>
+                      <Input
+                        aria-label="Weight (kg)"
+                        type="number"
+                        value={inputs[activeSetIndex]?.weight ?? ''}
+                        onChange={(e) => {
+                          const next = [...inputs];
+                          next[activeSetIndex] = { ...next[activeSetIndex], weight: e.target.value };
+                          setInputs(next);
+                        }}
+                        className="h-12 text-[16px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#2a2a2a]"
+                        placeholder="e.g. 60"
+                      />
+                    </div>
+                  )}
+                  <div className={cn(!set.isBodyweight ? 'w-28' : 'flex-1', 'space-y-1.5')}>
+                    <label className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#444]">
+                      Reps
+                    </label>
+                    <Input
+                      aria-label="Reps"
+                      type="number"
+                      value={inputs[activeSetIndex]?.reps ?? ''}
+                      onChange={(e) => {
+                        const next = [...inputs];
+                        next[activeSetIndex] = { ...next[activeSetIndex], reps: e.target.value };
+                        setInputs(next);
+                      }}
+                      className="h-12 text-[16px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#2a2a2a]"
+                      placeholder="e.g. 10"
+                    />
+                  </div>
+                </div>
+                <Button
+                  onClick={() => logSet(activeSetIndex)}
+                  className="w-full h-12 bg-white text-black hover:bg-white/90 text-[13px] font-bold"
+                >
+                  Log Set
+                </Button>
+              </div>
+            );
+          })()}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
