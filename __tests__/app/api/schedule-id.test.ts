@@ -95,6 +95,32 @@ describe('PATCH /api/schedule/[id]', () => {
 describe('DELETE /api/schedule/[id]', () => {
   beforeEach(() => jest.clearAllMocks());
 
+  it('returns 401 unauthenticated', async () => {
+    mockAuth.mockResolvedValue(null as unknown as Awaited<ReturnType<typeof auth>>);
+    const { DELETE } = await import('@/app/api/schedule/[id]/route');
+    const res = await DELETE(new Request('http://localhost', { method: 'DELETE', body: JSON.stringify({}) }), params);
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 403 for member role', async () => {
+    mockAuth.mockResolvedValue(makeSession('member'));
+    const { DELETE } = await import('@/app/api/schedule/[id]/route');
+    const res = await DELETE(new Request('http://localhost', { method: 'DELETE', body: JSON.stringify({}) }), params);
+    expect(res.status).toBe(403);
+  });
+
+  it('returns 404 when session not found', async () => {
+    mockAuth.mockResolvedValue(makeSession('trainer', 't1'));
+    mockRepo.findById.mockResolvedValue(null);
+    const { DELETE } = await import('@/app/api/schedule/[id]/route');
+    const res = await DELETE(new Request('http://localhost', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scope: 'one' }),
+    }), params);
+    expect(res.status).toBe(404);
+  });
+
   it('scope=one calls cancelOne', async () => {
     mockAuth.mockResolvedValue(makeSession('trainer', 't1'));
     mockRepo.findById.mockResolvedValue({ _id: 'sess1', trainerId: { toString: () => 't1' }, seriesId: null, date: new Date() });
@@ -119,5 +145,17 @@ describe('DELETE /api/schedule/[id]', () => {
       body: JSON.stringify({ scope: 'future' }),
     }), params);
     expect(mockRepo.cancelFuture).toHaveBeenCalledWith('sid1', date);
+  });
+
+  it('scope=all calls cancelAll', async () => {
+    mockAuth.mockResolvedValue(makeSession('trainer', 't1'));
+    mockRepo.findById.mockResolvedValue({ _id: 'sess1', trainerId: { toString: () => 't1' }, seriesId: { toString: () => 'sid1' }, date: new Date() });
+    const { DELETE } = await import('@/app/api/schedule/[id]/route');
+    await DELETE(new Request('http://localhost', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scope: 'all' }),
+    }), params);
+    expect(mockRepo.cancelAll).toHaveBeenCalledWith('sid1');
   });
 });
