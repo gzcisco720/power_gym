@@ -28,6 +28,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | E2E Test Suite                     | [e2e-design.md](2026-04-25/plans/e2e-design.md)                                      | Approved |
 | Mobile Responsive Design           | [mobile-responsive-design.md](2026-04-26/plans/mobile-responsive-design.md)          | Approved |
 | Calendar & Session Scheduling      | [calendar-design.md](2026-04-27/plans/calendar-design.md)                            | Approved |
+| Progress Charts & Analytics        | [progress-design.md](2026-04-28/plans/progress-design.md)                            | Approved |
 
 ## Implementation Plans
 
