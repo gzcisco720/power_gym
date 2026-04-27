@@ -6,7 +6,7 @@ test.describe('Owner: Members', () => {
   test('member list shows member email and trainer name', async ({ page }) => {
     await page.goto('/owner/members');
     await expect(page.getByText('member@test.com', { exact: true })).toBeVisible();
-    await expect(page.getByText('Test Trainer').first()).toBeVisible();
+    await expect(page.getByText('Test Trainer', { exact: true }).nth(1)).toBeVisible();
   });
 
   test('reassign member to a different trainer', async ({ page }) => {
@@ -17,6 +17,6 @@ test.describe('Owner: Members', () => {
     await page.selectOption('select', { label: 'Test Trainer 2' });
     await page.getByRole('button', { name: /confirm/i }).click();
 
-    await expect(page.getByText('Test Trainer 2')).toBeVisible();
+    await expect(memberRow.getByText('Test Trainer 2').nth(1)).toBeVisible();
   });
 });
