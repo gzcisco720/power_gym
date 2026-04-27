@@ -132,7 +132,7 @@ export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
     <div className="space-y-8">
       <PageHeader title={memberName ? `${memberName}'s Body Tests` : 'Body Tests'} />
 
-      <section className="px-8">
+      <section className="px-4 sm:px-8">
         <SectionHeader title="New Body Test" />
         <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-5 mt-3 space-y-5">
           <div className="grid grid-cols-2 gap-4">
@@ -171,7 +171,7 @@ export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="space-y-1.5">
               <label
                 htmlFor="age"
@@ -323,7 +323,7 @@ export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
         </Card>
       </section>
 
-      <section className="px-8">
+      <section className="px-4 sm:px-8">
         <SectionHeader title="Test History" />
         {tests.length === 0 ? (
           <EmptyState

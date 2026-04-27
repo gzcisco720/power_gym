@@ -19,7 +19,7 @@ export default async function TrainerMembersPage() {
         title="Members"
         subtitle={`${members.length} member${members.length !== 1 ? 's' : ''}`}
       />
-      <div className="px-8 py-7">
+      <div className="px-4 sm:px-8 py-7">
         {members.length === 0 ? (
           <EmptyState
             heading="No members yet"
@@ -30,13 +30,13 @@ export default async function TrainerMembersPage() {
             {members.map((member) => (
               <Card
                 key={member._id.toString()}
-                className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4 flex items-center justify-between hover:border-[#2a2a2a] transition-colors"
+                className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between hover:border-[#2a2a2a] transition-colors"
               >
                 <div>
                   <div className="text-[14px] font-semibold text-white">{member.name}</div>
                   <div className="text-[12px] text-[#555] mt-0.5">{member.email}</div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 pt-3 border-t border-[#141414] sm:pt-0 sm:border-0">
                   <Link
                     href={`/trainer/members/${member._id}/plan`}
                     className="text-[11px] text-[#555] hover:text-[#888] transition-colors"

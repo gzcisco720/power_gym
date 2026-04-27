@@ -55,7 +55,7 @@ export function TrainerMemberPlanClient({ memberId, memberName, templates, activ
     <div className="space-y-8">
       <PageHeader title={memberName ? `${memberName}'s Training Plan` : 'Training Plan'} />
 
-      <section className="px-8">
+      <section className="px-4 sm:px-8">
         <SectionHeader title="Current Plan" />
         {activePlan ? (
           <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4 mt-3">
@@ -74,7 +74,7 @@ export function TrainerMemberPlanClient({ memberId, memberName, templates, activ
         )}
       </section>
 
-      <section className="px-8">
+      <section className="px-4 sm:px-8">
         <SectionHeader title="Assign Plan" />
         <div className="flex gap-3 items-center mt-3">
           <select
@@ -98,7 +98,7 @@ export function TrainerMemberPlanClient({ memberId, memberName, templates, activ
       </section>
 
       {pbs.length > 0 && (
-        <section className="px-8">
+        <section className="px-4 sm:px-8">
           <SectionHeader title="Personal Bests" />
           <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl overflow-hidden mt-3">
             <table className="w-full text-sm">
@@ -126,7 +126,7 @@ export function TrainerMemberPlanClient({ memberId, memberName, templates, activ
       )}
 
       {sessions.length > 0 && (
-        <section className="px-8">
+        <section className="px-4 sm:px-8">
           <SectionHeader title="Session History" />
           <div className="space-y-2 mt-3">
             {sessions.map((s) => (
