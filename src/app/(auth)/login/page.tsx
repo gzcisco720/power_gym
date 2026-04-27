@@ -21,7 +21,7 @@ export default async function LoginPage({
   const { error } = await searchParams;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#030303]">
+    <main className="flex min-h-screen items-center justify-center bg-[#030303] px-4">
       <div className="w-full max-w-sm space-y-8">
         <div>
           <div className="text-[11px] font-bold tracking-[3px] text-white mb-1">POWER GYM</div>

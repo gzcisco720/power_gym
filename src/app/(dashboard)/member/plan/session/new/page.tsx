@@ -56,7 +56,7 @@ export default async function SessionNewPage({
         title={`Start ${planDay.name}`}
         subtitle={`Day ${dayNumber} · ${planDay.exercises.length} exercises`}
       />
-      <div className="px-8 py-7">
+      <div className="px-4 sm:px-8 py-7">
         <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-6 max-w-md">
           <div className="text-[13px] font-semibold text-white mb-4">{planName}</div>
           <div className="space-y-2 mb-6">

@@ -27,7 +27,7 @@ export function PlanOverview({ plan }: PlanOverviewProps) {
 
   if (!plan) {
     return (
-      <div className="px-8 py-28">
+      <div className="px-4 sm:px-8 py-28">
         <EmptyState
           heading="No plan assigned"
           description="Your trainer hasn't assigned a training plan yet. Check back soon."
@@ -40,7 +40,7 @@ export function PlanOverview({ plan }: PlanOverviewProps) {
     <div>
       <PageHeader title="My Training Plan" subtitle={plan.name} />
 
-      <div className="px-8 py-7 space-y-6">
+      <div className="px-4 sm:px-8 py-7 space-y-6">
         <div>
           <SectionHeader title="Training Days" />
           <div className="mt-3.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">

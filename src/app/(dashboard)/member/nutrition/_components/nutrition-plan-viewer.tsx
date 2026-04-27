@@ -42,7 +42,7 @@ export function NutritionPlanViewer({ plan }: { plan: Plan | null }) {
     return (
       <div>
         <PageHeader title="Nutrition Plan" />
-        <div className="px-8 py-28">
+        <div className="px-4 sm:px-8 py-28">
           <EmptyState
             heading="No nutrition plan assigned"
             description="Your trainer hasn't assigned a nutrition plan yet. Check back soon."
@@ -56,7 +56,7 @@ export function NutritionPlanViewer({ plan }: { plan: Plan | null }) {
     <div>
       <PageHeader title="Nutrition Plan" subtitle={plan.name} />
 
-      <div className="px-8 py-7">
+      <div className="px-4 sm:px-8 py-7">
         <Tabs defaultValue={plan.dayTypes[0]?.name ?? ''}>
           <TabsList className="mb-6 bg-[#0c0c0c] border border-[#141414] rounded-lg p-1 h-auto w-auto">
             {plan.dayTypes.map((dt) => (

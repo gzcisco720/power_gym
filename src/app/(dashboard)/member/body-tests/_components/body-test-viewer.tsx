@@ -38,7 +38,7 @@ export function BodyTestViewer({ tests }: Props) {
     return (
       <div>
         <PageHeader title="Body Composition" />
-        <div className="px-8 py-28">
+        <div className="px-4 sm:px-8 py-28">
           <EmptyState
             heading="No body tests yet"
             description="Your trainer hasn't recorded a body composition test yet."
@@ -63,7 +63,7 @@ export function BodyTestViewer({ tests }: Props) {
     <div>
       <PageHeader title="Body Composition" />
 
-      <div className="px-8 py-7 space-y-7">
+      <div className="px-4 sm:px-8 py-7 space-y-7">
         {/* Latest stats */}
         <div>
           <SectionHeader title="Latest Results" />

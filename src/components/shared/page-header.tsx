@@ -8,7 +8,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
   return (
-    <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#0f0f0f] bg-[#050505] px-8 py-5">
+    <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#0f0f0f] bg-[#050505] px-4 py-4 sm:px-8 sm:py-5">
       <div>
         <h1 className="text-[18px] font-bold tracking-[-0.3px] text-white">{title}</h1>
         {subtitle && (

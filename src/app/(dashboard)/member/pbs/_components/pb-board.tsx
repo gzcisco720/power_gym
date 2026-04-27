@@ -21,7 +21,7 @@ export function PBBoard({ pbs }: { pbs: PB[] }) {
     return (
       <div>
         <PageHeader title="Personal Bests" />
-        <div className="px-8 py-28">
+        <div className="px-4 sm:px-8 py-28">
           <EmptyState
             heading="No personal bests yet"
             description="Complete your first session to start tracking your records."
@@ -34,7 +34,7 @@ export function PBBoard({ pbs }: { pbs: PB[] }) {
   return (
     <div>
       <PageHeader title="Personal Bests" subtitle={`${pbs.length} exercises tracked`} />
-      <div className="px-8 py-7">
+      <div className="px-4 sm:px-8 py-7">
         <SectionHeader title="All Records" />
         <Card className="mt-3.5 bg-[#0c0c0c] border-[#141414] rounded-xl overflow-hidden">
           {pbs.map((pb, i) => (
