@@ -40,4 +40,15 @@ describe('GET /api/cron/extend-series', () => {
       }),
     ]);
   });
+
+  it('skips series when findLatestInSeries returns null', async () => {
+    mockRepo.findActiveSeriesIds.mockResolvedValue(['sid1']);
+    mockRepo.findLatestInSeries.mockResolvedValue(null);
+    const { GET } = await import('@/app/api/cron/extend-series/route');
+    const res = await GET(new Request('http://localhost', { headers: { Authorization: 'Bearer test-secret' } }));
+    expect(res.status).toBe(200);
+    const body = await res.json() as { extended: number };
+    expect(body.extended).toBe(0);
+    expect(mockRepo.createMany).not.toHaveBeenCalled();
+  });
 });

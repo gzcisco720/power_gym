@@ -13,21 +13,25 @@ export async function GET(req: Request): Promise<Response> {
   let extended = 0;
 
   for (const seriesId of seriesIds) {
-    const latest = await repo.findLatestInSeries(seriesId);
-    if (!latest) continue;
+    try {
+      const latest = await repo.findLatestInSeries(seriesId);
+      if (!latest) continue;
 
-    const nextDate = new Date(latest.date);
-    nextDate.setDate(nextDate.getDate() + 7);
+      const nextDate = new Date(latest.date);
+      nextDate.setDate(nextDate.getDate() + 7);
 
-    await repo.createMany([{
-      seriesId,
-      trainerId: latest.trainerId.toString(),
-      memberIds: latest.memberIds.map((id) => id.toString()),
-      date: nextDate,
-      startTime: latest.startTime,
-      endTime: latest.endTime,
-    }]);
-    extended++;
+      await repo.createMany([{
+        seriesId,
+        trainerId: latest.trainerId.toString(),
+        memberIds: latest.memberIds.map((id) => id.toString()),
+        date: nextDate,
+        startTime: latest.startTime,
+        endTime: latest.endTime,
+      }]);
+      extended++;
+    } catch {
+      // continue to next series on failure
+    }
   }
 
   return Response.json({ extended });
