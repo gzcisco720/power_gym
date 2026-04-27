@@ -73,7 +73,7 @@ export default async function OwnerDashboardPage() {
         }
       />
 
-      <div className="px-8 py-7 space-y-8">
+      <div className="px-4 sm:px-8 py-7 space-y-8">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatCard label="Trainers" value={String(trainers.length)} />
           <StatCard label="Members" value={String(members.length)} />

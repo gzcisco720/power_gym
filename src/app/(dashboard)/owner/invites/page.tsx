@@ -42,7 +42,7 @@ export default async function OwnerInvitesPage() {
   return (
     <div>
       <PageHeader title="Invites" subtitle={`${pendingCount} pending`} />
-      <div className="px-8 py-7 space-y-10">
+      <div className="px-4 sm:px-8 py-7 space-y-10">
         <InviteListClient invites={invitePlain} />
         <div>
           <h2 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#2a2a2a] mb-3.5">

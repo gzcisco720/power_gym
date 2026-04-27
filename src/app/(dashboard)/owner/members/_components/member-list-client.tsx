@@ -38,21 +38,30 @@ export function MemberListClient({ members, trainers }: Props) {
   return (
     <>
       <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl overflow-hidden">
-        <div className="grid grid-cols-[1fr_180px_80px] border-b border-[#141414] px-5 py-2.5 text-[9px] font-semibold uppercase tracking-[1.5px] text-[#2a2a2a]">
+        {/* Column header — desktop only */}
+        <div className="hidden sm:grid grid-cols-[1fr_180px_80px] border-b border-[#141414] px-5 py-2.5 text-[9px] font-semibold uppercase tracking-[1.5px] text-[#2a2a2a]">
           <div>Member</div>
           <div>Trainer</div>
           <div></div>
         </div>
+
         {members.map((member) => (
           <div
             key={member._id}
-            className="grid grid-cols-[1fr_180px_80px] items-center border-b border-[#0f0f0f] px-5 py-3.5 last:border-0 hover:bg-[#0e0e0e] transition-colors"
+            className="flex items-start justify-between gap-3 border-b border-[#0f0f0f] px-5 py-3.5 last:border-0 hover:bg-[#0e0e0e] transition-colors sm:grid sm:grid-cols-[1fr_180px_80px] sm:items-center"
           >
             <div>
               <div className="text-[13px] font-medium text-[#bbb]">{member.name}</div>
               <div className="text-[10px] text-[#2e2e2e] mt-0.5">{member.email}</div>
+              {/* Trainer name visible inline on mobile */}
+              <div className="text-[10px] text-[#3a3a3a] mt-1 sm:hidden">
+                {member.trainerName ?? '—'}
+              </div>
             </div>
-            <div className="text-[11px] text-[#3a3a3a]">{member.trainerName ?? '—'}</div>
+            {/* Trainer name column — desktop only */}
+            <div className="hidden sm:block text-[11px] text-[#3a3a3a]">
+              {member.trainerName ?? '—'}
+            </div>
             <div>
               <Button
                 variant="ghost"

@@ -38,7 +38,7 @@ export default async function OwnerMembersPage() {
         title="Members"
         subtitle={`${memberRows.length} member${memberRows.length !== 1 ? 's' : ''} across all trainers`}
       />
-      <div className="px-8 py-7">
+      <div className="px-4 sm:px-8 py-7">
         <MemberListClient members={memberRows} trainers={trainerOptions} />
       </div>
     </div>

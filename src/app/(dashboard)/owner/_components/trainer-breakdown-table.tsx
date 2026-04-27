@@ -24,32 +24,47 @@ export function TrainerBreakdownTable({ trainers }: Props) {
 
   return (
     <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl overflow-hidden">
-      <div className="grid grid-cols-[1fr_100px_120px_80px] border-b border-[#141414] px-5 py-2.5 text-[9px] font-semibold uppercase tracking-[1.5px] text-[#2a2a2a]">
+      {/* Column header — desktop only */}
+      <div className="hidden sm:grid grid-cols-[1fr_100px_120px_80px] border-b border-[#141414] px-5 py-2.5 text-[9px] font-semibold uppercase tracking-[1.5px] text-[#2a2a2a]">
         <div>Trainer</div>
         <div>Members</div>
         <div>Sessions / mo</div>
         <div></div>
       </div>
+
       {trainers.map((trainer) => (
         <div
           key={trainer._id}
-          className="grid grid-cols-[1fr_100px_120px_80px] items-center border-b border-[#0f0f0f] px-5 py-3.5 last:border-0 hover:bg-[#0e0e0e] transition-colors"
+          className="flex items-start justify-between gap-3 border-b border-[#0f0f0f] px-5 py-3.5 last:border-0 hover:bg-[#0e0e0e] transition-colors sm:grid sm:grid-cols-[1fr_100px_120px_80px] sm:items-center"
         >
           <div>
             <div className="text-[13px] font-medium text-[#ccc]">{trainer.name}</div>
             <div className="text-[10px] text-[#2e2e2e] mt-0.5">{trainer.email}</div>
+            {/* Stats inline on mobile */}
+            <div className="flex gap-4 mt-1.5 sm:hidden">
+              <span className="text-[11px] font-semibold text-[#666]">
+                {trainer.memberCount}
+                <span className="text-[9px] font-normal text-[#2e2e2e] ml-0.5">members</span>
+              </span>
+              <span className="text-[11px] font-semibold text-[#666]">
+                {trainer.sessionsThisMonth}
+                <span className="text-[9px] font-normal text-[#2e2e2e] ml-0.5">sessions/mo</span>
+              </span>
+            </div>
           </div>
-          <div className="text-[13px] font-semibold text-[#888]">
+          {/* Members column — desktop only */}
+          <div className="hidden sm:block text-[13px] font-semibold text-[#888]">
             {trainer.memberCount}
-            <span className="text-[10px] text-[#2e2e2e] ml-1">members</span>
+            <span className="text-[10px] font-medium text-[#2e2e2e] ml-1">members</span>
           </div>
-          <div className="text-[13px] font-semibold text-[#888]">
+          {/* Sessions column — desktop only */}
+          <div className="hidden sm:block text-[13px] font-semibold text-[#888]">
             {trainer.sessionsThisMonth}
           </div>
           <div>
             <Link
               href="/owner/trainers"
-              className="text-[10px] text-[#333] hover:text-[#666] transition-colors"
+              className="text-[10px] text-[#333] hover:text-[#666] transition-colors whitespace-nowrap"
             >
               Manage →
             </Link>
