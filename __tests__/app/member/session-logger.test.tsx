@@ -134,13 +134,13 @@ describe('SessionLogger', () => {
     const setChips = screen.getAllByRole('button', { name: /set 1/i });
     fireEvent.click(setChips[0]);
 
-    const weightInput = screen.getAllByRole('spinbutton', { name: /weight/i })[0];
-    const repsInput = screen.getAllByRole('spinbutton', { name: /reps/i })[0];
+    const weightInput = screen.getByRole('spinbutton', { name: /weight/i });
+    const repsInput = screen.getByRole('spinbutton', { name: /reps/i });
 
     await user.type(weightInput, '80');
     await user.type(repsInput, '10');
 
-    const logButton = screen.getAllByRole('button', { name: /log set/i })[0];
+    const logButton = screen.getByRole('button', { name: /log set/i });
     fireEvent.click(logButton);
 
     await waitFor(() =>
@@ -168,8 +168,8 @@ describe('SessionLogger', () => {
     const setChips = screen.getAllByRole('button', { name: /set 1/i });
     fireEvent.click(setChips[0]);
 
-    fireEvent.change(screen.getAllByRole('spinbutton', { name: /reps/i })[0], { target: { value: '10' } });
-    fireEvent.click(screen.getAllByRole('button', { name: /log set/i })[0]);
+    fireEvent.change(screen.getByRole('spinbutton', { name: /reps/i }), { target: { value: '10' } });
+    fireEvent.click(screen.getByRole('button', { name: /log set/i }));
 
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Set logged'));
   });
@@ -184,21 +184,23 @@ describe('SessionLogger', () => {
     const setChips = screen.getAllByRole('button', { name: /set 1/i });
     fireEvent.click(setChips[0]);
 
-    fireEvent.change(screen.getAllByRole('spinbutton', { name: /reps/i })[0], { target: { value: '10' } });
-    fireEvent.click(screen.getAllByRole('button', { name: /log set/i })[0]);
+    fireEvent.change(screen.getByRole('spinbutton', { name: /reps/i }), { target: { value: '10' } });
+    fireEvent.click(screen.getByRole('button', { name: /log set/i }));
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Session not found'));
   });
 
   it('renders mobile Sheet with duplicate inputs when set chip is clicked', () => {
+    const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
-    render(<SessionLogger session={mockSession} />);
-
-    const setChips = screen.getAllByRole('button', { name: /set 1/i });
-    fireEvent.click(setChips[0]);
-
-    // innerWidth=375 → isMobile=true → Sheet opens → inline panel + Sheet = 2 of each
-    expect(screen.getAllByLabelText('Weight (kg)')).toHaveLength(2);
-    expect(screen.getAllByLabelText('Reps')).toHaveLength(2);
+    try {
+      render(<SessionLogger session={mockSession} />);
+      fireEvent.click(screen.getAllByRole('button', { name: /set 1/i })[0]);
+      // innerWidth=375 → isMobile=true → Sheet opens → inline panel + Sheet = 2 of each
+      expect(screen.getAllByLabelText('Weight (kg)')).toHaveLength(2);
+      expect(screen.getAllByLabelText('Reps')).toHaveLength(2);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
   });
 });
