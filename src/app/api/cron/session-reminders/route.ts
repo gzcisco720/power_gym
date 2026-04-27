@@ -3,6 +3,12 @@ import { MongoScheduledSessionRepository } from '@/lib/repositories/scheduled-se
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { getEmailService } from '@/lib/email/index';
 
+interface ResolvedMember {
+  index: number;
+  name: string;
+  email: string;
+}
+
 export async function GET(req: Request): Promise<Response> {
   const auth = req.headers.get('Authorization');
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -29,12 +35,6 @@ export async function GET(req: Request): Promise<Response> {
       s.memberIds.map((id) => userRepo.findById(id.toString())),
     );
 
-    interface ResolvedMember {
-      index: number;
-      name: string;
-      email: string;
-    }
-
     const members: ResolvedMember[] = memberDocs
       .map((m, i) => (m !== null ? { index: i, name: m.name, email: m.email } : null))
       .filter((m): m is ResolvedMember => m !== null);
@@ -50,15 +50,19 @@ export async function GET(req: Request): Promise<Response> {
       const otherNames = members
         .filter((m) => m.index !== member.index)
         .map((m) => m.name);
-      await emailService.sendSessionReminder({
-        to: member.email,
-        memberName: member.name,
-        trainerName: trainer.name,
-        date: dateLabel,
-        startTime: s.startTime,
-        endTime: s.endTime,
-        groupMembers: otherNames,
-      });
+      try {
+        await emailService.sendSessionReminder({
+          to: member.email,
+          memberName: member.name,
+          trainerName: trainer.name,
+          date: dateLabel,
+          startTime: s.startTime,
+          endTime: s.endTime,
+          groupMembers: otherNames,
+        });
+      } catch {
+        // log and continue — marking reminder sent below to avoid re-sending to other members
+      }
     }
 
     await repo.markReminderSent(s._id.toString());
