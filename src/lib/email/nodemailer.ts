@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
-import type { IEmailService, SendInviteParams } from '@/lib/email/index';
+import type { IEmailService, SendInviteParams, SendSessionReminderParams } from '@/lib/email/index';
 import { inviteEmailTemplate } from '@/lib/email/templates/invite';
+import { sessionReminderTemplate } from '@/lib/email/templates/session-reminder';
 
 function createTransport() {
   const provider = process.env.EMAIL_PROVIDER;
@@ -35,6 +36,17 @@ export class NodemailerEmailService implements IEmailService {
       inviteUrl: params.inviteUrl,
     });
 
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM,
+      to: params.to,
+      subject,
+      html,
+    });
+  }
+
+  async sendSessionReminder(params: SendSessionReminderParams): Promise<void> {
+    const transporter = createTransport();
+    const { subject, html } = sessionReminderTemplate(params);
     await transporter.sendMail({
       from: process.env.SMTP_FROM,
       to: params.to,
