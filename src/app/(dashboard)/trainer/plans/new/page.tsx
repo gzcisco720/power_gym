@@ -27,7 +27,7 @@ export default function NewPlanPage() {
   return (
     <div>
       <PageHeader title="新建训练计划" />
-      <div className="px-8 py-7">
+      <div className="px-4 sm:px-8 py-7">
         <PlanTemplateForm onSubmit={handleSubmit} />
       </div>
     </div>

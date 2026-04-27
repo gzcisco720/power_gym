@@ -43,12 +43,12 @@ export default function EditPlanPage({ params }: { params: Promise<{ id: string 
     router.push('/trainer/plans');
   }
 
-  if (!template) return <p className="px-8 py-7 text-[#444] text-sm">加载中...</p>;
+  if (!template) return <p className="px-4 sm:px-8 py-7 text-[#444] text-sm">加载中...</p>;
 
   return (
     <div>
       <PageHeader title="编辑训练计划" />
-      <div className="px-8 py-7">
+      <div className="px-4 sm:px-8 py-7">
         <PlanTemplateForm initialData={template} onSubmit={handleSubmit} />
       </div>
     </div>

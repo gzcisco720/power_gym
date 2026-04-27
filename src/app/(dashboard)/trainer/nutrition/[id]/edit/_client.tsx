@@ -51,7 +51,7 @@ export function EditNutritionTemplateClient({ id, initialData, foods }: Props) {
   return (
     <div>
       <PageHeader title="编辑营养计划" />
-      <div className="px-8 py-7">
+      <div className="px-4 sm:px-8 py-7">
         <NutritionTemplateForm initialData={initialData} onSubmit={handleSubmit} foods={foods} />
       </div>
     </div>

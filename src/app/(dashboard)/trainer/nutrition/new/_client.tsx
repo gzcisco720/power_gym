@@ -45,7 +45,7 @@ export function NewNutritionTemplateClient({ foods }: { foods: FoodOption[] }) {
   return (
     <div>
       <PageHeader title="新建营养计划" />
-      <div className="px-8 py-7">
+      <div className="px-4 sm:px-8 py-7">
         <NutritionTemplateForm onSubmit={handleSubmit} foods={foods} />
       </div>
     </div>

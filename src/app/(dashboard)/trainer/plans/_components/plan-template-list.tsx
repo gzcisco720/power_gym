@@ -40,7 +40,7 @@ export function PlanTemplateList({ templates, onDelete }: Props) {
         }
       />
 
-      <div className="px-8 py-7">
+      <div className="px-4 sm:px-8 py-7">
         {templates.length === 0 ? (
           <EmptyState
             heading="No templates yet"
