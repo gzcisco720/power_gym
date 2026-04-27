@@ -14,13 +14,17 @@ export async function GET(_req: Request, { params }: RouteContext): Promise<Resp
     return Response.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  await connectDB();
-  const repo = new MongoScheduledSessionRepository();
-  const all = await repo.findByMember(memberId);
-  const now = new Date();
+  try {
+    await connectDB();
+    const repo = new MongoScheduledSessionRepository();
+    const all = await repo.findByMember(memberId);
+    const now = new Date();
 
-  const upcoming = all.filter((s) => s.date >= now && s.status === 'scheduled');
-  const history = all.filter((s) => s.date < now || s.status === 'cancelled');
+    const upcoming = all.filter((s) => s.date >= now && s.status === 'scheduled');
+    const history = all.filter((s) => s.date < now || s.status === 'cancelled');
 
-  return Response.json({ upcoming, history });
+    return Response.json({ upcoming, history });
+  } catch {
+    return Response.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }

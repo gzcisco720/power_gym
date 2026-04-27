@@ -79,4 +79,13 @@ describe('GET /api/schedule/member/[memberId]', () => {
     expect(res.status).toBe(200);
     expect(mockRepo.findByMember).toHaveBeenCalledWith('m1');
   });
+
+  it('owner can view any member schedule', async () => {
+    mockAuth.mockResolvedValue(makeSession('owner', 'o1'));
+    mockRepo.findByMember.mockResolvedValue([]);
+    const { GET } = await import('@/app/api/schedule/member/[memberId]/route');
+    const res = await GET(new Request('http://localhost'), params);
+    expect(res.status).toBe(200);
+    expect(mockRepo.findByMember).toHaveBeenCalledWith('m1');
+  });
 });
