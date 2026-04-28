@@ -28,6 +28,10 @@ export interface IWorkoutSessionRepository {
   findCompletedDates(memberId: string, since: Date): Promise<Date[]>;
   findTrainedExercises(memberId: string): Promise<{ exerciseId: string; exerciseName: string }[]>;
   findExerciseHistory(memberId: string, exerciseId: string): Promise<{ date: Date; estimatedOneRM: number }[]>;
+  findMemberStats(memberId: string): Promise<{
+    completedCount: number;
+    lastCompletedAt: Date | null;
+  }>;
 }
 
 export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository {
@@ -134,5 +138,37 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
         return { date: session.completedAt!, estimatedOneRM: Math.round(maxOneRM * 10) / 10 };
       })
       .filter((entry): entry is { date: Date; estimatedOneRM: number } => entry !== null);
+  }
+
+  async findMemberStats(memberId: string): Promise<{
+    completedCount: number;
+    lastCompletedAt: Date | null;
+  }> {
+    const results = await WorkoutSessionModel.aggregate<{
+      completedCount: number;
+      lastCompletedAt: Date | null;
+    }>([
+      {
+        $match: {
+          memberId: new mongoose.Types.ObjectId(memberId),
+          completedAt: { $ne: null },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          completedCount: { $sum: 1 },
+          lastCompletedAt: { $max: '$completedAt' },
+        },
+      },
+    ]);
+
+    if (results.length === 0) {
+      return { completedCount: 0, lastCompletedAt: null };
+    }
+    return {
+      completedCount: results[0].completedCount,
+      lastCompletedAt: results[0].lastCompletedAt,
+    };
   }
 }

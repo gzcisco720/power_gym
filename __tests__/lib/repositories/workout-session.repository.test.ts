@@ -156,4 +156,28 @@ describe('MongoWorkoutSessionRepository', () => {
       expect(result).toBe(0);
     });
   });
+
+  describe('findMemberStats', () => {
+    it('returns completedCount and lastCompletedAt from aggregation', async () => {
+      const aggMock = jest.fn().mockResolvedValue([
+        { completedCount: 5, lastCompletedAt: new Date('2026-04-10') },
+      ]);
+      (WorkoutSessionModel as unknown as { aggregate: jest.Mock }).aggregate = aggMock;
+
+      const result = await repo.findMemberStats('000000000000000000000001');
+
+      expect(result.completedCount).toBe(5);
+      expect(result.lastCompletedAt).toEqual(new Date('2026-04-10'));
+    });
+
+    it('returns zero count and null date when no sessions', async () => {
+      const aggMock = jest.fn().mockResolvedValue([]);
+      (WorkoutSessionModel as unknown as { aggregate: jest.Mock }).aggregate = aggMock;
+
+      const result = await repo.findMemberStats('000000000000000000000001');
+
+      expect(result.completedCount).toBe(0);
+      expect(result.lastCompletedAt).toBeNull();
+    });
+  });
 });
