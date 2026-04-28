@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { PageHeader } from '@/components/shared/page-header';
 import { SectionHeader } from '@/components/shared/section-header';
@@ -20,6 +21,7 @@ interface HistoryPoint {
 
 function buildHeatmapWeeks(activeDates: Set<string>): {
   monthLabel: string | null;
+  weekKey: string;
   days: { inRange: boolean; hasSession: boolean }[];
 }[] {
   const today = new Date();
@@ -36,7 +38,7 @@ function buildHeatmapWeeks(activeDates: Set<string>): {
   const since = new Date(today);
   since.setDate(today.getDate() - 90);
 
-  const weeks: { monthLabel: string | null; days: { inRange: boolean; hasSession: boolean }[] }[] = [];
+  const weeks: { monthLabel: string | null; weekKey: string; days: { inRange: boolean; hasSession: boolean }[] }[] = [];
   let prevMonth = -1;
 
   for (let w = 0; w < 13; w++) {
@@ -55,10 +57,13 @@ function buildHeatmapWeeks(activeDates: Set<string>): {
       const date = new Date(weekMonday);
       date.setDate(weekMonday.getDate() + d);
       const inRange = date >= since && date <= today;
-      const dateStr = date.toISOString().split('T')[0];
+      const y = date.getFullYear();
+      const mo = String(date.getMonth() + 1).padStart(2, '0');
+      const d2 = String(date.getDate()).padStart(2, '0');
+      const dateStr = `${y}-${mo}-${d2}`;
       days.push({ inRange, hasSession: inRange && activeDates.has(dateStr) });
     }
-    weeks.push({ monthLabel, days });
+    weeks.push({ monthLabel, weekKey: weekMonday.toISOString(), days });
   }
 
   return weeks;
@@ -80,10 +85,11 @@ export function ProgressClient({
       setLoading(true);
       try {
         const r = await fetch(`/api/progress/${memberId}?exerciseId=${selectedExerciseId}`);
+        if (!r.ok) throw new Error('Failed to fetch');
         const data = (await r.json()) as { history: HistoryPoint[] };
         setHistory(data.history ?? []);
       } catch {
-        // silently ignore fetch errors
+        toast.error('Failed to load exercise history');
       } finally {
         setLoading(false);
       }
@@ -112,20 +118,20 @@ export function ProgressClient({
               <div className="flex flex-col gap-1 mr-1">
                 <div className="h-3" />
                 {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((label, i) => (
-                  <div key={i} className="h-3 w-3 flex items-center justify-center text-[9px] text-[#444]">
+                  <div key={`${label}-${i}`} className="h-3 w-3 flex items-center justify-center text-[9px] text-[#444]">
                     {label}
                   </div>
                 ))}
               </div>
               {/* Week columns */}
-              {weeks.map((week, wi) => (
-                <div key={wi} className="flex flex-col gap-1">
+              {weeks.map((week) => (
+                <div key={week.weekKey} className="flex flex-col gap-1">
                   <div className="h-3 text-[9px] text-[#444] whitespace-nowrap">
                     {week.monthLabel ?? ''}
                   </div>
                   {week.days.map((day, di) => (
                     <div
-                      key={di}
+                      key={`${week.weekKey}-${di}`}
                       className="w-3 h-3 rounded-[2px]"
                       style={{
                         backgroundColor: day.hasSession
