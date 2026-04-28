@@ -25,4 +25,11 @@ test.describe('Trainer: Members', () => {
 
     await expect(page.getByRole('paragraph').filter({ hasText: 'E2E Test Plan' })).toBeVisible();
   });
+
+  test('trainer navigates to member progress page and sees heatmap', async ({ page }) => {
+    await page.goto('/trainer/members');
+    await page.getByRole('link', { name: 'Progress →' }).click();
+    await page.waitForURL(/\/trainer\/members\/.+\/progress/);
+    await expect(page.getByText('Training Frequency')).toBeVisible();
+  });
 });
