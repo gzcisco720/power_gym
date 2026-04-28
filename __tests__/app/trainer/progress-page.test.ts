@@ -56,6 +56,17 @@ describe('TrainerMemberProgressPage', () => {
     expect(result).toBeNull();
   });
 
+  it('allows owner to view any member progress', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'o1', role: 'owner' } } as never);
+    mockUserRepo.findById.mockResolvedValue({
+      name: 'Test Member',
+      trainerId: { toString: () => 't1' },
+    });
+    const { default: Page } = await import('@/app/(dashboard)/trainer/members/[id]/progress/page');
+    const result = await Page(makeParams('m1'));
+    expect(result).not.toBeNull();
+  });
+
   it('calls findCompletedDates and findTrainedExercises with the member id', async () => {
     mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
     mockUserRepo.findById.mockResolvedValue({

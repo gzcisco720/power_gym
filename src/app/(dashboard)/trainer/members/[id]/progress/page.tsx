@@ -3,6 +3,7 @@ import { connectDB } from '@/lib/db/connect';
 import { MongoWorkoutSessionRepository } from '@/lib/repositories/workout-session.repository';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { ProgressClient } from '@/app/(dashboard)/member/progress/_components/progress-client';
+import type { UserRole } from '@/types/auth';
 
 export default async function TrainerMemberProgressPage({
   params,
@@ -17,7 +18,9 @@ export default async function TrainerMemberProgressPage({
   await connectDB();
 
   const member = await new MongoUserRepository().findById(memberId);
-  if (!member || member.trainerId?.toString() !== session.user.id) return null;
+  if (!member) return null;
+  const role = session.user.role as UserRole;
+  if (role === 'trainer' && member.trainerId?.toString() !== session.user.id) return null;
 
   const repo = new MongoWorkoutSessionRepository();
 
