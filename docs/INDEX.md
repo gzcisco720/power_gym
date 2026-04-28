@@ -29,7 +29,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Mobile Responsive Design           | [mobile-responsive-design.md](2026-04-26/plans/mobile-responsive-design.md)          | Approved |
 | Calendar & Session Scheduling      | [calendar-design.md](2026-04-27/plans/calendar-design.md)                            | Approved |
 | Progress Charts & Analytics        | [progress-design.md](2026-04-28/plans/progress-design.md)                            | Approved |
-| Member Hub 页面（Tab 导航）         | [member-hub-design.md](2026-04-28/plans/member-hub-design.md)                        | Draft    |
+| Member Hub 页面（Tab 导航）         | [member-hub-design.md](2026-04-28/plans/member-hub-design.md)                        | Approved |
 
 ## Implementation Plans
 
@@ -46,6 +46,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Mobile Responsive Design | [mobile-responsive-implementation-plan.md](2026-04-26/plans/mobile-responsive-implementation-plan.md) | Complete |
 | Calendar & Session Scheduling | [calendar-implementation-plan.md](2026-04-27/plans/calendar-implementation-plan.md) | Complete |
 | Progress Charts & Analytics | [progress-implementation-plan.md](2026-04-28/plans/progress-implementation-plan.md) | Complete |
+| Member Hub 页面（Tab 导航） | [member-hub-implementation-plan.md](2026-04-28/plans/member-hub-implementation-plan.md) | In Progress |
 
 ## API Usage Guides
 
