@@ -57,6 +57,7 @@ const WorkoutSessionSchema = new Schema<IWorkoutSession>(
 );
 
 WorkoutSessionSchema.index({ memberId: 1, startedAt: -1 });
+WorkoutSessionSchema.index({ memberId: 1, completedAt: 1 });
 
 export const WorkoutSessionModel: Model<IWorkoutSession> =
   mongoose.models.WorkoutSession ??

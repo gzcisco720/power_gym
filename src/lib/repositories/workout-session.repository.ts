@@ -94,7 +94,7 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
   async findCompletedDates(memberId: string, since: Date): Promise<Date[]> {
     const sessions = await WorkoutSessionModel.find({
       memberId: new mongoose.Types.ObjectId(memberId),
-      completedAt: { $gte: since, $ne: null },
+      completedAt: { $gte: since },
     }).select('completedAt');
     return sessions.map((s) => s.completedAt!);
   }

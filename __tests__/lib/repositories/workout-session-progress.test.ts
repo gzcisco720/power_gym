@@ -42,7 +42,7 @@ describe('MongoWorkoutSessionRepository — progress methods', () => {
       expect(mockFind).toHaveBeenCalledWith(
         expect.objectContaining({
           memberId: expect.any(mongoose.Types.ObjectId),
-          completedAt: { $gte: since, $ne: null },
+          completedAt: { $gte: since },
         }),
       );
       expect(result).toEqual([date1, date2]);
