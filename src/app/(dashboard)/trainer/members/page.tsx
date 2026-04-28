@@ -55,6 +55,12 @@ export default async function TrainerMembersPage() {
                   >
                     Nutrition →
                   </Link>
+                  <Link
+                    href={`/trainer/members/${member._id}/progress`}
+                    className="text-[11px] text-[#555] hover:text-[#888] transition-colors"
+                  >
+                    Progress →
+                  </Link>
                 </div>
               </Card>
             ))}

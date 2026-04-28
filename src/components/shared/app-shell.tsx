@@ -15,6 +15,7 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
       items: [
         { href: '/member/plan', label: 'My Plan' },
         { href: '/member/pbs', label: 'Personal Bests' },
+        { href: '/member/progress', label: 'My Progress' },
         { href: '/member/schedule', label: 'My Schedule' },
       ],
     },
