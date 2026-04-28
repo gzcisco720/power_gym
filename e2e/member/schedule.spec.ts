@@ -6,7 +6,7 @@ test.describe('Member: Schedule', () => {
   test('shows upcoming session with trainer name', async ({ page }) => {
     await page.goto('/member/schedule');
     await expect(page.getByText(/09:00–10:00/)).toBeVisible();
-    await expect(page.getByText('Test Trainer')).toBeVisible();
+    await expect(page.getByText('Test Trainer').first()).toBeVisible();
   });
 
   test('history section expands to reveal past sessions', async ({ page }) => {

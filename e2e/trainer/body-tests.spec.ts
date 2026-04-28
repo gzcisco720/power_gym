@@ -5,9 +5,10 @@ test.use({ storageState: 'e2e/.auth/trainer.json' });
 test.describe('Trainer: Body Tests', () => {
   test('add new body test for member', async ({ page }) => {
     await page.goto('/trainer/members');
-    const bodyTestsLink = page.getByRole('link', { name: 'Body Tests →' });
-    const href = await bodyTestsLink.getAttribute('href');
-    await page.goto(href!);
+    await page.getByText('Test Member').click();
+    await page.waitForURL(/\/trainer\/members\/.+$/);
+    await page.getByRole('link', { name: 'Body Tests', exact: true }).click();
+    await page.waitForURL(/\/trainer\/members\/.+\/body-tests/);
 
     await page.selectOption('#protocol', '3site');
 
