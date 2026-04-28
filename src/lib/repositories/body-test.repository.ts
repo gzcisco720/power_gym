@@ -29,6 +29,7 @@ export interface IBodyTestRepository {
   create(data: CreateBodyTestData): Promise<IBodyTest>;
   findByMember(memberId: string): Promise<IBodyTest[]>;
   deleteById(testId: string, trainerId: string): Promise<void>;
+  findLatestByMember(memberId: string): Promise<IBodyTest | null>;
 }
 
 export class MongoBodyTestRepository implements IBodyTestRepository {
@@ -50,5 +51,13 @@ export class MongoBodyTestRepository implements IBodyTestRepository {
       _id: new mongoose.Types.ObjectId(testId),
       trainerId: new mongoose.Types.ObjectId(trainerId),
     });
+  }
+
+  async findLatestByMember(memberId: string): Promise<IBodyTest | null> {
+    return BodyTestModel.findOne({
+      memberId: new mongoose.Types.ObjectId(memberId),
+    })
+      .sort({ date: -1 })
+      .limit(1);
   }
 }

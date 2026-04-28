@@ -5,6 +5,7 @@ import { BodyTestModel } from '@/lib/db/models/body-test.model';
 jest.mock('@/lib/db/models/body-test.model', () => ({
   BodyTestModel: Object.assign(jest.fn(), {
     find: jest.fn(),
+    findOne: jest.fn(),
     deleteOne: jest.fn(),
   }),
 }));
@@ -118,6 +119,33 @@ describe('MongoBodyTestRepository', () => {
         _id: expect.any(mongoose.Types.ObjectId),
         trainerId: expect.any(mongoose.Types.ObjectId),
       });
+    });
+  });
+
+  describe('findLatestByMember', () => {
+    it('returns the first result from findOne sorted by date desc', async () => {
+      const mockTest = { _id: 'bt1', weight: 73, bodyFatPct: 18.2 };
+      const limitMock = jest.fn().mockResolvedValue(mockTest);
+      const sortMock = jest.fn().mockReturnValue({ limit: limitMock });
+      mockModel.findOne = jest.fn().mockReturnValue({ sort: sortMock });
+
+      const result = await repo.findLatestByMember(memberId);
+
+      expect(mockModel.findOne).toHaveBeenCalledWith({
+        memberId: expect.any(mongoose.Types.ObjectId),
+      });
+      expect(sortMock).toHaveBeenCalledWith({ date: -1 });
+      expect(result).toEqual(mockTest);
+    });
+
+    it('returns null when no tests exist', async () => {
+      const limitMock = jest.fn().mockResolvedValue(null);
+      const sortMock = jest.fn().mockReturnValue({ limit: limitMock });
+      mockModel.findOne = jest.fn().mockReturnValue({ sort: sortMock });
+
+      const result = await repo.findLatestByMember(memberId);
+
+      expect(result).toBeNull();
     });
   });
 });
