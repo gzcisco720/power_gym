@@ -43,7 +43,7 @@ export default function EditPlanPage({ params }: { params: Promise<{ id: string 
     router.push('/trainer/plans');
   }
 
-  if (!template) return <p className="px-4 sm:px-8 py-7 text-[#444] text-sm">加载中...</p>;
+  if (!template) return <p className="px-4 sm:px-8 py-7 text-[#888] text-sm">加载中...</p>;
 
   return (
     <div>

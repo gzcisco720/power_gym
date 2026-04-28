@@ -47,14 +47,14 @@ export function PBBoard({ pbs }: { pbs: PB[] }) {
             >
               <div>
                 <div className="text-[13px] font-medium text-[#ccc]">{pb.exerciseName}</div>
-                <div className="text-[10px] text-[#2e2e2e] mt-0.5">
+                <div className="text-[10px] text-[#666] mt-0.5">
                   {pb.bestWeight} kg × {pb.bestReps}
                 </div>
               </div>
               <div className="text-right">
                 <div className="text-[15px] font-bold text-white">
                   {pb.estimatedOneRM.toFixed(1)}
-                  <span className="text-[10px] font-medium text-[#333] ml-1">kg est. 1RM</span>
+                  <span className="text-[10px] font-medium text-[#777] ml-1">kg est. 1RM</span>
                 </div>
               </div>
             </motion.div>

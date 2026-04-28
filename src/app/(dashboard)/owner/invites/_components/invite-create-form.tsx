@@ -58,7 +58,7 @@ export function InviteCreateForm({ trainers }: Props) {
         <div className="space-y-1.5">
           <label
             htmlFor="invite-role"
-            className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#2a2a2a]"
+            className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#555]"
           >
             Role
           </label>
@@ -77,7 +77,7 @@ export function InviteCreateForm({ trainers }: Props) {
           <div className="space-y-1.5">
             <label
               htmlFor="invite-trainer"
-              className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#2a2a2a]"
+              className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#555]"
             >
               Assign to Trainer
             </label>
@@ -99,7 +99,7 @@ export function InviteCreateForm({ trainers }: Props) {
         <div className="space-y-1.5">
           <label
             htmlFor="invite-email"
-            className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#2a2a2a]"
+            className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#555]"
           >
             Email
           </label>
@@ -125,17 +125,17 @@ export function InviteCreateForm({ trainers }: Props) {
 
       {generatedUrl && (
         <div className="border-t border-[#141414] pt-4 space-y-2">
-          <div className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#2a2a2a]">
+          <div className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#555]">
             Invite Link
           </div>
-          <div className="break-all text-[11px] text-[#555] bg-[#0a0a0a] border border-[#141414] rounded-lg px-3 py-2">
+          <div className="break-all text-[11px] text-[#888] bg-[#0a0a0a] border border-[#141414] rounded-lg px-3 py-2">
             {generatedUrl}
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigator.clipboard.writeText(generatedUrl).catch(() => undefined)}
-            className="text-[#333] hover:text-[#888] text-xs border border-[#1a1a1a]"
+            className="text-[#777] hover:text-[#aaa] text-xs border border-[#1a1a1a]"
           >
             Copy Link
           </Button>

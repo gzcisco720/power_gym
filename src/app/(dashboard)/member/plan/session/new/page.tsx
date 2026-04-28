@@ -77,7 +77,7 @@ export default async function SessionNewPage({
           <div className="mt-4 text-center">
             <Link
               href="/member/plan"
-              className="text-[11px] text-[#2a2a2a] hover:text-[#555] transition-colors"
+              className="text-[11px] text-[#555] hover:text-[#888] transition-colors"
             >
               Back to plan
             </Link>

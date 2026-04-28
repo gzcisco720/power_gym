@@ -87,7 +87,7 @@ export function WeekCalendarGrid({
       <div className="flex border-b border-[#1e1e2e] sticky top-0 bg-[#0c0c0c] z-10">
         <div className="w-14 flex-shrink-0" />
         {days.map((day, i) => (
-          <div key={i} className="flex-1 text-center py-2 text-xs text-[#555]">
+          <div key={i} className="flex-1 text-center py-2 text-xs text-[#888]">
             <div>{DAYS[i]}</div>
             <div className="text-white font-semibold">{day.getDate()}</div>
           </div>
@@ -101,7 +101,7 @@ export function WeekCalendarGrid({
           {hours.map((h) => (
             <div
               key={h}
-              className="absolute right-2 text-[10px] text-[#555] -translate-y-2"
+              className="absolute right-2 text-[10px] text-[#888] -translate-y-2"
               style={{ top: (h - HOUR_START) * 2 * SLOT_HEIGHT }}
             >
               {String(h).padStart(2, '0')}:00

@@ -33,19 +33,19 @@ export function RegisterForm({ token, inviteRole, isFirstUser }: Props) {
       <input type="hidden" name="token" value={token ?? ''} />
 
       {inviteRole && (
-        <p className="text-[13px] text-[#444]">
+        <p className="text-[13px] text-[#888]">
           You were invited as a{' '}
           <span className="font-medium capitalize">{inviteRole}</span>.
         </p>
       )}
       {isFirstUser && (
-        <p className="text-[13px] text-[#444]">Setting up your gym as owner.</p>
+        <p className="text-[13px] text-[#888]">Setting up your gym as owner.</p>
       )}
 
       <div className="space-y-1.5">
         <label
           htmlFor="name"
-          className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+          className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]"
         >
           Full Name
         </label>
@@ -55,14 +55,14 @@ export function RegisterForm({ token, inviteRole, isFirstUser }: Props) {
           type="text"
           required
           autoComplete="name"
-          className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#2a2a2a] focus-visible:ring-white"
+          className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#555] focus-visible:ring-white"
         />
       </div>
 
       <div className="space-y-1.5">
         <label
           htmlFor="email"
-          className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+          className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]"
         >
           Email
         </label>
@@ -72,14 +72,14 @@ export function RegisterForm({ token, inviteRole, isFirstUser }: Props) {
           type="email"
           required
           autoComplete="email"
-          className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#2a2a2a] focus-visible:ring-white"
+          className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#555] focus-visible:ring-white"
         />
       </div>
 
       <div className="space-y-1.5">
         <label
           htmlFor="password"
-          className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+          className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]"
         >
           Password
         </label>
@@ -89,7 +89,7 @@ export function RegisterForm({ token, inviteRole, isFirstUser }: Props) {
           type="password"
           required
           autoComplete="new-password"
-          className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#2a2a2a] focus-visible:ring-white"
+          className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#555] focus-visible:ring-white"
         />
       </div>
 

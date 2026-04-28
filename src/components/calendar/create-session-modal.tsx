@@ -159,7 +159,7 @@ export function CreateSessionModal({
                 </button>
               ))}
               {filteredMembers.length === 0 && (
-                <span className="text-xs text-[#555]">
+                <span className="text-xs text-[#888]">
                   No members for this trainer
                 </span>
               )}

@@ -82,7 +82,7 @@ export default async function OwnerDashboardPage() {
         </div>
 
         <div>
-          <h2 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#2a2a2a] mb-3.5">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#555] mb-3.5">
             Trainer Breakdown
           </h2>
           <TrainerBreakdownTable trainers={trainerRows} />

@@ -66,16 +66,16 @@ export function TrainerMemberNutritionClient({ memberId, memberName, templates, 
           <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4 mt-3">
             <p className="text-[14px] font-semibold text-white">{activePlan.name}</p>
             <div className="mt-2 flex items-center gap-2">
-              <Badge className="bg-[#1a1a1a] text-[#555] border-0 text-[10px]">
+              <Badge className="bg-[#1a1a1a] text-[#888] border-0 text-[10px]">
                 {activePlan.dayTypes.length} {activePlan.dayTypes.length !== 1 ? 'day types' : 'day type'}
               </Badge>
-              <span className="text-[11px] text-[#333]">
+              <span className="text-[11px] text-[#777]">
                 Assigned {new Date(activePlan.assignedAt).toLocaleDateString('en-US')}
               </span>
             </div>
           </Card>
         ) : (
-          <p className="text-[13px] text-[#444] mt-3">No nutrition plan assigned</p>
+          <p className="text-[13px] text-[#888] mt-3">No nutrition plan assigned</p>
         )}
       </section>
 

@@ -61,16 +61,16 @@ export function TrainerMemberPlanClient({ memberId, memberName, templates, activ
           <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4 mt-3">
             <p className="text-[14px] font-semibold text-white">{activePlan.name}</p>
             <div className="mt-2 flex items-center gap-2">
-              <Badge className="bg-[#1a1a1a] text-[#555] border-0 text-[10px]">
+              <Badge className="bg-[#1a1a1a] text-[#888] border-0 text-[10px]">
                 {activePlan.days.length} {activePlan.days.length !== 1 ? 'days' : 'day'}
               </Badge>
-              <span className="text-[11px] text-[#333]">
+              <span className="text-[11px] text-[#777]">
                 Assigned {new Date(activePlan.assignedAt).toLocaleDateString('en-US')}
               </span>
             </div>
           </Card>
         ) : (
-          <p className="text-[13px] text-[#444] mt-3">No plan assigned</p>
+          <p className="text-[13px] text-[#888] mt-3">No plan assigned</p>
         )}
       </section>
 
@@ -104,10 +104,10 @@ export function TrainerMemberPlanClient({ memberId, memberName, templates, activ
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#141414]">
-                  <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">Exercise</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">Best Weight</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">Sets × Reps</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">Est. 1RM</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]">Exercise</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]">Best Weight</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]">Sets × Reps</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]">Est. 1RM</th>
                 </tr>
               </thead>
               <tbody>
@@ -136,7 +136,7 @@ export function TrainerMemberPlanClient({ memberId, memberName, templates, activ
                   {!s.completedAt && (
                     <Badge className="bg-yellow-900/30 text-yellow-500 border-0 text-[10px]">Active</Badge>
                   )}
-                  <span className="text-[11px] text-[#333]">
+                  <span className="text-[11px] text-[#777]">
                     {new Date(s.startedAt).toLocaleDateString('en-US')}
                   </span>
                 </div>

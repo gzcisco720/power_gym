@@ -62,7 +62,7 @@ export function InviteListClient({ invites }: Props) {
   function renderRows(rows: InviteRow[], showRevoke: boolean) {
     if (rows.length === 0) {
       return (
-        <div className="px-5 py-8 text-center text-[12px] text-[#2a2a2a]">None</div>
+        <div className="px-5 py-8 text-center text-[12px] text-[#555]">None</div>
       );
     }
     return rows.map((inv) => (
@@ -76,7 +76,7 @@ export function InviteListClient({ invites }: Props) {
         <div className="flex-1">
           <div className="text-[13px] text-[#888]">{inv.recipientEmail}</div>
         </div>
-        <div className="text-[10px] text-[#2a2a2a]">
+        <div className="text-[10px] text-[#555]">
           {showRevoke ? 'Expires' : 'Expired'}{' '}
           {new Date(inv.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
         </div>
@@ -85,7 +85,7 @@ export function InviteListClient({ invites }: Props) {
             variant="ghost"
             size="sm"
             onClick={() => handleResend(inv._id)}
-            className="text-[#333] hover:text-[#888] hover:bg-[#141414] text-[10px]"
+            className="text-[#777] hover:text-[#aaa] hover:bg-[#141414] text-[10px]"
           >
             Resend
           </Button>
@@ -107,7 +107,7 @@ export function InviteListClient({ invites }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#2a2a2a] mb-3">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#555] mb-3">
           Pending ({pending.length})
         </h3>
         <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl overflow-hidden">
@@ -115,7 +115,7 @@ export function InviteListClient({ invites }: Props) {
         </Card>
       </div>
       <div>
-        <h3 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#2a2a2a] mb-3">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#555] mb-3">
           Expired ({expired.length})
         </h3>
         <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl overflow-hidden">

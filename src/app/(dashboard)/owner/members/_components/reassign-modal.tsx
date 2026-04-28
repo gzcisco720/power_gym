@@ -53,17 +53,17 @@ export function ReassignModal({ memberId, memberName, currentTrainerId, trainers
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
       <Card className="bg-[#0c0c0c] border-[#1e1e1e] rounded-xl p-6 w-full max-w-sm space-y-5">
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2a2a2a] mb-1">
+          <div className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#555] mb-1">
             Reassign Member
           </div>
           <div className="text-[15px] font-semibold text-white">{memberName}</div>
-          <div className="text-[11px] text-[#2e2e2e] mt-1.5">
+          <div className="text-[11px] text-[#666] mt-1.5">
             All training history, body tests, and nutrition logs will be preserved.
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#2a2a2a]">
+          <label className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#555]">
             Assign to Trainer
           </label>
           <select
@@ -92,7 +92,7 @@ export function ReassignModal({ memberId, memberName, currentTrainerId, trainers
           <Button
             variant="ghost"
             onClick={onClose}
-            className="border border-[#1a1a1a] text-[#444] hover:border-[#333] hover:text-[#888] text-sm"
+            className="border border-[#1a1a1a] text-[#888] hover:border-[#333] hover:text-[#aaa] text-sm"
           >
             Cancel
           </Button>

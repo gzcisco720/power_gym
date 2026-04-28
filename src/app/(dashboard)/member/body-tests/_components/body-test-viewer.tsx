@@ -116,46 +116,46 @@ export function BodyTestViewer({ tests }: Props) {
                     <div className="text-[12px] font-semibold text-white">
                       {new Date(t.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                     </div>
-                    <div className="text-[9px] font-semibold uppercase tracking-[2px] text-[#2a2a2a]">
+                    <div className="text-[9px] font-semibold uppercase tracking-[2px] text-[#555]">
                       {t.protocol}
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
                     <div className="flex justify-between">
-                      <span className="text-[#333]">Weight</span>
+                      <span className="text-[#777]">Weight</span>
                       <span className="text-[#888]">{t.weight} kg</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#333]">Body Fat</span>
+                      <span className="text-[#777]">Body Fat</span>
                       <span className="text-[#888]">{t.bodyFatPct.toFixed(1)}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#333]">Lean Mass</span>
+                      <span className="text-[#777]">Lean Mass</span>
                       <span className="text-[#888]">{t.leanMassKg.toFixed(1)} kg</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#333]">Fat Mass</span>
+                      <span className="text-[#777]">Fat Mass</span>
                       <span className="text-[#888]">{t.fatMassKg.toFixed(1)} kg</span>
                     </div>
                   </div>
                   {(t.targetWeight ?? t.targetBodyFatPct) && (
                     <div className="mt-3 pt-3 border-t border-[#0f0f0f] text-[11px]">
-                      <div className="text-[9px] font-semibold uppercase tracking-[2px] text-[#2a2a2a] mb-1.5">
+                      <div className="text-[9px] font-semibold uppercase tracking-[2px] text-[#555] mb-1.5">
                         Goal
                       </div>
                       <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                         {t.targetWeight && (
                           <div className="flex justify-between">
-                            <span className="text-[#333]">Weight</span>
-                            <span className={t.weight - t.targetWeight > 0 ? 'text-[#555]' : 'text-[#888]'}>
+                            <span className="text-[#777]">Weight</span>
+                            <span className={t.weight - t.targetWeight > 0 ? 'text-[#888]' : 'text-[#888]'}>
                               {t.targetWeight} kg
                             </span>
                           </div>
                         )}
                         {t.targetBodyFatPct && (
                           <div className="flex justify-between">
-                            <span className="text-[#333]">Body Fat</span>
-                            <span className={t.bodyFatPct - t.targetBodyFatPct > 0 ? 'text-[#555]' : 'text-[#888]'}>
+                            <span className="text-[#777]">Body Fat</span>
+                            <span className={t.bodyFatPct - t.targetBodyFatPct > 0 ? 'text-[#888]' : 'text-[#888]'}>
                               {t.targetBodyFatPct}%
                             </span>
                           </div>

@@ -93,7 +93,7 @@ function SidebarContent({ role, userName, userInitials, logoutSlot }: SidebarCon
           <br />
           GYM
         </div>
-        <div className="mt-1 text-[9px] uppercase tracking-[1px] text-[#333]">
+        <div className="mt-1 text-[9px] uppercase tracking-[1px] text-[#777]">
           {role} portal
         </div>
       </div>
@@ -101,7 +101,7 @@ function SidebarContent({ role, userName, userInitials, logoutSlot }: SidebarCon
       <nav className="flex-1 space-y-1 px-2 py-4">
         {groups.map((group) => (
           <div key={group.group} className="mb-2">
-            <div className="px-3 pb-1 pt-2 text-[8px] font-semibold uppercase tracking-[2px] text-[#2a2a2a]">
+            <div className="px-3 pb-1 pt-2 text-[8px] font-semibold uppercase tracking-[2px] text-[#555]">
               {group.group}
             </div>
             {group.items.map((item) => (
@@ -112,7 +112,7 @@ function SidebarContent({ role, userName, userInitials, logoutSlot }: SidebarCon
                   'flex items-center rounded-md px-3 py-2 text-[13px] font-medium transition-colors duration-150',
                   pathname === item.href || pathname.startsWith(item.href + '/')
                     ? 'bg-white text-black'
-                    : 'text-[#3a3a3a] hover:bg-[#141414] hover:text-[#888]'
+                    : 'text-[#666] hover:bg-[#141414] hover:text-[#aaa]'
                 )}
               >
                 {item.label}
@@ -128,8 +128,8 @@ function SidebarContent({ role, userName, userInitials, logoutSlot }: SidebarCon
             {userInitials}
           </div>
           <div>
-            <div className="text-[12px] font-medium text-[#444]">{userName}</div>
-            <div className="text-[10px] capitalize text-[#2a2a2a]">{role}</div>
+            <div className="text-[12px] font-medium text-[#888]">{userName}</div>
+            <div className="text-[10px] capitalize text-[#555]">{role}</div>
           </div>
         </div>
         {logoutSlot && <div className="mt-3">{logoutSlot}</div>}
@@ -177,7 +177,7 @@ export function AppShell({ role, userName, children, logoutSlot }: AppShellProps
         <div className="flex items-center gap-3 border-b border-[#0f0f0f] px-4 py-3 lg:hidden">
           <button
             onClick={() => setDrawerOpen(true)}
-            className="text-[#444] hover:text-[#888] transition-colors"
+            className="text-[#888] hover:text-[#aaa] transition-colors"
             aria-label="Open navigation"
           >
             <Menu className="h-5 w-5" />

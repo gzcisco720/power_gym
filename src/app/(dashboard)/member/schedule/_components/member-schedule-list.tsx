@@ -29,7 +29,7 @@ function SessionRow({ s }: { s: SessionDto }) {
           {label} · {s.startTime}–{s.endTime}
           {s.isRecurring && <span className="ml-1 text-[11px] text-blue-400">🔄</span>}
         </div>
-        <div className="text-[12px] text-[#555] mt-0.5">
+        <div className="text-[12px] text-[#888] mt-0.5">
           {s.trainerName}{s.memberCount > 1 ? ` · Group (${s.memberCount})` : ''}
         </div>
       </div>
@@ -45,13 +45,13 @@ export function MemberScheduleList({ upcoming, history }: MemberScheduleListProp
 
   return (
     <div className="px-4 sm:px-8 py-7 space-y-3">
-      {upcoming.length === 0 && <p className="text-[#555] text-sm">No upcoming sessions.</p>}
+      {upcoming.length === 0 && <p className="text-[#888] text-sm">No upcoming sessions.</p>}
       {upcoming.map((s) => <SessionRow key={s._id} s={s} />)}
 
       {history.length > 0 && (
         <div className="mt-6">
           <button
-            className="text-[12px] text-[#555] hover:text-[#888] transition-colors"
+            className="text-[12px] text-[#888] hover:text-[#aaa] transition-colors"
             onClick={() => setShowHistory((v) => !v)}
           >
             {showHistory ? '▾ Hide history' : `▸ Show history (${history.length})`}

@@ -55,7 +55,7 @@ export function PlanTemplateForm({ initialData, onSubmit }: Props) {
         <div className="space-y-1.5">
           <label
             htmlFor="plan-name"
-            className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+            className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]"
           >
             Plan Name
           </label>
@@ -71,7 +71,7 @@ export function PlanTemplateForm({ initialData, onSubmit }: Props) {
         <div className="space-y-1.5">
           <label
             htmlFor="plan-desc"
-            className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+            className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]"
           >
             Description
           </label>
@@ -87,14 +87,14 @@ export function PlanTemplateForm({ initialData, onSubmit }: Props) {
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">
+          <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#666]">
             Training Days
           </span>
           <Button
             type="button"
             variant="ghost"
             onClick={addDay}
-            className="border border-[#1a1a1a] text-[#444] hover:border-[#333] hover:text-[#888] text-xs"
+            className="border border-[#1a1a1a] text-[#888] hover:border-[#333] hover:text-[#aaa] text-xs"
           >
             + Add Day
           </Button>
@@ -113,12 +113,12 @@ export function PlanTemplateForm({ initialData, onSubmit }: Props) {
                 type="button"
                 variant="ghost"
                 onClick={() => removeDay(i)}
-                className="text-[#333] hover:text-red-400 hover:bg-[#141414] text-xs"
+                className="text-[#777] hover:text-red-400 hover:bg-[#141414] text-xs"
               >
                 Delete
               </Button>
             </div>
-            <p className="text-xs text-[#333]">{day.exercises.length} exercise{day.exercises.length !== 1 ? 's' : ''}</p>
+            <p className="text-xs text-[#777]">{day.exercises.length} exercise{day.exercises.length !== 1 ? 's' : ''}</p>
           </Card>
         ))}
       </div>

@@ -12,7 +12,7 @@ export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
       <div>
         <h1 className="text-[18px] font-bold tracking-[-0.3px] text-white">{title}</h1>
         {subtitle && (
-          <p className="mt-0.5 text-[12px] text-[#333]">{subtitle}</p>
+          <p className="mt-0.5 text-[12px] text-[#777]">{subtitle}</p>
         )}
       </div>
       {actions && <div className="flex items-center gap-2.5">{actions}</div>}

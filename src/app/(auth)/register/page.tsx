@@ -36,7 +36,7 @@ export default async function RegisterPage({ searchParams }: Props) {
         <div>
           <div className="text-[11px] font-bold tracking-[3px] text-white mb-1">POWER GYM</div>
           <h1 className="text-[24px] font-bold tracking-[-0.5px] text-white">Create account</h1>
-          <p className="mt-1 text-[13px] text-[#444]">Complete your registration to get started.</p>
+          <p className="mt-1 text-[13px] text-[#888]">Complete your registration to get started.</p>
         </div>
         <RegisterForm token={token} inviteRole={inviteRole} isFirstUser={isFirstUser} />
       </div>

@@ -26,7 +26,7 @@ export default async function LoginPage({
         <div>
           <div className="text-[11px] font-bold tracking-[3px] text-white mb-1">POWER GYM</div>
           <h1 className="text-[24px] font-bold tracking-[-0.5px] text-white">Sign in</h1>
-          <p className="mt-1 text-[13px] text-[#444]">Enter your credentials to continue.</p>
+          <p className="mt-1 text-[13px] text-[#888]">Enter your credentials to continue.</p>
         </div>
 
         {error === 'CredentialsSignin' && (
@@ -63,7 +63,7 @@ export default async function LoginPage({
           className="space-y-4"
         >
           <div className="space-y-1.5">
-            <label htmlFor="email" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">
+            <label htmlFor="email" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">
               Email
             </label>
             <Input
@@ -73,12 +73,12 @@ export default async function LoginPage({
               required
               autoComplete="email"
               placeholder="you@example.com"
-              className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#2a2a2a] focus-visible:ring-white"
+              className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#555] focus-visible:ring-white"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="password" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">
+            <label htmlFor="password" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">
               Password
             </label>
             <Input
@@ -87,7 +87,7 @@ export default async function LoginPage({
               type="password"
               required
               autoComplete="current-password"
-              className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#2a2a2a] focus-visible:ring-white"
+              className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#555] focus-visible:ring-white"
             />
           </div>
 

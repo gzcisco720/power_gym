@@ -61,7 +61,7 @@ export function RecurringScopeDialog({
               }`}
             >
               <div className="text-sm font-medium text-white">{label}</div>
-              <div className="text-xs text-[#555] mt-0.5">{description}</div>
+              <div className="text-xs text-[#888] mt-0.5">{description}</div>
             </button>
           ))}
         </div>

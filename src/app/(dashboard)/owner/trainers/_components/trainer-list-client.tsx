@@ -66,7 +66,7 @@ export function TrainerListClient({ trainers, allTrainers }: Props) {
   if (trainers.length === 0) {
     return (
       <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-8 text-center">
-        <p className="text-[13px] text-[#333]">No trainers yet. Invite one to get started.</p>
+        <p className="text-[13px] text-[#777]">No trainers yet. Invite one to get started.</p>
       </Card>
     );
   }
@@ -77,12 +77,12 @@ export function TrainerListClient({ trainers, allTrainers }: Props) {
         <div key={trainer._id}>
           <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl overflow-hidden hover:border-[#2a2a2a] transition-colors">
             <div className="flex items-center px-5 py-4 gap-4">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#1e1e1e] bg-[#181818] text-[10px] font-semibold text-[#555]">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#1e1e1e] bg-[#181818] text-[10px] font-semibold text-[#888]">
                 {trainer.name.slice(0, 2).toUpperCase()}
               </div>
               <div className="flex-1">
                 <div className="text-[13px] font-semibold text-[#ccc]">{trainer.name}</div>
-                <div className="text-[10px] text-[#2e2e2e] mt-0.5">{trainer.email}</div>
+                <div className="text-[10px] text-[#666] mt-0.5">{trainer.email}</div>
               </div>
               <div className="text-center min-w-[80px]">
                 <div className="text-[13px] font-semibold text-[#888]">
@@ -99,7 +99,7 @@ export function TrainerListClient({ trainers, allTrainers }: Props) {
                   variant="ghost"
                   size="sm"
                   onClick={() => setExpandedId(expandedId === trainer._id ? null : trainer._id)}
-                  className="text-[#333] hover:text-[#888] hover:bg-[#141414] text-xs"
+                  className="text-[#777] hover:text-[#aaa] hover:bg-[#141414] text-xs"
                 >
                   Members
                   {expandedId === trainer._id ? (
@@ -123,19 +123,19 @@ export function TrainerListClient({ trainers, allTrainers }: Props) {
             {expandedId === trainer._id && (
               <div className="border-t border-[#141414]">
                 {trainer.members.length === 0 ? (
-                  <div className="px-5 py-4 text-[11px] text-[#2a2a2a]">No members assigned.</div>
+                  <div className="px-5 py-4 text-[11px] text-[#555]">No members assigned.</div>
                 ) : (
                   trainer.members.map((member) => (
                     <div
                       key={member._id}
                       className="flex items-center gap-3 px-5 py-3 border-b border-[#0f0f0f] last:border-0"
                     >
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#141414] text-[9px] font-semibold text-[#444]">
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#141414] text-[9px] font-semibold text-[#888]">
                         {member.name.slice(0, 2).toUpperCase()}
                       </div>
                       <div className="flex-1">
                         <div className="text-[12px] font-medium text-[#888]">{member.name}</div>
-                        <div className="text-[10px] text-[#2a2a2a]">{member.email}</div>
+                        <div className="text-[10px] text-[#555]">{member.email}</div>
                       </div>
                     </div>
                   ))

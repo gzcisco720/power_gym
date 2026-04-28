@@ -34,30 +34,30 @@ export default async function TrainerMembersPage() {
               >
                 <div>
                   <div className="text-[14px] font-semibold text-white">{member.name}</div>
-                  <div className="text-[12px] text-[#555] mt-0.5">{member.email}</div>
+                  <div className="text-[12px] text-[#888] mt-0.5">{member.email}</div>
                 </div>
                 <div className="flex items-center gap-4 pt-3 border-t border-[#141414] sm:pt-0 sm:border-0">
                   <Link
                     href={`/trainer/members/${member._id}/plan`}
-                    className="text-[11px] text-[#555] hover:text-[#888] transition-colors"
+                    className="text-[11px] text-[#888] hover:text-[#aaa] transition-colors"
                   >
                     Plan →
                   </Link>
                   <Link
                     href={`/trainer/members/${member._id}/body-tests`}
-                    className="text-[11px] text-[#555] hover:text-[#888] transition-colors"
+                    className="text-[11px] text-[#888] hover:text-[#aaa] transition-colors"
                   >
                     Body Tests →
                   </Link>
                   <Link
                     href={`/trainer/members/${member._id}/nutrition`}
-                    className="text-[11px] text-[#555] hover:text-[#888] transition-colors"
+                    className="text-[11px] text-[#888] hover:text-[#aaa] transition-colors"
                   >
                     Nutrition →
                   </Link>
                   <Link
                     href={`/trainer/members/${member._id}/progress`}
-                    className="text-[11px] text-[#555] hover:text-[#888] transition-colors"
+                    className="text-[11px] text-[#888] hover:text-[#aaa] transition-colors"
                   >
                     Progress →
                   </Link>

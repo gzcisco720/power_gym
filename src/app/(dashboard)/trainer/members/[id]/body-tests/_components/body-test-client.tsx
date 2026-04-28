@@ -139,7 +139,7 @@ export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
             <div className="space-y-1.5">
               <label
                 htmlFor="date"
-                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]"
               >
                 Test Date
               </label>
@@ -154,7 +154,7 @@ export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
             <div className="space-y-1.5">
               <label
                 htmlFor="protocol"
-                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]"
               >
                 Protocol
               </label>
@@ -175,7 +175,7 @@ export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
             <div className="space-y-1.5">
               <label
                 htmlFor="age"
-                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]"
               >
                 Age
               </label>
@@ -189,7 +189,7 @@ export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
               />
             </div>
             <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">Sex</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]">Sex</p>
               <div className="flex gap-3 pt-1">
                 <label className="flex items-center gap-1.5 text-sm cursor-pointer text-[#888]">
                   <input
@@ -218,7 +218,7 @@ export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
             <div className="space-y-1.5">
               <label
                 htmlFor="weight"
-                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]"
               >
                 Weight (kg)
               </label>
@@ -238,7 +238,7 @@ export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
             <div className="space-y-1.5">
               <label
                 htmlFor="bodyFatPct"
-                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]"
               >
                 Body Fat (%)
               </label>
@@ -258,7 +258,7 @@ export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
                 <div key={site} className="space-y-1.5">
                   <label
                     htmlFor={site}
-                    className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+                    className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]"
                   >
                     {SITE_LABELS[site]} (mm)
                   </label>
@@ -280,7 +280,7 @@ export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
             <div className="space-y-1.5">
               <label
                 htmlFor="targetWeight"
-                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]"
               >
                 Target Weight (kg, optional)
               </label>
@@ -297,7 +297,7 @@ export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
             <div className="space-y-1.5">
               <label
                 htmlFor="targetBodyFatPct"
-                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+                className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]"
               >
                 Target Body Fat (%, optional)
               </label>
@@ -343,14 +343,14 @@ export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
                       {new Date(t.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
                     </time>
                   </p>
-                  <p className="text-[12px] text-[#555] mt-1">
+                  <p className="text-[12px] text-[#888] mt-1">
                     Weight {t.weight} kg · Body Fat {t.bodyFatPct.toFixed(1)}%
                   </p>
-                  <p className="text-[12px] text-[#555]">
+                  <p className="text-[12px] text-[#888]">
                     Lean Mass {t.leanMassKg.toFixed(1)} kg · Fat Mass {t.fatMassKg.toFixed(1)} kg
                   </p>
                   {(t.targetWeight ?? t.targetBodyFatPct) && (
-                    <p className="text-[11px] text-[#333] mt-1">
+                    <p className="text-[11px] text-[#777] mt-1">
                       Goal: {t.targetWeight ? `Weight ${t.targetWeight} kg` : ''}
                       {t.targetBodyFatPct ? ` Body Fat ${t.targetBodyFatPct}%` : ''}
                     </p>
@@ -359,7 +359,7 @@ export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
                 <Button
                   variant="ghost"
                   onClick={() => handleDelete(t._id)}
-                  className="text-[#333] hover:text-red-400 hover:bg-[#141414] text-xs ml-4"
+                  className="text-[#777] hover:text-red-400 hover:bg-[#141414] text-xs ml-4"
                 >
                   Delete
                 </Button>

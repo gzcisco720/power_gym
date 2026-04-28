@@ -52,11 +52,11 @@ export function PlanOverview({ plan }: PlanOverviewProps) {
                 transition={{ delay: shouldReduce ? 0 : i * 0.04, duration: 0.15 }}
               >
                 <Card className="bg-[#0c0c0c] border-[#141414] rounded-[10px] p-4 hover:border-[#2a2a2a] transition-colors">
-                  <div className="text-[9px] font-semibold uppercase tracking-[2px] text-[#2a2a2a] mb-1">
+                  <div className="text-[9px] font-semibold uppercase tracking-[2px] text-[#555] mb-1">
                     DAY {String(day.dayNumber).padStart(2, '0')}
                   </div>
                   <div className="text-[13px] font-semibold text-white">{day.name}</div>
-                  <div className="mt-1 text-[10px] text-[#2e2e2e]">
+                  <div className="mt-1 text-[10px] text-[#666]">
                     {day.exercises.length} exercises
                   </div>
                   <a

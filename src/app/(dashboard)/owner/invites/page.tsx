@@ -45,7 +45,7 @@ export default async function OwnerInvitesPage() {
       <div className="px-4 sm:px-8 py-7 space-y-10">
         <InviteListClient invites={invitePlain} />
         <div>
-          <h2 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#2a2a2a] mb-3.5">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#555] mb-3.5">
             Generate New Invite
           </h2>
           <InviteCreateForm trainers={trainerOptions} />

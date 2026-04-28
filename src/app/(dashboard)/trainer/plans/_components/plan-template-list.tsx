@@ -67,10 +67,10 @@ export function PlanTemplateList({ templates, onDelete }: Props) {
                   <div>
                     <div className="text-[14px] font-semibold text-white">{template.name}</div>
                     {template.description && (
-                      <div className="text-[12px] text-[#555] mt-0.5">{template.description}</div>
+                      <div className="text-[12px] text-[#888] mt-0.5">{template.description}</div>
                     )}
                     <div className="mt-1 flex items-center gap-2">
-                      <Badge className="bg-[#1a1a1a] text-[#555] border-0 text-[10px]">
+                      <Badge className="bg-[#1a1a1a] text-[#888] border-0 text-[10px]">
                         {template.days.length} {template.days.length !== 1 ? 'days' : 'day'}
                       </Badge>
                     </div>
@@ -78,7 +78,7 @@ export function PlanTemplateList({ templates, onDelete }: Props) {
                   <div className="flex items-center gap-2">
                     <Link
                       href={`/trainer/plans/${template._id}/edit`}
-                      className="inline-flex size-8 items-center justify-center rounded-lg border border-transparent text-[#333] hover:text-[#888] hover:bg-[#141414] transition-all"
+                      className="inline-flex size-8 items-center justify-center rounded-lg border border-transparent text-[#777] hover:text-[#aaa] hover:bg-[#141414] transition-all"
                       aria-label="Edit"
                     >
                       <Pencil className="h-4 w-4" />
@@ -89,7 +89,7 @@ export function PlanTemplateList({ templates, onDelete }: Props) {
                         variant="ghost"
                         size="icon"
                         onClick={() => onDelete(template._id)}
-                        className="text-[#333] hover:text-red-400 hover:bg-[#141414]"
+                        className="text-[#777] hover:text-red-400 hover:bg-[#141414]"
                         aria-label="Delete"
                       >
                         <Trash2 className="h-4 w-4" />

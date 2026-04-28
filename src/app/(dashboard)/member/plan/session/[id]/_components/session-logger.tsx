@@ -204,14 +204,14 @@ export function SessionLogger({ session: initialSession }: { session: Session })
                       }
                     }}
                   />
-                  <span className="text-[11px] text-[#444] w-5">
+                  <span className="text-[11px] text-[#888] w-5">
                     {isExtraSet ? '+' : ''}
                   </span>
-                  <span className="text-[11px] text-[#555] flex-1">
+                  <span className="text-[11px] text-[#888] flex-1">
                     {repsLabel(prescribedRepsMin, prescribedRepsMax)}
                   </span>
                   {completedAt && (
-                    <span className="text-[11px] text-[#555]">
+                    <span className="text-[11px] text-[#888]">
                       {session.sets[index].actualWeight
                         ? `${session.sets[index].actualWeight} kg × `
                         : ''}
@@ -226,7 +226,7 @@ export function SessionLogger({ session: initialSession }: { session: Session })
               const activeSet = sets.find(({ index }) => activeSetIndex === index)!;
               return (
                 <div className="hidden sm:block mt-3 pt-3 border-t border-[#141414] space-y-2">
-                  <div className="text-[10px] font-semibold text-[#333] uppercase tracking-widest">
+                  <div className="text-[10px] font-semibold text-[#777] uppercase tracking-widest">
                     Log Set {activeSet.setNumber}
                   </div>
                   <div className="flex gap-2">
@@ -241,7 +241,7 @@ export function SessionLogger({ session: initialSession }: { session: Session })
                           next[activeSet.index] = { ...next[activeSet.index], weight: e.target.value };
                           setInputs(next);
                         }}
-                        className="h-8 text-[12px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#333]"
+                        className="h-8 text-[12px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#777]"
                       />
                     )}
                     <Input
@@ -254,7 +254,7 @@ export function SessionLogger({ session: initialSession }: { session: Session })
                         next[activeSet.index] = { ...next[activeSet.index], reps: e.target.value };
                         setInputs(next);
                       }}
-                      className="h-8 text-[12px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#333]"
+                      className="h-8 text-[12px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#777]"
                     />
                     <Button
                       size="sm"
@@ -286,7 +286,7 @@ export function SessionLogger({ session: initialSession }: { session: Session })
             return (
               <div className="space-y-4">
                 <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-[2px] text-[#444]">
+                  <div className="text-[10px] font-semibold uppercase tracking-[2px] text-[#888]">
                     {set.exerciseName}
                   </div>
                   <div className="text-[15px] font-bold text-white mt-0.5">
@@ -296,7 +296,7 @@ export function SessionLogger({ session: initialSession }: { session: Session })
                 <div className="flex gap-3">
                   {!set.isBodyweight && (
                     <div className="flex-1 space-y-1.5">
-                      <label className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#444]">
+                      <label className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#888]">
                         Weight (kg)
                       </label>
                       <Input
@@ -308,13 +308,13 @@ export function SessionLogger({ session: initialSession }: { session: Session })
                           next[activeSetIndex] = { ...next[activeSetIndex], weight: e.target.value };
                           setInputs(next);
                         }}
-                        className="h-12 text-[16px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#2a2a2a]"
+                        className="h-12 text-[16px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#555]"
                         placeholder="e.g. 60"
                       />
                     </div>
                   )}
                   <div className={cn(!set.isBodyweight ? 'w-28' : 'flex-1', 'space-y-1.5')}>
-                    <label className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#444]">
+                    <label className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#888]">
                       Reps
                     </label>
                     <Input
@@ -326,7 +326,7 @@ export function SessionLogger({ session: initialSession }: { session: Session })
                         next[activeSetIndex] = { ...next[activeSetIndex], reps: e.target.value };
                         setInputs(next);
                       }}
-                      className="h-12 text-[16px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#2a2a2a]"
+                      className="h-12 text-[16px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#555]"
                       placeholder="e.g. 10"
                     />
                   </div>

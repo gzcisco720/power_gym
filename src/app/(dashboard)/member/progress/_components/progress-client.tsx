@@ -118,7 +118,7 @@ export function ProgressClient({
               <div className="flex flex-col gap-1 mr-1">
                 <div className="h-3" />
                 {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((label, i) => (
-                  <div key={`${label}-${i}`} className="h-3 w-3 flex items-center justify-center text-[9px] text-[#444]">
+                  <div key={`${label}-${i}`} className="h-3 w-3 flex items-center justify-center text-[9px] text-[#888]">
                     {label}
                   </div>
                 ))}
@@ -126,7 +126,7 @@ export function ProgressClient({
               {/* Week columns */}
               {weeks.map((week) => (
                 <div key={week.weekKey} className="flex flex-col gap-1">
-                  <div className="h-3 text-[9px] text-[#444] whitespace-nowrap">
+                  <div className="h-3 text-[9px] text-[#888] whitespace-nowrap">
                     {week.monthLabel ?? ''}
                   </div>
                   {week.days.map((day, di) => (
@@ -152,7 +152,7 @@ export function ProgressClient({
         <div>
           <SectionHeader title="Strength Progress" />
           {exercises.length === 0 ? (
-            <p className="mt-3 text-[12px] text-[#555]">No exercise history yet.</p>
+            <p className="mt-3 text-[12px] text-[#888]">No exercise history yet.</p>
           ) : (
             <>
               <select
@@ -171,7 +171,7 @@ export function ProgressClient({
                 className={`mt-3 bg-[#0c0c0c] border-[#141414] rounded-xl p-4 transition-opacity ${loading ? 'opacity-50' : 'opacity-100'}`}
               >
                 {chartData.length === 0 ? (
-                  <p className="text-[12px] text-[#555] text-center py-8">
+                  <p className="text-[12px] text-[#888] text-center py-8">
                     No history yet for this exercise.
                   </p>
                 ) : (

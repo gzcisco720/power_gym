@@ -156,7 +156,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
         <div className="space-y-1.5">
           <label
             htmlFor="plan-name"
-            className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+            className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]"
           >
             Plan Name
           </label>
@@ -172,7 +172,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
         <div className="space-y-1.5">
           <label
             htmlFor="plan-desc"
-            className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]"
+            className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]"
           >
             Description
           </label>
@@ -188,14 +188,14 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">
+          <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#666]">
             Day Types
           </span>
           <Button
             type="button"
             variant="ghost"
             onClick={addDayType}
-            className="border border-[#1a1a1a] text-[#444] hover:border-[#333] hover:text-[#888] text-xs"
+            className="border border-[#1a1a1a] text-[#888] hover:border-[#333] hover:text-[#aaa] text-xs"
           >
             + Add Day Type
           </Button>
@@ -214,7 +214,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
                 type="button"
                 variant="ghost"
                 onClick={() => removeDayType(di)}
-                className="text-[#333] hover:text-red-400 hover:bg-[#141414] text-xs"
+                className="text-[#777] hover:text-red-400 hover:bg-[#141414] text-xs"
               >
                 Delete
               </Button>
@@ -225,7 +225,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
                 ['targetKcal', 'targetProtein', 'targetCarbs', 'targetFat'] as const
               ).map((field) => (
                 <div key={field} className="space-y-1">
-                  <label className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#2e2e2e]">
+                  <label className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]">
                     {field === 'targetKcal'
                       ? 'Calories (kcal)'
                       : field === 'targetProtein'
@@ -249,12 +249,12 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-[#333]">Meals</span>
+                <span className="text-[11px] font-semibold text-[#777]">Meals</span>
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={() => addMeal(di)}
-                  className="text-[#333] hover:text-[#888] text-xs"
+                  className="text-[#777] hover:text-[#aaa] text-xs"
                 >
                   + Add Meal
                 </Button>
@@ -271,7 +271,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, foods }: Props) {
                   {meal.items.length > 0 && (
                     <ul className="text-xs space-y-1">
                       {meal.items.map((item, ii) => (
-                        <li key={ii} className="text-[#444]">
+                        <li key={ii} className="text-[#888]">
                           {item.foodName} {item.quantityG}g — {item.kcal.toFixed(0)} kcal
                         </li>
                       ))}
