@@ -44,6 +44,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Error Handling (toasts + error pages) | [error-handling-implementation-plan.md](2026-04-26/plans/error-handling-implementation-plan.md) | Complete |
 | Mobile Responsive Design | [mobile-responsive-implementation-plan.md](2026-04-26/plans/mobile-responsive-implementation-plan.md) | Complete |
 | Calendar & Session Scheduling | [calendar-implementation-plan.md](2026-04-27/plans/calendar-implementation-plan.md) | Complete |
+| Progress Charts & Analytics | [progress-implementation-plan.md](2026-04-28/plans/progress-implementation-plan.md) | Complete |
 
 ## API Usage Guides
 
