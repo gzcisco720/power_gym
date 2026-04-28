@@ -25,10 +25,12 @@ beforeEach(() => {
   });
 });
 
-test('renders member list with email and navigation links', async () => {
+test('renders member list with name and email as a hub link', async () => {
   const ui = await TrainerMembersPage();
   render(ui);
 
+  expect(screen.getByText('Alice Test')).toBeInTheDocument();
   expect(screen.getByText('alice@test.com')).toBeInTheDocument();
-  expect(screen.getByRole('link', { name: /plan/i })).toBeInTheDocument();
+  const link = screen.getByRole('link', { name: /alice test/i });
+  expect(link).toHaveAttribute('href', '/trainer/members/mem1');
 });

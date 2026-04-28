@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ReassignModal } from './reassign-modal';
@@ -62,7 +63,13 @@ export function MemberListClient({ members, trainers }: Props) {
             <div className="hidden sm:block text-[11px] text-[#666]">
               {member.trainerName ?? '—'}
             </div>
-            <div>
+            <div className="flex items-center gap-3">
+              <Link
+                href={`/trainer/members/${member._id}`}
+                className="text-[11px] text-[#777] hover:text-[#aaa] transition-colors"
+              >
+                View →
+              </Link>
               <Button
                 variant="ghost"
                 size="sm"
