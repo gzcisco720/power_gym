@@ -3,7 +3,6 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ProgressClient } from '@/app/(dashboard)/member/progress/_components/progress-client';
 
-// Mock recharts so tests don't need a real DOM canvas
 jest.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   LineChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -13,7 +12,6 @@ jest.mock('recharts', () => ({
   Tooltip: () => null,
 }));
 
-// Mock sonner toast
 jest.mock('sonner', () => ({ toast: { error: jest.fn() } }));
 
 const MEMBER_ID = 'member-123';
@@ -25,7 +23,7 @@ beforeEach(() => {
 });
 
 describe('ProgressClient', () => {
-  it('renders Training Frequency and Strength Progress headings', () => {
+  it('renders Training Frequency and Strength Progress headings', async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       json: async () => ({ history: [] }),
@@ -39,8 +37,10 @@ describe('ProgressClient', () => {
       />,
     );
 
-    expect(screen.getByText('Training Frequency')).toBeInTheDocument();
-    expect(screen.getByText('Strength Progress')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Training Frequency')).toBeInTheDocument();
+      expect(screen.getByText('Strength Progress')).toBeInTheDocument();
+    });
   });
 
   it('shows empty state when exercises list is empty', () => {
@@ -56,7 +56,7 @@ describe('ProgressClient', () => {
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   });
 
-  it('renders exercise names in the select dropdown', () => {
+  it('renders exercise names in the select dropdown', async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       json: async () => ({ history: [] }),
@@ -70,9 +70,11 @@ describe('ProgressClient', () => {
       />,
     );
 
-    expect(screen.getByRole('combobox')).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'Bench Press' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'Squat' })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: 'Bench Press' })).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: 'Squat' })).toBeInTheDocument();
+    });
   });
 
   it('fetches history and renders chart data when exercise is selected', async () => {
@@ -115,7 +117,7 @@ describe('ProgressClient', () => {
     });
   });
 
-  it('uses custom title when title prop is provided', () => {
+  it('uses custom title when title prop is provided', async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       json: async () => ({ history: [] }),
@@ -130,6 +132,8 @@ describe('ProgressClient', () => {
       />,
     );
 
-    expect(screen.getByRole('heading', { name: "John's Progress" })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: "John's Progress" })).toBeInTheDocument();
+    });
   });
 });
