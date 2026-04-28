@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import type { IWorkoutSession, ISessionSet } from '@/lib/db/models/workout-session.model';
 import { WorkoutSessionModel } from '@/lib/db/models/workout-session.model';
+import { estimatedOneRM } from '@/lib/training/epley';
 
 export interface CreateSessionData {
   memberId: string;
@@ -24,6 +25,9 @@ export interface IWorkoutSessionRepository {
   addExtraSet(id: string, extraSet: ISessionSet): Promise<IWorkoutSession | null>;
   complete(id: string): Promise<IWorkoutSession | null>;
   countByMemberIdsSince(memberIds: string[], since: Date): Promise<number>;
+  findCompletedDates(memberId: string, since: Date): Promise<Date[]>;
+  findTrainedExercises(memberId: string): Promise<{ exerciseId: string; exerciseName: string }[]>;
+  findExerciseHistory(memberId: string, exerciseId: string): Promise<{ date: Date; estimatedOneRM: number }[]>;
 }
 
 export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository {
@@ -85,5 +89,50 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
       memberId: { $in: memberIds.map((id) => new mongoose.Types.ObjectId(id)) },
       completedAt: { $gte: since },
     });
+  }
+
+  async findCompletedDates(memberId: string, since: Date): Promise<Date[]> {
+    const sessions = await WorkoutSessionModel.find({
+      memberId: new mongoose.Types.ObjectId(memberId),
+      completedAt: { $gte: since, $ne: null },
+    }).select('completedAt');
+    return sessions.map((s) => s.completedAt!);
+  }
+
+  async findTrainedExercises(memberId: string): Promise<{ exerciseId: string; exerciseName: string }[]> {
+    const results = await WorkoutSessionModel.aggregate<{ _id: mongoose.Types.ObjectId; exerciseName: string }>([
+      { $match: { memberId: new mongoose.Types.ObjectId(memberId) } },
+      { $unwind: '$sets' },
+      { $match: { 'sets.actualWeight': { $ne: null }, 'sets.actualReps': { $ne: null } } },
+      { $group: { _id: '$sets.exerciseId', exerciseName: { $first: '$sets.exerciseName' } } },
+      { $sort: { exerciseName: 1 } },
+    ]);
+    return results.map((r) => ({ exerciseId: r._id.toString(), exerciseName: r.exerciseName }));
+  }
+
+  async findExerciseHistory(
+    memberId: string,
+    exerciseId: string,
+  ): Promise<{ date: Date; estimatedOneRM: number }[]> {
+    const sessions = await WorkoutSessionModel.find({
+      memberId: new mongoose.Types.ObjectId(memberId),
+      completedAt: { $ne: null },
+    }).sort({ completedAt: 1 });
+
+    return sessions
+      .map((session) => {
+        const matchingSets = session.sets.filter(
+          (s) =>
+            s.exerciseId.toString() === exerciseId &&
+            s.actualWeight !== null &&
+            s.actualReps !== null,
+        );
+        if (matchingSets.length === 0) return null;
+        const maxOneRM = Math.max(
+          ...matchingSets.map((s) => estimatedOneRM(s.actualWeight!, s.actualReps!)),
+        );
+        return { date: session.completedAt!, estimatedOneRM: Math.round(maxOneRM * 10) / 10 };
+      })
+      .filter((entry): entry is { date: Date; estimatedOneRM: number } => entry !== null);
   }
 }
