@@ -13,6 +13,8 @@
 | 3 | 数据导出 | 支持将训练记录、营养计划、体测历史导出为 PDF 或 CSV |
 | 4 | 会员训练反馈 | 每次完成训练后可留下主观疲劳度、备注，供教练查看 |
 | 5 | Per-trainer hub 页面（Owner 视角） | Owner 点击某个 trainer 后进入该 trainer 的 hub 页面，可查看其所有会员列表、训练模板数量、日历排期等概览信息；参考 per-member hub 的设计模式 |
+| 6 | 会员伤病 / 医疗情况 | 教练和 owner 可记录会员的伤病史及持续性医疗状况，显示在 member hub 并作为训练安全提示 |
+| 7 | 基于 member profile 的训练计划推荐 | 利用 member profile 数据（fitnessGoal、fitnessLevel、伤病情况）在教练分配训练计划时给出推荐 |
 
 ---
 
