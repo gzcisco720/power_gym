@@ -100,4 +100,16 @@ describe('BodyTestClient', () => {
       ),
     );
   });
+
+  it('pre-fills age input from defaultAge prop', () => {
+    render(<BodyTestClient memberId={memberId} initialTests={[]} defaultAge={28} />);
+    const ageInput = screen.getByLabelText(/age/i) as HTMLInputElement;
+    expect(ageInput.value).toBe('28');
+  });
+
+  it('pre-selects female sex from defaultSex prop', () => {
+    render(<BodyTestClient memberId={memberId} initialTests={[]} defaultSex="female" />);
+    const femaleRadio = screen.getByRole('radio', { name: /female/i }) as HTMLInputElement;
+    expect(femaleRadio.checked).toBe(true);
+  });
 });

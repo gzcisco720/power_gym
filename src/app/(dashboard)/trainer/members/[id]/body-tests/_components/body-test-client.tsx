@@ -29,6 +29,8 @@ interface Props {
   memberId: string;
   memberName?: string;
   initialTests: BodyTestRecord[];
+  defaultSex?: 'male' | 'female' | null;
+  defaultAge?: number | null;
 }
 
 const PROTOCOL_LABELS: Record<Protocol, string> = {
@@ -58,13 +60,13 @@ const SITE_LABELS: Record<string, string> = {
   lumbar: 'Lumbar',
 };
 
-export function BodyTestClient({ memberId, memberName, initialTests }: Props) {
+export function BodyTestClient({ memberId, memberName, initialTests, defaultSex, defaultAge }: Props) {
   const router = useRouter();
   const [tests, setTests] = useState(initialTests);
   const [protocol, setProtocol] = useState<Protocol>('other');
-  const [sex, setSex] = useState<Sex>('male');
+  const [sex, setSex] = useState<Sex>(defaultSex ?? 'male');
   const [weight, setWeight] = useState('');
-  const [age, setAge] = useState('');
+  const [age, setAge] = useState(defaultAge != null ? String(defaultAge) : '');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [bodyFatPct, setBodyFatPct] = useState('');
   const [sites, setSites] = useState<Record<string, string>>({});
