@@ -22,10 +22,11 @@ export default async function TrainerMemberBodyTestsPage({
   const plain = JSON.parse(JSON.stringify(tests)) as BodyTestRecord[];
 
   const defaultSex = (memberProfile?.sex ?? null) as 'male' | 'female' | null;
+  const nowMs = new Date().getTime();
   const defaultAge =
     memberProfile?.dateOfBirth
       ? Math.floor(
-          (Date.now() - new Date(memberProfile.dateOfBirth).getTime()) /
+          (nowMs - new Date(memberProfile.dateOfBirth).getTime()) /
             (1000 * 60 * 60 * 24 * 365.25),
         )
       : null;
