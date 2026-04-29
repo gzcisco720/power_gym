@@ -64,4 +64,13 @@ test.describe('Trainer: Members', () => {
     await page.waitForURL(/\/trainer\/members\/.+\/progress/);
     await expect(page.getByText('Training Frequency')).toBeVisible();
   });
+
+  test('Nutrition tab shows assigned plan name', async ({ page }) => {
+    await page.goto('/trainer/members');
+    await page.getByText('Test Member').click();
+    await page.waitForURL(/\/trainer\/members\/.+$/);
+    await page.getByRole('link', { name: 'Nutrition', exact: true }).click();
+    await page.waitForURL(/\/trainer\/members\/.+\/nutrition/);
+    await expect(page.getByRole('paragraph').filter({ hasText: 'E2E Nutrition Template' })).toBeVisible();
+  });
 });

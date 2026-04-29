@@ -58,6 +58,15 @@ export async function seed(): Promise<void> {
     trainerId: trainer._id,
   });
 
+  // Dedicated member for trainer hub reassign test
+  await UserModel.create({
+    name: 'Hub Reassign Member',
+    email: 'hub-reassign@test.com',
+    passwordHash,
+    role: 'member',
+    trainerId: trainer._id,
+  });
+
   // ── Exercise ─────────────────────────────────────────────────────────────
   const benchPress = await ExerciseModel.create({
     name: 'Bench Press',
@@ -238,7 +247,29 @@ export async function seed(): Promise<void> {
     dayTypes: nutritionTemplate.dayTypes,
   });
 
-  // ── Body Test ─────────────────────────────────────────────────────────────
+  // ── Body Tests ────────────────────────────────────────────────────────────
+  // Older test — 30 days ago (used by member body-tests history test)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  await BodyTestModel.create({
+    memberId: member._id,
+    trainerId: trainer._id,
+    date: thirtyDaysAgo,
+    age: 30,
+    sex: 'male',
+    weight: 73,
+    protocol: '3site',
+    chest: 22,
+    abdominal: 27,
+    thigh: 17,
+    bodyFatPct: 20.0,
+    leanMassKg: 58.4,
+    fatMassKg: 14.6,
+    targetWeight: null,
+    targetBodyFatPct: null,
+  });
+
+  // Latest test — today
   await BodyTestModel.create({
     memberId: member._id,
     trainerId: trainer._id,
@@ -284,6 +315,18 @@ export async function seed(): Promise<void> {
     date: nextMon,
     startTime: '14:00',
     endTime: '15:00',
+    status: 'scheduled',
+    reminderSentAt: null,
+  });
+
+  // Session C — used by trainer cancel test
+  await ScheduledSessionModel.create({
+    seriesId: null,
+    trainerId: trainer._id,
+    memberIds: [member._id],
+    date: nextMon,
+    startTime: '11:00',
+    endTime: '12:00',
     status: 'scheduled',
     reminderSentAt: null,
   });

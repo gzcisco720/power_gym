@@ -18,6 +18,25 @@ test.describe('Trainer: Calendar', () => {
     await expect(page.getByRole('button').filter({ hasText: '09:00–10:00' })).toBeVisible();
   });
 
+  test('clicking session card opens Edit Session modal', async ({ page }) => {
+    await page.goto('/trainer/calendar');
+    await nextWeekBtn(page).click();
+    await page.getByRole('button').filter({ hasText: '09:00–10:00' }).click();
+    await expect(page.getByText('Edit Session')).toBeVisible();
+    await page.getByRole('button', { name: /dismiss/i }).click();
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+  });
+
+  test('can cancel a session from the edit modal', async ({ page }) => {
+    await page.goto('/trainer/calendar');
+    await nextWeekBtn(page).click();
+    await page.getByRole('button').filter({ hasText: '11:00–12:00' }).click();
+    await expect(page.getByText('Edit Session')).toBeVisible();
+    await page.getByRole('button', { name: /cancel session/i }).click();
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    await expect(page.getByRole('button').filter({ hasText: '11:00–12:00' })).not.toBeVisible();
+  });
+
   test('can create a session for own members only', async ({ page }) => {
     await page.goto('/trainer/calendar');
     await page.locator('div.cursor-pointer').first().click();
