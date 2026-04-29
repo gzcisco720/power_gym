@@ -10,4 +10,11 @@ test.describe('Owner: Dashboard', () => {
     await expect(page.getByText('Pending Invites').first()).toBeVisible();
     await expect(page.getByText('trainer@test.com', { exact: true })).toBeVisible();
   });
+
+  test('breakdown table lists both trainers', async ({ page }) => {
+    await page.goto('/owner');
+    await expect(page.getByText('trainer@test.com', { exact: true })).toBeVisible();
+    await expect(page.getByText('trainer2@test.com', { exact: true })).toBeVisible();
+  });
+
 });

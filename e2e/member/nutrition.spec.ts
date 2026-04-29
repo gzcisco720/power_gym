@@ -11,4 +11,10 @@ test.describe('Member: Nutrition Plan', () => {
     await expect(page.getByText('280')).toBeVisible();
     await expect(page.getByText('70')).toBeVisible();
   });
+
+  test('shows Lunch meal with seeded food items', async ({ page }) => {
+    await page.goto('/member/nutrition');
+    await expect(page.getByText('Rice')).toBeVisible();
+    await expect(page.getByText('Chicken Breast')).toBeVisible();
+  });
 });

@@ -8,4 +8,9 @@ test.describe('Member: Personal Bests', () => {
     await expect(page.getByText('Bench Press')).toBeVisible();
     await expect(page.getByText(/est\. 1RM/)).toBeVisible();
   });
+
+  test('shows correct estimated 1RM value', async ({ page }) => {
+    await page.goto('/member/pbs');
+    await expect(page.getByText('74.5')).toBeVisible();
+  });
 });

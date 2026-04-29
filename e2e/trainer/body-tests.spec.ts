@@ -3,6 +3,15 @@ import { test, expect } from '@playwright/test';
 test.use({ storageState: 'e2e/.auth/trainer.json' });
 
 test.describe('Trainer: Body Tests', () => {
+  test('existing seeded body tests are visible on page load', async ({ page }) => {
+    await page.goto('/trainer/members');
+    await page.getByText('Test Member').click();
+    await page.waitForURL(/\/trainer\/members\/.+$/);
+    await page.getByRole('link', { name: 'Body Tests', exact: true }).click();
+    await page.waitForURL(/\/trainer\/members\/.+\/body-tests/);
+    await expect(page.getByText('Weight 75 kg · Body Fat 18.0%')).toBeVisible();
+  });
+
   test('add new body test for member', async ({ page }) => {
     await page.goto('/trainer/members');
     await page.getByText('Test Member').click();
