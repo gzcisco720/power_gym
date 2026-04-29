@@ -16,6 +16,8 @@ interface CalendarClientProps {
   currentUserId: string;
   trainers: Trainer[];
   members: Member[];
+  readOnly?: boolean;
+  filterTrainerId?: string;
 }
 
 interface SessionsApiResponse {
@@ -31,7 +33,14 @@ function getMondayOfWeek(d: Date): Date {
   return date;
 }
 
-export function CalendarClient({ currentUserRole, currentUserId, trainers, members }: CalendarClientProps) {
+export function CalendarClient({
+  currentUserRole,
+  currentUserId,
+  trainers,
+  members,
+  readOnly = false,
+  filterTrainerId,
+}: CalendarClientProps) {
   const [weekStart, setWeekStart] = useState(() => getMondayOfWeek(new Date()));
   const [sessions, setSessions] = useState<CalendarSession[]>([]);
   const [createSlot, setCreateSlot] = useState<{ date: string; time: string } | null>(null);
@@ -51,7 +60,10 @@ export function CalendarClient({ currentUserRole, currentUserId, trainers, membe
     const endIso = weekEnd.toISOString();
 
     async function load() {
-      const res = await fetch(`/api/schedule?start=${startIso}&end=${endIso}`);
+      const url = filterTrainerId
+        ? `/api/schedule?start=${startIso}&end=${endIso}&trainerId=${filterTrainerId}`
+        : `/api/schedule?start=${startIso}&end=${endIso}`;
+      const res = await fetch(url);
       if (!res.ok || cancelled) return;
       const data = await res.json() as SessionsApiResponse;
       if (!cancelled) setSessions(data.sessions);
@@ -60,7 +72,7 @@ export function CalendarClient({ currentUserRole, currentUserId, trainers, membe
     void load();
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [weekStart, refreshTick]);
+  }, [weekStart, refreshTick, filterTrainerId]);
 
   function goToPrevWeek() {
     setWeekStart((d) => { const nd = new Date(d); nd.setDate(nd.getDate() - 7); return nd; });
@@ -93,14 +105,14 @@ export function CalendarClient({ currentUserRole, currentUserId, trainers, membe
           sessions={sessions}
           memberMap={memberMap}
           trainerColorMap={{}}
-          onSlotClick={(date, time) =>
+          onSlotClick={readOnly ? () => {} : (date, time) =>
             setCreateSlot({ date: date.toISOString().slice(0, 10), time })
           }
-          onSessionClick={(s) => setEditSession(s)}
+          onSessionClick={readOnly ? () => {} : (s) => setEditSession(s)}
         />
       </div>
 
-      {createSlot && (
+      {!readOnly && createSlot && (
         <CreateSessionModal
           open
           defaultDate={createSlot.date}
@@ -114,7 +126,7 @@ export function CalendarClient({ currentUserRole, currentUserId, trainers, membe
         />
       )}
 
-      {editSession && (
+      {!readOnly && editSession && (
         <EditSessionModal
           open
           session={editSession}
