@@ -42,4 +42,11 @@ describe('EquipmentModel schema', () => {
     expect(doc.status).toBe('active');
     expect(doc.quantity).toBe(1);
   });
+
+  it('rejects quantity below 1', async () => {
+    const { EquipmentModel } = await import('@/lib/db/models/equipment.model');
+    const doc = new EquipmentModel({ name: 'Barbell', quantity: 0 });
+    const err = doc.validateSync();
+    expect(err?.errors['quantity']).toBeDefined();
+  });
 });

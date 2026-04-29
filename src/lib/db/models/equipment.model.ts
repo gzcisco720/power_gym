@@ -19,14 +19,12 @@ const EquipmentSchema = new Schema<IEquipment>(
     category: {
       type: String,
       enum: ['cardio', 'strength', 'free_weight', 'cable', 'other'],
-      required: true,
       default: 'other',
     },
     quantity: { type: Number, required: true, default: 1, min: 1 },
     status: {
       type: String,
       enum: ['active', 'maintenance', 'retired'],
-      required: true,
       default: 'active',
     },
     purchasedAt: { type: Date, default: null },
