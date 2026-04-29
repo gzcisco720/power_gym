@@ -9,6 +9,7 @@ jest.mock('@/lib/db/models/plan-template.model', () => ({
     findById: jest.fn(),
     findByIdAndUpdate: jest.fn(),
     findOneAndDelete: jest.fn(),
+    countDocuments: jest.fn(),
   }),
 }));
 
@@ -98,6 +99,24 @@ describe('MongoPlanTemplateRepository', () => {
         _id: 't1',
         createdBy: expect.any(mongoose.Types.ObjectId),
       });
+    });
+  });
+
+  describe('countByCreator', () => {
+    it('returns count for given createdBy id', async () => {
+      mockModel.countDocuments.mockResolvedValue(3 as never);
+      const id = new mongoose.Types.ObjectId().toString();
+      const result = await repo.countByCreator(id);
+      expect(mockModel.countDocuments).toHaveBeenCalledWith({
+        createdBy: expect.any(mongoose.Types.ObjectId),
+      });
+      expect(result).toBe(3);
+    });
+
+    it('returns 0 when none exist', async () => {
+      mockModel.countDocuments.mockResolvedValue(0 as never);
+      const result = await repo.countByCreator(new mongoose.Types.ObjectId().toString());
+      expect(result).toBe(0);
     });
   });
 });

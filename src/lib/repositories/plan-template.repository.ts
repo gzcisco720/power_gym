@@ -21,6 +21,7 @@ export interface IPlanTemplateRepository {
   create(data: CreatePlanTemplateData): Promise<IPlanTemplate>;
   update(id: string, data: UpdatePlanTemplateData): Promise<IPlanTemplate | null>;
   deleteById(id: string, createdBy: string): Promise<boolean>;
+  countByCreator(createdBy: string): Promise<number>;
 }
 
 export class MongoPlanTemplateRepository implements IPlanTemplateRepository {
@@ -50,5 +51,11 @@ export class MongoPlanTemplateRepository implements IPlanTemplateRepository {
       createdBy: new mongoose.Types.ObjectId(createdBy),
     });
     return result !== null;
+  }
+
+  async countByCreator(createdBy: string): Promise<number> {
+    return PlanTemplateModel.countDocuments({
+      createdBy: new mongoose.Types.ObjectId(createdBy),
+    });
   }
 }
