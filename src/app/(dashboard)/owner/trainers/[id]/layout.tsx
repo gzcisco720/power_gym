@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
@@ -47,12 +48,12 @@ export default async function TrainerHubLayout({ children, params }: TrainerHubL
               </div>
             </div>
           </div>
-          <a
+          <Link
             href="/owner/trainers"
             className="text-[11px] text-[#666] hover:text-[#aaa] transition-colors"
           >
             ← All Trainers
-          </a>
+          </Link>
         </div>
         <TrainerTabNav trainerId={trainerId} />
       </div>
