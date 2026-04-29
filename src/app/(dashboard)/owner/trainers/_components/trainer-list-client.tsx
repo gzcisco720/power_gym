@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -95,6 +96,12 @@ export function TrainerListClient({ trainers, allTrainers }: Props) {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                <Link
+                  href={`/owner/trainers/${trainer._id}`}
+                  className="inline-flex items-center justify-center rounded-md text-xs font-medium h-8 px-3 text-[#777] hover:text-[#aaa] hover:bg-[#141414] transition-colors"
+                >
+                  View →
+                </Link>
                 <Button
                   variant="ghost"
                   size="sm"
