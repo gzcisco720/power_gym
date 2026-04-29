@@ -26,6 +26,10 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
         { href: '/member/body-tests', label: 'Body Tests' },
       ],
     },
+    {
+      group: 'ACCOUNT',
+      items: [{ href: '/member/settings', label: 'Settings' }],
+    },
   ],
   trainer: [
     {
@@ -42,6 +46,10 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
     {
       group: 'HEALTH',
       items: [{ href: '/trainer/nutrition', label: 'Nutrition Templates' }],
+    },
+    {
+      group: 'ACCOUNT',
+      items: [{ href: '/trainer/settings', label: 'Settings' }],
     },
   ],
   owner: [
@@ -70,6 +78,10 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
         { href: '/member/body-tests', label: 'Body Tests' },
         { href: '/trainer/nutrition', label: 'Nutrition Templates' },
       ],
+    },
+    {
+      group: 'ACCOUNT',
+      items: [{ href: '/owner/settings', label: 'Settings' }],
     },
   ],
 };
