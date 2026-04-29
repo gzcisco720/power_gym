@@ -99,7 +99,13 @@ export async function GET(req: Request): Promise<Response> {
   } else if (session.user.role === 'member') {
     docs = await repo.findByDateRange(start, end, { memberId: session.user.id });
   } else {
-    docs = await repo.findByDateRange(start, end, {});
+    // Owner: optionally filter to a specific trainer's sessions
+    const trainerIdParam = url.searchParams.get('trainerId');
+    docs = await repo.findByDateRange(
+      start,
+      end,
+      trainerIdParam ? { trainerId: trainerIdParam } : {},
+    );
   }
 
   return Response.json({ sessions: docs });
