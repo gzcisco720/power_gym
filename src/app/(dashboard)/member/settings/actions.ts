@@ -33,10 +33,14 @@ export async function updateMemberProfileAction(
 
   try {
     await connectDB();
-    const data: Record<string, unknown> = { phone, sex, fitnessGoal, fitnessLevel };
-    if (dateOfBirth) data.dateOfBirth = dateOfBirth;
-    if (height !== null) data.height = height;
-    await new MongoUserProfileRepository().upsert(session.user.id, data);
+    await new MongoUserProfileRepository().upsert(session.user.id, {
+      phone,
+      sex,
+      fitnessGoal,
+      fitnessLevel,
+      ...(dateOfBirth !== null && { dateOfBirth }),
+      ...(height !== null && { height }),
+    });
     return { error: '' };
   } catch {
     return { error: 'Failed to save profile' };
