@@ -101,6 +101,9 @@ export async function GET(req: Request): Promise<Response> {
   } else {
     // Owner: optionally filter to a specific trainer's sessions
     const trainerIdParam = url.searchParams.get('trainerId');
+    if (trainerIdParam && !/^[a-f0-9]{24}$/.test(trainerIdParam)) {
+      return Response.json({ error: 'Invalid trainerId format' }, { status: 400 });
+    }
     docs = await repo.findByDateRange(
       start,
       end,

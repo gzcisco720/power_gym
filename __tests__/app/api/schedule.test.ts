@@ -139,6 +139,26 @@ describe('GET /api/schedule', () => {
     );
   });
 
+  it('owner with trainerId filter calls findByDateRange with trainerId', async () => {
+    const validTrainerId = 'a1b2c3d4e5f6a1b2c3d4e5f6';
+    mockAuth.mockResolvedValue(makeSession('owner', 'o1'));
+    mockRepo.findByDateRange.mockResolvedValue([]);
+    const { GET } = await import('@/app/api/schedule/route');
+    await GET(new Request(`http://localhost/api/schedule?start=2026-05-01&end=2026-05-07&trainerId=${validTrainerId}`));
+    expect(mockRepo.findByDateRange).toHaveBeenCalledWith(
+      expect.any(Date), expect.any(Date), { trainerId: validTrainerId },
+    );
+  });
+
+  it('owner with invalid trainerId returns 400', async () => {
+    mockAuth.mockResolvedValue(makeSession('owner', 'o1'));
+    const { GET } = await import('@/app/api/schedule/route');
+    const res = await GET(new Request('http://localhost/api/schedule?start=2026-05-01&end=2026-05-07&trainerId=invalid'));
+    expect(res.status).toBe(400);
+    const body = await res.json() as { error: string };
+    expect(body.error).toBeDefined();
+  });
+
   it('member sees own sessions via memberId filter', async () => {
     mockAuth.mockResolvedValue(makeSession('member', 'm1'));
     mockRepo.findByDateRange.mockResolvedValue([]);
