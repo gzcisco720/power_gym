@@ -35,6 +35,7 @@ export async function POST(req: Request): Promise<Response> {
     muscleGroup?: string | null;
     imageUrl?: string | null;
     isBodyweight?: boolean;
+    equipmentIds?: string[];
   };
 
   const exerciseRepo = new MongoExerciseRepository();
@@ -45,6 +46,7 @@ export async function POST(req: Request): Promise<Response> {
     isBodyweight: body.isBodyweight ?? false,
     isGlobal: false,
     createdBy: session.user.id,
+    equipmentIds: body.equipmentIds ?? [],
   });
 
   return Response.json(exercise, { status: 201 });

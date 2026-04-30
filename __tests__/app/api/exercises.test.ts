@@ -89,4 +89,40 @@ describe('POST /api/exercises', () => {
       createdBy: 't1',
     }));
   });
+
+  it('creates exercise with equipmentIds when provided', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer', trainerId: null } } as never);
+    const created = { _id: 'ex1', name: 'Smith Squat', equipmentIds: ['e1'] };
+    mockExerciseRepo.create.mockResolvedValue(created as never);
+
+    const { POST } = await import('@/app/api/exercises/route');
+    const res = await POST(
+      new Request('http://localhost/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Smith Squat', equipmentIds: ['e1'] }),
+      }),
+    );
+    expect(res.status).toBe(201);
+    expect(mockExerciseRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ equipmentIds: ['e1'] }),
+    );
+  });
+
+  it('creates exercise with empty equipmentIds when not provided', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer', trainerId: null } } as never);
+    mockExerciseRepo.create.mockResolvedValue({ _id: 'ex2', name: 'Push-up' } as never);
+
+    const { POST } = await import('@/app/api/exercises/route');
+    await POST(
+      new Request('http://localhost/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Push-up' }),
+      }),
+    );
+    expect(mockExerciseRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ equipmentIds: [] }),
+    );
+  });
 });

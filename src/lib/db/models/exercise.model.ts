@@ -7,6 +7,7 @@ export interface IExercise extends Document {
   createdBy: mongoose.Types.ObjectId | null;
   imageUrl: string | null;
   isBodyweight: boolean;
+  equipmentIds: mongoose.Types.ObjectId[];
   createdAt: Date;
 }
 
@@ -18,6 +19,7 @@ const ExerciseSchema = new Schema<IExercise>(
     createdBy: { type: Schema.Types.ObjectId, default: null },
     imageUrl: { type: String, default: null },
     isBodyweight: { type: Boolean, required: true, default: false },
+    equipmentIds: { type: [Schema.Types.ObjectId], default: [] },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 );
