@@ -12,6 +12,8 @@ import { MemberNutritionPlanModel } from '../src/lib/db/models/member-nutrition-
 import { BodyTestModel } from '../src/lib/db/models/body-test.model';
 import { InviteTokenModel } from '../src/lib/db/models/invite-token.model';
 import { ScheduledSessionModel } from '../src/lib/db/models/scheduled-session.model';
+import { MemberInjuryModel } from '../src/lib/db/models/member-injury.model';
+import { EquipmentModel } from '../src/lib/db/models/equipment.model';
 
 export async function seed(): Promise<void> {
   const passwordHash = await bcrypt.hash('TestPass123!', 10);
@@ -366,5 +368,37 @@ export async function seed(): Promise<void> {
     expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
     usedAt: null,
     trainerId: null,
+  });
+
+  // ── Member Injuries ───────────────────────────────────────────────────────
+  await MemberInjuryModel.create({
+    memberId: member._id,
+    title: 'Left knee strain',
+    status: 'active',
+    recordedAt: new Date(),
+    trainerNotes: null,
+    memberNotes: null,
+    affectedMovements: 'Avoid squats, lunges',
+  });
+
+  // ── Equipment ─────────────────────────────────────────────────────────────
+  // stable list item — never modified by any spec
+  await EquipmentModel.create({
+    name: 'E2E Barbell',
+    category: 'strength',
+    quantity: 1,
+    status: 'active',
+    purchasedAt: null,
+    notes: null,
+  });
+
+  // dedicated to delete test — deleted by that spec only
+  await EquipmentModel.create({
+    name: 'E2E Delete Equipment',
+    category: 'cardio',
+    quantity: 1,
+    status: 'active',
+    purchasedAt: null,
+    notes: null,
   });
 }
