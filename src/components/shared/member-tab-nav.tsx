@@ -10,6 +10,7 @@ const TABS = [
   { label: 'Body Tests', segment: '/body-tests' },
   { label: 'Nutrition', segment: '/nutrition' },
   { label: 'Progress', segment: '/progress' },
+  { label: 'Health', segment: '/health' },
 ] as const;
 
 interface MemberTabNavProps {
