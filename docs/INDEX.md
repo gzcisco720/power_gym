@@ -32,6 +32,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Member Hub 页面（Tab 导航）         | [member-hub-design.md](2026-04-28/plans/member-hub-design.md)                        | Approved  |
 | Per-Trainer Hub（Owner 视角）       | [per-trainer-hub-design.md](2026-04-28/plans/per-trainer-hub-design.md)              | Approved  |
 | Member Injury & Medical Conditions  | [member-injury-design.md](2026-04-30/plans/member-injury-design.md)                  | Approved  |
+| E2E Coverage Completion             | [e2e-coverage-design.md](2026-04-30/plans/e2e-coverage-design.md)                    | Draft     |
 
 ## Implementation Plans
 
