@@ -30,6 +30,8 @@ const MemberInjurySchema = new Schema<IMemberInjury>(
   { timestamps: { createdAt: true, updatedAt: false } },
 );
 
+MemberInjurySchema.index({ memberId: 1, recordedAt: -1 });
+
 export const MemberInjuryModel: Model<IMemberInjury> =
   mongoose.models.MemberInjury ??
   mongoose.model<IMemberInjury>('MemberInjury', MemberInjurySchema);
