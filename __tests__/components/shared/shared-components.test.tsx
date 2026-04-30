@@ -15,6 +15,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ProgressBar } from '@/components/shared/progress-bar';
 import { SetChip } from '@/components/shared/set-chip';
 import { PageHeader } from '@/components/shared/page-header';
+import { StatCardsSkeleton } from '@/components/shared/stat-cards-skeleton';
 
 describe('StatCard', () => {
   it('renders label and value', () => {
@@ -87,5 +88,15 @@ describe('PageHeader', () => {
     render(<PageHeader title="My Training Plan" subtitle="Push / Pull / Legs · Week 3" />);
     expect(screen.getByText('My Training Plan')).toBeInTheDocument();
     expect(screen.getByText('Push / Pull / Legs · Week 3')).toBeInTheDocument();
+  });
+});
+
+describe('StatCardsSkeleton', () => {
+  it('renders the given number of skeleton cards', () => {
+    const { container } = render(
+      <StatCardsSkeleton count={5} />
+    );
+    const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
+    expect(skeletons).toHaveLength(5);
   });
 });
