@@ -5,6 +5,7 @@ jest.mock('@/lib/auth/auth', () => ({ auth: jest.fn() }));
 const mockBodyTestRepo = { findLatestByMember: jest.fn() };
 const mockSessionRepo = { findMemberStats: jest.fn() };
 const mockPlanRepo = { findActive: jest.fn() };
+const mockInjuryRepo = { findActiveByMember: jest.fn() };
 
 jest.mock('@/lib/repositories/body-test.repository', () => ({
   MongoBodyTestRepository: jest.fn(() => mockBodyTestRepo),
@@ -14,6 +15,9 @@ jest.mock('@/lib/repositories/workout-session.repository', () => ({
 }));
 jest.mock('@/lib/repositories/member-plan.repository', () => ({
   MongoMemberPlanRepository: jest.fn(() => mockPlanRepo),
+}));
+jest.mock('@/lib/repositories/member-injury.repository', () => ({
+  MongoMemberInjuryRepository: jest.fn(() => mockInjuryRepo),
 }));
 
 import { auth } from '@/lib/auth/auth';
@@ -33,6 +37,7 @@ describe('MemberHubOverviewPage', () => {
       lastCompletedAt: null,
     });
     mockPlanRepo.findActive.mockResolvedValue(null);
+    mockInjuryRepo.findActiveByMember.mockResolvedValue([]);
   });
 
   it('renders without throwing when all data is null', async () => {
