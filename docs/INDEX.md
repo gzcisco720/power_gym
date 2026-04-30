@@ -50,6 +50,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Member Hub 页面（Tab 导航） | [member-hub-implementation-plan.md](2026-04-28/plans/member-hub-implementation-plan.md) | Complete |
 | Per-Trainer Hub（Owner 视角） | [per-trainer-hub-implementation-plan.md](2026-04-28/plans/per-trainer-hub-implementation-plan.md) | Complete |
 | User Profile (Option B — separate document) | [user-profile-implementation-plan.md](2026-04-29/plans/user-profile-implementation-plan.md) | Complete |
+| Gym Equipment Management | [equipment-implementation-plan.md](2026-04-29/plans/equipment-implementation-plan.md) | Complete |
 
 ## API Usage Guides
 
