@@ -61,6 +61,7 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
         { href: '/owner/members', label: 'Members' },
         { href: '/owner/invites', label: 'Invites' },
         { href: '/owner/calendar', label: 'Calendar' },
+        { href: '/owner/equipment', label: 'Equipment' },
       ],
     },
     {
