@@ -19,7 +19,7 @@ const ExerciseSchema = new Schema<IExercise>(
     createdBy: { type: Schema.Types.ObjectId, default: null },
     imageUrl: { type: String, default: null },
     isBodyweight: { type: Boolean, required: true, default: false },
-    equipmentIds: { type: [Schema.Types.ObjectId], default: [] },
+    equipmentIds: { type: [Schema.Types.ObjectId], ref: 'Equipment', default: [] },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 );

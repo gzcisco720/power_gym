@@ -25,8 +25,13 @@ export async function PATCH(req: Request, { params }: RouteContext): Promise<Res
   if (session.user.role !== 'owner') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
   const { id } = await params;
+  let body: UpdateEquipmentData;
+  try {
+    body = (await req.json()) as UpdateEquipmentData;
+  } catch {
+    return Response.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
   await connectDB();
-  const body = (await req.json()) as UpdateEquipmentData;
   const updated = await new MongoEquipmentRepository().update(id, body);
   if (!updated) return Response.json({ error: 'Not found' }, { status: 404 });
   return Response.json(updated);

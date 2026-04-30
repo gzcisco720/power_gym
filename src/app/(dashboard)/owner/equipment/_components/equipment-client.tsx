@@ -83,6 +83,7 @@ export function EquipmentClient({ initialItems }: Props) {
   }
 
   async function handleDelete(id: string) {
+    if (!confirm('Delete this equipment? This cannot be undone.')) return;
     const res = await fetch(`/api/owner/equipment/${id}`, { method: 'DELETE' });
     if (!res.ok) {
       toast.error('Failed to delete');

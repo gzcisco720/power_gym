@@ -48,10 +48,26 @@ describe('GET /api/owner/equipment/[id]', () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual(item);
   });
+
+  it('returns equipment for trainer', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
+    const item = { _id: 'e1', name: 'Barbell' };
+    mockEquipmentRepo.findById.mockResolvedValue(item);
+    const { GET } = await import('@/app/api/owner/equipment/[id]/route');
+    const res = await GET(new Request('http://localhost/'), makeParams('e1'));
+    expect(res.status).toBe(200);
+  });
 });
 
 describe('PATCH /api/owner/equipment/[id]', () => {
   beforeEach(() => jest.clearAllMocks());
+
+  it('returns 401 when unauthenticated', async () => {
+    mockAuth.mockResolvedValue(null as never);
+    const { PATCH } = await import('@/app/api/owner/equipment/[id]/route');
+    const res = await PATCH(new Request('http://localhost/', { method: 'PATCH', body: '{}' }), makeParams('e1'));
+    expect(res.status).toBe(401);
+  });
 
   it('returns 403 when trainer tries to PATCH', async () => {
     mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
@@ -80,6 +96,13 @@ describe('PATCH /api/owner/equipment/[id]', () => {
 
 describe('DELETE /api/owner/equipment/[id]', () => {
   beforeEach(() => jest.clearAllMocks());
+
+  it('returns 401 when unauthenticated', async () => {
+    mockAuth.mockResolvedValue(null as never);
+    const { DELETE } = await import('@/app/api/owner/equipment/[id]/route');
+    const res = await DELETE(new Request('http://localhost/'), makeParams('e1'));
+    expect(res.status).toBe(401);
+  });
 
   it('returns 403 when trainer tries to DELETE', async () => {
     mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);

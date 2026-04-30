@@ -16,6 +16,7 @@ const mockItems = [
 describe('EquipmentClient', () => {
   beforeEach(() => {
     global.fetch = jest.fn();
+    window.confirm = jest.fn(() => true);
   });
 
   it('renders equipment list', () => {

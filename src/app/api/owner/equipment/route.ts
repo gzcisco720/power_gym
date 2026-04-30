@@ -30,10 +30,17 @@ export async function POST(req: Request): Promise<Response> {
   const role = session.user.role as UserRole;
   if (role !== 'owner') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
+  let body: EquipmentPayload;
+  try {
+    body = (await req.json()) as EquipmentPayload;
+  } catch {
+    return Response.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+  if (!body.name?.trim()) return Response.json({ error: 'Name is required' }, { status: 400 });
+
   await connectDB();
-  const body = (await req.json()) as EquipmentPayload;
   const item = await new MongoEquipmentRepository().create({
-    name: body.name,
+    name: body.name.trim(),
     category: body.category ?? 'other',
     quantity: body.quantity ?? 1,
     status: body.status ?? 'active',
