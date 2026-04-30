@@ -40,7 +40,7 @@ describe('MemberHubOverviewPage', () => {
     mockInjuryRepo.findActiveByMember.mockResolvedValue([]);
   });
 
-  it('renders without throwing when all data is null', async () => {
+  it('renders non-null JSX when authenticated', async () => {
     const { default: Page } = await import(
       '@/app/(dashboard)/trainer/members/[id]/page'
     );
@@ -48,25 +48,54 @@ describe('MemberHubOverviewPage', () => {
     expect(result).not.toBeNull();
   });
 
-  it('fetches body test, stats and plan in parallel', async () => {
+  it('returns null when unauthenticated', async () => {
+    mockAuth.mockResolvedValue(null as never);
     const { default: Page } = await import(
       '@/app/(dashboard)/trainer/members/[id]/page'
     );
-    await Page(makeParams('m1'));
+    const result = await Page(makeParams('m1'));
+    expect(result).toBeNull();
+  });
+});
+
+describe('StatCardsSection', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockBodyTestRepo.findLatestByMember.mockResolvedValue(null);
+    mockSessionRepo.findMemberStats.mockResolvedValue({
+      completedCount: 0,
+      lastCompletedAt: null,
+    });
+    mockPlanRepo.findActive.mockResolvedValue(null);
+  });
+
+  it('fetches body test, stats and plan in parallel', async () => {
+    const { StatCardsSection } = await import(
+      '@/app/(dashboard)/trainer/members/[id]/_components/stat-cards-section'
+    );
+    await StatCardsSection({ memberId: 'm1' });
     expect(mockBodyTestRepo.findLatestByMember).toHaveBeenCalledWith('m1');
     expect(mockSessionRepo.findMemberStats).toHaveBeenCalledWith('m1');
     expect(mockPlanRepo.findActive).toHaveBeenCalledWith('m1');
   });
 
-  it('passes body test data when available', async () => {
+  it('renders without throwing when all data is null', async () => {
+    const { StatCardsSection } = await import(
+      '@/app/(dashboard)/trainer/members/[id]/_components/stat-cards-section'
+    );
+    const result = await StatCardsSection({ memberId: 'm1' });
+    expect(result).not.toBeNull();
+  });
+
+  it('renders without throwing when body test data is available', async () => {
     mockBodyTestRepo.findLatestByMember.mockResolvedValue({
       weight: 73,
       bodyFatPct: 18.2,
     });
-    const { default: Page } = await import(
-      '@/app/(dashboard)/trainer/members/[id]/page'
+    const { StatCardsSection } = await import(
+      '@/app/(dashboard)/trainer/members/[id]/_components/stat-cards-section'
     );
-    const result = await Page(makeParams('m1'));
+    const result = await StatCardsSection({ memberId: 'm1' });
     expect(result).not.toBeNull();
   });
 });
