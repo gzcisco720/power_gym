@@ -38,13 +38,11 @@ test.describe('Trainer: Member Health Tab', () => {
     await page.getByRole('link', { name: 'Health', exact: true }).click();
     await page.waitForURL(/\/trainer\/members\/.+\/health/);
 
-    // Resolve the seeded injury
-    const injuryRow = page.getByText('Left knee strain').locator('..').locator('..');
+    const injuryRow = page.getByText('E2E Resolve Injury').locator('..').locator('..');
     await injuryRow.getByRole('button', { name: 'Resolve' }).click();
 
-    // Should appear in Resolved section (find heading, navigate to parent container)
     const resolvedHeading = page.getByRole('heading', { name: 'Resolved', exact: true });
     const resolvedSection = resolvedHeading.locator('..');
-    await expect(resolvedSection.getByText('Left knee strain')).toBeVisible();
+    await expect(resolvedSection.getByText('E2E Resolve Injury')).toBeVisible();
   });
 });

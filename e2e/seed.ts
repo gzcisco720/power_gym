@@ -381,6 +381,17 @@ export async function seed(): Promise<void> {
     affectedMovements: 'Avoid squats, lunges',
   });
 
+  // dedicated to resolve test — resolved by that spec only
+  await MemberInjuryModel.create({
+    memberId: member._id,
+    title: 'E2E Resolve Injury',
+    status: 'active',
+    recordedAt: new Date(),
+    trainerNotes: null,
+    memberNotes: null,
+    affectedMovements: null,
+  });
+
   // ── Equipment ─────────────────────────────────────────────────────────────
   // stable list item — never modified by any spec
   await EquipmentModel.create({
