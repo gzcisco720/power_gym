@@ -3,7 +3,9 @@ import { connectDB } from '@/lib/db/connect';
 import { MongoBodyTestRepository } from '@/lib/repositories/body-test.repository';
 import { MongoWorkoutSessionRepository } from '@/lib/repositories/workout-session.repository';
 import { MongoMemberPlanRepository } from '@/lib/repositories/member-plan.repository';
+import { MongoMemberInjuryRepository } from '@/lib/repositories/member-injury.repository';
 import { StatCard } from '@/components/shared/stat-card';
+import { Card } from '@/components/ui/card';
 
 export default async function MemberHubOverviewPage({
   params,
@@ -17,10 +19,11 @@ export default async function MemberHubOverviewPage({
 
   await connectDB();
 
-  const [latestTest, stats, activePlan] = await Promise.all([
+  const [latestTest, stats, activePlan, activeInjuries] = await Promise.all([
     new MongoBodyTestRepository().findLatestByMember(memberId),
     new MongoWorkoutSessionRepository().findMemberStats(memberId),
     new MongoMemberPlanRepository().findActive(memberId),
+    new MongoMemberInjuryRepository().findActiveByMember(memberId),
   ]);
 
   const lastTrainedLabel = stats.lastCompletedAt
@@ -28,7 +31,7 @@ export default async function MemberHubOverviewPage({
     : '—';
 
   return (
-    <div className="px-4 sm:px-8 py-7">
+    <div className="px-4 sm:px-8 py-7 space-y-6">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <StatCard
           label="当前体重"
@@ -50,6 +53,29 @@ export default async function MemberHubOverviewPage({
           label="当前计划"
           value={activePlan ? activePlan.name : '无计划'}
         />
+      </div>
+
+      <div>
+        <h2 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#555] mb-3">
+          Health
+        </h2>
+        <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl overflow-hidden">
+          {activeInjuries.length === 0 ? (
+            <p className="px-5 py-5 text-[13px] text-[#555]">No active injuries</p>
+          ) : (
+            activeInjuries.map((injury) => (
+              <div
+                key={(injury._id as { toString(): string }).toString()}
+                className="px-5 py-3.5 border-b border-[#0f0f0f] last:border-0"
+              >
+                <p className="text-[13px] font-medium text-white">{injury.title}</p>
+                {injury.affectedMovements && (
+                  <p className="text-[11px] text-[#666] mt-0.5">{injury.affectedMovements}</p>
+                )}
+              </div>
+            ))
+          )}
+        </Card>
       </div>
     </div>
   );
