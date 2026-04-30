@@ -78,10 +78,11 @@ Full injury history, split into two sections:
 | `src/lib/repositories/member-injury.repository.ts` | `IMemberInjuryRepository` + `MongoMemberInjuryRepository` |
 | `src/app/api/members/[memberId]/injuries/route.ts` | `GET` / `POST` |
 | `src/app/api/members/[memberId]/injuries/[id]/route.ts` | `PATCH` / `DELETE` |
+| `src/app/(dashboard)/trainer/members/[id]/health/page.tsx` | Health tab server page |
+| `src/app/(dashboard)/trainer/members/[id]/health/_components/injury-client.tsx` | Health tab client component (add/edit/delete UI) |
 
 ### Modified files
 | File | Change |
 |------|--------|
-| Member Hub overview tab component | Add Health card |
-| Member Hub tab list | Add "Health" tab |
-| New Health tab component | Full injury list UI |
+| `src/components/shared/member-tab-nav.tsx` | Add `{ label: 'Health', segment: '/health' }` to TABS |
+| `src/app/(dashboard)/trainer/members/[id]/page.tsx` | Add Health card showing active injuries |
