@@ -62,4 +62,12 @@ describe('ProgressContent', () => {
     const diffDays = Math.round((now - since.getTime()) / (1000 * 60 * 60 * 24));
     expect(diffDays).toBe(90);
   });
+
+  it('renders without throwing when title is provided', async () => {
+    const { ProgressContent } = await import(
+      '@/app/(dashboard)/member/progress/_components/progress-content'
+    );
+    const result = await ProgressContent({ memberId: 'm1', title: "Alice's Progress" });
+    expect(result).not.toBeNull();
+  });
 });

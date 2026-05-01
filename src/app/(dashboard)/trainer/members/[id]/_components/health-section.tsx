@@ -17,7 +17,7 @@ export async function HealthSection({ memberId }: { memberId: string }) {
         ) : (
           activeInjuries.map((injury) => (
             <div
-              key={(injury._id as { toString(): string }).toString()}
+              key={String(injury._id)}
               className="px-5 py-3.5 border-b border-[#0f0f0f] last:border-0"
             >
               <p className="text-[13px] font-medium text-white">{injury.title}</p>

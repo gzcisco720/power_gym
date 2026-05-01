@@ -23,10 +23,9 @@ export async function DashboardStats() {
 
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const memberIds = members.map((m) => m._id.toString());
-  const sessionsThisMonth = await sessionRepo.countByMemberIdsSince(
-    memberIds,
-    startOfMonth,
-  );
+  const [sessionsThisMonth] = await Promise.all([
+    sessionRepo.countByMemberIdsSince(memberIds, startOfMonth),
+  ]);
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

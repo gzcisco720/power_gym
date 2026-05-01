@@ -87,4 +87,19 @@ describe('DashboardStats', () => {
     const result = await DashboardStats();
     expect(result).not.toBeNull();
   });
+
+  it('calls countByMemberIdsSince for all member ids', async () => {
+    mockUserRepo.findAllMembers.mockResolvedValue([
+      { _id: { toString: () => 'm1' } },
+      { _id: { toString: () => 'm2' } },
+    ]);
+    const { DashboardStats } = await import(
+      '@/app/(dashboard)/owner/_components/dashboard-stats'
+    );
+    await DashboardStats();
+    expect(mockSessionRepo.countByMemberIdsSince).toHaveBeenCalledWith(
+      ['m1', 'm2'],
+      expect.any(Date),
+    );
+  });
 });
