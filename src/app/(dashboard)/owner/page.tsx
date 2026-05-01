@@ -1,62 +1,15 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { auth } from '@/lib/auth/auth';
-import { connectDB } from '@/lib/db/connect';
-import { MongoUserRepository } from '@/lib/repositories/user.repository';
-import { MongoInviteRepository } from '@/lib/repositories/invite.repository';
-import { MongoWorkoutSessionRepository } from '@/lib/repositories/workout-session.repository';
-import { StatCard } from '@/components/shared/stat-card';
 import { PageHeader } from '@/components/shared/page-header';
-import { TrainerBreakdownTable } from './_components/trainer-breakdown-table';
+import { DashboardStats } from './_components/dashboard-stats';
+import { DashboardStatsSkeleton } from './_components/dashboard-stats-skeleton';
+import { TrainerBreakdownSection } from './_components/trainer-breakdown-section';
+import { TrainerBreakdownSkeleton } from './_components/trainer-breakdown-skeleton';
 
 export default async function OwnerDashboardPage() {
   const session = await auth();
   if (!session?.user) return null;
-
-  await connectDB();
-  const userRepo = new MongoUserRepository();
-  const inviteRepo = new MongoInviteRepository();
-  const sessionRepo = new MongoWorkoutSessionRepository();
-
-  const [trainers, members, invites] = await Promise.all([
-    userRepo.findByRole('trainer'),
-    userRepo.findAllMembers(),
-    inviteRepo.findAll(),
-  ]);
-
-  const now = new Date();
-  const pendingInviteCount = invites.filter(
-    (inv) => inv.usedAt === null && inv.expiresAt > now,
-  ).length;
-
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const memberIds = members.map((m) => m._id.toString());
-  const sessionsThisMonth = await sessionRepo.countByMemberIdsSince(memberIds, startOfMonth);
-
-  const membersByTrainer = new Map<string, (typeof members)[0][]>();
-  for (const member of members) {
-    const tid = member.trainerId?.toString() ?? '__none__';
-    const arr = membersByTrainer.get(tid) ?? [];
-    arr.push(member);
-    membersByTrainer.set(tid, arr);
-  }
-
-  const trainerRows = await Promise.all(
-    trainers.map(async (trainer) => {
-      const trainerMembers = membersByTrainer.get(trainer._id.toString()) ?? [];
-      const trainerMemberIds = trainerMembers.map((m) => m._id.toString());
-      const trainerSessions = await sessionRepo.countByMemberIdsSince(
-        trainerMemberIds,
-        startOfMonth,
-      );
-      return {
-        _id: trainer._id.toString(),
-        name: trainer.name,
-        email: trainer.email,
-        memberCount: trainerMembers.length,
-        sessionsThisMonth: trainerSessions,
-      };
-    }),
-  );
 
   return (
     <div>
@@ -72,21 +25,13 @@ export default async function OwnerDashboardPage() {
           </Link>
         }
       />
-
       <div className="px-4 sm:px-8 py-7 space-y-8">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard label="Trainers" value={String(trainers.length)} />
-          <StatCard label="Members" value={String(members.length)} />
-          <StatCard label="Sessions / mo" value={String(sessionsThisMonth)} />
-          <StatCard label="Pending Invites" value={String(pendingInviteCount)} />
-        </div>
-
-        <div>
-          <h2 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#555] mb-3.5">
-            Trainer Breakdown
-          </h2>
-          <TrainerBreakdownTable trainers={trainerRows} />
-        </div>
+        <Suspense fallback={<DashboardStatsSkeleton />}>
+          <DashboardStats />
+        </Suspense>
+        <Suspense fallback={<TrainerBreakdownSkeleton />}>
+          <TrainerBreakdownSection />
+        </Suspense>
       </div>
     </div>
   );
