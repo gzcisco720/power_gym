@@ -99,3 +99,26 @@ describe('StatCardsSection', () => {
     expect(result).not.toBeNull();
   });
 });
+
+describe('HealthSection', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockInjuryRepo.findActiveByMember.mockResolvedValue([]);
+  });
+
+  it('fetches active injuries for the member', async () => {
+    const { HealthSection } = await import(
+      '@/app/(dashboard)/trainer/members/[id]/_components/health-section'
+    );
+    await HealthSection({ memberId: 'm1' });
+    expect(mockInjuryRepo.findActiveByMember).toHaveBeenCalledWith('m1');
+  });
+
+  it('renders without throwing when no injuries', async () => {
+    const { HealthSection } = await import(
+      '@/app/(dashboard)/trainer/members/[id]/_components/health-section'
+    );
+    const result = await HealthSection({ memberId: 'm1' });
+    expect(result).not.toBeNull();
+  });
+});
