@@ -35,6 +35,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Member Injury & Medical Conditions  | [member-injury-design.md](2026-04-30/plans/member-injury-design.md)                  | Approved  |
 | E2E Coverage Completion             | [e2e-coverage-design.md](2026-04-30/plans/e2e-coverage-design.md)                    | Complete  |
 | React Suspense Streaming            | [suspense-streaming-design.md](2026-05-01/plans/suspense-streaming-design.md)        | Approved  |
+| Email Notifications                 | [email-notifications-design.md](2026-05-01/plans/email-notifications-design.md)      | Approved  |
 
 ## Implementation Plans
 
