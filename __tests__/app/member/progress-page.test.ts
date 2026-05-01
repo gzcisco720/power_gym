@@ -28,19 +28,36 @@ describe('MemberProgressPage', () => {
     expect(result).toBeNull();
   });
 
-  it('calls findCompletedDates and findTrainedExercises for the member', async () => {
+  it('renders non-null JSX when authenticated', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
     const { default: Page } = await import('@/app/(dashboard)/member/progress/page');
-    await Page();
+    const result = await Page();
+    expect(result).not.toBeNull();
+  });
+});
+
+describe('ProgressContent', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockRepo.findCompletedDates.mockResolvedValue([]);
+    mockRepo.findTrainedExercises.mockResolvedValue([]);
+  });
+
+  it('calls findCompletedDates and findTrainedExercises for the member', async () => {
+    const { ProgressContent } = await import(
+      '@/app/(dashboard)/member/progress/_components/progress-content'
+    );
+    await ProgressContent({ memberId: 'm1' });
     expect(mockRepo.findCompletedDates).toHaveBeenCalledWith('m1', expect.any(Date));
     expect(mockRepo.findTrainedExercises).toHaveBeenCalledWith('m1');
   });
 
   it('uses a since date approximately 90 days in the past', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
     const now = Date.now();
-    const { default: Page } = await import('@/app/(dashboard)/member/progress/page');
-    await Page();
+    const { ProgressContent } = await import(
+      '@/app/(dashboard)/member/progress/_components/progress-content'
+    );
+    await ProgressContent({ memberId: 'm1' });
     const since = mockRepo.findCompletedDates.mock.calls[0][1] as Date;
     const diffDays = Math.round((now - since.getTime()) / (1000 * 60 * 60 * 24));
     expect(diffDays).toBe(90);
