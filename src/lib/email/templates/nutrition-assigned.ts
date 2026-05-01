@@ -1,5 +1,4 @@
 export function nutritionAssignedTemplate(params: {
-  memberName: string;
   trainerName: string;
   planName: string;
 }): { subject: string; html: string } {

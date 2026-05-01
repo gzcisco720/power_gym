@@ -1,5 +1,4 @@
 export function planAssignedTemplate(params: {
-  memberName: string;
   trainerName: string;
   planName: string;
 }): { subject: string; html: string } {

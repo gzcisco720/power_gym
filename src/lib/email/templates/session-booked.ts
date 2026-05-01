@@ -1,5 +1,4 @@
 export function sessionBookedTemplate(params: {
-  memberName: string;
   trainerName: string;
   date: string;
   startTime: string;

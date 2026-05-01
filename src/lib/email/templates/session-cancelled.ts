@@ -1,5 +1,4 @@
 export function sessionCancelledTemplate(params: {
-  memberName: string;
   trainerName: string;
   date: string;
   startTime: string;
