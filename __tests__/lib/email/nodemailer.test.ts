@@ -63,38 +63,38 @@ describe('NodemailerEmailService — new methods', () => {
     process.env.SMTP_FROM = 'noreply@test.com';
   });
 
-  it('sendPlanAssigned calls sendMail with correct to', async () => {
+  it('sendPlanAssigned calls sendMail with correct to and subject', async () => {
     const { NodemailerEmailService } = await import('@/lib/email/nodemailer');
     const service = new NodemailerEmailService();
     await service.sendPlanAssigned({ to: 'member@test.com', trainerName: 'Bob', planName: 'PPL' });
-    expect(sendMailMock).toHaveBeenCalledWith(expect.objectContaining({ to: 'member@test.com' }));
+    expect(sendMailMock).toHaveBeenCalledWith(expect.objectContaining({ to: 'member@test.com', subject: expect.stringContaining('POWER GYM') }));
   });
 
-  it('sendNutritionPlanAssigned calls sendMail with correct to', async () => {
+  it('sendNutritionPlanAssigned calls sendMail with correct to and subject', async () => {
     const { NodemailerEmailService } = await import('@/lib/email/nodemailer');
     const service = new NodemailerEmailService();
     await service.sendNutritionPlanAssigned({ to: 'member@test.com', trainerName: 'Bob', planName: 'Bulk' });
-    expect(sendMailMock).toHaveBeenCalledWith(expect.objectContaining({ to: 'member@test.com' }));
+    expect(sendMailMock).toHaveBeenCalledWith(expect.objectContaining({ to: 'member@test.com', subject: expect.stringContaining('POWER GYM') }));
   });
 
-  it('sendMemberAssigned calls sendMail with correct to', async () => {
+  it('sendMemberAssigned calls sendMail with correct to and subject', async () => {
     const { NodemailerEmailService } = await import('@/lib/email/nodemailer');
     const service = new NodemailerEmailService();
     await service.sendMemberAssigned({ to: 'trainer@test.com', trainerName: 'Bob', memberNames: ['Alice'], assignerName: 'Owner' });
-    expect(sendMailMock).toHaveBeenCalledWith(expect.objectContaining({ to: 'trainer@test.com' }));
+    expect(sendMailMock).toHaveBeenCalledWith(expect.objectContaining({ to: 'trainer@test.com', subject: expect.stringContaining('POWER GYM') }));
   });
 
-  it('sendSessionBooked calls sendMail with correct to', async () => {
+  it('sendSessionBooked calls sendMail with correct to and subject', async () => {
     const { NodemailerEmailService } = await import('@/lib/email/nodemailer');
     const service = new NodemailerEmailService();
     await service.sendSessionBooked({ to: 'member@test.com', trainerName: 'Bob', date: 'Mon May 5', startTime: '09:00', endTime: '10:00', isRecurring: false });
-    expect(sendMailMock).toHaveBeenCalledWith(expect.objectContaining({ to: 'member@test.com' }));
+    expect(sendMailMock).toHaveBeenCalledWith(expect.objectContaining({ to: 'member@test.com', subject: expect.stringContaining('POWER GYM') }));
   });
 
-  it('sendSessionCancelled calls sendMail with correct to', async () => {
+  it('sendSessionCancelled calls sendMail with correct to and subject', async () => {
     const { NodemailerEmailService } = await import('@/lib/email/nodemailer');
     const service = new NodemailerEmailService();
     await service.sendSessionCancelled({ to: 'member@test.com', trainerName: 'Bob', date: 'Mon May 5', startTime: '09:00', endTime: '10:00', isSeries: false });
-    expect(sendMailMock).toHaveBeenCalledWith(expect.objectContaining({ to: 'member@test.com' }));
+    expect(sendMailMock).toHaveBeenCalledWith(expect.objectContaining({ to: 'member@test.com', subject: expect.stringContaining('POWER GYM') }));
   });
 });
