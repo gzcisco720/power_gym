@@ -1,6 +1,7 @@
 /** @jest-environment node */
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 jest.mock('@/lib/auth/auth', () => ({ auth: jest.fn() }));
+jest.mock('@/lib/email/index', () => ({ getEmailService: jest.fn() }));
 
 const mockRepo = {
   findById: jest.fn(),
@@ -15,8 +16,15 @@ jest.mock('@/lib/repositories/scheduled-session.repository', () => ({
   MongoScheduledSessionRepository: jest.fn(() => mockRepo),
 }));
 
+const mockUserRepo = { findById: jest.fn() };
+jest.mock('@/lib/repositories/user.repository', () => ({
+  MongoUserRepository: jest.fn(() => mockUserRepo),
+}));
+
 import { auth } from '@/lib/auth/auth';
+import { getEmailService } from '@/lib/email/index';
 const mockAuth = jest.mocked(auth);
+const mockGetEmailService = jest.mocked(getEmailService);
 
 function makeSession(role: string, id = 'u1') {
   return { user: { role, id } } as unknown as Awaited<ReturnType<typeof auth>>;
@@ -192,5 +200,60 @@ describe('DELETE /api/schedule/[id]', () => {
       body: JSON.stringify({ scope: 'future' }),
     }), params);
     expect(res.status).toBe(400);
+  });
+});
+
+describe('DELETE /api/schedule/[id] — email notification', () => {
+  const sendSessionCancelledMock = jest.fn().mockResolvedValue(undefined);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetEmailService.mockReturnValue({ sendSessionCancelled: sendSessionCancelledMock } as unknown as ReturnType<typeof getEmailService>);
+    mockRepo.cancelOne.mockResolvedValue(undefined);
+    mockRepo.cancelAll.mockResolvedValue(undefined);
+  });
+
+  it('fires sendSessionCancelled with isSeries:false for scope=one', async () => {
+    mockAuth.mockResolvedValue({ user: { role: 'trainer', id: 't1', name: 'Coach Bob' } } as unknown as Awaited<ReturnType<typeof auth>>);
+    mockRepo.findById.mockResolvedValue({
+      _id: 'sess1', seriesId: null, date: new Date('2026-05-05'),
+      startTime: '09:00', endTime: '10:00', memberIds: ['m1'],
+    });
+    mockUserRepo.findById
+      .mockResolvedValueOnce({ _id: 'm1', email: 'alice@test.com' })
+      .mockResolvedValueOnce({ _id: 't1', name: 'Coach Bob' });
+    const { DELETE } = await import('@/app/api/schedule/[id]/route');
+    await DELETE(new Request('http://localhost', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scope: 'one' }),
+    }), params);
+    expect(sendSessionCancelledMock).toHaveBeenCalledWith(expect.objectContaining({
+      to: 'alice@test.com',
+      startTime: '09:00',
+      endTime: '10:00',
+      isSeries: false,
+    }));
+  });
+
+  it('fires sendSessionCancelled with isSeries:true for scope=all', async () => {
+    mockAuth.mockResolvedValue({ user: { role: 'trainer', id: 't1', name: 'Coach Bob' } } as unknown as Awaited<ReturnType<typeof auth>>);
+    mockRepo.findById.mockResolvedValue({
+      _id: 'sess1', seriesId: { toString: () => 'sid1' }, date: new Date('2026-05-05'),
+      startTime: '09:00', endTime: '10:00', memberIds: ['m1'],
+    });
+    mockUserRepo.findById
+      .mockResolvedValueOnce({ _id: 'm1', email: 'alice@test.com' })
+      .mockResolvedValueOnce({ _id: 't1', name: 'Coach Bob' });
+    const { DELETE } = await import('@/app/api/schedule/[id]/route');
+    await DELETE(new Request('http://localhost', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scope: 'all' }),
+    }), params);
+    expect(sendSessionCancelledMock).toHaveBeenCalledWith(expect.objectContaining({
+      to: 'alice@test.com',
+      isSeries: true,
+    }));
   });
 });

@@ -1,7 +1,9 @@
 import { connectDB } from '@/lib/db/connect';
 import { auth } from '@/lib/auth/auth';
+import { getEmailService } from '@/lib/email/index';
 import { MongoScheduledSessionRepository } from '@/lib/repositories/scheduled-session.repository';
 import type { UpdateScheduledSessionData } from '@/lib/repositories/scheduled-session.repository';
+import { MongoUserRepository } from '@/lib/repositories/user.repository';
 
 type RouteContext = { params: Promise<{ id: string }> };
 type Scope = 'one' | 'future' | 'all';
@@ -102,6 +104,33 @@ export async function DELETE(req: Request, { params }: RouteContext): Promise<Re
       else await repo.cancelAll(seriesId);
     } else {
       return Response.json({ error: 'Session is not part of a recurring series' }, { status: 400 });
+    }
+
+    const isSeries = scope !== 'one';
+    const memberIds: string[] = Array.isArray(existing.memberIds) ? existing.memberIds : [];
+    const userRepo = new MongoUserRepository();
+    const [memberDocs, trainer] = await Promise.all([
+      Promise.all(memberIds.map((mid: string) => userRepo.findById(mid))),
+      userRepo.findById(existing.trainerId?.toString() ?? ''),
+    ]);
+    const dateLabel = existing.date.toLocaleDateString('en-US', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    });
+    const emailService = getEmailService();
+    for (const memberDoc of memberDocs) {
+      if (!memberDoc) continue;
+      try {
+        await emailService.sendSessionCancelled({
+          to: memberDoc.email,
+          trainerName: trainer?.name ?? 'Your trainer',
+          date: dateLabel,
+          startTime: existing.startTime,
+          endTime: existing.endTime,
+          isSeries,
+        });
+      } catch (e) {
+        console.error('sendSessionCancelled failed:', e);
+      }
     }
 
     return Response.json({ success: true });
