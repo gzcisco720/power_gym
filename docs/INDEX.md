@@ -59,6 +59,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Member Injury & Medical Conditions | [member-injury-implementation-plan.md](2026-04-30/plans/member-injury-implementation-plan.md) | Complete |
 | E2E Coverage Completion | [e2e-coverage-implementation-plan.md](2026-04-30/plans/e2e-coverage-implementation-plan.md) | Complete |
 | React Suspense Streaming | [suspense-streaming-implementation-plan.md](2026-05-01/plans/suspense-streaming-implementation-plan.md) | Complete |
+| Email Notifications | [email-notifications-implementation-plan.md](2026-05-01/plans/email-notifications-implementation-plan.md) | Complete |
 
 ## API Usage Guides
 

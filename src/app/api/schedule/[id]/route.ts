@@ -107,7 +107,9 @@ export async function DELETE(req: Request, { params }: RouteContext): Promise<Re
     }
 
     const isSeries = scope !== 'one';
-    const memberIds: string[] = Array.isArray(existing.memberIds) ? existing.memberIds : [];
+    const memberIds: string[] = Array.isArray(existing.memberIds)
+      ? existing.memberIds.map((id) => id.toString())
+      : [];
     const userRepo = new MongoUserRepository();
     const [memberDocs, trainer] = await Promise.all([
       Promise.all(memberIds.map((mid: string) => userRepo.findById(mid))),
