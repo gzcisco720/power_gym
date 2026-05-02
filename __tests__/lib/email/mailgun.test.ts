@@ -23,6 +23,13 @@ describe('MailgunEmailService', () => {
     expect(mockCreate).toHaveBeenCalledWith('mg.example.com', expect.objectContaining({ to: ['invited@test.com'] }));
   });
 
+  it('sendSessionReminder calls messages.create with correct to', async () => {
+    const { MailgunEmailService } = await import('@/lib/email/mailgun');
+    const service = new MailgunEmailService();
+    await service.sendSessionReminder({ to: 'member@test.com', memberName: 'Alice', trainerName: 'Bob', date: 'Mon May 5', startTime: '09:00', endTime: '10:00', groupMembers: [] });
+    expect(mockCreate).toHaveBeenCalledWith('mg.example.com', expect.objectContaining({ to: ['member@test.com'] }));
+  });
+
   it('sendPlanAssigned calls messages.create with correct to', async () => {
     const { MailgunEmailService } = await import('@/lib/email/mailgun');
     const service = new MailgunEmailService();
@@ -30,10 +37,31 @@ describe('MailgunEmailService', () => {
     expect(mockCreate).toHaveBeenCalledWith('mg.example.com', expect.objectContaining({ to: ['member@test.com'] }));
   });
 
+  it('sendNutritionPlanAssigned calls messages.create with correct to', async () => {
+    const { MailgunEmailService } = await import('@/lib/email/mailgun');
+    const service = new MailgunEmailService();
+    await service.sendNutritionPlanAssigned({ to: 'member@test.com', trainerName: 'Bob', planName: 'Bulk Diet' });
+    expect(mockCreate).toHaveBeenCalledWith('mg.example.com', expect.objectContaining({ to: ['member@test.com'] }));
+  });
+
+  it('sendMemberAssigned calls messages.create with correct to', async () => {
+    const { MailgunEmailService } = await import('@/lib/email/mailgun');
+    const service = new MailgunEmailService();
+    await service.sendMemberAssigned({ to: 'trainer@test.com', trainerName: 'Bob', memberNames: ['Alice'], assignerName: 'Owner' });
+    expect(mockCreate).toHaveBeenCalledWith('mg.example.com', expect.objectContaining({ to: ['trainer@test.com'] }));
+  });
+
   it('sendSessionBooked calls messages.create with correct to', async () => {
     const { MailgunEmailService } = await import('@/lib/email/mailgun');
     const service = new MailgunEmailService();
     await service.sendSessionBooked({ to: 'member@test.com', trainerName: 'Bob', date: 'Mon May 5', startTime: '09:00', endTime: '10:00', isRecurring: false });
+    expect(mockCreate).toHaveBeenCalledWith('mg.example.com', expect.objectContaining({ to: ['member@test.com'] }));
+  });
+
+  it('sendSessionCancelled calls messages.create with correct to', async () => {
+    const { MailgunEmailService } = await import('@/lib/email/mailgun');
+    const service = new MailgunEmailService();
+    await service.sendSessionCancelled({ to: 'member@test.com', trainerName: 'Bob', date: 'Mon May 5', startTime: '09:00', endTime: '10:00', isSeries: false });
     expect(mockCreate).toHaveBeenCalledWith('mg.example.com', expect.objectContaining({ to: ['member@test.com'] }));
   });
 });

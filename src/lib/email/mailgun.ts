@@ -1,6 +1,5 @@
 import FormData from 'form-data';
 import Mailgun from 'mailgun.js';
-import type { IMailgunClient } from 'mailgun.js/Types/Interfaces/MailgunClient/index.js';
 import type {
   IEmailService,
   SendInviteParams,
@@ -20,15 +19,21 @@ import { sessionBookedTemplate } from '@/lib/email/templates/session-booked';
 import { sessionCancelledTemplate } from '@/lib/email/templates/session-cancelled';
 
 export class MailgunEmailService implements IEmailService {
-  private mg: IMailgunClient;
+  private mg: ReturnType<InstanceType<typeof Mailgun>['client']>;
+  private domain: string;
 
   constructor() {
+    const key = process.env.MAILGUN_API_KEY;
+    const domain = process.env.MAILGUN_DOMAIN;
+    if (!key) throw new Error('MAILGUN_API_KEY is not set');
+    if (!domain) throw new Error('MAILGUN_DOMAIN is not set');
     const mailgun = new Mailgun(FormData);
-    this.mg = mailgun.client({ username: 'api', key: process.env.MAILGUN_API_KEY ?? '' });
+    this.mg = mailgun.client({ username: 'api', key });
+    this.domain = domain;
   }
 
   private async send(to: string, subject: string, html: string): Promise<void> {
-    await this.mg.messages.create(process.env.MAILGUN_DOMAIN ?? '', {
+    await this.mg.messages.create(this.domain, {
       from: process.env.SMTP_FROM,
       to: [to],
       subject,
