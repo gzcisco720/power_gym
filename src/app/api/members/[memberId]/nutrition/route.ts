@@ -1,5 +1,6 @@
 import { connectDB } from '@/lib/db/connect';
 import { auth } from '@/lib/auth/auth';
+import { getEmailService } from '@/lib/email/index';
 import { MongoMemberNutritionPlanRepository } from '@/lib/repositories/member-nutrition-plan.repository';
 import { MongoNutritionTemplateRepository } from '@/lib/repositories/nutrition-template.repository';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
@@ -59,6 +60,16 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
     dayTypes: JSON.parse(JSON.stringify(template.dayTypes)) as typeof template.dayTypes,
     assignedAt: new Date(),
   });
+
+  try {
+    await getEmailService().sendNutritionPlanAssigned({
+      to: member.email,
+      trainerName: session.user.name ?? 'Your trainer',
+      planName: template.name,
+    });
+  } catch (e) {
+    console.error('sendNutritionPlanAssigned failed:', e);
+  }
 
   return Response.json(plan, { status: 201 });
 }
