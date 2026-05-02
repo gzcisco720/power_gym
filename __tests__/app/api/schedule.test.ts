@@ -1,6 +1,7 @@
 /** @jest-environment node */
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 jest.mock('@/lib/auth/auth', () => ({ auth: jest.fn() }));
+jest.mock('@/lib/email/index', () => ({ getEmailService: jest.fn() }));
 
 const mockRepo = {
   create: jest.fn(),
@@ -12,8 +13,15 @@ jest.mock('@/lib/repositories/scheduled-session.repository', () => ({
   MongoScheduledSessionRepository: jest.fn(() => mockRepo),
 }));
 
+const mockUserRepo = { findById: jest.fn() };
+jest.mock('@/lib/repositories/user.repository', () => ({
+  MongoUserRepository: jest.fn(() => mockUserRepo),
+}));
+
 import { auth } from '@/lib/auth/auth';
+import { getEmailService } from '@/lib/email/index';
 const mockAuth = jest.mocked(auth);
+const mockGetEmailService = jest.mocked(getEmailService);
 
 function makeSession(role: string, id = 'u1') {
   return { user: { role, id } } as unknown as Awaited<ReturnType<typeof auth>>;
@@ -99,6 +107,55 @@ describe('POST /api/schedule', () => {
     }));
     expect(res.status).toBe(201);
     expect(mockRepo.create).toHaveBeenCalledWith(expect.objectContaining({ trainerId: 't1' }));
+  });
+});
+
+describe('POST /api/schedule — email notification', () => {
+  const sendSessionBookedMock = jest.fn().mockResolvedValue(undefined);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetEmailService.mockReturnValue({ sendSessionBooked: sendSessionBookedMock } as unknown as ReturnType<typeof getEmailService>);
+    mockRepo.create.mockResolvedValue({ _id: 's1' });
+    mockRepo.createMany.mockResolvedValue(undefined);
+  });
+
+  it('fires sendSessionBooked for each member after single session creation', async () => {
+    mockAuth.mockResolvedValue({ user: { role: 'trainer', id: 't1', name: 'Coach Bob' } } as unknown as Awaited<ReturnType<typeof auth>>);
+    mockUserRepo.findById
+      .mockResolvedValueOnce({ _id: 'm1', email: 'alice@test.com', name: 'Alice' })
+      .mockResolvedValueOnce({ _id: 't1', name: 'Coach Bob' });
+    const { POST } = await import('@/app/api/schedule/route');
+    await POST(new Request('http://localhost/api/schedule', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memberIds: ['m1'], date: '2026-05-01', startTime: '09:00', endTime: '10:00', isRecurring: false }),
+    }));
+    expect(sendSessionBookedMock).toHaveBeenCalledWith(expect.objectContaining({
+      to: 'alice@test.com',
+      trainerName: 'Coach Bob',
+      startTime: '09:00',
+      endTime: '10:00',
+      isRecurring: false,
+    }));
+  });
+
+  it('fires sendSessionBooked with isRecurring:true and sessionCount:12 for recurring', async () => {
+    mockAuth.mockResolvedValue({ user: { role: 'trainer', id: 't1', name: 'Coach Bob' } } as unknown as Awaited<ReturnType<typeof auth>>);
+    mockUserRepo.findById
+      .mockResolvedValueOnce({ _id: 'm1', email: 'alice@test.com', name: 'Alice' })
+      .mockResolvedValueOnce({ _id: 't1', name: 'Coach Bob' });
+    const { POST } = await import('@/app/api/schedule/route');
+    await POST(new Request('http://localhost/api/schedule', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memberIds: ['m1'], date: '2026-05-01', startTime: '09:00', endTime: '10:00', isRecurring: true }),
+    }));
+    expect(sendSessionBookedMock).toHaveBeenCalledWith(expect.objectContaining({
+      to: 'alice@test.com',
+      isRecurring: true,
+      sessionCount: 12,
+    }));
   });
 });
 

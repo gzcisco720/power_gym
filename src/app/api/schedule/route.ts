@@ -1,6 +1,8 @@
 import { connectDB } from '@/lib/db/connect';
 import { auth } from '@/lib/auth/auth';
+import { getEmailService } from '@/lib/email/index';
 import { MongoScheduledSessionRepository } from '@/lib/repositories/scheduled-session.repository';
+import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import mongoose from 'mongoose';
 
 function addWeeks(date: Date, weeks: number): Date {
@@ -16,6 +18,42 @@ interface PostBody {
   startTime?: string;
   endTime?: string;
   isRecurring?: boolean;
+}
+
+async function sendSessionBookedEmails(params: {
+  memberIds: string[];
+  trainerId: string;
+  date: Date;
+  startTime: string;
+  endTime: string;
+  isRecurring: boolean;
+  sessionCount?: number;
+}): Promise<void> {
+  const userRepo = new MongoUserRepository();
+  const [memberDocs, trainer] = await Promise.all([
+    Promise.all(params.memberIds.map((id) => userRepo.findById(id))),
+    userRepo.findById(params.trainerId),
+  ]);
+  const dateLabel = params.date.toLocaleDateString('en-US', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+  });
+  const emailService = getEmailService();
+  for (const memberDoc of memberDocs) {
+    if (!memberDoc) continue;
+    try {
+      await emailService.sendSessionBooked({
+        to: memberDoc.email,
+        trainerName: trainer?.name ?? 'Your trainer',
+        date: dateLabel,
+        startTime: params.startTime,
+        endTime: params.endTime,
+        isRecurring: params.isRecurring,
+        sessionCount: params.sessionCount,
+      });
+    } catch (e) {
+      console.error('sendSessionBooked failed:', e);
+    }
+  }
 }
 
 export async function POST(req: Request): Promise<Response> {
@@ -61,6 +99,16 @@ export async function POST(req: Request): Promise<Response> {
       startTime: body.startTime,
       endTime: body.endTime,
     });
+
+    await sendSessionBookedEmails({
+      memberIds,
+      trainerId,
+      date: baseDate,
+      startTime: body.startTime,
+      endTime: body.endTime,
+      isRecurring: false,
+    });
+
     return Response.json({ sessions: [doc] }, { status: 201 });
   }
 
@@ -75,6 +123,17 @@ export async function POST(req: Request): Promise<Response> {
   }));
 
   await repo.createMany(sessions);
+
+  await sendSessionBookedEmails({
+    memberIds,
+    trainerId,
+    date: baseDate,
+    startTime: body.startTime,
+    endTime: body.endTime,
+    isRecurring: true,
+    sessionCount: 12,
+  });
+
   return Response.json({ sessions }, { status: 201 });
 }
 
