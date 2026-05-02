@@ -34,7 +34,7 @@ describe('POST /api/invites', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetEmailService.mockReturnValue({ sendInvite: sendInviteMock });
+    mockGetEmailService.mockReturnValue({ sendInvite: sendInviteMock } as unknown as ReturnType<typeof getEmailService>);
     process.env.AUTH_URL = 'http://localhost:3000';
   });
 
