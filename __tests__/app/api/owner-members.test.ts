@@ -1,6 +1,7 @@
 /** @jest-environment node */
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 jest.mock('@/lib/auth/auth', () => ({ auth: jest.fn() }));
+jest.mock('@/lib/email/index', () => ({ getEmailService: jest.fn() }));
 
 const mockUserRepo = {
   findAllMembers: jest.fn(),
@@ -17,7 +18,9 @@ jest.mock('@/lib/repositories/scheduled-session.repository', () => ({
 }));
 
 import { auth } from '@/lib/auth/auth';
+import { getEmailService } from '@/lib/email/index';
 const mockAuth = jest.mocked(auth);
+const mockGetEmailService = jest.mocked(getEmailService);
 
 describe('GET /api/owner/members', () => {
   beforeEach(() => jest.clearAllMocks());
@@ -118,5 +121,34 @@ describe('PATCH /api/owner/members/[id]/trainer — unassign side effect', () =>
       { params: Promise.resolve({ id: 'm1' }) },
     );
     expect(mockScheduleRepo.removeMemberFromFutureSessions).toHaveBeenCalledWith('m1');
+  });
+});
+
+describe('PATCH /api/owner/members/[id]/trainer — email notification', () => {
+  const sendMemberAssignedMock = jest.fn().mockResolvedValue(undefined);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetEmailService.mockReturnValue({ sendMemberAssigned: sendMemberAssignedMock } as unknown as ReturnType<typeof getEmailService>);
+    mockUserRepo.updateTrainerId.mockResolvedValue(undefined);
+    mockScheduleRepo.removeMemberFromFutureSessions.mockResolvedValue(undefined);
+  });
+
+  it('fires sendMemberAssigned to the new trainer after assignment', async () => {
+    mockAuth.mockResolvedValue({ user: { role: 'owner', id: 'o1', name: 'Owner' } } as unknown as Awaited<ReturnType<typeof auth>>);
+    mockUserRepo.findById
+      .mockResolvedValueOnce({ _id: 'm1', role: 'member', name: 'Alice' })
+      .mockResolvedValueOnce({ _id: 't2', name: 'Coach Bob', email: 'bob@gym.com' });
+    const { PATCH } = await import('@/app/api/owner/members/[id]/trainer/route');
+    await PATCH(
+      new Request('http://localhost', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trainerId: 't2' }) }),
+      { params: Promise.resolve({ id: 'm1' }) },
+    );
+    expect(sendMemberAssignedMock).toHaveBeenCalledWith(expect.objectContaining({
+      to: 'bob@gym.com',
+      trainerName: 'Coach Bob',
+      memberNames: ['Alice'],
+      assignerName: 'Owner',
+    }));
   });
 });

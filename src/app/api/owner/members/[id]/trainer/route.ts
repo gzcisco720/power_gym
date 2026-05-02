@@ -1,5 +1,6 @@
 import { connectDB } from '@/lib/db/connect';
 import { auth } from '@/lib/auth/auth';
+import { getEmailService } from '@/lib/email/index';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { MongoScheduledSessionRepository } from '@/lib/repositories/scheduled-session.repository';
 
@@ -35,5 +36,20 @@ export async function PATCH(
   await userRepo.updateTrainerId(id, trainerId);
   const scheduleRepo = new MongoScheduledSessionRepository();
   await scheduleRepo.removeMemberFromFutureSessions(id);
+
+  const newTrainer = await userRepo.findById(trainerId);
+  if (newTrainer) {
+    try {
+      await getEmailService().sendMemberAssigned({
+        to: newTrainer.email,
+        trainerName: newTrainer.name,
+        memberNames: [member.name],
+        assignerName: session.user.name ?? 'Owner',
+      });
+    } catch (e) {
+      console.error('sendMemberAssigned failed:', e);
+    }
+  }
+
   return Response.json({ success: true });
 }

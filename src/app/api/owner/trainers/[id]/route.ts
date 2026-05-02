@@ -1,5 +1,6 @@
 import { connectDB } from '@/lib/db/connect';
 import { auth } from '@/lib/auth/auth';
+import { getEmailService } from '@/lib/email/index';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 
 export async function DELETE(
@@ -25,6 +26,20 @@ export async function DELETE(
   await Promise.all(
     members.map((m) => userRepo.updateTrainerId(m._id.toString(), reassignToId)),
   );
+
+  const newTrainer = await userRepo.findById(reassignToId);
+  if (newTrainer && members.length > 0) {
+    try {
+      await getEmailService().sendMemberAssigned({
+        to: newTrainer.email,
+        trainerName: newTrainer.name,
+        memberNames: members.map((m) => m.name),
+        assignerName: session.user.name ?? 'Owner',
+      });
+    } catch (e) {
+      console.error('sendMemberAssigned failed:', e);
+    }
+  }
 
   return Response.json({ success: true });
 }
