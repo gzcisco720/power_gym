@@ -14,6 +14,8 @@ import { InviteTokenModel } from '../src/lib/db/models/invite-token.model';
 import { ScheduledSessionModel } from '../src/lib/db/models/scheduled-session.model';
 import { MemberInjuryModel } from '../src/lib/db/models/member-injury.model';
 import { EquipmentModel } from '../src/lib/db/models/equipment.model';
+import { CheckInConfigModel } from '../src/lib/db/models/check-in-config.model';
+import { CheckInModel } from '../src/lib/db/models/check-in.model';
 
 export async function seed(): Promise<void> {
   const passwordHash = await bcrypt.hash('TestPass123!', 10);
@@ -411,5 +413,45 @@ export async function seed(): Promise<void> {
     status: 'active',
     purchasedAt: null,
     notes: null,
+  });
+
+  // ── Check-In Config ───────────────────────────────────────────────────────
+  // Thursday 7am — used by trainer check-in schedule tests
+  await CheckInConfigModel.create({
+    memberId: member._id,
+    trainerId: trainer._id,
+    dayOfWeek: 4,
+    hour: 7,
+    minute: 0,
+    active: true,
+    reminderSentAt: null,
+  });
+
+  // ── Past Check-In (last week) ─────────────────────────────────────────────
+  // Used by trainer check-in list test and member check-in history test
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  await CheckInModel.create({
+    memberId: member._id,
+    trainerId: trainer._id,
+    submittedAt: oneWeekAgo,
+    sleepQuality: 8,
+    stress: 3,
+    fatigue: 4,
+    hunger: 6,
+    recovery: 7,
+    energy: 8,
+    digestion: 7,
+    weight: 76.5,
+    waist: null,
+    steps: null,
+    exerciseMinutes: null,
+    walkRunDistance: null,
+    sleepHours: 7.5,
+    dietDetails: 'Followed the plan well',
+    stuckToDiet: 'yes',
+    wellbeing: 'Feeling strong this week',
+    notes: '',
+    photos: [],
   });
 }
