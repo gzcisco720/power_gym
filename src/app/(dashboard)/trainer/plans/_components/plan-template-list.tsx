@@ -19,9 +19,10 @@ interface Template {
 interface Props {
   templates: Template[];
   onDelete?: (id: string) => Promise<void>;
+  basePath?: string;
 }
 
-export function PlanTemplateList({ templates, onDelete }: Props) {
+export function PlanTemplateList({ templates, onDelete, basePath = '/trainer/plans' }: Props) {
   const shouldReduce = useReducedMotion();
 
   return (
@@ -31,7 +32,7 @@ export function PlanTemplateList({ templates, onDelete }: Props) {
         subtitle={`${templates.length} template${templates.length !== 1 ? 's' : ''}`}
         actions={
           <Link
-            href="/trainer/plans/new"
+            href={`${basePath}/new`}
             className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-transparent bg-white px-2.5 text-sm font-semibold text-black hover:bg-white/90 transition-all"
           >
             <Plus className="h-4 w-4" />
@@ -47,7 +48,7 @@ export function PlanTemplateList({ templates, onDelete }: Props) {
             description="Create your first training plan template to assign to members."
             action={
               <Link
-                href="/trainer/plans/new"
+                href={`${basePath}/new`}
                 className="inline-flex h-8 items-center justify-center rounded-lg border border-transparent bg-white px-2.5 text-sm font-semibold text-black hover:bg-white/90 transition-all"
               >
                 New Template
@@ -77,7 +78,7 @@ export function PlanTemplateList({ templates, onDelete }: Props) {
                   </div>
                   <div className="flex items-center gap-2">
                     <Link
-                      href={`/trainer/plans/${template._id}/edit`}
+                      href={`${basePath}/${template._id}/edit`}
                       className="inline-flex size-8 items-center justify-center rounded-lg border border-transparent text-[#777] hover:text-[#aaa] hover:bg-[#141414] transition-all"
                       aria-label="Edit"
                     >
