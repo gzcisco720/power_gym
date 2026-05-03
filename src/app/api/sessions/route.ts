@@ -8,9 +8,6 @@ export async function POST(req: Request): Promise<Response> {
   const session = await auth();
   if (!session?.user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const role = session.user.role as UserRole;
-  if (role !== 'member') return Response.json({ error: 'Forbidden' }, { status: 403 });
-
   await connectDB();
   const body = (await req.json()) as { memberPlanId: string; dayNumber: number };
 

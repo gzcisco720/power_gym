@@ -27,15 +27,16 @@ describe('POST /api/sessions', () => {
     expect(res.status).toBe(401);
   });
 
-  it('returns 403 when trainer tries to start session', async () => {
+  it('allows trainer to start session', async () => {
     mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
+    mockMemberPlanRepo.findActive.mockResolvedValue(null);
     const { POST } = await import('@/app/api/sessions/route');
     const res = await POST(new Request('http://localhost/api/sessions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ memberPlanId: 'p1', dayNumber: 1 }),
     }));
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(404);
   });
 
   it('pre-populates sets from plan day exercises and creates session', async () => {
