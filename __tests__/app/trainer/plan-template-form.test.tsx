@@ -22,7 +22,7 @@ describe('PlanTemplateForm', () => {
     render(<PlanTemplateForm onSubmit={onSubmit} />);
 
     await user.type(await screen.findByLabelText(/Plan Name/i), 'Push Pull Legs');
-    fireEvent.click(await screen.findByRole('button', { name: /^Save$/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /Save Plan/i }));
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({ name: 'Push Pull Legs' }),

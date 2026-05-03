@@ -1,56 +1,29 @@
-'use client';
+import { auth } from '@/lib/auth/auth';
+import { connectDB } from '@/lib/db/connect';
+import { MongoExerciseRepository } from '@/lib/repositories/exercise.repository';
+import { MongoPlanTemplateRepository } from '@/lib/repositories/plan-template.repository';
+import { notFound } from 'next/navigation';
+import { EditPlanClient } from './_client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
-import { PlanTemplateForm } from '../../_components/plan-template-form';
-import { PageHeader } from '@/components/shared/page-header';
-import type { IPlanDay } from '@/lib/db/models/plan-template.model';
+export default async function EditPlanPage({ params }: { params: Promise<{ id: string }> }) {
+  const session = await auth();
+  if (!session?.user) return null;
+  const { id } = await params;
+  await connectDB();
 
-interface Template {
-  _id: string;
-  name: string;
-  description: string | null;
-  days: IPlanDay[];
-}
+  const [template, exercises] = await Promise.all([
+    new MongoPlanTemplateRepository().findById(id),
+    new MongoExerciseRepository().findAll({ creatorId: session.user.id }),
+  ]);
 
-export default function EditPlanPage({ params }: { params: Promise<{ id: string }> }) {
-  const router = useRouter();
-  const [template, setTemplate] = useState<Template | null>(null);
-  const [id, setId] = useState('');
-
-  useEffect(() => {
-    params.then(({ id: resolvedId }) => {
-      setId(resolvedId);
-      fetch(`/api/plan-templates/${resolvedId}`)
-        .then((r) => r.json())
-        .then((data: Template) => setTemplate(data));
-    });
-  }, [params]);
-
-  async function handleSubmit(data: { name: string; description: string | null; days: IPlanDay[] }) {
-    const res = await fetch(`/api/plan-templates/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      const body = (await res.json()) as { error?: string };
-      toast.error(body.error ?? 'Failed to save plan');
-      return;
-    }
-    toast.success('Plan saved');
-    router.push('/trainer/plans');
-  }
-
-  if (!template) return <p className="px-4 sm:px-8 py-7 text-[#888] text-sm">加载中...</p>;
+  if (!template) notFound();
 
   return (
-    <div>
-      <PageHeader title="编辑训练计划" />
-      <div className="px-4 sm:px-8 py-7">
-        <PlanTemplateForm initialData={template} onSubmit={handleSubmit} />
-      </div>
-    </div>
+    <EditPlanClient
+      id={id}
+      initialData={JSON.parse(JSON.stringify(template))}
+      exercises={JSON.parse(JSON.stringify(exercises))}
+      backPath="/trainer/plans"
+    />
   );
 }
