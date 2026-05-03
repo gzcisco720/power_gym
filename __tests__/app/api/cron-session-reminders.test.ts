@@ -1,4 +1,5 @@
 /** @jest-environment node */
+export {};
 process.env.CRON_SECRET = 'test-secret';
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 
