@@ -53,6 +53,20 @@ export interface SendSessionCancelledParams {
   isSeries: boolean;
 }
 
+export interface SendCheckInReminderParams {
+  to: string;
+  memberName: string;
+  trainerName: string;
+  checkInUrl: string;
+}
+
+export interface SendCheckInReceivedParams {
+  to: string;
+  trainerName: string;
+  memberName: string;
+  submittedAt: string;
+}
+
 export interface IEmailService {
   sendInvite(params: SendInviteParams): Promise<void>;
   sendSessionReminder(params: SendSessionReminderParams): Promise<void>;
@@ -61,6 +75,8 @@ export interface IEmailService {
   sendMemberAssigned(params: SendMemberAssignedParams): Promise<void>;
   sendSessionBooked(params: SendSessionBookedParams): Promise<void>;
   sendSessionCancelled(params: SendSessionCancelledParams): Promise<void>;
+  sendCheckInReminder(params: SendCheckInReminderParams): Promise<void>;
+  sendCheckInReceived(params: SendCheckInReceivedParams): Promise<void>;
 }
 
 export function getEmailService(): IEmailService {

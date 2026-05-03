@@ -8,6 +8,8 @@ import type {
   SendMemberAssignedParams,
   SendSessionBookedParams,
   SendSessionCancelledParams,
+  SendCheckInReminderParams,
+  SendCheckInReceivedParams,
 } from '@/lib/email/index';
 import { inviteEmailTemplate } from '@/lib/email/templates/invite';
 import { sessionReminderTemplate } from '@/lib/email/templates/session-reminder';
@@ -16,6 +18,8 @@ import { nutritionAssignedTemplate } from '@/lib/email/templates/nutrition-assig
 import { memberAssignedTemplate } from '@/lib/email/templates/member-assigned';
 import { sessionBookedTemplate } from '@/lib/email/templates/session-booked';
 import { sessionCancelledTemplate } from '@/lib/email/templates/session-cancelled';
+import { checkInReminderTemplate } from '@/lib/email/templates/check-in-reminder';
+import { checkInReceivedTemplate } from '@/lib/email/templates/check-in-received';
 
 function createTransport() {
   const provider = process.env.EMAIL_PROVIDER;
@@ -85,6 +89,18 @@ export class NodemailerEmailService implements IEmailService {
   async sendSessionCancelled(params: SendSessionCancelledParams): Promise<void> {
     const transporter = createTransport();
     const { subject, html } = sessionCancelledTemplate(params);
+    await transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
+  }
+
+  async sendCheckInReminder(params: SendCheckInReminderParams): Promise<void> {
+    const transporter = createTransport();
+    const { subject, html } = checkInReminderTemplate(params);
+    await transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
+  }
+
+  async sendCheckInReceived(params: SendCheckInReceivedParams): Promise<void> {
+    const transporter = createTransport();
+    const { subject, html } = checkInReceivedTemplate(params);
     await transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
   }
 }
