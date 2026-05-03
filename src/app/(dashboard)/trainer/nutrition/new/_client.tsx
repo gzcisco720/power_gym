@@ -20,7 +20,7 @@ interface FoodOption {
   } | null;
 }
 
-export function NewNutritionTemplateClient({ foods }: { foods: FoodOption[] }) {
+export function NewNutritionTemplateClient({ foods, backPath = '/trainer/nutrition' }: { foods: FoodOption[]; backPath?: string }) {
   const router = useRouter();
 
   async function handleSubmit(data: {
@@ -39,7 +39,7 @@ export function NewNutritionTemplateClient({ foods }: { foods: FoodOption[] }) {
       return;
     }
     toast.success('Nutrition plan saved');
-    router.push('/trainer/nutrition');
+    router.push(backPath);
   }
 
   return (

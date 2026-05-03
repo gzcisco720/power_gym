@@ -24,9 +24,10 @@ interface Props {
   id: string;
   initialData: { name: string; description: string | null; dayTypes: IDayType[] };
   foods: FoodOption[];
+  backPath?: string;
 }
 
-export function EditNutritionTemplateClient({ id, initialData, foods }: Props) {
+export function EditNutritionTemplateClient({ id, initialData, foods, backPath = '/trainer/nutrition' }: Props) {
   const router = useRouter();
 
   async function handleSubmit(data: {
@@ -45,7 +46,7 @@ export function EditNutritionTemplateClient({ id, initialData, foods }: Props) {
       return;
     }
     toast.success('Nutrition plan saved');
-    router.push('/trainer/nutrition');
+    router.push(backPath);
   }
 
   return (
