@@ -369,12 +369,12 @@ async function main() {
 
   // ── Check-In History (6 weeks) ────────────────────────────────────────────
   const checkInHistory = [
-    { ago: 42, sleep: 6, stress: 6, fatigue: 6, hunger: 5, recovery: 5, energy: 6, digestion: 7, weight: 82.0, sleepHrs: 6.5, diet: 'partial' as const, wellbeing: 'A bit tired from work stress', notes: '' },
-    { ago: 35, sleep: 7, stress: 5, fatigue: 5, hunger: 6, recovery: 7, energy: 7, digestion: 7, weight: 81.5, sleepHrs: 7.0, diet: 'yes' as const, wellbeing: 'Feeling better this week', notes: 'Upped calories slightly' },
-    { ago: 28, sleep: 8, stress: 4, fatigue: 4, hunger: 6, recovery: 8, energy: 8, digestion: 8, weight: 80.5, sleepHrs: 7.5, diet: 'yes' as const, wellbeing: 'Great energy, training is going well', notes: '' },
-    { ago: 21, sleep: 7, stress: 5, fatigue: 5, hunger: 7, recovery: 7, energy: 7, digestion: 8, weight: 80.0, sleepHrs: 7.0, diet: 'yes' as const, wellbeing: 'Consistent week', notes: 'Squat PR this week' },
-    { ago: 14, sleep: 6, stress: 7, fatigue: 7, hunger: 5, recovery: 6, energy: 6, digestion: 6, weight: 79.5, sleepHrs: 6.0, diet: 'no' as const, wellbeing: 'Tough week, travel for work', notes: 'Missed 2 sessions' },
-    { ago: 7,  sleep: 8, stress: 3, fatigue: 3, hunger: 7, recovery: 9, energy: 9, digestion: 8, weight: 78.0, sleepHrs: 8.0, diet: 'yes' as const, wellbeing: 'Best week in months, feeling strong', notes: '' },
+    { ago: 42, sleep: 6, stress: 6, fatigue: 6, hunger: 5, recovery: 5, energy: 6, digestion: 7, weight: 82.0, sleepHrs: 6.5, diet: 'partial' as const, dietDetails: 'Hit protein but went over on carbs most days', wellbeing: 'A bit tired from work stress', notes: 'Work has been hectic, trying to keep up with training' },
+    { ago: 35, sleep: 7, stress: 5, fatigue: 5, hunger: 6, recovery: 7, energy: 7, digestion: 7, weight: 81.5, sleepHrs: 7.0, diet: 'yes' as const, dietDetails: 'Followed plan closely, meals prepped Sunday', wellbeing: 'Feeling better this week', notes: 'Upped calories slightly' },
+    { ago: 28, sleep: 8, stress: 4, fatigue: 4, hunger: 6, recovery: 8, energy: 8, digestion: 8, weight: 80.5, sleepHrs: 7.5, diet: 'yes' as const, dietDetails: 'Nailed every meal, very consistent', wellbeing: 'Great energy, training is going well', notes: 'No issues this week, everything clicking' },
+    { ago: 21, sleep: 7, stress: 5, fatigue: 5, hunger: 7, recovery: 7, energy: 7, digestion: 8, weight: 80.0, sleepHrs: 7.0, diet: 'yes' as const, dietDetails: 'Stuck to plan, had one cheat meal Saturday', wellbeing: 'Consistent week', notes: 'Squat PR this week' },
+    { ago: 14, sleep: 6, stress: 7, fatigue: 7, hunger: 5, recovery: 6, energy: 6, digestion: 6, weight: 79.5, sleepHrs: 6.0, diet: 'no' as const, dietDetails: 'Ate out most days, could not track macros', wellbeing: 'Tough week, travel for work', notes: 'Missed 2 sessions' },
+    { ago: 7,  sleep: 8, stress: 3, fatigue: 3, hunger: 7, recovery: 9, energy: 9, digestion: 8, weight: 78.0, sleepHrs: 8.0, diet: 'yes' as const, dietDetails: 'Perfect adherence, hit all targets', wellbeing: 'Best week in months, feeling strong', notes: 'Everything dialed in, ready to push harder' },
   ];
 
   for (const c of checkInHistory) {
@@ -395,7 +395,7 @@ async function main() {
       exerciseMinutes: null,
       walkRunDistance: null,
       sleepHours: c.sleepHrs,
-      dietDetails: '',
+      dietDetails: c.dietDetails,
       stuckToDiet: c.diet,
       wellbeing: c.wellbeing,
       notes: c.notes,
