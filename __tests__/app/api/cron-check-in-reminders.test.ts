@@ -1,4 +1,5 @@
 /** @jest-environment node */
+export {};
 process.env.CRON_SECRET = 'test-secret';
 process.env.NEXTAUTH_URL = 'http://localhost:3000';
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
