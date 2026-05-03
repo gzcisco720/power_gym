@@ -1,7 +1,14 @@
 # Frontend Redesign Design — POWER GYM Phase 2
 
 **Date**: 2026-04-23
-**Status**: Approved
+**Status**: Partially Superseded
+
+> ⚠️ **Sections 2 and 5 are outdated.**
+>
+> - **Route prefix**: All routes were implemented without the `/dashboard/` prefix — use `/member/`, `/trainer/`, `/owner/` directly.
+> - **Section 2 — Navigation table**: The trainer nav now includes "My Plan" and "Personal Bests" (added in the training redesign phase). The owner nav uses fully independent `/owner/*` routes (not shared with `/member/` or `/trainer/`).
+> - **Section 5 — Page inventory**: `/member/plan/session/new` no longer shows a confirmation card — it creates the session immediately and redirects.
+> - **Section 1 (design tokens/colors), Section 3 (component library), Section 4 (animation strategy), Section 6 (implementation scope)** remain accurate.
 
 ---
 

@@ -1,7 +1,11 @@
 # Training Plans & Performance Tracking Design — POWER_GYM
 
 **Date**: 2026-04-21
-**Status**: Approved
+**Status**: Partially Superseded
+
+> ⚠️ **UI sections superseded.** The session logging UI, plan overview UI, and template builder UI described in this document are replaced by [`training-redesign-design.md`](../../2026-05-03/plans/training-redesign-design.md) (2026-05-03). The **data models**, **repository interfaces**, and **API route surface** remain accurate and unchanged.
+>
+> Known divergence: the API table below lists `POST /api/sessions` as `Auth: member` only. This restriction was a bug and has been removed — owner and trainer may now create sessions for their own plans.
 
 ---
 

@@ -21,11 +21,11 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Topic                              | File                                                                                  | Status   |
 | ---------------------------------- | ------------------------------------------------------------------------------------- | -------- |
 | Auth system                        | [auth-design.md](2026-04-20/plans/auth-design.md)                                    | Approved |
-| Training Plans & Performance       | [training-plans-design.md](2026-04-21/plans/training-plans-design.md)                | Approved |
+| Training Plans & Performance       | [training-plans-design.md](2026-04-21/plans/training-plans-design.md)                | Partially Superseded |
 | Nutrition Plans                    | [nutrition-design.md](2026-04-22/plans/nutrition-design.md)                          | Approved |
 | Body Composition Testing           | [body-test-design.md](2026-04-23/plans/body-test-design.md)                          | Approved |
-| Frontend Redesign (Phase 2)        | [frontend-redesign-design.md](2026-04-23/plans/frontend-redesign-design.md)          | Approved |
-| Owner Admin Dashboard              | [owner-dashboard-design.md](2026-04-24/plans/owner-dashboard-design.md)              | Approved |
+| Frontend Redesign (Phase 2)        | [frontend-redesign-design.md](2026-04-23/plans/frontend-redesign-design.md)          | Partially Superseded |
+| Owner Admin Dashboard              | [owner-dashboard-design.md](2026-04-24/plans/owner-dashboard-design.md)              | Partially Superseded |
 | E2E Test Suite                     | [e2e-design.md](2026-04-25/plans/e2e-design.md)                                      | Approved |
 | Mobile Responsive Design           | [mobile-responsive-design.md](2026-04-26/plans/mobile-responsive-design.md)          | Approved |
 | Calendar & Session Scheduling      | [calendar-design.md](2026-04-27/plans/calendar-design.md)                            | Approved |
@@ -37,6 +37,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | React Suspense Streaming            | [suspense-streaming-design.md](2026-05-01/plans/suspense-streaming-design.md)        | Complete  |
 | Email Notifications                 | [email-notifications-design.md](2026-05-01/plans/email-notifications-design.md)      | Complete  |
 | Check-In Feature                    | [check-in-design.md](2026-05-03/plans/check-in-design.md)                            | Complete  |
+| Training Module Redesign (Plan A)   | [training-redesign-design.md](2026-05-03/plans/training-redesign-design.md)          | Approved  |
 
 ## Implementation Plans
 
@@ -62,6 +63,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | React Suspense Streaming | [suspense-streaming-implementation-plan.md](2026-05-01/plans/suspense-streaming-implementation-plan.md) | Complete |
 | Email Notifications | [email-notifications-implementation-plan.md](2026-05-01/plans/email-notifications-implementation-plan.md) | Complete |
 | Check-In Feature | [check-in-implementation-plan.md](2026-05-03/plans/check-in-implementation-plan.md) | Complete |
+| Training Module Redesign (Plan A) | [training-redesign-implementation-plan.md](2026-05-03/plans/training-redesign-implementation-plan.md) | In Progress |
 
 ## API Usage Guides
 

@@ -1,7 +1,13 @@
 # Owner Admin Dashboard — Design Spec
 
 **Date**: 2026-04-24  
-**Status**: Approved
+**Status**: Partially Superseded
+
+> ⚠️ **Route prefix and sidebar section are outdated.**
+>
+> - **Route prefix**: All owner routes were implemented as `/owner/...` (not `/dashboard/owner/...`). Update any references accordingly.
+> - **Sidebar section**: The note "The existing TRAINER and MEMBER nav groups remain (owner can also use trainer workflows)" is outdated. The owner now has fully independent `TRAINING` and `HEALTH` nav groups under `/owner/*` routes — owner does not share routes with trainer or member.
+> - **Admin page structure** (stats, trainers, members, invites) and **API routes** remain accurate.
 
 ---
 
