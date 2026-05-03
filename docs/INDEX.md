@@ -61,6 +61,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | E2E Coverage Completion | [e2e-coverage-implementation-plan.md](2026-04-30/plans/e2e-coverage-implementation-plan.md) | Complete |
 | React Suspense Streaming | [suspense-streaming-implementation-plan.md](2026-05-01/plans/suspense-streaming-implementation-plan.md) | Complete |
 | Email Notifications | [email-notifications-implementation-plan.md](2026-05-01/plans/email-notifications-implementation-plan.md) | Complete |
+| Check-In Feature | [check-in-implementation-plan.md](2026-05-03/plans/check-in-implementation-plan.md) | In Progress |
 
 ## API Usage Guides
 
