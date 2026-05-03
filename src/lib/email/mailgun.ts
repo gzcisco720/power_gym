@@ -9,6 +9,8 @@ import type {
   SendMemberAssignedParams,
   SendSessionBookedParams,
   SendSessionCancelledParams,
+  SendCheckInReminderParams,
+  SendCheckInReceivedParams,
 } from '@/lib/email/index';
 import { inviteEmailTemplate } from '@/lib/email/templates/invite';
 import { sessionReminderTemplate } from '@/lib/email/templates/session-reminder';
@@ -17,6 +19,8 @@ import { nutritionAssignedTemplate } from '@/lib/email/templates/nutrition-assig
 import { memberAssignedTemplate } from '@/lib/email/templates/member-assigned';
 import { sessionBookedTemplate } from '@/lib/email/templates/session-booked';
 import { sessionCancelledTemplate } from '@/lib/email/templates/session-cancelled';
+import { checkInReminderTemplate } from '@/lib/email/templates/check-in-reminder';
+import { checkInReceivedTemplate } from '@/lib/email/templates/check-in-received';
 
 export class MailgunEmailService implements IEmailService {
   private mg: ReturnType<InstanceType<typeof Mailgun>['client']>;
@@ -73,6 +77,16 @@ export class MailgunEmailService implements IEmailService {
 
   async sendSessionCancelled(params: SendSessionCancelledParams): Promise<void> {
     const { subject, html } = sessionCancelledTemplate(params);
+    await this.send(params.to, subject, html);
+  }
+
+  async sendCheckInReminder(params: SendCheckInReminderParams): Promise<void> {
+    const { subject, html } = checkInReminderTemplate(params);
+    await this.send(params.to, subject, html);
+  }
+
+  async sendCheckInReceived(params: SendCheckInReceivedParams): Promise<void> {
+    const { subject, html } = checkInReceivedTemplate(params);
     await this.send(params.to, subject, html);
   }
 }
