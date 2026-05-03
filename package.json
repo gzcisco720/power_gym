@@ -11,7 +11,9 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e": "lsof -ti tcp:3000 | xargs kill 2>/dev/null; playwright test",
-    "test:e2e:ui": "lsof -ti tcp:3000 | xargs kill 2>/dev/null; playwright test --ui"
+    "test:e2e:ui": "lsof -ti tcp:3000 | xargs kill 2>/dev/null; playwright test --ui",
+    "seed:dev": "ts-node --project tsconfig.scripts.json scripts/seed-dev.ts",
+    "seed:dev:reset": "ts-node --project tsconfig.scripts.json scripts/seed-dev.ts --reset"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
