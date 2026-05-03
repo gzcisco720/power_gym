@@ -25,6 +25,7 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
 
   const body = (await req.json()) as {
     exerciseId: string;
+    exerciseName?: string;
     prescribedRepsMin: number;
     prescribedRepsMax: number;
   };
@@ -33,25 +34,48 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
   const existingSets = workoutSession.sets.filter(
     (s) => s.exerciseId.toString() === body.exerciseId,
   );
-  const ref = existingSets[0];
-  if (!ref) return Response.json({ error: 'Exercise not found in session' }, { status: 404 });
 
-  const nextSetNumber = Math.max(...existingSets.map((s) => s.setNumber)) + 1;
-
-  const extraSet = {
-    exerciseId: exerciseOId,
-    exerciseName: ref.exerciseName,
-    groupId: ref.groupId,
-    isSuperset: ref.isSuperset,
-    isBodyweight: ref.isBodyweight,
-    setNumber: nextSetNumber,
-    prescribedRepsMin: body.prescribedRepsMin,
-    prescribedRepsMax: body.prescribedRepsMax,
-    isExtraSet: true,
-    actualWeight: null,
-    actualReps: null,
-    completedAt: null,
-  };
+  let extraSet;
+  if (existingSets.length === 0) {
+    // Brand new exercise added during session
+    if (!body.exerciseName) {
+      return Response.json(
+        { error: 'exerciseName required for new exercise' },
+        { status: 400 },
+      );
+    }
+    extraSet = {
+      exerciseId: exerciseOId,
+      exerciseName: body.exerciseName,
+      groupId: body.exerciseId, // standalone: use exerciseId as its own groupId
+      isSuperset: false,
+      isBodyweight: false,
+      setNumber: 1,
+      prescribedRepsMin: body.prescribedRepsMin,
+      prescribedRepsMax: body.prescribedRepsMax,
+      isExtraSet: true,
+      actualWeight: null,
+      actualReps: null,
+      completedAt: null,
+    };
+  } else {
+    const ref = existingSets[0];
+    const nextSetNumber = Math.max(...existingSets.map((s) => s.setNumber)) + 1;
+    extraSet = {
+      exerciseId: exerciseOId,
+      exerciseName: ref.exerciseName,
+      groupId: ref.groupId,
+      isSuperset: ref.isSuperset,
+      isBodyweight: ref.isBodyweight,
+      setNumber: nextSetNumber,
+      prescribedRepsMin: body.prescribedRepsMin,
+      prescribedRepsMax: body.prescribedRepsMax,
+      isExtraSet: true,
+      actualWeight: null,
+      actualReps: null,
+      completedAt: null,
+    };
+  }
 
   const updated = await repo.addExtraSet(id, extraSet);
   return Response.json(updated, { status: 201 });
