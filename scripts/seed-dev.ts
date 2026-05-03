@@ -43,11 +43,6 @@ function daysAgo(n: number): Date {
   return d;
 }
 
-function daysFromNow(n: number): Date {
-  const d = new Date();
-  d.setDate(d.getDate() + n);
-  return d;
-}
 
 async function main() {
   const uri = process.env.MONGODB_URI;
@@ -98,7 +93,7 @@ async function main() {
     trainerId: trainer._id,
   });
 
-  const member2 = await UserModel.create({
+  await UserModel.create({
     name: 'Dev Member 2',
     email: 'member2@dev.com',
     passwordHash: hash,
