@@ -68,17 +68,17 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
     {
       group: 'TRAINING',
       items: [
-        { href: '/member/plan', label: 'My Plan' },
-        { href: '/member/pbs', label: 'Personal Bests' },
-        { href: '/trainer/plans', label: 'Plan Templates' },
+        { href: '/owner/my-plan', label: 'My Plan' },
+        { href: '/owner/my-pbs', label: 'Personal Bests' },
+        { href: '/owner/plans', label: 'Plan Templates' },
       ],
     },
     {
       group: 'HEALTH',
       items: [
-        { href: '/member/nutrition', label: 'Nutrition' },
-        { href: '/member/body-tests', label: 'Body Tests' },
-        { href: '/trainer/nutrition', label: 'Nutrition Templates' },
+        { href: '/owner/my-nutrition', label: 'Nutrition' },
+        { href: '/owner/my-body-tests', label: 'Body Tests' },
+        { href: '/owner/nutrition-templates', label: 'Nutrition Templates' },
       ],
     },
     {
