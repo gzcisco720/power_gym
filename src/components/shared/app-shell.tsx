@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import type { UserRole } from '@/types/auth';
 
-const NAV: Record<UserRole, { group: string; items: { href: string; label: string }[] }[]> = {
+const NAV: Record<UserRole, { group: string; items: { href: string; label: string; exact?: boolean }[] }[]> = {
   member: [
     {
       group: 'TRAINING',
@@ -57,7 +57,7 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
     {
       group: 'ADMIN',
       items: [
-        { href: '/owner', label: 'Dashboard' },
+        { href: '/owner', label: 'Dashboard', exact: true },
         { href: '/owner/trainers', label: 'Trainers' },
         { href: '/owner/members', label: 'Members' },
         { href: '/owner/invites', label: 'Invites' },
@@ -124,7 +124,7 @@ function SidebarContent({ role, userName, userInitials, logoutSlot }: SidebarCon
                 href={item.href}
                 className={cn(
                   'flex items-center rounded-md px-3 py-2 text-[13px] font-medium transition-colors duration-150',
-                  pathname === item.href || pathname.startsWith(item.href + '/')
+                  (item.exact ? pathname === item.href : (pathname === item.href || pathname.startsWith(item.href + '/')))
                     ? 'bg-white text-black'
                     : 'text-[#666] hover:bg-[#141414] hover:text-[#aaa]'
                 )}
