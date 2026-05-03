@@ -22,6 +22,8 @@ export default async function SessionNewPage({
   const planDay = plan.days.find((d) => d.dayNumber === dayNumber);
   if (!planDay) redirect('/member/plan');
 
+  if (!process.env.AUTH_URL) redirect('/member/plan');
+
   const cookieStore = await cookies();
   const res = await fetch(`${process.env.AUTH_URL}/api/sessions`, {
     method: 'POST',

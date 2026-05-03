@@ -54,8 +54,9 @@ export function PlanOverview({ plan, sessionBasePath = '/member/plan' }: Props) 
   const currentDay = plan.days.find((d) => d.dayNumber === activeDay) ?? plan.days[0];
   const labelled = labelExercises(currentDay?.exercises ?? []);
 
-  type StandaloneGroup = { type: 'standalone'; exercise: (typeof labelled)[number] };
-  type SupersetGroup = { type: 'superset'; groupId: string; exercises: (typeof labelled)[number][] };
+  type LabelledEx = (typeof labelled)[number];
+  type StandaloneGroup = { type: 'standalone'; exercise: LabelledEx };
+  type SupersetGroup = { type: 'superset'; groupId: string; exercises: LabelledEx[] };
   type ExerciseGroup = StandaloneGroup | SupersetGroup;
 
   const exerciseGroups: ExerciseGroup[] = [];
@@ -110,11 +111,12 @@ export function PlanOverview({ plan, sessionBasePath = '/member/plan' }: Props) 
           <p className="text-[12px] text-[#555]">No exercises in this day.</p>
         )}
 
-        {exerciseGroups.map((group, i) => {
+        {exerciseGroups.map((group) => {
+          const groupKey = group.type === 'standalone' ? group.exercise.exerciseId : group.groupId;
           if (group.type === 'standalone') {
             const ex = group.exercise;
             return (
-              <div key={i} className="flex items-center gap-3 rounded-xl bg-[#0c0c0c] border border-[#141414] p-3">
+              <div key={groupKey} className="flex items-center gap-3 rounded-xl bg-[#0c0c0c] border border-[#141414] p-3">
                 <ExerciseThumbnail imageUrl={ex.imageUrl} name={ex.exerciseName} size={44} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
@@ -134,7 +136,7 @@ export function PlanOverview({ plan, sessionBasePath = '/member/plan' }: Props) 
 
           // Superset group
           return (
-            <div key={i} className="rounded-xl border border-[#2a2a2a] overflow-hidden">
+            <div key={groupKey} className="rounded-xl border border-[#2a2a2a] overflow-hidden">
               <div className="flex justify-center py-1.5 bg-[#111]">
                 <span className="text-[9px] font-bold uppercase tracking-[2px] text-[#666]">Superset</span>
               </div>
