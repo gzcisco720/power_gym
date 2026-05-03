@@ -152,6 +152,15 @@ export function SessionLogger({
     exercisesFetchedRef.current = true;
   }, []);
 
+  function syncInputsToSession(updatedSession: Session) {
+    setSession(updatedSession);
+    setInputs((prev) => {
+      if (updatedSession.sets.length <= prev.length) return prev;
+      const extra = updatedSession.sets.length - prev.length;
+      return [...prev, ...Array.from({ length: extra }, () => ({ weight: '', reps: '' }))];
+    });
+  }
+
   function updateInput(index: number, field: 'weight' | 'reps', value: string) {
     setInputs((prev) => {
       const next = [...prev];
@@ -179,7 +188,7 @@ export function SessionLogger({
         return;
       }
       const updated = (await res.json()) as Session;
-      setSession(updated);
+      syncInputsToSession(updated);
     } catch {
       toast.error('Something went wrong');
     }
@@ -204,8 +213,7 @@ export function SessionLogger({
         return;
       }
       const updated = (await res.json()) as Session;
-      setSession(updated);
-      setInputs((prev) => [...prev, { weight: '', reps: '' }]);
+      syncInputsToSession(updated);
     } catch {
       toast.error('Something went wrong');
     }
@@ -229,8 +237,7 @@ export function SessionLogger({
         return;
       }
       const updated = (await res.json()) as Session;
-      setSession(updated);
-      setInputs((prev) => [...prev, { weight: '', reps: '' }]);
+      syncInputsToSession(updated);
       setBwOverrides((prev) => ({ ...prev, [exercise._id]: exercise.isBodyweight }));
     } catch {
       toast.error('Something went wrong');
@@ -293,7 +300,7 @@ export function SessionLogger({
             </div>
             <div className="flex gap-1.5 mt-1">
               <span className="text-[9px] text-[#555] bg-[#141414] rounded px-1.5 py-0.5">
-                Sets: {Math.max(...exSets.map((s) => s.setNumber))}
+                Sets: {exSets.length > 0 ? Math.max(...exSets.map((s) => s.setNumber)) : 0}
               </span>
               <span className="text-[9px] text-[#555] bg-[#141414] rounded px-1.5 py-0.5">{repsLabel}</span>
             </div>
