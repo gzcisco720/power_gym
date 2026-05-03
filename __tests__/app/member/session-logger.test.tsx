@@ -1,64 +1,33 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SessionLogger } from '@/app/(dashboard)/member/plan/session/[id]/_components/session-logger';
 import { toast } from 'sonner';
 
 jest.mock('sonner', () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
 
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, className }: React.HTMLAttributes<HTMLDivElement>) => (
-      <div className={className}>{children}</div>
-    ),
-    button: ({
-      children,
-      className,
-      onClick,
-      type,
-      'aria-label': ariaLabel,
-    }: React.ButtonHTMLAttributes<HTMLButtonElement> & { 'aria-label'?: string }) => (
-      <button className={className} onClick={onClick} type={type} aria-label={ariaLabel}>
-        {children}
-      </button>
-    ),
-  },
-  useReducedMotion: () => false,
-}));
-
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
 
-jest.mock('@/components/ui/sheet', () => ({
-  Sheet: ({
-    children,
-    open,
-  }: {
-    children: React.ReactNode;
-    open?: boolean;
-    onOpenChange?: (open: boolean) => void;
-  }) => (open ? <>{children}</> : null),
-  SheetContent: ({
-    children,
-  }: {
-    children: React.ReactNode;
-    side?: string;
-    showCloseButton?: boolean;
-    className?: string;
-  }) => <>{children}</>,
-  SheetTitle: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => <span className={className}>{children}</span>,
+// Mock ExerciseSearchSheet to avoid Sheet/fetch complexity in these unit tests
+jest.mock('@/components/training/exercise-search-sheet', () => ({
+  ExerciseSearchSheet: () => null,
+}));
+
+// Mock ExerciseThumbnail and ExerciseBadge as simple stubs
+jest.mock('@/components/training/exercise-thumbnail', () => ({
+  ExerciseThumbnail: ({ name }: { name: string }) => <span data-testid="thumbnail">{name}</span>,
+}));
+
+jest.mock('@/components/training/exercise-badge', () => ({
+  ExerciseBadge: ({ label }: { label: string }) => <span data-testid="badge">{label}</span>,
 }));
 
 const mockSession = {
   _id: 's1',
   memberId: 'm1',
   dayName: 'Day 1 — Push',
+  startedAt: new Date(Date.now() - 60000).toISOString(),
   completedAt: null,
   sets: [
     {
@@ -95,53 +64,63 @@ const mockSession = {
 describe('SessionLogger', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ ...mockSession }),
+    jest.useFakeTimers();
+    global.fetch = jest.fn().mockImplementation((url: string) => {
+      if (url === '/api/exercises') {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ ...mockSession }) });
     });
   });
 
-  it('shows day name and exercise name', () => {
-    render(<SessionLogger session={mockSession} />);
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('shows day name and exercise name', async () => {
+    await act(async () => { render(<SessionLogger session={mockSession} />); });
     expect(screen.getByText('Day 1 — Push')).toBeInTheDocument();
     expect(screen.getAllByText('Bench Press').length).toBeGreaterThan(0);
   });
 
-  it('shows prescribed reps range for each set', () => {
-    render(<SessionLogger session={mockSession} />);
+  it('shows prescribed reps range for each set', async () => {
+    await act(async () => { render(<SessionLogger session={mockSession} />); });
     expect(screen.getAllByText('8–10 reps').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('shows "Complete Session" button when all sets done', () => {
+  it('always shows "Complete Workout" button', async () => {
+    await act(async () => { render(<SessionLogger session={mockSession} />); });
+    expect(screen.getByRole('button', { name: /complete workout/i })).toBeInTheDocument();
+  });
+
+  it('shows "Complete Workout" button even when all sets are done', async () => {
     const completedSession = {
       ...mockSession,
       sets: mockSession.sets.map((s) => ({ ...s, completedAt: new Date().toISOString() })),
     };
-    render(<SessionLogger session={completedSession} />);
-    expect(screen.getByRole('button', { name: /complete session/i })).toBeInTheDocument();
+    await act(async () => { render(<SessionLogger session={completedSession} />); });
+    expect(screen.getByRole('button', { name: /complete workout/i })).toBeInTheDocument();
   });
 
-  it('does not show "Complete Session" when sets remain', () => {
-    render(<SessionLogger session={mockSession} />);
-    expect(screen.queryByRole('button', { name: /complete session/i })).not.toBeInTheDocument();
+  it('shows inline weight and reps inputs for each incomplete set', async () => {
+    await act(async () => { render(<SessionLogger session={mockSession} />); });
+    // 2 sets, each has weight + reps input
+    expect(screen.getAllByPlaceholderText('kg')).toHaveLength(2);
+    expect(screen.getAllByPlaceholderText('reps')).toHaveLength(2);
   });
 
-  it('calls PATCH API when set logged via log form', async () => {
-    const user = userEvent.setup();
-    render(<SessionLogger session={mockSession} />);
+  it('calls PATCH API when check button is clicked for a set', async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await act(async () => { render(<SessionLogger session={mockSession} />); });
 
-    // Click the first SetChip to open the log form
-    const setChips = screen.getAllByRole('button', { name: /set 1/i });
-    fireEvent.click(setChips[0]);
+    const weightInputs = screen.getAllByPlaceholderText('kg');
+    const repsInputs = screen.getAllByPlaceholderText('reps');
 
-    const weightInput = screen.getByRole('spinbutton', { name: /weight/i });
-    const repsInput = screen.getByRole('spinbutton', { name: /reps/i });
+    await user.type(weightInputs[0], '80');
+    await user.type(repsInputs[0], '10');
 
-    await user.type(weightInput, '80');
-    await user.type(repsInput, '10');
-
-    const logButton = screen.getByRole('button', { name: /log set/i });
-    fireEvent.click(logButton);
+    const checkButtons = screen.getAllByRole('button', { name: /complete set 1/i });
+    await act(async () => { fireEvent.click(checkButtons[0]); });
 
     await waitFor(() =>
       expect(global.fetch).toHaveBeenCalledWith(
@@ -151,56 +130,79 @@ describe('SessionLogger', () => {
     );
   });
 
-  it('calls toast.success when a set is logged successfully', async () => {
-    const updatedSession = {
-      ...mockSession,
-      sets: [
-        { ...mockSession.sets[0], completedAt: new Date().toISOString(), actualReps: 10, actualWeight: 60 },
-        mockSession.sets[1],
-      ],
-    };
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: async () => updatedSession,
-    });
-    render(<SessionLogger session={mockSession} />);
-
-    const setChips = screen.getAllByRole('button', { name: /set 1/i });
-    fireEvent.click(setChips[0]);
-
-    fireEvent.change(screen.getByRole('spinbutton', { name: /reps/i }), { target: { value: '10' } });
-    fireEvent.click(screen.getByRole('button', { name: /log set/i }));
-
-    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Set logged'));
-  });
-
   it('calls toast.error with server message when logSet fails', async () => {
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: false,
-      json: async () => ({ error: 'Session not found' }),
+    global.fetch = jest.fn().mockImplementation((url: string) => {
+      if (url === '/api/exercises') {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+      }
+      return Promise.resolve({ ok: false, json: () => Promise.resolve({ error: 'Session not found' }) });
     });
-    render(<SessionLogger session={mockSession} />);
+    await act(async () => { render(<SessionLogger session={mockSession} />); });
 
-    const setChips = screen.getAllByRole('button', { name: /set 1/i });
-    fireEvent.click(setChips[0]);
+    const repsInputs = screen.getAllByPlaceholderText('reps');
+    fireEvent.change(repsInputs[0], { target: { value: '10' } });
 
-    fireEvent.change(screen.getByRole('spinbutton', { name: /reps/i }), { target: { value: '10' } });
-    fireEvent.click(screen.getByRole('button', { name: /log set/i }));
+    const checkButtons = screen.getAllByRole('button', { name: /complete set 1/i });
+    await act(async () => { fireEvent.click(checkButtons[0]); });
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Session not found'));
   });
 
-  it('renders mobile Sheet with duplicate inputs when set chip is clicked', () => {
-    const originalWidth = window.innerWidth;
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
-    try {
-      render(<SessionLogger session={mockSession} />);
-      fireEvent.click(screen.getAllByRole('button', { name: /set 1/i })[0]);
-      // innerWidth=375 → isMobile=true → Sheet opens → inline panel + Sheet = 2 of each
-      expect(screen.getAllByLabelText('Weight (kg)')).toHaveLength(2);
-      expect(screen.getAllByLabelText('Reps')).toHaveLength(2);
-    } finally {
-      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
-    }
+  it('shows elapsed timer in mm:ss format', async () => {
+    await act(async () => { render(<SessionLogger session={mockSession} />); });
+    // Should show a timer like "01:00" given startedAt 60 seconds ago
+    expect(screen.getByText(/\d{2}:\d{2}/)).toBeInTheDocument();
+  });
+
+  it('shows BW placeholder instead of weight input for bodyweight exercises', async () => {
+    const bwSession = {
+      ...mockSession,
+      sets: mockSession.sets.map((s) => ({ ...s, isBodyweight: true })),
+    };
+    await act(async () => { render(<SessionLogger session={bwSession} />); });
+    // No kg placeholders for bodyweight exercises
+    expect(screen.queryByPlaceholderText('kg')).not.toBeInTheDocument();
+    // BW label shown in the div placeholder
+    const bwDivs = document.querySelectorAll('.text-\\[10px\\].text-\\[\\#333\\]');
+    expect(bwDivs.length).toBeGreaterThan(0);
+  });
+
+  it('shows completed set as done with check icon and no inputs', async () => {
+    const partialSession = {
+      ...mockSession,
+      sets: [
+        { ...mockSession.sets[0], completedAt: new Date().toISOString(), actualWeight: 80, actualReps: 10 },
+        mockSession.sets[1],
+      ],
+    };
+    await act(async () => { render(<SessionLogger session={partialSession} />); });
+    // Only 1 incomplete set → 1 weight input
+    expect(screen.getAllByPlaceholderText('kg')).toHaveLength(1);
+    // Completed set shows logged data
+    expect(screen.getByText(/80 kg × 10 reps/)).toBeInTheDocument();
+  });
+
+  it('calls POST to add a set when "+ Add Set" is clicked', async () => {
+    await act(async () => { render(<SessionLogger session={mockSession} />); });
+    const addSetBtn = screen.getByText('+ Add Set');
+    await act(async () => { fireEvent.click(addSetBtn); });
+    await waitFor(() =>
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/sessions/s1/sets',
+        expect.objectContaining({ method: 'POST' }),
+      ),
+    );
+  });
+
+  it('calls POST to complete session when "Complete Workout" is clicked', async () => {
+    await act(async () => { render(<SessionLogger session={mockSession} />); });
+    const completeBtn = screen.getByRole('button', { name: /complete workout/i });
+    await act(async () => { fireEvent.click(completeBtn); });
+    await waitFor(() =>
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/sessions/s1/complete',
+        expect.objectContaining({ method: 'POST' }),
+      ),
+    );
   });
 });

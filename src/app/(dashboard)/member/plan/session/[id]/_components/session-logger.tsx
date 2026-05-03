@@ -1,28 +1,17 @@
+// src/app/(dashboard)/member/plan/session/[id]/_components/session-logger.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Check } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
-import { PageHeader } from '@/components/shared/page-header';
-import { SectionHeader } from '@/components/shared/section-header';
-import { ProgressBar } from '@/components/shared/progress-bar';
-import { SetChip } from '@/components/shared/set-chip';
+import { Button } from '@/components/ui/button';
+import { ExerciseThumbnail } from '@/components/training/exercise-thumbnail';
+import { ExerciseBadge } from '@/components/training/exercise-badge';
+import { ExerciseSearchSheet, type ExerciseOption } from '@/components/training/exercise-search-sheet';
+import { labelExercises } from '@/lib/training/label-exercises';
 import { cn } from '@/lib/utils';
-
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 640);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
-  return isMobile;
-}
 
 interface SessionSet {
   exerciseId: string;
@@ -43,54 +32,144 @@ interface Session {
   _id: string;
   memberId: string;
   dayName: string;
+  startedAt: string;
   completedAt: string | null;
   sets: SessionSet[];
 }
 
-interface SetInputState {
-  weight: string;
-  reps: string;
+function useElapsedTimer(startedAt: string) {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    const start = new Date(startedAt).getTime();
+    const tick = () => setElapsed(Math.floor((Date.now() - start) / 1000));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [startedAt]);
+  const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
+  const ss = String(elapsed % 60).padStart(2, '0');
+  return `${mm}:${ss}`;
 }
 
-export function SessionLogger({ session: initialSession, backPath = '/member/plan' }: { session: Session; backPath?: string }) {
+function buildExerciseGroups(sets: SessionSet[]) {
+  const seen = new Set<string>();
+  const uniqueExercises: {
+    exerciseId: string;
+    exerciseName: string;
+    imageUrl: null;
+    isBodyweight: boolean;
+    isSuperset: boolean;
+    groupId: string;
+    sets: number;
+    repsMin: number;
+    repsMax: number;
+    restSeconds: null;
+  }[] = [];
+
+  sets.forEach((s) => {
+    if (!seen.has(s.exerciseId)) {
+      seen.add(s.exerciseId);
+      const exSets = sets.filter((x) => x.exerciseId === s.exerciseId);
+      const maxSet = Math.max(...exSets.map((x) => x.setNumber));
+      uniqueExercises.push({
+        exerciseId: s.exerciseId,
+        exerciseName: s.exerciseName,
+        imageUrl: null,
+        isBodyweight: s.isBodyweight,
+        isSuperset: s.isSuperset,
+        groupId: s.groupId,
+        sets: maxSet,
+        repsMin: s.prescribedRepsMin,
+        repsMax: s.prescribedRepsMax,
+        restSeconds: null,
+      });
+    }
+  });
+
+  const labelled = labelExercises(uniqueExercises);
+
+  type LabelledEx = (typeof labelled)[number];
+  type StandaloneGroup = { type: 'standalone'; exercise: LabelledEx; sets: (SessionSet & { globalIndex: number })[] };
+  type SupersetGroup = { type: 'superset'; groupId: string; exercises: { exercise: LabelledEx; sets: (SessionSet & { globalIndex: number })[] }[] };
+  type Group = StandaloneGroup | SupersetGroup;
+
+  const groups: Group[] = [];
+  const seenGroupIds = new Set<string>();
+  const setsWithIndex = sets.map((s, i) => ({ ...s, globalIndex: i }));
+
+  for (const ex of labelled) {
+    const exSets = setsWithIndex.filter((s) => s.exerciseId === ex.exerciseId);
+    if (!ex.isSuperset) {
+      groups.push({ type: 'standalone', exercise: ex, sets: exSets });
+    } else {
+      if (!seenGroupIds.has(ex.groupId)) {
+        seenGroupIds.add(ex.groupId);
+        const groupExercises = labelled
+          .filter((e) => e.groupId === ex.groupId && e.isSuperset)
+          .map((e) => ({
+            exercise: e,
+            sets: setsWithIndex.filter((s) => s.exerciseId === e.exerciseId),
+          }));
+        groups.push({ type: 'superset', groupId: ex.groupId, exercises: groupExercises });
+      }
+    }
+  }
+
+  return groups;
+}
+
+export function SessionLogger({
+  session: initialSession,
+  backPath = '/member/plan',
+}: {
+  session: Session;
+  backPath?: string;
+}) {
   const router = useRouter();
-  const isMobile = useIsMobile();
+  const elapsed = useElapsedTimer(initialSession.startedAt);
   const [session, setSession] = useState(initialSession);
-  const [inputs, setInputs] = useState<SetInputState[]>(
+  const [inputs, setInputs] = useState<{ weight: string; reps: string }[]>(
     initialSession.sets.map(() => ({ weight: '', reps: '' })),
   );
-  const [activeSetIndex, setActiveSetIndex] = useState<number | null>(null);
-  const [completing, setCompleting] = useState(false);
-
-  const completedCount = session.sets.filter((s) => s.completedAt !== null).length;
-  const allDone = completedCount === session.sets.length;
-
-  function groupedExercises() {
-    const seen = new Set<string>();
-    const exerciseIds: string[] = [];
-    session.sets.forEach((s) => {
-      if (!seen.has(s.exerciseId)) {
-        seen.add(s.exerciseId);
-        exerciseIds.push(s.exerciseId);
-      }
+  const [bwOverrides, setBwOverrides] = useState<Record<string, boolean>>(() => {
+    const map: Record<string, boolean> = {};
+    initialSession.sets.forEach((s) => {
+      map[s.exerciseId] = s.isBodyweight;
     });
-    return exerciseIds.map((id) => ({
-      exerciseId: id,
-      exerciseName: session.sets.find((s) => s.exerciseId === id)!.exerciseName,
-      isBodyweight: session.sets.find((s) => s.exerciseId === id)!.isBodyweight,
-      sets: session.sets.map((s, i) => ({ ...s, index: i })).filter((s) => s.exerciseId === id),
-    }));
+    return map;
+  });
+  const [completing, setCompleting] = useState(false);
+  const [exerciseSheetOpen, setExerciseSheetOpen] = useState(false);
+  const [availableExercises, setAvailableExercises] = useState<ExerciseOption[]>([]);
+  const exercisesFetchedRef = useRef(false);
+
+  useEffect(() => {
+    if (exercisesFetchedRef.current) return;
+    fetch('/api/exercises')
+      .then((r) => r.json())
+      .then((data: ExerciseOption[]) => setAvailableExercises(data))
+      .catch(() => {});
+    exercisesFetchedRef.current = true;
+  }, []);
+
+  function updateInput(index: number, field: 'weight' | 'reps', value: string) {
+    setInputs((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
   }
 
   async function logSet(setIndex: number) {
     const input = inputs[setIndex];
     const set = session.sets[setIndex];
+    const isBodyweight = bwOverrides[set.exerciseId] ?? set.isBodyweight;
     try {
       const res = await fetch(`/api/sessions/${session._id}/sets/${setIndex}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          actualWeight: set.isBodyweight ? null : parseFloat(input.weight) || null,
+          actualWeight: isBodyweight ? null : parseFloat(input.weight) || null,
           actualReps: parseInt(input.reps, 10) || null,
         }),
       });
@@ -101,8 +180,6 @@ export function SessionLogger({ session: initialSession, backPath = '/member/pla
       }
       const updated = (await res.json()) as Session;
       setSession(updated);
-      setActiveSetIndex(null);
-      toast.success('Set logged');
     } catch {
       toast.error('Something went wrong');
     }
@@ -134,6 +211,32 @@ export function SessionLogger({ session: initialSession, backPath = '/member/pla
     }
   }
 
+  async function addExercise(exercise: ExerciseOption) {
+    try {
+      const res = await fetch(`/api/sessions/${session._id}/sets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          exerciseId: exercise._id,
+          exerciseName: exercise.name,
+          prescribedRepsMin: 8,
+          prescribedRepsMax: 12,
+        }),
+      });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        toast.error(data.error ?? 'Failed to add exercise');
+        return;
+      }
+      const updated = (await res.json()) as Session;
+      setSession(updated);
+      setInputs((prev) => [...prev, { weight: '', reps: '' }]);
+      setBwOverrides((prev) => ({ ...prev, [exercise._id]: exercise.isBodyweight }));
+    } catch {
+      toast.error('Something went wrong');
+    }
+  }
+
   async function completeSession() {
     setCompleting(true);
     try {
@@ -144,7 +247,7 @@ export function SessionLogger({ session: initialSession, backPath = '/member/pla
         setCompleting(false);
         return;
       }
-      toast.success('Session complete!');
+      toast.success('Workout complete!');
       router.push(backPath);
     } catch {
       toast.error('Something went wrong');
@@ -152,196 +255,203 @@ export function SessionLogger({ session: initialSession, backPath = '/member/pla
     }
   }
 
-  function repsLabel(min: number, max: number) {
-    return min === max ? `${min} reps` : `${min}–${max} reps`;
+  const groups = buildExerciseGroups(session.sets);
+
+  function renderExerciseCard(
+    exercise: {
+      exerciseId: string;
+      exerciseName: string;
+      isBodyweight: boolean;
+      label: string;
+      imageUrl: null;
+      isSuperset: boolean;
+      groupId: string;
+      sets: number;
+      repsMin: number;
+      repsMax: number;
+      restSeconds: null;
+    },
+    exSets: (SessionSet & { globalIndex: number })[],
+  ) {
+    const isBodyweight = bwOverrides[exercise.exerciseId] ?? exercise.isBodyweight;
+    const firstSet = exSets[0];
+    const repsLabel = firstSet
+      ? firstSet.prescribedRepsMin === firstSet.prescribedRepsMax
+        ? `${firstSet.prescribedRepsMin} reps`
+        : `${firstSet.prescribedRepsMin}–${firstSet.prescribedRepsMax} reps`
+      : '';
+
+    return (
+      <div key={exercise.exerciseId}>
+        {/* Exercise header row */}
+        <div className="flex items-center gap-2.5 mb-2.5">
+          <ExerciseThumbnail imageUrl={exercise.imageUrl} name={exercise.exerciseName} size={36} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <ExerciseBadge label={exercise.label} />
+              <span className="text-[13px] font-semibold text-white truncate">{exercise.exerciseName}</span>
+            </div>
+            <div className="flex gap-1.5 mt-1">
+              <span className="text-[9px] text-[#555] bg-[#141414] rounded px-1.5 py-0.5">
+                Sets: {Math.max(...exSets.map((s) => s.setNumber))}
+              </span>
+              <span className="text-[9px] text-[#555] bg-[#141414] rounded px-1.5 py-0.5">{repsLabel}</span>
+            </div>
+          </div>
+          {/* BW toggle */}
+          <label className="flex items-center gap-1.5 text-[10px] text-[#666] cursor-pointer select-none shrink-0">
+            <input
+              type="checkbox"
+              checked={isBodyweight}
+              onChange={(e) =>
+                setBwOverrides((prev) => ({ ...prev, [exercise.exerciseId]: e.target.checked }))
+              }
+              className="accent-white"
+            />
+            BW
+          </label>
+        </div>
+
+        {/* Set rows */}
+        <div className="space-y-1.5">
+          {exSets.map(({ globalIndex, setNumber, completedAt, actualWeight, actualReps }) => {
+            const done = completedAt !== null;
+            return (
+              <div key={globalIndex} className={cn('flex items-center gap-2', done && 'opacity-60')}>
+                <span className="text-[11px] text-[#555] w-5 shrink-0 font-mono">
+                  {String(setNumber).padStart(2, '0')}
+                </span>
+                {done ? (
+                  <>
+                    <span className="flex-1 text-[11px] text-[#666]">
+                      {!isBodyweight && actualWeight !== null ? `${actualWeight} kg × ` : ''}
+                      {actualReps !== null ? `${actualReps} reps` : '–'}
+                    </span>
+                    <div className="h-7 w-7 shrink-0 flex items-center justify-center rounded-lg bg-white/10">
+                      <Check className="h-3.5 w-3.5 text-white" />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {!isBodyweight ? (
+                      <Input
+                        aria-label={`Set ${setNumber} weight`}
+                        type="number"
+                        placeholder="kg"
+                        value={inputs[globalIndex]?.weight ?? ''}
+                        onChange={(e) => updateInput(globalIndex, 'weight', e.target.value)}
+                        className="h-7 w-16 text-[11px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#444] px-2"
+                      />
+                    ) : (
+                      <div className="h-7 w-16 shrink-0 flex items-center justify-center rounded-md border border-[#1e1e1e] text-[10px] text-[#333]">
+                        BW
+                      </div>
+                    )}
+                    <Input
+                      aria-label={`Set ${setNumber} reps`}
+                      type="number"
+                      placeholder="reps"
+                      value={inputs[globalIndex]?.reps ?? ''}
+                      onChange={(e) => updateInput(globalIndex, 'reps', e.target.value)}
+                      className="h-7 flex-1 text-[11px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#444] px-2"
+                    />
+                    <button
+                      onClick={() => logSet(globalIndex)}
+                      className="h-7 w-7 shrink-0 flex items-center justify-center rounded-lg border border-[#2a2a2a] text-[#555] hover:border-white hover:text-white transition-colors"
+                      aria-label={`Complete set ${setNumber}`}
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                    </button>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* + Add Set */}
+        <button
+          onClick={() => addSet(exercise.exerciseId)}
+          className="mt-2 text-[11px] text-[#555] hover:text-[#888] transition-colors"
+        >
+          + Add Set
+        </button>
+      </div>
+    );
   }
 
-  const completeButton = allDone ? (
-    <Button
-      size="sm"
-      onClick={completeSession}
-      disabled={completing}
-      className="bg-white text-black hover:bg-white/90 text-[11px] font-semibold disabled:opacity-50"
-    >
-      {completing ? 'Saving…' : 'Complete Session'}
-    </Button>
-  ) : undefined;
-
   return (
-    <div>
-      <PageHeader
-        title={session.dayName}
-        subtitle={`${completedCount} / ${session.sets.length} sets done`}
-        actions={completeButton}
-      />
-
-      <div className="px-4 sm:px-8 py-3">
-        <ProgressBar
-          value={completedCount}
-          max={session.sets.length}
-          label={`Session progress: ${completedCount} of ${session.sets.length} sets completed`}
-        />
+    <div className="flex flex-col min-h-screen">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 sm:px-8 py-5 border-b border-[#0f0f0f]">
+        <div>
+          <button
+            onClick={() => router.push(backPath)}
+            className="text-[11px] text-[#555] hover:text-[#888] mb-1 block transition-colors"
+          >
+            ← Back
+          </button>
+          <div className="text-[16px] font-bold text-white">{session.dayName}</div>
+        </div>
+        <div className="text-[18px] font-mono font-semibold text-[#666]">{elapsed}</div>
       </div>
 
-      <div className="px-4 sm:px-8 py-4 space-y-4">
-        {groupedExercises().map(({ exerciseId, exerciseName, isBodyweight, sets }) => (
-          <Card key={exerciseId} className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4">
-            <SectionHeader
-              title={exerciseName}
-              action="+ Add set"
-              onAction={() => addSet(exerciseId)}
-            />
-
-            <div className="mt-3 space-y-2">
-              {sets.map(({ index, setNumber, prescribedRepsMin, prescribedRepsMax, completedAt, isExtraSet }) => (
-                <div key={index} className="flex items-center gap-2.5">
-                  <SetChip
-                    setNumber={setNumber}
-                    done={completedAt !== null}
-                    onClick={() => {
-                      if (completedAt === null) {
-                        setActiveSetIndex(activeSetIndex === index ? null : index);
-                      }
-                    }}
-                  />
-                  <span className="text-[11px] text-[#888] w-5">
-                    {isExtraSet ? '+' : ''}
-                  </span>
-                  <span className="text-[11px] text-[#888] flex-1">
-                    {repsLabel(prescribedRepsMin, prescribedRepsMax)}
-                  </span>
-                  {completedAt && (
-                    <span className="text-[11px] text-[#888]">
-                      {session.sets[index].actualWeight
-                        ? `${session.sets[index].actualWeight} kg × `
-                        : ''}
-                      {session.sets[index].actualReps} reps
-                    </span>
-                  )}
+      {/* Exercise cards */}
+      <div className="flex-1 px-4 sm:px-8 py-5 pb-32 space-y-4">
+        {groups.map((group) => {
+          if (group.type === 'standalone') {
+            return (
+              <div key={group.exercise.exerciseId} className="rounded-xl bg-[#0c0c0c] border border-[#141414] p-4">
+                {renderExerciseCard(group.exercise, group.sets)}
+              </div>
+            );
+          }
+          // Superset block
+          return (
+            <div key={group.groupId} className="rounded-xl border border-[#2a2a2a] overflow-hidden">
+              <div className="flex justify-center py-1.5 bg-[#111]">
+                <span className="text-[9px] font-bold uppercase tracking-[2px] text-[#666]">Superset</span>
+              </div>
+              {group.exercises.map(({ exercise, sets: exSets }, j) => (
+                <div key={exercise.exerciseId}>
+                  {j > 0 && <div className="h-px bg-[#141414]" />}
+                  <div className="bg-[#0c0c0c] p-4">
+                    {renderExerciseCard(exercise, exSets)}
+                  </div>
                 </div>
               ))}
             </div>
+          );
+        })}
 
-            {sets.some(({ index }) => activeSetIndex === index) && (() => {
-              const activeSet = sets.find(({ index }) => activeSetIndex === index)!;
-              return (
-                <div className="hidden sm:block mt-3 pt-3 border-t border-[#141414] space-y-2">
-                  <div className="text-[10px] font-semibold text-[#777] uppercase tracking-widest">
-                    Log Set {activeSet.setNumber}
-                  </div>
-                  <div className="flex gap-2">
-                    {!isBodyweight && (
-                      <Input
-                        aria-label="Weight (kg)"
-                        placeholder="Weight (kg)"
-                        type="number"
-                        value={inputs[activeSet.index]?.weight ?? ''}
-                        onChange={(e) => {
-                          const next = [...inputs];
-                          next[activeSet.index] = { ...next[activeSet.index], weight: e.target.value };
-                          setInputs(next);
-                        }}
-                        className="h-8 text-[12px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#777]"
-                      />
-                    )}
-                    <Input
-                      aria-label="Reps"
-                      placeholder="Reps"
-                      type="number"
-                      value={inputs[activeSet.index]?.reps ?? ''}
-                      onChange={(e) => {
-                        const next = [...inputs];
-                        next[activeSet.index] = { ...next[activeSet.index], reps: e.target.value };
-                        setInputs(next);
-                      }}
-                      className="h-8 text-[12px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#777]"
-                    />
-                    <Button
-                      size="sm"
-                      onClick={() => logSet(activeSet.index)}
-                      className="h-8 bg-white text-black hover:bg-white/90 text-[11px] font-semibold shrink-0"
-                    >
-                      Log Set
-                    </Button>
-                  </div>
-                </div>
-              );
-            })()}
-          </Card>
-        ))}
+        {/* + Add Exercise */}
+        <button
+          onClick={() => setExerciseSheetOpen(true)}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#1e1e1e] py-4 text-[12px] text-[#555] hover:border-[#333] hover:text-[#777] transition-colors"
+        >
+          + Add Exercise
+        </button>
       </div>
 
-      <Sheet
-        open={isMobile && activeSetIndex !== null}
-        onOpenChange={(open) => { if (!open) setActiveSetIndex(null); }}
-      >
-        <SheetContent
-          side="bottom"
-          showCloseButton={false}
-          className="bg-[#0f0f0f] border-t border-[#1e1e1e] px-5 pb-8 pt-5 rounded-t-xl"
+      {/* Sticky Complete Workout button */}
+      <div className="fixed bottom-0 left-0 right-0 lg:left-[220px] border-t border-[#0f0f0f] bg-[#050505] px-4 sm:px-8 py-3">
+        <Button
+          onClick={completeSession}
+          disabled={completing}
+          className="w-full bg-white text-black hover:bg-white/90 text-[13px] font-bold py-3 h-auto rounded-xl disabled:opacity-50"
         >
-          <SheetTitle className="sr-only">Log Set</SheetTitle>
-          {activeSetIndex !== null && (() => {
-            const set = session.sets[activeSetIndex];
-            return (
-              <div className="space-y-4">
-                <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-[2px] text-[#888]">
-                    {set.exerciseName}
-                  </div>
-                  <div className="text-[15px] font-bold text-white mt-0.5">
-                    Set {set.setNumber} — {repsLabel(set.prescribedRepsMin, set.prescribedRepsMax)}
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  {!set.isBodyweight && (
-                    <div className="flex-1 space-y-1.5">
-                      <label className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#888]">
-                        Weight (kg)
-                      </label>
-                      <Input
-                        aria-label="Weight (kg)"
-                        type="number"
-                        value={inputs[activeSetIndex]?.weight ?? ''}
-                        onChange={(e) => {
-                          const next = [...inputs];
-                          next[activeSetIndex] = { ...next[activeSetIndex], weight: e.target.value };
-                          setInputs(next);
-                        }}
-                        className="h-12 text-[16px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#555]"
-                        placeholder="e.g. 60"
-                      />
-                    </div>
-                  )}
-                  <div className={cn(!set.isBodyweight ? 'w-28' : 'flex-1', 'space-y-1.5')}>
-                    <label className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#888]">
-                      Reps
-                    </label>
-                    <Input
-                      aria-label="Reps"
-                      type="number"
-                      value={inputs[activeSetIndex]?.reps ?? ''}
-                      onChange={(e) => {
-                        const next = [...inputs];
-                        next[activeSetIndex] = { ...next[activeSetIndex], reps: e.target.value };
-                        setInputs(next);
-                      }}
-                      className="h-12 text-[16px] bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#555]"
-                      placeholder="e.g. 10"
-                    />
-                  </div>
-                </div>
-                <Button
-                  onClick={() => logSet(activeSetIndex)}
-                  className="w-full h-12 bg-white text-black hover:bg-white/90 text-[13px] font-bold"
-                >
-                  Log Set
-                </Button>
-              </div>
-            );
-          })()}
-        </SheetContent>
-      </Sheet>
+          {completing ? 'Saving…' : 'Complete Workout'}
+        </Button>
+      </div>
+
+      {/* Exercise search sheet */}
+      <ExerciseSearchSheet
+        open={exerciseSheetOpen}
+        onOpenChange={setExerciseSheetOpen}
+        exercises={availableExercises}
+        onSelect={addExercise}
+        onCreated={(ex) => setAvailableExercises((prev) => [...prev, ex])}
+      />
     </div>
   );
 }
