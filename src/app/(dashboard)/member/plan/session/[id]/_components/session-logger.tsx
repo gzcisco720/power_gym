@@ -70,7 +70,7 @@ function buildExerciseGroups(sets: SessionSet[]) {
     if (!seen.has(s.exerciseId)) {
       seen.add(s.exerciseId);
       const exSets = sets.filter((x) => x.exerciseId === s.exerciseId);
-      const maxSet = Math.max(...exSets.map((x) => x.setNumber));
+      const maxSet = exSets.length > 0 ? Math.max(...exSets.map((x) => x.setNumber)) : 0;
       uniqueExercises.push({
         exerciseId: s.exerciseId,
         exerciseName: s.exerciseName,
