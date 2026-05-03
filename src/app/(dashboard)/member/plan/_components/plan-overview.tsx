@@ -20,9 +20,10 @@ interface Plan {
 
 interface PlanOverviewProps {
   plan: Plan | null;
+  sessionBasePath?: string;
 }
 
-export function PlanOverview({ plan }: PlanOverviewProps) {
+export function PlanOverview({ plan, sessionBasePath = '/member/plan' }: PlanOverviewProps) {
   const shouldReduce = useReducedMotion();
 
   if (!plan) {
@@ -60,7 +61,7 @@ export function PlanOverview({ plan }: PlanOverviewProps) {
                     {day.exercises.length} exercises
                   </div>
                   <a
-                    href={`/member/plan/session/new?day=${day.dayNumber}`}
+                    href={`${sessionBasePath}/session/new?day=${day.dayNumber}`}
                     className="mt-3 flex w-full items-center justify-center rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-black hover:bg-white/90 transition-all"
                   >
                     Start Session

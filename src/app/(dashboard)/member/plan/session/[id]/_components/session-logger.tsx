@@ -52,7 +52,7 @@ interface SetInputState {
   reps: string;
 }
 
-export function SessionLogger({ session: initialSession }: { session: Session }) {
+export function SessionLogger({ session: initialSession, backPath = '/member/plan' }: { session: Session; backPath?: string }) {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [session, setSession] = useState(initialSession);
@@ -145,7 +145,7 @@ export function SessionLogger({ session: initialSession }: { session: Session })
         return;
       }
       toast.success('Session complete!');
-      router.push('/member/plan');
+      router.push(backPath);
     } catch {
       toast.error('Something went wrong');
       setCompleting(false);
