@@ -61,5 +61,24 @@ describe('MongoExerciseRepository', () => {
       expect(saveMock).toHaveBeenCalled();
       expect(result).toEqual(saved);
     });
+
+    it('creates exercise with bodyParts', async () => {
+      const saveMock = jest.fn().mockResolvedValue({ _id: 'e1', name: 'Squat', bodyParts: ['quadriceps'] });
+      (ExerciseModel as unknown as jest.Mock).mockImplementation(() => ({ save: saveMock }));
+
+      const repo = new MongoExerciseRepository();
+      const result = await repo.create({
+        name: 'Squat',
+        muscleGroup: null,
+        isGlobal: true,
+        createdBy: null,
+        imageUrl: null,
+        isBodyweight: false,
+        bodyParts: ['quadriceps'],
+      });
+
+      expect(saveMock).toHaveBeenCalled();
+      expect(result.bodyParts).toEqual(['quadriceps']);
+    });
   });
 });

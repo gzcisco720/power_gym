@@ -10,6 +10,7 @@ export interface CreateExerciseData {
   imageUrl: string | null;
   isBodyweight: boolean;
   equipmentIds?: string[];
+  bodyParts?: string[];
 }
 
 export interface FindExercisesOptions {
@@ -34,6 +35,7 @@ export class MongoExerciseRepository implements IExerciseRepository {
       ...data,
       createdBy: data.createdBy ? new mongoose.Types.ObjectId(data.createdBy) : null,
       equipmentIds: (data.equipmentIds ?? []).map((id) => new mongoose.Types.ObjectId(id)),
+      bodyParts: data.bodyParts ?? [],
     });
     return exercise.save();
   }
