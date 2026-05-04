@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { ExerciseThumbnail } from '@/components/training/exercise-thumbnail';
 import { ExerciseBadge } from '@/components/training/exercise-badge';
 import { ExerciseSearchSheet, type ExerciseOption } from '@/components/training/exercise-search-sheet';
+import { WorkoutCompleteModal } from '@/components/training/workout-complete-modal';
+import { ExerciseNotePanel } from '@/components/training/exercise-note-panel';
 import { labelExercises } from '@/lib/training/label-exercises';
 import { cn } from '@/lib/utils';
 
@@ -121,9 +123,13 @@ function buildExerciseGroups(sets: SessionSet[]) {
 export function SessionLogger({
   session: initialSession,
   backPath = '/member/plan',
+  mode = 'member',
+  loggedForMember,
 }: {
   session: Session;
   backPath?: string;
+  mode?: 'member' | 'trainer';
+  loggedForMember?: { id: string; name: string };
 }) {
   const router = useRouter();
   const elapsed = useElapsedTimer(initialSession.startedAt);
@@ -139,6 +145,7 @@ export function SessionLogger({
     return map;
   });
   const [completing, setCompleting] = useState(false);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [exerciseSheetOpen, setExerciseSheetOpen] = useState(false);
   const [availableExercises, setAvailableExercises] = useState<ExerciseOption[]>([]);
   const exercisesFetchedRef = useRef(false);
@@ -244,10 +251,15 @@ export function SessionLogger({
     }
   }
 
-  async function completeSession() {
+  async function completeSession(rpe: number | null, memberNote: string | null) {
     setCompleting(true);
+    setShowCompleteModal(false);
     try {
-      const res = await fetch(`/api/sessions/${session._id}/complete`, { method: 'POST' });
+      const res = await fetch(`/api/sessions/${session._id}/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rpe, memberNote }),
+      });
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
         toast.error(data.error ?? 'Failed to complete session');
@@ -383,6 +395,15 @@ export function SessionLogger({
         >
           + Add Set
         </button>
+
+        {mode === 'trainer' && loggedForMember && (
+          <ExerciseNotePanel
+            memberId={loggedForMember.id}
+            exerciseId={exercise.exerciseId}
+            exerciseName={exercise.exerciseName}
+            sessionId={session._id}
+          />
+        )}
       </div>
     );
   }
@@ -399,6 +420,9 @@ export function SessionLogger({
             ← Back
           </button>
           <div className="text-[16px] font-bold text-white">{session.dayName}</div>
+          {mode === 'trainer' && loggedForMember && (
+            <div className="text-[10px] text-[#6ee7b7] mt-0.5">Logging for: {loggedForMember.name}</div>
+          )}
         </div>
         <div className="text-[18px] font-mono font-semibold text-[#666]">{elapsed}</div>
       </div>
@@ -443,13 +467,21 @@ export function SessionLogger({
       {/* Sticky Complete Workout button */}
       <div className="fixed bottom-0 left-0 right-0 lg:left-[220px] border-t border-[#0f0f0f] bg-[#050505] px-4 sm:px-8 py-3">
         <Button
-          onClick={completeSession}
+          onClick={() => setShowCompleteModal(true)}
           disabled={completing}
           className="w-full bg-white text-black hover:bg-white/90 text-[13px] font-bold py-3 h-auto rounded-xl disabled:opacity-50"
         >
           {completing ? 'Saving…' : 'Complete Workout'}
         </Button>
       </div>
+
+      {showCompleteModal && (
+        <WorkoutCompleteModal
+          onConfirm={(rpe, note) => void completeSession(rpe, note)}
+          onCancel={() => setShowCompleteModal(false)}
+          isLoading={completing}
+        />
+      )}
 
       {/* Exercise search sheet */}
       <ExerciseSearchSheet
