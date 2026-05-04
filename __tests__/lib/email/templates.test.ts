@@ -65,6 +65,6 @@ describe('sessionCancelledTemplate', () => {
 
   it('series cancel: html indicates series', () => {
     const { html } = sessionCancelledTemplate({ trainerName: 'Bob', date: 'Monday, May 5, 2026', startTime: '09:00', endTime: '10:00', isSeries: true });
-    expect(html).toContain('系列训练课');
+    expect(html).toContain('recurring series');
   });
 });

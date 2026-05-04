@@ -3,11 +3,11 @@ export function planAssignedTemplate(params: {
   planName: string;
 }): { subject: string; html: string } {
   return {
-    subject: `你的训练计划已更新 — POWER GYM`,
+    subject: `Your Training Plan Has Been Updated — POWER GYM`,
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-        <h2>训练计划已更新</h2>
-        <p><strong>${params.trainerName}</strong> 已为你分配了新的训练计划「<strong>${params.planName}</strong>」，请登录查看。</p>
+        <h2>Training Plan Updated</h2>
+        <p><strong>${params.trainerName}</strong> has assigned you a new training plan: <strong>${params.planName}</strong>. Log in to view it.</p>
         <p style="color:#666;font-size:12px;margin-top:24px;">POWER GYM</p>
       </div>
     `,

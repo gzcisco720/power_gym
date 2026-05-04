@@ -8,14 +8,14 @@ export function sessionBookedTemplate(params: {
 }): { subject: string; html: string } {
   const { trainerName, date, startTime, endTime, isRecurring, sessionCount } = params;
   const body = isRecurring
-    ? `已为你安排 <strong>${sessionCount ?? 12}</strong> 节课，每周 ${startTime}–${endTime}，从 ${date} 开始，教练 <strong>${trainerName}</strong>。`
-    : `你的训练课已安排在 <strong>${date}</strong> ${startTime}–${endTime}，教练 <strong>${trainerName}</strong>。`;
+    ? `<strong>${sessionCount ?? 12}</strong> sessions have been scheduled for you — weekly ${startTime}–${endTime} starting ${date} with trainer <strong>${trainerName}</strong>.`
+    : `Your session has been scheduled on <strong>${date}</strong> ${startTime}–${endTime} with trainer <strong>${trainerName}</strong>.`;
 
   return {
-    subject: `训练课已安排 — POWER GYM`,
+    subject: `Session Booked — POWER GYM`,
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-        <h2>训练课预约确认</h2>
+        <h2>Session Booking Confirmation</h2>
         <p>${body}</p>
         <p style="color:#666;font-size:12px;margin-top:24px;">POWER GYM</p>
       </div>
