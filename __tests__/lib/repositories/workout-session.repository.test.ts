@@ -122,7 +122,7 @@ describe('MongoWorkoutSessionRepository', () => {
 
       expect(mockModel.findByIdAndUpdate).toHaveBeenCalledWith(
         's1',
-        { $set: { completedAt: expect.any(Date) } },
+        { $set: { completedAt: expect.any(Date), rpe: null, memberNote: null } },
         { new: true },
       );
     });
@@ -178,6 +178,57 @@ describe('MongoWorkoutSessionRepository', () => {
 
       expect(result.completedCount).toBe(0);
       expect(result.lastCompletedAt).toBeNull();
+    });
+  });
+
+  describe('create with loggedBy', () => {
+    it('passes loggedBy to the model when provided', async () => {
+      const saved = { _id: 's1', loggedBy: new mongoose.Types.ObjectId().toString() };
+      const saveMock = jest.fn().mockResolvedValue(saved);
+      (WorkoutSessionModel as unknown as jest.Mock).mockImplementation(() => ({ save: saveMock }));
+
+      const trainerId = new mongoose.Types.ObjectId().toString();
+      await repo.create({
+        memberId: new mongoose.Types.ObjectId().toString(),
+        memberPlanId: new mongoose.Types.ObjectId().toString(),
+        dayNumber: 1,
+        dayName: 'Pull Day',
+        startedAt: new Date(),
+        sets: [],
+        loggedBy: trainerId,
+      });
+
+      expect(saveMock).toHaveBeenCalled();
+    });
+  });
+
+  describe('complete with rpe and memberNote', () => {
+    it('sets completedAt, rpe, and memberNote', async () => {
+      const updated = { _id: 's1', completedAt: new Date(), rpe: 7, memberNote: 'Great session' };
+      mockModel.findByIdAndUpdate.mockResolvedValue(updated as never);
+
+      const result = await repo.complete('s1', { rpe: 7, memberNote: 'Great session' });
+
+      expect(mockModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        's1',
+        { $set: { completedAt: expect.any(Date), rpe: 7, memberNote: 'Great session' } },
+        { new: true },
+      );
+      expect(result).toEqual(updated);
+    });
+  });
+
+  describe('findByMonth', () => {
+    it('queries sessions within a calendar month', async () => {
+      const sortMock = jest.fn().mockResolvedValue([]);
+      mockModel.find.mockReturnValue({ sort: sortMock } as never);
+
+      await repo.findByMonth(new mongoose.Types.ObjectId().toString(), 2026, 5);
+
+      expect(mockModel.find).toHaveBeenCalledWith(expect.objectContaining({
+        memberId: expect.any(mongoose.Types.ObjectId),
+        completedAt: { $gte: expect.any(Date), $lt: expect.any(Date) },
+      }));
     });
   });
 });

@@ -10,6 +10,12 @@ export interface CreateSessionData {
   dayName: string;
   startedAt: Date;
   sets: Omit<ISessionSet, 'completedAt'>[];
+  loggedBy?: string | null;
+}
+
+export interface CompleteSessionData {
+  rpe?: number | null;
+  memberNote?: string | null;
 }
 
 export interface UpdateSetData {
@@ -21,9 +27,10 @@ export interface IWorkoutSessionRepository {
   create(data: CreateSessionData): Promise<IWorkoutSession>;
   findById(id: string): Promise<IWorkoutSession | null>;
   findByMember(memberId: string): Promise<IWorkoutSession[]>;
+  findByMonth(memberId: string, year: number, month: number): Promise<IWorkoutSession[]>;
   updateSet(id: string, setIndex: number, data: UpdateSetData): Promise<IWorkoutSession | null>;
   addExtraSet(id: string, extraSet: ISessionSet): Promise<IWorkoutSession | null>;
-  complete(id: string): Promise<IWorkoutSession | null>;
+  complete(id: string, data?: CompleteSessionData): Promise<IWorkoutSession | null>;
   countByMemberIdsSince(memberIds: string[], since: Date): Promise<number>;
   findCompletedDates(memberId: string, since: Date): Promise<Date[]>;
   findTrainedExercises(memberId: string): Promise<{ exerciseId: string; exerciseName: string }[]>;
@@ -44,6 +51,7 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
       startedAt: data.startedAt,
       completedAt: null,
       sets: data.sets,
+      loggedBy: data.loggedBy ? new mongoose.Types.ObjectId(data.loggedBy) : null,
     });
     return session.save();
   }
@@ -80,12 +88,27 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
     );
   }
 
-  async complete(id: string): Promise<IWorkoutSession | null> {
+  async complete(id: string, data?: CompleteSessionData): Promise<IWorkoutSession | null> {
     return WorkoutSessionModel.findByIdAndUpdate(
       id,
-      { $set: { completedAt: new Date() } },
+      {
+        $set: {
+          completedAt: new Date(),
+          rpe: data?.rpe ?? null,
+          memberNote: data?.memberNote ?? null,
+        },
+      },
       { new: true },
     );
+  }
+
+  async findByMonth(memberId: string, year: number, month: number): Promise<IWorkoutSession[]> {
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 1);
+    return WorkoutSessionModel.find({
+      memberId: new mongoose.Types.ObjectId(memberId),
+      completedAt: { $gte: start, $lt: end },
+    }).sort({ completedAt: 1 });
   }
 
   async countByMemberIdsSince(memberIds: string[], since: Date): Promise<number> {
