@@ -4,7 +4,7 @@ import { MongoWorkoutSessionRepository } from '@/lib/repositories/workout-sessio
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export async function POST(_req: Request, { params }: RouteContext): Promise<Response> {
+export async function POST(req: Request, { params }: RouteContext): Promise<Response> {
   const session = await auth();
   if (!session?.user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -21,6 +21,13 @@ export async function POST(_req: Request, { params }: RouteContext): Promise<Res
     return Response.json({ error: 'Already completed' }, { status: 409 });
   }
 
-  const completed = await repo.complete(id);
+  let body: { rpe?: number; memberNote?: string } = {};
+  try {
+    body = await req.json();
+  } catch {
+    // empty body is fine
+  }
+
+  const completed = await repo.complete(id, { rpe: body.rpe, memberNote: body.memberNote });
   return Response.json(completed);
 }

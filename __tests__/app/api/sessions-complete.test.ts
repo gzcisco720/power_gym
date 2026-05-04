@@ -44,8 +44,27 @@ describe('POST /api/sessions/[id]/complete', () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(mockSessionRepo.complete).toHaveBeenCalledWith('s1');
+    expect(mockSessionRepo.complete).toHaveBeenCalledWith('s1', expect.objectContaining({}));
     expect(data._id).toBe(completed._id);
     expect(data.completedAt).toBeDefined();
+  });
+
+  it('passes rpe and memberNote to repo.complete', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    mockSessionRepo.findById.mockResolvedValue({ _id: 's1', memberId: { toString: () => 'm1' }, completedAt: null });
+    mockSessionRepo.complete.mockResolvedValue({ _id: 's1', rpe: 8, memberNote: 'Felt strong' });
+
+    const { POST } = await import('@/app/api/sessions/[id]/complete/route');
+    const res = await POST(
+      new Request('http://localhost/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rpe: 8, memberNote: 'Felt strong' }),
+      }),
+      makeParams('s1'),
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockSessionRepo.complete).toHaveBeenCalledWith('s1', { rpe: 8, memberNote: 'Felt strong' });
   });
 });

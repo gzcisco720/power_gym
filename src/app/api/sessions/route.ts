@@ -9,10 +9,16 @@ export async function POST(req: Request): Promise<Response> {
   if (!session?.user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   await connectDB();
-  const body = (await req.json()) as { memberPlanId: string; dayNumber: number };
+  const body = (await req.json()) as { memberPlanId: string; dayNumber: number; memberId?: string };
+
+  const role = session.user.role as UserRole;
+  const targetMemberId = (role === 'trainer' || role === 'owner') && body.memberId
+    ? body.memberId
+    : session.user.id;
+  const loggedBy = targetMemberId !== session.user.id ? session.user.id : null;
 
   const memberPlanRepo = new MongoMemberPlanRepository();
-  const plan = await memberPlanRepo.findActive(session.user.id);
+  const plan = await memberPlanRepo.findActive(targetMemberId);
   if (!plan) return Response.json({ error: 'No active plan' }, { status: 404 });
 
   const day = plan.days.find((d) => d.dayNumber === body.dayNumber);
@@ -37,12 +43,13 @@ export async function POST(req: Request): Promise<Response> {
 
   const sessionRepo = new MongoWorkoutSessionRepository();
   const workoutSession = await sessionRepo.create({
-    memberId: session.user.id,
+    memberId: targetMemberId,
     memberPlanId: body.memberPlanId,
     dayNumber: body.dayNumber,
     dayName: day.name,
     startedAt: new Date(),
     sets,
+    loggedBy,
   });
 
   return Response.json(workoutSession, { status: 201 });
@@ -61,8 +68,17 @@ export async function GET(req: Request): Promise<Response> {
     return Response.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  const yearParam = url.searchParams.get('year');
+  const monthParam = url.searchParams.get('month');
+
   await connectDB();
   const sessionRepo = new MongoWorkoutSessionRepository();
+
+  if (yearParam && monthParam) {
+    const sessions = await sessionRepo.findByMonth(memberId, parseInt(yearParam, 10), parseInt(monthParam, 10));
+    return Response.json(sessions);
+  }
+
   const sessions = await sessionRepo.findByMember(memberId);
   return Response.json(sessions);
 }
