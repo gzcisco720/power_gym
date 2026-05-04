@@ -270,13 +270,13 @@ export function SessionLogger({
       exerciseName: string;
       isBodyweight: boolean;
       label: string;
-      imageUrl: null;
+      imageUrl: string | null;
       isSuperset: boolean;
       groupId: string;
       sets: number;
       repsMin: number;
       repsMax: number;
-      restSeconds: null;
+      restSeconds: number | null;
     },
     exSets: (SessionSet & { globalIndex: number })[],
   ) {
