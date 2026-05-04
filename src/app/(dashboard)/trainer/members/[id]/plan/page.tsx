@@ -22,7 +22,6 @@ export default async function TrainerMemberPlanPage({ params }: { params: Promis
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">学员训练管理</h1>
       <TrainerMemberPlanClient
         memberId={memberId}
         templates={JSON.parse(JSON.stringify(templates))}

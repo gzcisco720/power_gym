@@ -30,6 +30,10 @@ interface Props {
   allTrainers: TrainerRow[];
 }
 
+function initials(name: string) {
+  return name.split(' ').map((n) => n[0] ?? '').join('').slice(0, 2).toUpperCase();
+}
+
 export function TrainerListClient({ trainers, allTrainers }: Props) {
   const router = useRouter();
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -73,84 +77,97 @@ export function TrainerListClient({ trainers, allTrainers }: Props) {
   }
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-2">
       {trainers.map((trainer) => (
-        <div key={trainer._id}>
-          <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl overflow-hidden hover:border-[#2a2a2a] transition-colors">
-            <div className="flex items-center px-5 py-4 gap-4">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#1e1e1e] bg-[#181818] text-[10px] font-semibold text-[#888]">
-                {trainer.name.slice(0, 2).toUpperCase()}
+        <Card
+          key={trainer._id}
+          className="bg-[#0c0c0c] border-[#141414] rounded-xl overflow-hidden hover:border-[#222] transition-colors"
+        >
+          {/* Main row */}
+          <div className="flex items-center gap-4 px-5 py-4">
+            {/* Avatar */}
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1e1e1e] bg-[#181818] text-[11px] font-semibold text-[#888]">
+              {initials(trainer.name)}
+            </div>
+
+            {/* Name + email */}
+            <div className="flex-1 min-w-0">
+              <div className="text-[14px] font-semibold text-white truncate">{trainer.name}</div>
+              <div className="text-[11px] text-[#666] mt-0.5 truncate">{trainer.email}</div>
+            </div>
+
+            {/* Stats */}
+            <div className="hidden sm:flex items-center gap-6 pr-2">
+              <div className="text-center">
+                <div className="text-[16px] font-bold text-white leading-none">{trainer.memberCount}</div>
+                <div className="text-[9px] uppercase tracking-[1.5px] text-[#444] mt-1">members</div>
               </div>
-              <div className="flex-1">
-                <div className="text-[13px] font-semibold text-[#ccc]">{trainer.name}</div>
-                <div className="text-[10px] text-[#666] mt-0.5">{trainer.email}</div>
-              </div>
-              <div className="text-center min-w-[80px]">
-                <div className="text-[13px] font-semibold text-[#888]">
-                  {`${trainer.memberCount} members`}
-                </div>
-              </div>
-              <div className="text-center min-w-[80px]">
-                <div className="text-[13px] font-semibold text-[#888]">
-                  {`${trainer.sessionsThisMonth} sessions`}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Link
-                  href={`/owner/trainers/${trainer._id}`}
-                  className="inline-flex items-center justify-center rounded-md text-xs font-medium h-8 px-3 text-[#777] hover:text-[#aaa] hover:bg-[#141414] transition-colors"
-                >
-                  View →
-                </Link>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setExpandedId(expandedId === trainer._id ? null : trainer._id)}
-                  className="text-[#777] hover:text-[#aaa] hover:bg-[#141414] text-xs"
-                >
-                  Members
-                  {expandedId === trainer._id ? (
-                    <ChevronUp className="h-3 w-3 ml-1" />
-                  ) : (
-                    <ChevronDown className="h-3 w-3 ml-1" />
-                  )}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={removing === trainer._id}
-                  onClick={() => handleRemove(trainer._id)}
-                  className="text-[#2a1111] hover:text-red-400 hover:bg-[#141414] text-xs"
-                >
-                  {removing === trainer._id ? '...' : 'Remove'}
-                </Button>
+              <div className="text-center">
+                <div className="text-[16px] font-bold text-white leading-none">{trainer.sessionsThisMonth}</div>
+                <div className="text-[9px] uppercase tracking-[1.5px] text-[#444] mt-1">sessions</div>
               </div>
             </div>
 
-            {expandedId === trainer._id && (
-              <div className="border-t border-[#141414]">
-                {trainer.members.length === 0 ? (
-                  <div className="px-5 py-4 text-[11px] text-[#555]">No members assigned.</div>
+            {/* Separator */}
+            <div className="hidden sm:block w-px h-8 bg-[#1e1e1e] shrink-0" />
+
+            {/* Actions */}
+            <div className="flex items-center gap-1 shrink-0">
+              <Link
+                href={`/owner/trainers/${trainer._id}`}
+                className="inline-flex h-8 cursor-pointer items-center rounded-md px-3 text-[12px] font-medium text-[#aaa] hover:text-white hover:bg-[#161616] transition-colors"
+              >
+                View
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setExpandedId(expandedId === trainer._id ? null : trainer._id)}
+                className="h-8 cursor-pointer px-3 text-[12px] text-[#666] hover:text-[#aaa] hover:bg-[#161616]"
+              >
+                Members
+                {expandedId === trainer._id ? (
+                  <ChevronUp className="ml-1 h-3 w-3" />
                 ) : (
-                  trainer.members.map((member) => (
-                    <div
-                      key={member._id}
-                      className="flex items-center gap-3 px-5 py-3 border-b border-[#0f0f0f] last:border-0"
-                    >
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#141414] text-[9px] font-semibold text-[#888]">
-                        {member.name.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-[12px] font-medium text-[#888]">{member.name}</div>
-                        <div className="text-[10px] text-[#555]">{member.email}</div>
-                      </div>
-                    </div>
-                  ))
+                  <ChevronDown className="ml-1 h-3 w-3" />
                 )}
-              </div>
-            )}
-          </Card>
-        </div>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={removing === trainer._id}
+                onClick={() => handleRemove(trainer._id)}
+                className="h-8 cursor-pointer px-3 text-[12px] text-[#883333] hover:text-red-400 hover:bg-[#1a0808]"
+              >
+                {removing === trainer._id ? '…' : 'Remove'}
+              </Button>
+            </div>
+          </div>
+
+          {/* Expanded member list */}
+          {expandedId === trainer._id && (
+            <div className="border-t border-[#141414]">
+              {trainer.members.length === 0 ? (
+                <div className="px-5 py-4 text-[12px] text-[#555]">No members assigned.</div>
+              ) : (
+                trainer.members.map((member) => (
+                  <div
+                    key={member._id}
+                    className="flex items-center gap-3 px-5 py-3 border-b border-[#0f0f0f] last:border-0"
+                  >
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#1a1a1a] bg-[#141414] text-[9px] font-semibold text-[#777]">
+                      {initials(member.name)}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[12px] font-medium text-[#ccc]">{member.name}</div>
+                      <div className="text-[10px] text-[#555]">{member.email}</div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </Card>
       ))}
     </div>
   );

@@ -19,18 +19,18 @@ export async function StatCardsSection({ memberId }: { memberId: string }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       <StatCard
-        label="当前体重"
+        label="Weight"
         value={latestTest ? String(latestTest.weight) : '—'}
         unit={latestTest ? 'kg' : undefined}
       />
       <StatCard
-        label="体脂率"
+        label="Body Fat"
         value={latestTest ? String(latestTest.bodyFatPct) : '—'}
         unit={latestTest ? '%' : undefined}
       />
-      <StatCard label="累计训练" value={String(stats.completedCount)} unit="次" />
-      <StatCard label="上次训练" value={lastTrainedLabel} />
-      <StatCard label="当前计划" value={activePlan ? activePlan.name : '无计划'} />
+      <StatCard label="Sessions" value={String(stats.completedCount)} />
+      <StatCard label="Last Session" value={lastTrainedLabel} />
+      <StatCard label="Active Plan" value={activePlan ? activePlan.name : 'None'} />
     </div>
   );
 }
@@ -39,7 +39,7 @@ function formatRelativeDate(date: Date): string {
   const days = Math.floor(
     (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24),
   );
-  if (days === 0) return '今天';
-  if (days === 1) return '昨天';
-  return `${days} 天前`;
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  return `${days}d ago`;
 }

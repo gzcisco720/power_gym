@@ -41,10 +41,7 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
     },
     {
       group: 'TRAINING',
-      items: [
-        { href: '/trainer/my-plan', label: 'My Plan' },
-        { href: '/trainer/plans', label: 'Plan Templates' },
-      ],
+      items: [{ href: '/trainer/plans', label: 'Plan Templates' }],
     },
     {
       group: 'HEALTH',
@@ -69,10 +66,7 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
     },
     {
       group: 'TRAINING',
-      items: [
-        { href: '/owner/my-plan', label: 'My Plan' },
-        { href: '/owner/plans', label: 'Plan Templates' },
-      ],
+      items: [{ href: '/owner/plans', label: 'Plan Templates' }],
     },
     {
       group: 'HEALTH',

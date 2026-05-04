@@ -15,8 +15,7 @@ export default async function MemberBodyTestsPage() {
 
   return (
     <div className="container mx-auto py-8 max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">我的体测记录</h1>
-      <BodyTestViewer tests={plain} />
+<BodyTestViewer tests={plain} />
     </div>
   );
 }

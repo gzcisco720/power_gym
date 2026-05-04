@@ -46,7 +46,7 @@ export function OwnerEditNutritionTemplateClient({ id, initialData, foods }: Pro
 
   return (
     <div>
-      <PageHeader title="编辑营养计划" />
+      <PageHeader title="Edit Nutrition Plan" />
       <div className="px-4 sm:px-8 py-7">
         <NutritionTemplateForm initialData={initialData} onSubmit={handleSubmit} foods={foods} />
       </div>

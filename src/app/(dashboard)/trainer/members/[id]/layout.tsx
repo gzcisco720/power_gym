@@ -50,7 +50,7 @@ export default async function MemberHubLayout({ children, params }: MemberHubLay
               <div className="text-[11px] text-[#666] mt-0.5">
                 {member.email}
                 <span className="mx-1.5 text-[#333]">·</span>
-                已加入 {daysSinceJoined} 天
+                Member for {daysSinceJoined} days
               </div>
             </div>
           </div>

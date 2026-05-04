@@ -20,16 +20,16 @@ interface Props {
 }
 
 const FITNESS_GOALS = [
-  { value: 'lose_fat', label: '减脂' },
-  { value: 'build_muscle', label: '增肌' },
-  { value: 'maintain', label: '维持' },
-  { value: 'improve_performance', label: '提升运动表现' },
+  { value: 'lose_fat', label: 'Lose Fat' },
+  { value: 'build_muscle', label: 'Build Muscle' },
+  { value: 'maintain', label: 'Maintain' },
+  { value: 'improve_performance', label: 'Improve Performance' },
 ] as const;
 
 const FITNESS_LEVELS = [
-  { value: 'beginner', label: '新手' },
-  { value: 'intermediate', label: '中级' },
-  { value: 'advanced', label: '进阶' },
+  { value: 'beginner', label: 'Beginner' },
+  { value: 'intermediate', label: 'Intermediate' },
+  { value: 'advanced', label: 'Advanced' },
 ] as const;
 
 function SubmitButton() {

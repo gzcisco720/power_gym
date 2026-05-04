@@ -25,6 +25,10 @@ interface Props {
   trainers: TrainerOption[];
 }
 
+function initials(name: string) {
+  return name.split(' ').map((n) => n[0] ?? '').join('').slice(0, 2).toUpperCase();
+}
+
 export function MemberListClient({ members, trainers }: Props) {
   const [reassigning, setReassigning] = useState<MemberRow | null>(null);
 
@@ -39,42 +43,44 @@ export function MemberListClient({ members, trainers }: Props) {
   return (
     <>
       <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl overflow-hidden">
-        {/* Column header — desktop only */}
-        <div className="hidden sm:grid grid-cols-[1fr_180px_80px] border-b border-[#141414] px-5 py-2.5 text-[9px] font-semibold uppercase tracking-[1.5px] text-[#555]">
-          <div>Member</div>
-          <div>Trainer</div>
-          <div></div>
-        </div>
-
         {members.map((member) => (
           <div
             key={member._id}
-            className="flex items-start justify-between gap-3 border-b border-[#0f0f0f] px-5 py-3.5 last:border-0 hover:bg-[#0e0e0e] transition-colors sm:grid sm:grid-cols-[1fr_180px_80px] sm:items-center"
+            className="flex items-center gap-4 px-5 py-4 border-b border-[#0f0f0f] last:border-0 hover:bg-[#0e0e0e] transition-colors"
           >
-            <div>
-              <div className="text-[13px] font-medium text-[#bbb]">{member.name}</div>
-              <div className="text-[10px] text-[#666] mt-0.5">{member.email}</div>
-              {/* Trainer name visible inline on mobile */}
-              <div className="text-[10px] text-[#666] mt-1 sm:hidden">
-                {member.trainerName ?? '—'}
-              </div>
+            {/* Avatar */}
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1e1e1e] bg-[#181818] text-[11px] font-semibold text-[#888]">
+              {initials(member.name)}
             </div>
-            {/* Trainer name column — desktop only */}
-            <div className="hidden sm:block text-[11px] text-[#666]">
-              {member.trainerName ?? '—'}
+
+            {/* Name + email */}
+            <div className="flex-1 min-w-0">
+              <div className="text-[14px] font-semibold text-white truncate">{member.name}</div>
+              <div className="text-[11px] text-[#666] mt-0.5 truncate">{member.email}</div>
             </div>
-            <div className="flex items-center gap-3">
+
+            {/* Trainer */}
+            <div className="hidden sm:block min-w-[160px] shrink-0">
+              <div className="text-[12px] text-[#888]">{member.trainerName ?? '—'}</div>
+              <div className="text-[9px] uppercase tracking-[1.5px] text-[#444] mt-0.5">trainer</div>
+            </div>
+
+            {/* Separator */}
+            <div className="hidden sm:block w-px h-8 bg-[#1e1e1e] shrink-0" />
+
+            {/* Actions */}
+            <div className="flex items-center gap-1 shrink-0">
               <Link
                 href={`/trainer/members/${member._id}`}
-                className="text-[11px] text-[#777] hover:text-[#aaa] transition-colors"
+                className="inline-flex h-8 cursor-pointer items-center rounded-md px-3 text-[12px] font-medium text-[#aaa] hover:text-white hover:bg-[#161616] transition-colors"
               >
-                View →
+                View
               </Link>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setReassigning(member)}
-                className="text-[#777] hover:text-[#aaa] hover:bg-[#141414] text-xs"
+                className="h-8 cursor-pointer px-3 text-[12px] text-[#6688bb] hover:text-[#88aadd] hover:bg-[#0d1520]"
               >
                 Reassign
               </Button>

@@ -23,7 +23,8 @@ describe('TrainerListClient', () => {
   it('renders trainer name and member count', () => {
     render(<TrainerListClient trainers={mockTrainers} allTrainers={mockTrainers} />);
     expect(screen.getByText('Li Wei')).toBeInTheDocument();
-    expect(screen.getByText('5 members')).toBeInTheDocument();
+    expect(screen.getByText('5')).toBeInTheDocument();
+    expect(screen.getByText('members')).toBeInTheDocument();
   });
 
   it('shows members list when Members button clicked', () => {

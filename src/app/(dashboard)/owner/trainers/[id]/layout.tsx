@@ -44,7 +44,7 @@ export default async function TrainerHubLayout({ children, params }: TrainerHubL
               <div className="text-[11px] text-[#666] mt-0.5">
                 {trainer.email}
                 <span className="mx-1.5 text-[#333]">·</span>
-                已加入 {daysSinceJoined} 天
+                Joined {daysSinceJoined} days ago
               </div>
             </div>
           </div>

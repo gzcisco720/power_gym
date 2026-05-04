@@ -33,8 +33,7 @@ export default async function TrainerMemberBodyTestsPage({
 
   return (
     <div className="container mx-auto py-8 max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">体测管理</h1>
-      <BodyTestClient
+<BodyTestClient
         memberId={memberId}
         initialTests={plain}
         defaultSex={defaultSex}

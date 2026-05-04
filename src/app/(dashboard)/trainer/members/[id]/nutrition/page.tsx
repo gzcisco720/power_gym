@@ -22,7 +22,6 @@ export default async function TrainerMemberNutritionPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">学员营养管理</h1>
       <TrainerMemberNutritionClient
         memberId={memberId}
         templates={JSON.parse(JSON.stringify(templates))}

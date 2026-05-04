@@ -44,7 +44,7 @@ export function NewNutritionTemplateClient({ foods, backPath = '/trainer/nutriti
 
   return (
     <div>
-      <PageHeader title="新建营养计划" />
+      <PageHeader title="New Nutrition Plan" />
       <div className="px-4 sm:px-8 py-7">
         <NutritionTemplateForm onSubmit={handleSubmit} foods={foods} />
       </div>
