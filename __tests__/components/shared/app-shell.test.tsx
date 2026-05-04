@@ -27,7 +27,8 @@ describe('AppShell', () => {
     );
     expect(screen.getByText('Plan Templates')).toBeInTheDocument();
     expect(screen.getByText('Nutrition Templates')).toBeInTheDocument();
-    expect(screen.queryByText('My Plan')).not.toBeInTheDocument();
+    expect(screen.getByText('My Plan')).toBeInTheDocument();
+    expect(screen.getByText('Personal Bests')).toBeInTheDocument();
   });
 
   it('renders user initials in avatar', () => {

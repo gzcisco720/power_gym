@@ -42,7 +42,11 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
     },
     {
       group: 'TRAINING',
-      items: [{ href: '/trainer/plans', label: 'Plan Templates' }],
+      items: [
+        { href: '/trainer/my-plan', label: 'My Plan' },
+        { href: '/trainer/my-pbs', label: 'Personal Bests' },
+        { href: '/trainer/plans', label: 'Plan Templates' },
+      ],
     },
     {
       group: 'HEALTH',
