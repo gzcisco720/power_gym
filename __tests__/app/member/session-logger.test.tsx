@@ -194,10 +194,13 @@ describe('SessionLogger', () => {
     );
   });
 
-  it('calls POST to complete session when "Complete Workout" is clicked', async () => {
+  it('calls POST to complete session when "Complete Workout" is clicked and confirmed', async () => {
     await act(async () => { render(<SessionLogger session={mockSession} />); });
     const completeBtn = screen.getByRole('button', { name: /complete workout/i });
     await act(async () => { fireEvent.click(completeBtn); });
+    // Modal appears — click "Finish Workout" to confirm
+    const finishBtn = await screen.findByRole('button', { name: /finish workout/i });
+    await act(async () => { fireEvent.click(finishBtn); });
     await waitFor(() =>
       expect(global.fetch).toHaveBeenCalledWith(
         '/api/sessions/s1/complete',

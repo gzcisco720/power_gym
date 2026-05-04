@@ -36,7 +36,6 @@ export default function MemberCalendarPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
     fetch(`/api/sessions?memberId=me&year=${year}&month=${month}`)
       .then((r) => r.json())
       .then((data: Session[]) => { setSessions(data); setLoading(false); })

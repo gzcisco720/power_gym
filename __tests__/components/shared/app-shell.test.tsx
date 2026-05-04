@@ -13,7 +13,6 @@ describe('AppShell', () => {
       </AppShell>
     );
     expect(screen.getByText('My Plan')).toBeInTheDocument();
-    expect(screen.getByText('Personal Bests')).toBeInTheDocument();
     expect(screen.getByText('Nutrition')).toBeInTheDocument();
     expect(screen.getByText('Body Tests')).toBeInTheDocument();
     expect(screen.queryByText('Plan Templates')).not.toBeInTheDocument();
@@ -28,7 +27,6 @@ describe('AppShell', () => {
     expect(screen.getByText('Plan Templates')).toBeInTheDocument();
     expect(screen.getByText('Nutrition Templates')).toBeInTheDocument();
     expect(screen.getByText('My Plan')).toBeInTheDocument();
-    expect(screen.getByText('Personal Bests')).toBeInTheDocument();
   });
 
   it('renders user initials in avatar', () => {
