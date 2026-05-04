@@ -37,7 +37,8 @@ Central registry of all generated documents. Update this file whenever a new doc
 | React Suspense Streaming            | [suspense-streaming-design.md](2026-05-01/plans/suspense-streaming-design.md)        | Complete  |
 | Email Notifications                 | [email-notifications-design.md](2026-05-01/plans/email-notifications-design.md)      | Complete  |
 | Check-In Feature                    | [check-in-design.md](2026-05-03/plans/check-in-design.md)                            | Complete  |
-| Training Module Redesign (Plan A)   | [training-redesign-design.md](2026-05-03/plans/training-redesign-design.md)          | Approved  |
+| Training Module Redesign (Plan A)   | [training-redesign-design.md](2026-05-03/plans/training-redesign-design.md)          | Superseded  |
+| Training Module Refactor (Plan B)   | [training-module-refactor-design.md](2026-05-04/plans/training-module-refactor-design.md) | Approved |
 
 ## Implementation Plans
 
@@ -63,7 +64,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | React Suspense Streaming | [suspense-streaming-implementation-plan.md](2026-05-01/plans/suspense-streaming-implementation-plan.md) | Complete |
 | Email Notifications | [email-notifications-implementation-plan.md](2026-05-01/plans/email-notifications-implementation-plan.md) | Complete |
 | Check-In Feature | [check-in-implementation-plan.md](2026-05-03/plans/check-in-implementation-plan.md) | Complete |
-| Training Module Redesign (Plan A) | [training-redesign-implementation-plan.md](2026-05-03/plans/training-redesign-implementation-plan.md) | In Progress |
+| Training Module Redesign (Plan A) | [training-redesign-implementation-plan.md](2026-05-03/plans/training-redesign-implementation-plan.md) | Superseded |
 
 ## API Usage Guides
 
