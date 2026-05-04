@@ -29,7 +29,7 @@ describe('GET /api/owner/equipment', () => {
 
   it('returns equipment list for trainer', async () => {
     mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
-    const items = [{ _id: 'e1', name: 'Barbell', category: 'free_weight', quantity: 10, status: 'active' }];
+    const items = [{ _id: 'e1', name: 'Barbell', status: 'active', brand: null, quantity: 1, images: [], note: null }];
     mockEquipmentRepo.findAll.mockResolvedValue(items);
     const { GET } = await import('@/app/api/owner/equipment/route');
     const res = await GET();
@@ -65,17 +65,30 @@ describe('POST /api/owner/equipment', () => {
 
   it('creates equipment and returns 201 for owner', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'o1', role: 'owner' } } as never);
-    const created = { _id: 'e1', name: 'Smith Machine', category: 'strength', quantity: 1, status: 'active', purchasedAt: null, notes: null };
+    const created = { _id: 'e1', name: 'Smith Machine', status: 'active', brand: 'Matrix', quantity: 1, images: [], note: null };
     mockEquipmentRepo.create.mockResolvedValue(created);
     const { POST } = await import('@/app/api/owner/equipment/route');
     const res = await POST(
       new Request('http://localhost/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'Smith Machine', category: 'strength' }),
+        body: JSON.stringify({ name: 'Smith Machine', brand: 'Matrix' }),
       }),
     );
     expect(res.status).toBe(201);
     expect((await res.json()).name).toBe('Smith Machine');
+  });
+
+  it('returns 400 when name is missing', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'o1', role: 'owner' } } as never);
+    const { POST } = await import('@/app/api/owner/equipment/route');
+    const res = await POST(
+      new Request('http://localhost/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ brand: 'Nike' }),
+      }),
+    );
+    expect(res.status).toBe(400);
   });
 });

@@ -1,13 +1,14 @@
 import { EquipmentModel } from '@/lib/db/models/equipment.model';
-import type { IEquipment, EquipmentCategory, EquipmentStatus } from '@/lib/db/models/equipment.model';
+import type { IEquipment, EquipmentStatus } from '@/lib/db/models/equipment.model';
 
 export interface CreateEquipmentData {
   name: string;
-  category: EquipmentCategory;
-  quantity: number;
   status: EquipmentStatus;
-  purchasedAt: Date | null;
-  notes: string | null;
+  brand: string | null;
+  quantity: number;
+  images: string[];
+  note: string | null;
+  trackCondition: boolean;
 }
 
 export type UpdateEquipmentData = Partial<CreateEquipmentData>;

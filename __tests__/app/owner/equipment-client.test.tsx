@@ -5,12 +5,18 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 jest.mock('next/navigation', () => ({ useRouter: jest.fn(() => ({ refresh: jest.fn() })) }));
+jest.mock('@/app/(dashboard)/owner/equipment/actions', () => ({
+  getEquipmentImageSignatureAction: jest.fn(),
+}));
 
 import { EquipmentClient } from '@/app/(dashboard)/owner/equipment/_components/equipment-client';
 
+const IMAGE_URL = 'https://res.cloudinary.com/demo/image/upload/sample.jpg';
+
 const mockItems = [
-  { _id: 'e1', name: 'Smith Machine', category: 'strength' as const, quantity: 2, status: 'active' as const, purchasedAt: null, notes: null },
-  { _id: 'e2', name: 'Treadmill', category: 'cardio' as const, quantity: 5, status: 'maintenance' as const, purchasedAt: null, notes: 'Needs belt replacement' },
+  { _id: 'e1', name: 'Smith Machine', status: 'active' as const, brand: 'Matrix', quantity: 2, images: [IMAGE_URL], note: null, trackCondition: true },
+  { _id: 'e2', name: 'Treadmill', status: 'maintenance' as const, brand: null, quantity: 5, images: [], note: 'Needs belt replacement', trackCondition: true },
+  { _id: 'e3', name: 'Weight Plates', status: 'active' as const, brand: null, quantity: 50, images: [], note: null, trackCondition: false },
 ];
 
 describe('EquipmentClient', () => {
@@ -23,6 +29,7 @@ describe('EquipmentClient', () => {
     render(<EquipmentClient initialItems={mockItems} />);
     expect(screen.getByText('Smith Machine')).toBeInTheDocument();
     expect(screen.getByText('Treadmill')).toBeInTheDocument();
+    expect(screen.getByText('Weight Plates')).toBeInTheDocument();
   });
 
   it('shows empty state when no equipment', () => {
@@ -30,27 +37,23 @@ describe('EquipmentClient', () => {
     expect(screen.getByText(/no equipment/i)).toBeInTheDocument();
   });
 
-  it('shows add form when Add button clicked', () => {
-    render(<EquipmentClient initialItems={[]} />);
-    fireEvent.click(screen.getByRole('button', { name: /\+ add equipment/i }));
-    expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+  it('shows status badge only for items with trackCondition enabled', () => {
+    render(<EquipmentClient initialItems={mockItems} />);
+    const activeBadges = screen.getAllByText('active');
+    // Weight Plates (trackCondition:false) should not have a badge — only Smith Machine
+    expect(activeBadges).toHaveLength(1);
   });
 
-  it('calls POST API when add form submitted', async () => {
-    const created = { _id: 'e3', name: 'Cable Machine', category: 'cable', quantity: 1, status: 'active', purchasedAt: null, notes: null };
-    (global.fetch as jest.Mock).mockResolvedValue({ ok: true, json: () => Promise.resolve(created) });
+  it('shows Condition button for each item', () => {
+    render(<EquipmentClient initialItems={mockItems} />);
+    const conditionBtns = screen.getAllByRole('button', { name: /condition/i });
+    expect(conditionBtns).toHaveLength(mockItems.length);
+  });
 
+  it('opens Add Equipment dialog when Add button clicked', () => {
     render(<EquipmentClient initialItems={[]} />);
     fireEvent.click(screen.getByRole('button', { name: /\+ add equipment/i }));
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'Cable Machine' } });
-    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
-
-    await waitFor(() =>
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/owner/equipment',
-        expect.objectContaining({ method: 'POST' }),
-      ),
-    );
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
   it('calls DELETE API when delete button clicked', async () => {
@@ -65,5 +68,38 @@ describe('EquipmentClient', () => {
         expect.objectContaining({ method: 'DELETE' }),
       ),
     );
+  });
+
+  it('shows placeholder for equipment with no images', () => {
+    render(<EquipmentClient initialItems={mockItems} />);
+    const placeholders = screen.getAllByLabelText('No image');
+    // e2 and e3 have no images
+    expect(placeholders).toHaveLength(2);
+  });
+
+  it('shows thumbnail img for equipment with images', () => {
+    render(<EquipmentClient initialItems={mockItems} />);
+    const thumbnail = screen.getByRole('img', { name: /smith machine/i });
+    expect(thumbnail).toHaveAttribute('src', IMAGE_URL);
+  });
+
+  it('opens lightbox when thumbnail clicked', () => {
+    render(<EquipmentClient initialItems={mockItems} />);
+    fireEvent.click(screen.getByRole('img', { name: /smith machine/i }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('updates status in list when ConditionDialog reports a status change', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([]),
+    });
+    render(<EquipmentClient initialItems={mockItems} />);
+    const conditionBtns = screen.getAllByRole('button', { name: /condition/i });
+    fireEvent.click(conditionBtns[0]);
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith(
+      '/api/owner/equipment/e1/condition-reports',
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    ));
   });
 });

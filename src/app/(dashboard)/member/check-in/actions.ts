@@ -6,13 +6,20 @@ import { connectDB } from '@/lib/db/connect';
 import { MongoCheckInRepository } from '@/lib/repositories/check-in.repository';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { getEmailService } from '@/lib/email/index';
+import type { UploadConfig } from '@/lib/storage/types';
 
 export interface CheckInSignatureResult {
   error: string;
+  config?: UploadConfig;
+  /** @deprecated use config instead */
   signature?: string;
+  /** @deprecated use config instead */
   timestamp?: number;
+  /** @deprecated use config instead */
   cloudName?: string;
+  /** @deprecated use config instead */
   apiKey?: string;
+  /** @deprecated use config instead */
   folder?: string;
 }
 
@@ -20,13 +27,30 @@ export async function getCheckInSignatureAction(): Promise<CheckInSignatureResul
   const session = await auth();
   if (!session?.user) return { error: 'Unauthorized' };
 
-  const timestamp = Math.round(Date.now() / 1000);
   const folder = 'check-ins';
+
+  if (process.env.UPLOAD_PROVIDER === 'local') {
+    return {
+      error: '',
+      config: { provider: 'local', uploadUrl: '/api/upload', folder },
+    };
+  }
+
+  const timestamp = Math.round(Date.now() / 1000);
   const paramStr = `folder=${folder}&timestamp=${timestamp}${process.env.CLOUDINARY_API_SECRET}`;
   const signature = crypto.createHash('sha1').update(paramStr).digest('hex');
 
   return {
     error: '',
+    config: {
+      provider: 'cloudinary',
+      uploadUrl: `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
+      apiKey: process.env.CLOUDINARY_API_KEY!,
+      signature,
+      timestamp,
+      folder,
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME!,
+    },
     signature,
     timestamp,
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,

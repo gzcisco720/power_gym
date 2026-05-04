@@ -3,16 +3,17 @@ import { connectDB } from '@/lib/db/connect';
 import { MongoEquipmentRepository } from '@/lib/repositories/equipment.repository';
 import { EquipmentClient } from './_components/equipment-client';
 import { PageHeader } from '@/components/shared/page-header';
-import type { EquipmentCategory, EquipmentStatus } from '@/lib/db/models/equipment.model';
+import type { EquipmentStatus } from '@/lib/db/models/equipment.model';
 
 interface EquipmentRow {
   _id: string;
   name: string;
-  category: EquipmentCategory;
-  quantity: number;
   status: EquipmentStatus;
-  purchasedAt: string | null;
-  notes: string | null;
+  brand: string | null;
+  quantity: number;
+  images: string[];
+  note: string | null;
+  trackCondition: boolean;
 }
 
 export default async function OwnerEquipmentPage() {
@@ -24,11 +25,12 @@ export default async function OwnerEquipmentPage() {
   const items: EquipmentRow[] = raw.map((e) => ({
     _id: e._id.toString(),
     name: e.name,
-    category: e.category,
-    quantity: e.quantity,
     status: e.status,
-    purchasedAt: e.purchasedAt ? e.purchasedAt.toISOString() : null,
-    notes: e.notes,
+    brand: e.brand ?? null,
+    quantity: e.quantity ?? 1,
+    images: e.images ?? [],
+    note: e.note ?? null,
+    trackCondition: e.trackCondition ?? false,
   }));
 
   return (

@@ -1,38 +1,40 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
-export type EquipmentCategory = 'cardio' | 'strength' | 'free_weight' | 'cable' | 'other';
 export type EquipmentStatus = 'active' | 'maintenance' | 'retired';
 
 export interface IEquipment extends Document {
   name: string;
-  category: EquipmentCategory;
-  quantity: number;
   status: EquipmentStatus;
-  purchasedAt: Date | null;
-  notes: string | null;
+  brand: string | null;
+  quantity: number;
+  images: string[];
+  note: string | null;
+  trackCondition: boolean;
   createdAt: Date;
 }
 
 const EquipmentSchema = new Schema<IEquipment>(
   {
     name: { type: String, required: true, trim: true },
-    category: {
-      type: String,
-      enum: ['cardio', 'strength', 'free_weight', 'cable', 'other'],
-      default: 'other',
-    },
-    quantity: { type: Number, required: true, default: 1, min: 1 },
     status: {
       type: String,
       enum: ['active', 'maintenance', 'retired'],
       default: 'active',
     },
-    purchasedAt: { type: Date, default: null },
-    notes: { type: String, default: null, trim: true },
+    brand: { type: String, default: null, trim: true },
+    quantity: { type: Number, required: true, default: 1, min: 1 },
+    images: { type: [String], default: [] },
+    note: { type: String, default: null, trim: true },
+    trackCondition: { type: Boolean, default: false },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 );
 
+// Always re-register in development so schema changes take effect without a full restart.
+// In production each cold start loads modules fresh so this is never needed.
+if (mongoose.models.Equipment) {
+  mongoose.deleteModel('Equipment');
+}
+
 export const EquipmentModel: Model<IEquipment> =
-  mongoose.models.Equipment ??
   mongoose.model<IEquipment>('Equipment', EquipmentSchema);

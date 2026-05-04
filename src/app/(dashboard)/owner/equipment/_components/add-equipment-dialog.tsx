@@ -1,0 +1,247 @@
+'use client';
+
+import { useState, useRef } from 'react';
+import { toast } from 'sonner';
+import { X } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { getEquipmentImageSignatureAction } from '../actions';
+import { uploadFile } from '@/lib/storage/upload-file';
+import type { EquipmentStatus } from '@/lib/db/models/equipment.model';
+import gymEquipmentCatalog from '@/../context/data/gym_equipment.json';
+
+const CATALOG: { id: string; name: string }[] = gymEquipmentCatalog.equipment;
+
+export interface NewEquipmentItem {
+  _id: string;
+  name: string;
+  status: EquipmentStatus;
+  brand: string | null;
+  quantity: number;
+  images: string[];
+  note: string | null;
+  trackCondition: boolean;
+}
+
+interface Props {
+  open: boolean;
+  onClose: () => void;
+  onCreated: (item: NewEquipmentItem) => void;
+}
+
+export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
+  const [name, setName] = useState('');
+  const [brand, setBrand] = useState('');
+  const [quantity, setQuantity] = useState('1');
+  const [status, setStatus] = useState<EquipmentStatus>('active');
+  const [note, setNote] = useState('');
+  const [images, setImages] = useState<string[]>([]);
+  const [trackCondition, setTrackCondition] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [suggestions, setSuggestions] = useState<{ id: string; name: string }[]>([]);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  function reset() {
+    setName(''); setBrand(''); setQuantity('1');
+    setStatus('active'); setNote(''); setImages([]);
+    setTrackCondition(false); setSuggestions([]);
+  }
+
+  function handleClose() {
+    reset();
+    onClose();
+  }
+
+  function handleNameChange(value: string) {
+    setName(value);
+    if (value.trim().length < 2) { setSuggestions([]); return; }
+    const lower = value.toLowerCase();
+    setSuggestions(CATALOG.filter((e) => e.name.toLowerCase().includes(lower)).slice(0, 8));
+  }
+
+  function selectSuggestion(entry: { id: string; name: string }) {
+    setName(entry.name);
+    setSuggestions([]);
+  }
+
+  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (images.length + files.length > 5) { toast.error('Maximum 5 images'); return; }
+    setUploadingImages(true);
+    try {
+      const result = await getEquipmentImageSignatureAction();
+      if (result.error) { toast.error(result.error); return; }
+      const urls: string[] = [];
+      for (const file of files) {
+        const url = await uploadFile(file, result.config!);
+        urls.push(url);
+      }
+      setImages((prev) => [...prev, ...urls]);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setUploadingImages(false);
+    }
+  }
+
+  async function handleSave() {
+    if (!name.trim()) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/owner/equipment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          brand: brand.trim() || null,
+          quantity: parseInt(quantity) || 1,
+          status: trackCondition ? status : 'active',
+          images,
+          note: note.trim() || null,
+          trackCondition,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json() as { error?: string };
+        toast.error(data.error ?? 'Failed to add equipment');
+        return;
+      }
+      const raw = await res.json() as NewEquipmentItem;
+      onCreated({
+        ...raw,
+        images: raw.images ?? [],
+        brand: raw.brand ?? null,
+        note: raw.note ?? null,
+      });
+      toast.success('Equipment added');
+      handleClose();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose(); }}>
+      <DialogContent className="bg-[#0c0c0c] border-[#1a1a1a] text-white max-w-md w-full">
+        <DialogHeader>
+          <DialogTitle className="text-white text-[15px] font-semibold">Add Equipment</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4 mt-1">
+          {/* Name + autocomplete */}
+          <div className="space-y-1.5 relative">
+            <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Name</label>
+            <Input
+              value={name}
+              onChange={(e) => handleNameChange(e.target.value)}
+              onBlur={() => setTimeout(() => setSuggestions([]), 150)}
+              className="bg-[#0a0a0a] border-[#1e1e1e] text-white"
+              placeholder="Search equipment type…"
+              autoComplete="off"
+            />
+            {suggestions.length > 0 && (
+              <div ref={suggestionsRef} className="absolute z-50 left-0 right-0 top-full mt-1 bg-[#111] border border-[#222] rounded-lg overflow-hidden shadow-xl">
+                {suggestions.map((s) => (
+                  <button key={s.id} type="button" onMouseDown={() => selectSuggestion(s)}
+                    className="w-full text-left px-3 py-2 text-[13px] text-[#ccc] hover:bg-[#1a1a1a] transition-colors">
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Brand + Quantity */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Brand (optional)</label>
+              <Input value={brand} onChange={(e) => setBrand(e.target.value)}
+                className="bg-[#0a0a0a] border-[#1e1e1e] text-white" placeholder="e.g. Life Fitness" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Quantity</label>
+              <Input type="number" min={1} value={quantity} onChange={(e) => setQuantity(e.target.value)}
+                className="bg-[#0a0a0a] border-[#1e1e1e] text-white" />
+            </div>
+          </div>
+
+          {/* Track condition toggle */}
+          <div className="flex items-center justify-between rounded-lg border border-[#1e1e1e] bg-[#0a0a0a] px-4 py-3">
+            <div>
+              <p className="text-[13px] font-medium text-white">Track condition status</p>
+              <p className="text-[11px] text-[#555] mt-0.5">Enable for machines, disable for consumables like plates</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setTrackCondition((v) => !v)}
+              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${trackCondition ? 'bg-white' : 'bg-[#333]'}`}
+            >
+              <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-black shadow transition-transform ${trackCondition ? 'translate-x-4' : 'translate-x-0'}`} />
+            </button>
+          </div>
+
+          {/* Status — only when tracking */}
+          {trackCondition && (
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Initial Status</label>
+              <select value={status} onChange={(e) => setStatus(e.target.value as EquipmentStatus)}
+                className="w-full rounded-md border border-[#1e1e1e] bg-[#0a0a0a] px-3 py-2 text-sm text-white">
+                <option value="active">Active</option>
+                <option value="maintenance">Maintenance</option>
+                <option value="retired">Retired</option>
+              </select>
+            </div>
+          )}
+
+          {/* Note */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Note (optional)</label>
+            <Input value={note} onChange={(e) => setNote(e.target.value)}
+              className="bg-[#0a0a0a] border-[#1e1e1e] text-white" placeholder="Location, condition, etc." />
+          </div>
+
+          {/* Images */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Images (optional)</label>
+            {images.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {images.map((url) => (
+                  <div key={url} className="relative group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="equipment" className="w-14 h-14 object-cover rounded-md border border-[#222]" />
+                    <button type="button" onClick={() => setImages((p) => p.filter((u) => u !== url))}
+                      className="absolute -top-1.5 -right-1.5 bg-[#333] rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <X className="w-3 h-3 text-white" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <label className={`flex items-center gap-2 cursor-pointer text-[12px] text-[#555] hover:text-[#888] transition-colors ${uploadingImages ? 'opacity-50 pointer-events-none' : ''}`}>
+              <input type="file" accept="image/*" multiple onChange={handleImageChange} className="hidden"
+                disabled={uploadingImages || images.length >= 5} />
+              {uploadingImages ? 'Uploading…' : '+ Add images'}
+            </label>
+          </div>
+        </div>
+
+        <div className="flex gap-2 pt-2">
+          <Button onClick={handleSave} disabled={saving || !name.trim() || uploadingImages}
+            className="bg-white text-black hover:bg-white/90 font-semibold text-sm disabled:opacity-50">
+            {saving ? 'Saving…' : 'Add Equipment'}
+          </Button>
+          <Button variant="ghost" onClick={handleClose} className="text-[#777] hover:text-[#aaa] text-sm">
+            Cancel
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

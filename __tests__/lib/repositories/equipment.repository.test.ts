@@ -46,10 +46,10 @@ describe('MongoEquipmentRepository', () => {
   });
 
   it('create saves and returns new equipment', async () => {
-    const saved = { _id: EQUIP_ID, name: 'Treadmill', category: 'cardio', quantity: 3, status: 'active', purchasedAt: null, notes: null };
+    const saved = { _id: EQUIP_ID, name: 'Treadmill', status: 'active', brand: null, quantity: 1, images: [], note: null };
     const saveMock = jest.fn().mockResolvedValue(saved);
     (EquipmentModel as unknown as jest.Mock).mockImplementation(() => ({ save: saveMock }));
-    const result = await repo.create({ name: 'Treadmill', category: 'cardio', quantity: 3, status: 'active', purchasedAt: null, notes: null });
+    const result = await repo.create({ name: 'Treadmill', status: 'active', brand: null, quantity: 1, images: [], note: null });
     expect(result).toEqual(saved);
   });
 

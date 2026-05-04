@@ -1,16 +1,17 @@
 import { connectDB } from '@/lib/db/connect';
 import { auth } from '@/lib/auth/auth';
 import { MongoEquipmentRepository } from '@/lib/repositories/equipment.repository';
-import type { EquipmentCategory, EquipmentStatus } from '@/lib/db/models/equipment.model';
+import type { EquipmentStatus } from '@/lib/db/models/equipment.model';
 import type { UserRole } from '@/types/auth';
 
 interface EquipmentPayload {
   name: string;
-  category?: EquipmentCategory;
-  quantity?: number;
   status?: EquipmentStatus;
-  purchasedAt?: string | null;
-  notes?: string | null;
+  brand?: string | null;
+  quantity?: number;
+  images?: string[];
+  note?: string | null;
+  trackCondition?: boolean;
 }
 
 export async function GET(): Promise<Response> {
@@ -41,11 +42,12 @@ export async function POST(req: Request): Promise<Response> {
   await connectDB();
   const item = await new MongoEquipmentRepository().create({
     name: body.name.trim(),
-    category: body.category ?? 'other',
-    quantity: body.quantity ?? 1,
     status: body.status ?? 'active',
-    purchasedAt: body.purchasedAt ? new Date(body.purchasedAt) : null,
-    notes: body.notes ?? null,
+    brand: body.brand?.trim() ?? null,
+    quantity: body.quantity ?? 1,
+    images: body.images ?? [],
+    note: body.note?.trim() ?? null,
+    trackCondition: body.trackCondition ?? false,
   });
   return Response.json(item, { status: 201 });
 }

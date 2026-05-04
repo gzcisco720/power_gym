@@ -78,6 +78,30 @@ describe('getCheckInSignatureAction', () => {
   });
 });
 
+describe('getCheckInSignatureAction - local provider', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.UPLOAD_PROVIDER = 'local';
+  });
+
+  afterEach(() => {
+    delete process.env.UPLOAD_PROVIDER;
+  });
+
+  it('returns local upload config', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    const { getCheckInSignatureAction } = await import(
+      '@/app/(dashboard)/member/check-in/actions'
+    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = (await getCheckInSignatureAction()) as any;
+    expect(result.error).toBe('');
+    expect(result.config?.provider).toBe('local');
+    expect(result.config?.uploadUrl).toBe('/api/upload');
+    expect(result.config?.folder).toBe('check-ins');
+  });
+});
+
 describe('createCheckInAction', () => {
   const validData = {
     sleepQuality: 7, stress: 4, fatigue: 5, hunger: 6,

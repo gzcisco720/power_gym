@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { createCheckInAction, getCheckInSignatureAction } from '../actions';
+import { uploadFile } from '@/lib/storage/upload-file';
 
 interface Props {
   alreadySubmitted: boolean;
@@ -72,24 +73,13 @@ export function CheckInForm({ alreadySubmitted }: Props) {
     setUploadingPhotos(true);
     setError('');
     try {
-      const sigResult = await getCheckInSignatureAction();
-      if (sigResult.error) { setError(sigResult.error); return; }
+      const result = await getCheckInSignatureAction();
+      if (result.error) { setError(result.error); return; }
 
       const urls: string[] = [];
       for (const file of files) {
-        const fd = new FormData();
-        fd.append('file', file);
-        fd.append('api_key', sigResult.apiKey!);
-        fd.append('timestamp', String(sigResult.timestamp!));
-        fd.append('signature', sigResult.signature!);
-        fd.append('folder', sigResult.folder!);
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${sigResult.cloudName}/image/upload`,
-          { method: 'POST', body: fd },
-        );
-        const data = await res.json() as { secure_url?: string; error?: { message: string } };
-        if (data.error) throw new Error(data.error.message);
-        urls.push(data.secure_url!);
+        const url = await uploadFile(file, result.config!);
+        urls.push(url);
       }
       setPhotos((prev) => [...prev, ...urls]);
     } catch (err) {

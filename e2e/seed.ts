@@ -398,21 +398,21 @@ export async function seed(): Promise<void> {
   // stable list item — never modified by any spec
   await EquipmentModel.create({
     name: 'E2E Barbell',
-    category: 'strength',
-    quantity: 1,
     status: 'active',
-    purchasedAt: null,
-    notes: null,
+    brand: null,
+    quantity: 1,
+    images: [],
+    note: null,
   });
 
   // dedicated to delete test — deleted by that spec only
   await EquipmentModel.create({
     name: 'E2E Delete Equipment',
-    category: 'cardio',
-    quantity: 1,
     status: 'active',
-    purchasedAt: null,
-    notes: null,
+    brand: null,
+    quantity: 1,
+    images: [],
+    note: null,
   });
 
   // ── Check-In Config ───────────────────────────────────────────────────────

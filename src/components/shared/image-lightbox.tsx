@@ -1,0 +1,94 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+
+interface Props {
+  images: string[];
+  initialIndex?: number;
+  open: boolean;
+  onClose: () => void;
+}
+
+export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props) {
+  const [index, setIndex] = useState(initialIndex);
+  const [prevOpen, setPrevOpen] = useState(open);
+
+  // Reset index to initialIndex when the lightbox re-opens (derived state, no effect needed)
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) setIndex(initialIndex);
+  }
+
+  const prev = useCallback(() => setIndex((i) => (i - 1 + images.length) % images.length), [images.length]);
+  const next = useCallback(() => setIndex((i) => (i + 1) % images.length), [images.length]);
+
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowLeft') prev();
+      if (e.key === 'ArrowRight') next();
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose, prev, next]);
+
+  if (!open || images.length === 0) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+      onClick={onClose}
+    >
+      <button
+        aria-label="Close"
+        onClick={onClose}
+        className="absolute top-4 right-4 text-white/60 hover:text-white transition-colors"
+      >
+        <X className="w-6 h-6" />
+      </button>
+
+      {images.length > 1 && (
+        <>
+          <button
+            aria-label="Previous image"
+            onClick={(e) => { e.stopPropagation(); prev(); }}
+            className="absolute left-4 text-white/60 hover:text-white transition-colors"
+          >
+            <ChevronLeft className="w-8 h-8" />
+          </button>
+          <button
+            aria-label="Next image"
+            onClick={(e) => { e.stopPropagation(); next(); }}
+            className="absolute right-12 text-white/60 hover:text-white transition-colors"
+          >
+            <ChevronRight className="w-8 h-8" />
+          </button>
+        </>
+      )}
+
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={images[index]}
+        alt={`Image ${index + 1} of ${images.length}`}
+        className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+        onClick={(e) => e.stopPropagation()}
+      />
+
+      {images.length > 1 && (
+        <div className="absolute bottom-4 flex gap-1.5">
+          {images.map((_, i) => (
+            <button
+              key={i}
+              onClick={(e) => { e.stopPropagation(); setIndex(i); }}
+              className={`w-1.5 h-1.5 rounded-full transition-colors ${i === index ? 'bg-white' : 'bg-white/30'}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

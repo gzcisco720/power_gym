@@ -12,11 +12,12 @@
     "test:coverage": "jest --coverage",
     "test:e2e": "lsof -ti tcp:3000 | xargs kill 2>/dev/null; playwright test",
     "test:e2e:ui": "lsof -ti tcp:3000 | xargs kill 2>/dev/null; playwright test --ui",
-    "seed:dev": "ts-node --project tsconfig.scripts.json scripts/seed-dev.ts",
-    "seed:dev:reset": "ts-node --project tsconfig.scripts.json scripts/seed-dev.ts --reset",
-    "seed:exercises": "ts-node --project tsconfig.scripts.json scripts/seed-exercises.ts"
+    "seed": "ts-node --project tsconfig.scripts.json scripts/seed.ts",
+    "seed:reset": "ts-node --project tsconfig.scripts.json scripts/seed.ts --reset",
+    "migrate:equipment": "ts-node --project tsconfig.scripts.json scripts/migrate-equipment-schema.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1041.0",
     "@base-ui/react": "^1.4.0",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",

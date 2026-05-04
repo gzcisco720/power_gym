@@ -8,13 +8,6 @@ describe('EquipmentModel schema', () => {
     expect(err?.errors['name']).toBeDefined();
   });
 
-  it('rejects invalid category', async () => {
-    const { EquipmentModel } = await import('@/lib/db/models/equipment.model');
-    const doc = new EquipmentModel({ name: 'Smith Machine', category: 'flying_machine' });
-    const err = doc.validateSync();
-    expect(err?.errors['category']).toBeDefined();
-  });
-
   it('rejects invalid status', async () => {
     const { EquipmentModel } = await import('@/lib/db/models/equipment.model');
     const doc = new EquipmentModel({ name: 'Treadmill', status: 'broken' });
@@ -22,24 +15,52 @@ describe('EquipmentModel schema', () => {
     expect(err?.errors['status']).toBeDefined();
   });
 
+  it('defaults status to active', async () => {
+    const { EquipmentModel } = await import('@/lib/db/models/equipment.model');
+    const doc = new EquipmentModel({ name: 'Barbell' });
+    expect(doc.status).toBe('active');
+  });
+
+  it('defaults brand to null', async () => {
+    const { EquipmentModel } = await import('@/lib/db/models/equipment.model');
+    const doc = new EquipmentModel({ name: 'Barbell' });
+    expect(doc.brand).toBeNull();
+  });
+
+  it('defaults images to empty array', async () => {
+    const { EquipmentModel } = await import('@/lib/db/models/equipment.model');
+    const doc = new EquipmentModel({ name: 'Barbell' });
+    expect(doc.images).toEqual([]);
+  });
+
+  it('defaults note to null', async () => {
+    const { EquipmentModel } = await import('@/lib/db/models/equipment.model');
+    const doc = new EquipmentModel({ name: 'Barbell' });
+    expect(doc.note).toBeNull();
+  });
+
   it('accepts valid equipment with all fields', async () => {
     const { EquipmentModel } = await import('@/lib/db/models/equipment.model');
     const doc = new EquipmentModel({
       name: 'Smith Machine',
-      category: 'strength',
-      quantity: 2,
       status: 'active',
-      purchasedAt: new Date('2024-01-15'),
-      notes: 'First floor, near free weights',
+      brand: 'Matrix',
+      images: ['https://res.cloudinary.com/demo/image/upload/eq1.jpg'],
+      note: 'First floor, near free weights',
     });
     const err = doc.validateSync();
     expect(err).toBeUndefined();
   });
 
-  it('defaults status to active and quantity to 1', async () => {
+  it('does not have category field', async () => {
     const { EquipmentModel } = await import('@/lib/db/models/equipment.model');
-    const doc = new EquipmentModel({ name: 'Barbell' });
-    expect(doc.status).toBe('active');
+    const doc = new EquipmentModel({ name: 'Smith Machine', category: 'strength' });
+    expect((doc as Record<string, unknown>)['category']).toBeUndefined();
+  });
+
+  it('defaults quantity to 1', async () => {
+    const { EquipmentModel } = await import('@/lib/db/models/equipment.model');
+    const doc = new EquipmentModel({ name: 'Smith Machine' });
     expect(doc.quantity).toBe(1);
   });
 
@@ -48,5 +69,19 @@ describe('EquipmentModel schema', () => {
     const doc = new EquipmentModel({ name: 'Barbell', quantity: 0 });
     const err = doc.validateSync();
     expect(err?.errors['quantity']).toBeDefined();
+  });
+
+  it('defaults trackCondition to false', async () => {
+    const { EquipmentModel } = await import('@/lib/db/models/equipment.model');
+    const doc = new EquipmentModel({ name: 'Barbell' });
+    expect(doc.trackCondition).toBe(false);
+  });
+
+  it('accepts trackCondition true', async () => {
+    const { EquipmentModel } = await import('@/lib/db/models/equipment.model');
+    const doc = new EquipmentModel({ name: 'Treadmill', trackCondition: true });
+    const err = doc.validateSync();
+    expect(err).toBeUndefined();
+    expect(doc.trackCondition).toBe(true);
   });
 });
