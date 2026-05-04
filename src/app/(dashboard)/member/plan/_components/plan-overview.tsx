@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { CalendarDays } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ExerciseThumbnail } from '@/components/training/exercise-thumbnail';
 import { ExerciseBadge } from '@/components/training/exercise-badge';
@@ -78,8 +79,19 @@ export function PlanOverview({ plan, sessionBasePath = '/member/plan' }: Props) 
     <div className="flex flex-col h-full">
       {/* Plan name header */}
       <div className="px-4 sm:px-8 pt-6 pb-3 border-b border-[#0f0f0f]">
-        <div className="text-[10px] font-semibold uppercase tracking-[2px] text-[#555] mb-0.5">Training Plan</div>
-        <div className="text-[18px] font-bold text-white">{plan.name}</div>
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-[10px] font-semibold uppercase tracking-[2px] text-[#555] mb-0.5">Training Plan</div>
+            <div className="text-[18px] font-bold text-white">{plan.name}</div>
+          </div>
+          <a
+            href={`${sessionBasePath}/calendar`}
+            className="flex items-center gap-1.5 text-[11px] text-[#555] hover:text-[#888] border border-[#1e1e1e] rounded-lg px-3 py-1.5 transition-colors"
+          >
+            <CalendarDays className="h-3.5 w-3.5" />
+            <span>Calendar</span>
+          </a>
+        </div>
       </div>
 
       {/* Day tab strip */}

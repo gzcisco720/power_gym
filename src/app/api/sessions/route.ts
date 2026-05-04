@@ -64,7 +64,9 @@ export async function GET(req: Request): Promise<Response> {
   if (!memberId) return Response.json({ error: 'memberId required' }, { status: 400 });
 
   const role = session.user.role as UserRole;
-  if (role === 'member' && session.user.id !== memberId) {
+  const resolvedMemberId = memberId === 'me' ? session.user.id : memberId;
+
+  if (role === 'member' && session.user.id !== resolvedMemberId) {
     return Response.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -75,10 +77,10 @@ export async function GET(req: Request): Promise<Response> {
   const sessionRepo = new MongoWorkoutSessionRepository();
 
   if (yearParam && monthParam) {
-    const sessions = await sessionRepo.findByMonth(memberId, parseInt(yearParam, 10), parseInt(monthParam, 10));
+    const sessions = await sessionRepo.findByMonth(resolvedMemberId, parseInt(yearParam, 10), parseInt(monthParam, 10));
     return Response.json(sessions);
   }
 
-  const sessions = await sessionRepo.findByMember(memberId);
+  const sessions = await sessionRepo.findByMember(resolvedMemberId);
   return Response.json(sessions);
 }

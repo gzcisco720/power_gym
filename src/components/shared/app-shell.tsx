@@ -14,7 +14,6 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
       group: 'TRAINING',
       items: [
         { href: '/member/plan', label: 'My Plan' },
-        { href: '/member/pbs', label: 'Personal Bests' },
         { href: '/member/progress', label: 'My Progress' },
         { href: '/member/schedule', label: 'My Schedule' },
       ],
@@ -44,7 +43,6 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
       group: 'TRAINING',
       items: [
         { href: '/trainer/my-plan', label: 'My Plan' },
-        { href: '/trainer/my-pbs', label: 'Personal Bests' },
         { href: '/trainer/plans', label: 'Plan Templates' },
       ],
     },
@@ -73,7 +71,6 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
       group: 'TRAINING',
       items: [
         { href: '/owner/my-plan', label: 'My Plan' },
-        { href: '/owner/my-pbs', label: 'Personal Bests' },
         { href: '/owner/plans', label: 'Plan Templates' },
       ],
     },

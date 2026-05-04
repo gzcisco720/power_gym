@@ -27,6 +27,7 @@ export function TrainerMemberPlanClient({ memberId, memberName, templates, activ
   const router = useRouter();
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [assigning, setAssigning] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<number>(activePlan?.days[0]?.dayNumber ?? 1);
 
   async function assignPlan() {
     if (!selectedTemplate) return;
@@ -58,17 +59,38 @@ export function TrainerMemberPlanClient({ memberId, memberName, templates, activ
       <section className="px-4 sm:px-8">
         <SectionHeader title="Current Plan" />
         {activePlan ? (
-          <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4 mt-3">
-            <p className="text-[14px] font-semibold text-white">{activePlan.name}</p>
-            <div className="mt-2 flex items-center gap-2">
-              <Badge className="bg-[#1a1a1a] text-[#888] border-0 text-[10px]">
-                {activePlan.days.length} {activePlan.days.length !== 1 ? 'days' : 'day'}
-              </Badge>
-              <span className="text-[11px] text-[#777]">
-                Assigned {new Date(activePlan.assignedAt).toLocaleDateString('en-US')}
-              </span>
+          <div className="mt-3 space-y-3">
+            <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4">
+              <p className="text-[14px] font-semibold text-white">{activePlan.name}</p>
+              <div className="mt-2 flex items-center gap-2">
+                <Badge className="bg-[#1a1a1a] text-[#888] border-0 text-[10px]">
+                  {activePlan.days.length} {activePlan.days.length !== 1 ? 'days' : 'day'}
+                </Badge>
+                <span className="text-[11px] text-[#777]">
+                  Assigned {new Date(activePlan.assignedAt).toLocaleDateString('en-US')}
+                </span>
+              </div>
+            </Card>
+            <div className="flex items-center gap-3">
+              <select
+                value={selectedDay}
+                onChange={(e) => setSelectedDay(Number(e.target.value))}
+                className="flex-1 rounded-md border border-[#1e1e1e] bg-[#0c0c0c] px-3 py-2 text-sm text-white focus:outline-none"
+              >
+                {activePlan.days.map((d) => (
+                  <option key={d.dayNumber} value={d.dayNumber}>
+                    Day {d.dayNumber} — {d.name}
+                  </option>
+                ))}
+              </select>
+              <a
+                href={`/trainer/members/${memberId}/log/new?day=${selectedDay}`}
+                className="shrink-0 rounded-md bg-[#1a3a1a] border border-[#2a4a2a] px-4 py-2 text-[12px] font-semibold text-[#6ee7b7] hover:bg-[#1f4a1f] transition-colors"
+              >
+                Log Workout
+              </a>
             </div>
-          </Card>
+          </div>
         ) : (
           <p className="text-[13px] text-[#888] mt-3">No plan assigned</p>
         )}
