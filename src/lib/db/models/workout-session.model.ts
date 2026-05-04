@@ -23,6 +23,9 @@ export interface IWorkoutSession extends Document {
   startedAt: Date;
   completedAt: Date | null;
   sets: ISessionSet[];
+  loggedBy: mongoose.Types.ObjectId | null;
+  rpe: number | null;
+  memberNote: string | null;
 }
 
 const SessionSetSchema = new Schema<ISessionSet>(
@@ -52,6 +55,9 @@ const WorkoutSessionSchema = new Schema<IWorkoutSession>(
     startedAt: { type: Date, required: true },
     completedAt: { type: Date, default: null },
     sets: [SessionSetSchema],
+    loggedBy: { type: Schema.Types.ObjectId, default: null },
+    rpe: { type: Number, default: null },
+    memberNote: { type: String, default: null },
   },
   { timestamps: false },
 );
