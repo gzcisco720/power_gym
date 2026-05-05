@@ -272,7 +272,14 @@ All generated markdown files use **lowercase kebab-case**:
 
 **Update** an existing doc in the same date folder if work continues on the same day.
 
-**Close** an implementation plan by marking all stages `Complete`, then deleting the file — keep the index row in `INDEX.md` with status `Complete` for history.
+**Close** an implementation plan by marking all stages `Complete`, then **deleting the file and its INDEX.md row**. The code is the source of truth; no graveyard rows.
+
+**Close** a design doc once the feature it describes is `Complete` and stable — delete the file and its INDEX.md row. Keep design docs only while actively developing or reviewing the feature.
+
+**INDEX.md hygiene** — keep under 60 lines total:
+- No `Complete` or `Superseded` rows; delete them along with the file
+- After a release or major milestone, purge all completed-feature rows
+- Use `find docs/ -name "*.md" | wc -l` to spot file creep
 
 **Never**:
 
@@ -280,6 +287,7 @@ All generated markdown files use **lowercase kebab-case**:
 - Mix usage docs and config docs in the same folder
 - Leave stale plans with all stages marked Complete
 - Place files in a path dictated by a skill if it conflicts with the layout above
+- Keep a row in INDEX.md for a file that no longer exists
 
 ### Keeping Docs Current
 

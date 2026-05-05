@@ -2,12 +2,6 @@
 
 Central registry of all generated documents. Update this file whenever a new doc is created or removed.
 
-## How to find a file
-
-1. Find the category below
-2. Follow the link to the file
-3. If a document is missing from this index, search `docs/YYYY-MM-DD/` by date
-
 ---
 
 ## Project Summaries
@@ -15,56 +9,24 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Topic | File | Status |
 | ----- | ---- | ------ |
 | Phase 1 — Full Feature Summary | [phase-one-summary.md](2026-04-23/phase-one-summary.md) | Complete |
+| Future Roadmap (Phase 3 Backlog) | [future-roadmap.md](2026-05-05/plans/future-roadmap.md) | Backlog |
 
 ## Specs & Designs
 
-| Topic                              | File                                                                                  | Status   |
-| ---------------------------------- | ------------------------------------------------------------------------------------- | -------- |
-| Auth system                        | [auth-design.md](2026-04-20/plans/auth-design.md)                                    | Approved |
-| Training Plans & Performance       | [training-plans-design.md](2026-04-21/plans/training-plans-design.md)                | Partially Superseded |
-| Nutrition Plans                    | [nutrition-design.md](2026-04-22/plans/nutrition-design.md)                          | Approved |
-| Body Composition Testing           | [body-test-design.md](2026-04-23/plans/body-test-design.md)                          | Approved |
-| Frontend Redesign (Phase 2)        | [frontend-redesign-design.md](2026-04-23/plans/frontend-redesign-design.md)          | Partially Superseded |
-| Owner Admin Dashboard              | [owner-dashboard-design.md](2026-04-24/plans/owner-dashboard-design.md)              | Partially Superseded |
-| E2E Test Suite                     | [e2e-design.md](2026-04-25/plans/e2e-design.md)                                      | Approved |
-| Mobile Responsive Design           | [mobile-responsive-design.md](2026-04-26/plans/mobile-responsive-design.md)          | Approved |
-| Calendar & Session Scheduling      | [calendar-design.md](2026-04-27/plans/calendar-design.md)                            | Approved |
-| Progress Charts & Analytics        | [progress-design.md](2026-04-28/plans/progress-design.md)                            | Approved |
-| Member Hub 页面（Tab 导航）         | [member-hub-design.md](2026-04-28/plans/member-hub-design.md)                        | Approved  |
-| Per-Trainer Hub（Owner 视角）       | [per-trainer-hub-design.md](2026-04-28/plans/per-trainer-hub-design.md)              | Approved  |
-| Member Injury & Medical Conditions  | [member-injury-design.md](2026-04-30/plans/member-injury-design.md)                  | Complete  |
-| E2E Coverage Completion             | [e2e-coverage-design.md](2026-04-30/plans/e2e-coverage-design.md)                    | Complete  |
-| React Suspense Streaming            | [suspense-streaming-design.md](2026-05-01/plans/suspense-streaming-design.md)        | Complete  |
-| Email Notifications                 | [email-notifications-design.md](2026-05-01/plans/email-notifications-design.md)      | Complete  |
-| Check-In Feature                    | [check-in-design.md](2026-05-03/plans/check-in-design.md)                            | Complete  |
-| Training Module Redesign (Plan A)   | [training-redesign-design.md](2026-05-03/plans/training-redesign-design.md)          | Superseded  |
-| Training Module Refactor (Plan B)   | [training-module-refactor-design.md](2026-05-04/plans/training-module-refactor-design.md) | Approved |
+Active reference specs for implemented features. Delete a row when the design doc is deleted.
 
-## Implementation Plans
-
-| Topic       | File                                                                              | Status      |
-| ----------- | --------------------------------------------------------------------------------- | ----------- |
-| Auth system | [auth-implementation-plan.md](2026-04-20/plans/auth-implementation-plan.md)      | Complete |
-| Training Plans & Performance | [training-plans-implementation-plan.md](2026-04-21/plans/training-plans-implementation-plan.md) | Complete |
-| Nutrition Plans | [nutrition-implementation-plan.md](2026-04-22/plans/nutrition-implementation-plan.md) | Complete |
-| Body Composition Testing | [body-test-implementation-plan.md](2026-04-23/plans/body-test-implementation-plan.md) | Complete |
-| Frontend Redesign (Phase 2) | [frontend-redesign-implementation-plan.md](2026-04-23/plans/frontend-redesign-implementation-plan.md) | Complete |
-| Owner Admin Dashboard | [owner-dashboard-implementation-plan.md](2026-04-24/plans/owner-dashboard-implementation-plan.md) | Complete |
-| E2E Test Suite | [e2e-implementation-plan.md](2026-04-25/plans/e2e-implementation-plan.md) | Complete |
-| Error Handling (toasts + error pages) | [error-handling-implementation-plan.md](2026-04-26/plans/error-handling-implementation-plan.md) | Complete |
-| Mobile Responsive Design | [mobile-responsive-implementation-plan.md](2026-04-26/plans/mobile-responsive-implementation-plan.md) | Complete |
-| Calendar & Session Scheduling | [calendar-implementation-plan.md](2026-04-27/plans/calendar-implementation-plan.md) | Complete |
-| Progress Charts & Analytics | [progress-implementation-plan.md](2026-04-28/plans/progress-implementation-plan.md) | Complete |
-| Member Hub 页面（Tab 导航） | [member-hub-implementation-plan.md](2026-04-28/plans/member-hub-implementation-plan.md) | Complete |
-| Per-Trainer Hub（Owner 视角） | [per-trainer-hub-implementation-plan.md](2026-04-28/plans/per-trainer-hub-implementation-plan.md) | Complete |
-| User Profile (Option B — separate document) | [user-profile-implementation-plan.md](2026-04-29/plans/user-profile-implementation-plan.md) | Complete |
-| Gym Equipment Management | [equipment-implementation-plan.md](2026-04-29/plans/equipment-implementation-plan.md) | Complete |
-| Member Injury & Medical Conditions | [member-injury-implementation-plan.md](2026-04-30/plans/member-injury-implementation-plan.md) | Complete |
-| E2E Coverage Completion | [e2e-coverage-implementation-plan.md](2026-04-30/plans/e2e-coverage-implementation-plan.md) | Complete |
-| React Suspense Streaming | [suspense-streaming-implementation-plan.md](2026-05-01/plans/suspense-streaming-implementation-plan.md) | Complete |
-| Email Notifications | [email-notifications-implementation-plan.md](2026-05-01/plans/email-notifications-implementation-plan.md) | Complete |
-| Check-In Feature | [check-in-implementation-plan.md](2026-05-03/plans/check-in-implementation-plan.md) | Complete |
-| Training Module Redesign (Plan A) | [training-redesign-implementation-plan.md](2026-05-03/plans/training-redesign-implementation-plan.md) | Superseded |
+| Topic | File | Status |
+| ----- | ---- | ------ |
+| Auth system | [auth-design.md](2026-04-20/plans/auth-design.md) | Approved |
+| Training Plans & Performance | [training-plans-design.md](2026-04-21/plans/training-plans-design.md) | Approved |
+| Nutrition Plans | [nutrition-design.md](2026-04-22/plans/nutrition-design.md) | Approved |
+| Body Composition Testing | [body-test-design.md](2026-04-23/plans/body-test-design.md) | Approved |
+| E2E Test Suite | [e2e-design.md](2026-04-25/plans/e2e-design.md) | Approved |
+| Mobile Responsive Design | [mobile-responsive-design.md](2026-04-26/plans/mobile-responsive-design.md) | Approved |
+| Calendar & Session Scheduling | [calendar-design.md](2026-04-27/plans/calendar-design.md) | Approved |
+| Progress Charts & Analytics | [progress-design.md](2026-04-28/plans/progress-design.md) | Approved |
+| Member Hub (Tab 导航) | [member-hub-design.md](2026-04-28/plans/member-hub-design.md) | Approved |
+| Per-Trainer Hub (Owner 视角) | [per-trainer-hub-design.md](2026-04-28/plans/per-trainer-hub-design.md) | Approved |
 
 ## API Usage Guides
 
@@ -97,4 +59,4 @@ Central registry of all generated documents. Update this file whenever a new doc
 - Add a row to the correct category table above
 - Use the relative path from `docs/` as the link text (short display name is fine)
 - Set Status to: `Draft` | `Approved` | `In Progress` | `Complete` | `Superseded`
-- When a plan is complete (all stages done), mark it `Complete` and delete the file — keep the index row for history
+- When a plan is complete, delete the file **and the row** — no graveyard rows
