@@ -13,15 +13,13 @@ interface InviteRow {
   expiresAt: string;
   usedAt: string | null;
   trainerId: string | null;
-  invitedBy?: string;
 }
 
 interface Props {
   invites: InviteRow[];
-  invitedByMap?: Record<string, string>;
 }
 
-export function InviteListClient({ invites, invitedByMap }: Props) {
+export function TrainerInviteListClient({ invites }: Props) {
   const router = useRouter();
   const now = new Date();
 
@@ -31,7 +29,7 @@ export function InviteListClient({ invites, invitedByMap }: Props) {
   async function handleRevoke(id: string) {
     if (!confirm('Revoke this invite? The link will no longer work.')) return;
     try {
-      const res = await fetch(`/api/owner/invites/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/trainer/invites/${id}`, { method: 'DELETE' });
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
         toast.error(data.error ?? 'Failed to revoke invite');
@@ -46,7 +44,7 @@ export function InviteListClient({ invites, invitedByMap }: Props) {
 
   async function handleResend(id: string) {
     try {
-      const res = await fetch(`/api/owner/invites/${id}/resend`, { method: 'POST' });
+      const res = await fetch(`/api/trainer/invites/${id}/resend`, { method: 'POST' });
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
         toast.error(data.error ?? 'Failed to resend invite');
@@ -72,16 +70,8 @@ export function InviteListClient({ invites, invitedByMap }: Props) {
         key={inv._id}
         className="flex items-center gap-3 border-b border-[#0f0f0f] px-5 py-3.5 last:border-0"
       >
-        <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide border bg-[#0f0f1f] text-[#2a2a6a] border-[#1a1a3a]">
-          {inv.role}
-        </span>
         <div className="flex-1 min-w-0">
           <div className="text-[13px] text-[#888]">{inv.recipientEmail}</div>
-          {inv.invitedBy && invitedByMap?.[inv.invitedBy] && (
-            <div className="text-[10px] text-[#444] mt-0.5">
-              via {invitedByMap[inv.invitedBy]}
-            </div>
-          )}
         </div>
         <div className="text-[10px] text-[#555]">
           {showRevoke ? 'Expires' : 'Expired'}{' '}

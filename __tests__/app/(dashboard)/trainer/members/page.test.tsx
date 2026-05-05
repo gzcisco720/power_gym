@@ -5,6 +5,7 @@ jest.mock('@/lib/auth/auth', () => ({
   auth: jest.fn(),
 }));
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
+jest.mock('next/navigation', () => ({ useRouter: () => ({ refresh: jest.fn() }), usePathname: () => '/trainer/members' }));
 jest.mock('@/lib/repositories/user.repository', () => ({
   MongoUserRepository: jest.fn().mockImplementation(() => ({
     findAllMembers: jest.fn().mockResolvedValue([

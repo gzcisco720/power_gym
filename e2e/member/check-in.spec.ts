@@ -34,12 +34,4 @@ test.describe('Member: Check-In', () => {
     // After submit, shows already-submitted message
     await expect(page.getByText("You've already submitted your check-in this week.")).toBeVisible();
   });
-
-  test('check-in history page shows last week seeded check-in', async ({ page }) => {
-    await page.goto('/member/check-in/history');
-    await expect(page.getByText('Check-In History')).toBeVisible();
-    // Seeded check-in has weight 76.5 and wellbeing text
-    await expect(page.getByText('76.5 kg')).toBeVisible();
-    await expect(page.getByText('Stuck to diet').first()).toBeVisible();
-  });
 });

@@ -5,6 +5,7 @@ import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { PageHeader } from '@/components/shared/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Card } from '@/components/ui/card';
+import { TrainerInviteDialogTrigger } from '../invites/_components/invite-dialog-trigger';
 
 function initials(name: string) {
   return name.split(' ').map((n: string) => n[0] ?? '').join('').slice(0, 2).toUpperCase();
@@ -22,6 +23,7 @@ export default async function TrainerMembersPage() {
       <PageHeader
         title="Members"
         subtitle={`${members.length} member${members.length !== 1 ? 's' : ''}`}
+        actions={<TrainerInviteDialogTrigger />}
       />
       <div className="px-4 sm:px-8 py-7">
         {members.length === 0 ? (

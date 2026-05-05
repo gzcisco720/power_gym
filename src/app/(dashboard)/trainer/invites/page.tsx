@@ -1,33 +1,17 @@
 import { auth } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
 import { MongoInviteRepository } from '@/lib/repositories/invite.repository';
-import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { PageHeader } from '@/components/shared/page-header';
-import { InviteListClient } from './_components/invite-list-client';
-import { InviteDialogTrigger } from './_components/invite-dialog-trigger';
+import { TrainerInviteListClient } from './_components/invite-list-client';
+import { TrainerInviteDialogTrigger } from './_components/invite-dialog-trigger';
 
-export default async function OwnerInvitesPage() {
+export default async function TrainerInvitesPage() {
   const session = await auth();
   if (!session?.user) return null;
 
   await connectDB();
   const inviteRepo = new MongoInviteRepository();
-  const userRepo = new MongoUserRepository();
-
-  const [invites, trainers] = await Promise.all([
-    inviteRepo.findAll(),
-    userRepo.findByRole('trainer'),
-  ]);
-
-  const trainerOptions = trainers.map((t) => ({
-    _id: t._id.toString(),
-    name: t.name,
-  }));
-
-  const invitedByMap: Record<string, string> = {};
-  for (const trainer of trainers) {
-    invitedByMap[trainer._id.toString()] = trainer.name;
-  }
+  const invites = await inviteRepo.findByInvitedBy(session.user.id);
 
   const invitePlain = invites.map((inv) => ({
     _id: inv._id.toString(),
@@ -37,7 +21,6 @@ export default async function OwnerInvitesPage() {
     expiresAt: inv.expiresAt.toISOString(),
     usedAt: inv.usedAt ? inv.usedAt.toISOString() : null,
     trainerId: inv.trainerId?.toString() ?? null,
-    invitedBy: inv.invitedBy.toString(),
   }));
 
   const now = new Date();
@@ -50,10 +33,10 @@ export default async function OwnerInvitesPage() {
       <PageHeader
         title="Invites"
         subtitle={`${pendingCount} pending`}
-        actions={<InviteDialogTrigger trainers={trainerOptions} />}
+        actions={<TrainerInviteDialogTrigger />}
       />
       <div className="px-4 sm:px-8 py-7">
-        <InviteListClient invites={invitePlain} invitedByMap={invitedByMap} />
+        <TrainerInviteListClient invites={invitePlain} />
       </div>
     </div>
   );

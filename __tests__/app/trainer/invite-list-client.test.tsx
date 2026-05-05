@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { InviteListClient } from '@/app/(dashboard)/owner/invites/_components/invite-list-client';
+import { TrainerInviteListClient } from '@/app/(dashboard)/trainer/invites/_components/invite-list-client';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: jest.fn() }),
@@ -18,58 +18,47 @@ const pending = {
   recipientEmail: 'a@b.com',
   expiresAt: new Date(now.getTime() + 86400000).toISOString(),
   usedAt: null,
-  trainerId: null,
+  trainerId: 't1',
 };
 const expired = {
   _id: 'i2',
   token: 'tok-xyz',
-  role: 'trainer' as const,
+  role: 'member' as const,
   recipientEmail: 'b@c.com',
   expiresAt: new Date(now.getTime() - 86400000).toISOString(),
   usedAt: null,
-  trainerId: null,
+  trainerId: 't1',
 };
 
-describe('InviteListClient', () => {
+describe('TrainerInviteListClient', () => {
   it('renders pending invite email', () => {
-    render(<InviteListClient invites={[pending, expired]} />);
+    render(<TrainerInviteListClient invites={[pending, expired]} />);
     expect(screen.getByText('a@b.com')).toBeInTheDocument();
   });
 
-  it('shows trainer name when invite was created by a trainer', () => {
-    const inviteWithTrainer = { ...pending, invitedBy: 't1' };
-    render(
-      <InviteListClient
-        invites={[inviteWithTrainer]}
-        invitedByMap={{ t1: 'Li Wei' }}
-      />,
-    );
-    expect(screen.getByText(/Li Wei/)).toBeInTheDocument();
-  });
-
-  it('calls DELETE on revoke click', async () => {
+  it('calls DELETE on trainer endpoint when revoking', async () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({}) });
     global.confirm = jest.fn().mockReturnValue(true);
-    render(<InviteListClient invites={[pending]} />);
+    render(<TrainerInviteListClient invites={[pending]} />);
     fireEvent.click(screen.getByRole('button', { name: /Revoke/i }));
     await waitFor(() =>
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api/owner/invites/i1',
+        '/api/trainer/invites/i1',
         expect.objectContaining({ method: 'DELETE' }),
       ),
     );
   });
 
-  it('calls POST resend on Resend click', async () => {
+  it('calls POST on trainer resend endpoint', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ inviteUrl: 'http://localhost/register?token=new' }),
     });
-    render(<InviteListClient invites={[pending]} />);
+    render(<TrainerInviteListClient invites={[pending]} />);
     fireEvent.click(screen.getByRole('button', { name: /Resend/i }));
     await waitFor(() =>
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api/owner/invites/i1/resend',
+        '/api/trainer/invites/i1/resend',
         expect.objectContaining({ method: 'POST' }),
       ),
     );

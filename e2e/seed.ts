@@ -190,6 +190,21 @@ export async function seed(): Promise<void> {
     ],
   });
 
+  // ── Owner Plan Templates ──────────────────────────────────────────────────
+  await PlanTemplateModel.create({
+    name: 'E2E Owner Plan',
+    description: null,
+    createdBy: owner._id,
+    days: [{ dayNumber: 1, name: 'Push', exercises: [] }],
+  });
+
+  await PlanTemplateModel.create({
+    name: 'E2E Owner Edit Plan',
+    description: null,
+    createdBy: owner._id,
+    days: [{ dayNumber: 1, name: 'Pull', exercises: [] }],
+  });
+
   // ── Nutrition Template ────────────────────────────────────────────────────
   const nutritionTemplate = await NutritionTemplateModel.create({
     name: 'E2E Nutrition Template',
@@ -248,6 +263,21 @@ export async function seed(): Promise<void> {
     dayTypes: [],
   });
 
+  // ── Owner Nutrition Templates ─────────────────────────────────────────────
+  await NutritionTemplateModel.create({
+    name: 'E2E Owner Nutrition',
+    description: null,
+    createdBy: owner._id,
+    dayTypes: [],
+  });
+
+  await NutritionTemplateModel.create({
+    name: 'E2E Owner Edit Nutrition',
+    description: null,
+    createdBy: owner._id,
+    dayTypes: [],
+  });
+
   // ── Member Nutrition Plan (deep copy) ────────────────────────────────────
   await MemberNutritionPlanModel.create({
     memberId: member._id,
@@ -257,6 +287,25 @@ export async function seed(): Promise<void> {
     isActive: true,
     assignedAt: new Date(),
     dayTypes: nutritionTemplate.dayTypes,
+  });
+
+  // ── Owner Body Test ───────────────────────────────────────────────────────
+  await BodyTestModel.create({
+    memberId: owner._id,
+    trainerId: owner._id,
+    date: new Date(),
+    age: 35,
+    sex: 'male',
+    weight: 80,
+    protocol: '3site',
+    chest: 18,
+    abdominal: 22,
+    thigh: 14,
+    bodyFatPct: 16.0,
+    leanMassKg: 67.2,
+    fatMassKg: 12.8,
+    targetWeight: null,
+    targetBodyFatPct: null,
   });
 
   // ── Body Tests ────────────────────────────────────────────────────────────
@@ -378,6 +427,17 @@ export async function seed(): Promise<void> {
     expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
     usedAt: null,
     trainerId: null,
+  });
+
+  // Stable pending invite checked by trainer/invites.spec.ts
+  await InviteTokenModel.create({
+    token: 'e2e-trainer-pending-invite',
+    role: 'member',
+    invitedBy: trainer._id,
+    recipientEmail: 'trainer-invited@test.com',
+    expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
+    usedAt: null,
+    trainerId: trainer._id,
   });
 
   // ── Member Injuries ───────────────────────────────────────────────────────

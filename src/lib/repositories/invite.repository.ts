@@ -13,9 +13,11 @@ export interface CreateInviteData {
 
 export interface IInviteRepository {
   findByToken(token: string): Promise<IInviteToken | null>;
+  findById(id: string): Promise<IInviteToken | null>;
   create(data: CreateInviteData): Promise<IInviteToken>;
   markUsed(token: string): Promise<void>;
   findAll(): Promise<IInviteToken[]>;
+  findByInvitedBy(userId: string): Promise<IInviteToken[]>;
   revoke(inviteId: string): Promise<void>;
   regenerate(inviteId: string): Promise<IInviteToken>;
 }
@@ -34,8 +36,16 @@ export class MongoInviteRepository implements IInviteRepository {
     await InviteTokenModel.findOneAndUpdate({ token }, { $set: { usedAt: new Date() } });
   }
 
+  async findById(id: string): Promise<IInviteToken | null> {
+    return InviteTokenModel.findOne({ _id: id });
+  }
+
   async findAll(): Promise<IInviteToken[]> {
     return InviteTokenModel.find({}).sort({ expiresAt: -1 });
+  }
+
+  async findByInvitedBy(userId: string): Promise<IInviteToken[]> {
+    return InviteTokenModel.find({ invitedBy: userId }).sort({ expiresAt: -1 });
   }
 
   async revoke(inviteId: string): Promise<void> {

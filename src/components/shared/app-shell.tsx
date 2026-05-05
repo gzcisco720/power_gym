@@ -36,6 +36,7 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
       group: 'MEMBERS',
       items: [
         { href: '/trainer/members', label: 'Members' },
+        { href: '/trainer/invites', label: 'Invites' },
         { href: '/trainer/calendar', label: 'Calendar' },
       ],
     },

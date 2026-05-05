@@ -125,4 +125,34 @@ describe('MongoInviteRepository extensions', () => {
 
     await expect(repo.regenerate('missing-id')).rejects.toThrow('Invite missing-id not found');
   });
+
+  it('findByInvitedBy filters by invitedBy and sorts by expiresAt desc', async () => {
+    const invites = [{ token: 'abc', invitedBy: 'user-1' }];
+    const sortMock = jest.fn().mockResolvedValue(invites);
+    mockFind.mockReturnValue({ sort: sortMock } as never);
+
+    const result = await repo.findByInvitedBy('user-1');
+
+    expect(mockFind).toHaveBeenCalledWith({ invitedBy: 'user-1' });
+    expect(sortMock).toHaveBeenCalledWith({ expiresAt: -1 });
+    expect(result).toEqual(invites);
+  });
+
+  it('findById returns invite by _id', async () => {
+    const invite = { _id: 'inv-1', token: 'abc' };
+    mockModel.findOne.mockResolvedValue(invite as never);
+
+    const result = await repo.findById('inv-1');
+
+    expect(mockModel.findOne).toHaveBeenCalledWith({ _id: 'inv-1' });
+    expect(result).toEqual(invite);
+  });
+
+  it('findById returns null when not found', async () => {
+    mockModel.findOne.mockResolvedValue(null as never);
+
+    const result = await repo.findById('missing');
+
+    expect(result).toBeNull();
+  });
 });
