@@ -19,7 +19,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Topic | File | Status |
 | ----- | ---- | ------ |
 | Auth system | [auth-design.md](2026-04-20/plans/auth-design.md) | Approved |
-| Nutrition Plans | [nutrition-design.md](2026-04-22/plans/nutrition-design.md) | Approved |
+| Nutrition Plans v2 | [nutrition-redesign-design.md](2026-05-05/plans/nutrition-redesign-design.md) | Approved |
 | Body Composition Testing | [body-test-design.md](2026-04-23/plans/body-test-design.md) | Approved |
 | E2E Test Suite | [e2e-design.md](2026-04-25/plans/e2e-design.md) | Approved |
 | Mobile Responsive Design | [mobile-responsive-design.md](2026-04-26/plans/mobile-responsive-design.md) | Approved |
