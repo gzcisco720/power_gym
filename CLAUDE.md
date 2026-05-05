@@ -276,6 +276,11 @@ All generated markdown files use **lowercase kebab-case**:
 
 **Close** a design doc once the feature it describes is `Complete` and stable — delete the file and its INDEX.md row. Keep design docs only while actively developing or reviewing the feature.
 
+**Supersede** a design doc when it no longer accurately reflects the implementation:
+1. Remove its row from `INDEX.md`
+2. Append a row to [`docs/superseded.md`](superseded.md) with: doc name, original path, date, and reason
+3. Delete the file
+
 **INDEX.md hygiene** — keep under 60 lines total:
 - No `Complete` or `Superseded` rows; delete them along with the file
 - After a release or major milestone, purge all completed-feature rows
@@ -291,13 +296,17 @@ All generated markdown files use **lowercase kebab-case**:
 
 ### Keeping Docs Current
 
-After any significant code change, check:
+**Before starting work on an existing feature area**, check if it has a design doc in `INDEX.md`. If it does:
+- Skim the doc against the current code
+- If it still reflects reality → proceed
+- If it has drifted → supersede it (follow the Supersede rule above) before writing new code
+
+**After any significant code change**, check:
 
 - [ ] `docs/INDEX.md` — add/update the row for any new or changed doc
+- [ ] `docs/superseded.md` — did any existing doc become inaccurate? Supersede it
 - [ ] `CLAUDE.md` — does it reflect new patterns, commands, or conventions?
 - [ ] `plans/` — mark completed stages, delete file when all done
-- [ ] `api-usage/` — update if endpoint signatures changed
-- [ ] `decisions/` — record why a non-obvious choice was made
 
 Out-of-date documentation is worse than no documentation.
 

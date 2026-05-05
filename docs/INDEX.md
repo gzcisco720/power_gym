@@ -10,6 +10,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | ----- | ---- | ------ |
 | Phase 1 — Full Feature Summary | [phase-one-summary.md](2026-04-23/phase-one-summary.md) | Complete |
 | Future Roadmap (Phase 3 Backlog) | [future-roadmap.md](2026-05-05/plans/future-roadmap.md) | Backlog |
+| Superseded Doc Archive | [superseded.md](superseded.md) | Permanent |
 
 ## Specs & Designs
 
