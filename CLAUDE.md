@@ -130,8 +130,6 @@ const profile: any = {};
 
 ## TDD Workflow
 
-**Golden Rule**: Never write implementation code before writing a failing test.
-
 TDD cadence is handled by the `superpowers:test-driven-development` skill. Core principles that always apply regardless of skill:
 
 - Tests cover typical cases, edge cases, and error cases
@@ -217,7 +215,6 @@ All generated markdown files use **lowercase kebab-case**:
 **Never**:
 
 - Write plan content directly into `CLAUDE.md`
-- Mix usage docs and config docs in the same folder
 - Leave stale plans with all stages marked Complete
 - Place files in a path dictated by a skill if it conflicts with the layout above
 - Keep a row in INDEX.md for a file that no longer exists
