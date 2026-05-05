@@ -153,8 +153,6 @@ For multi-stage work, create `docs/YYYY-MM-DD/plans/IMPLEMENTATION_PLAN.md`:
 **Status**: [Not Started|In Progress|Complete]
 ```
 
-Place all generated docs under `docs/YYYY-MM-DD/` (plans in `plans/`, API docs in `api-usage/`).
-
 ---
 
 ## Generated Document Management
@@ -169,16 +167,14 @@ Place all generated docs under `docs/YYYY-MM-DD/` (plans in `plans/`, API docs i
 
 ```text
 docs/
-  INDEX.md                  # ← Central registry — check here first
-  YYYY-MM-DD/               # One folder per work date
-    plans/                  # Implementation plans and design specs
-    api-usage/              # How to call internal/external APIs
-    config/                 # Configuration guides, env var references
-    research/               # Literature lookup, formula sources, third-party docs
-    decisions/              # Architecture decision records (ADRs)
+  INDEX.md          # ← Central registry — check here first
+  superseded.md     # Permanent audit trail of superseded design docs
+  TODO.md           # Feature backlog (ideas not yet started)
+  YYYY-MM-DD/       # One folder per work date
+    plans/          # Implementation plans and design specs
 ```
 
-Root-level files that never move: `CLAUDE.md`, `README.md`.
+Project root files that never move: `CLAUDE.md`, `README.md`.
 
 ### File Naming
 
@@ -193,13 +189,10 @@ All generated markdown files use **lowercase kebab-case**:
 
 ### Document Types & Where They Go
 
-| Document type          | Folder       | When to create                                      |
-| ---------------------- | ------------ | --------------------------------------------------- |
-| Implementation plan    | `plans/`     | Before starting any multi-stage feature             |
-| API usage guide        | `api-usage/` | When integrating an external or internal API        |
-| Config / env reference | `config/`    | When new env vars or infrastructure config is added |
-| Research / formulas    | `research/`  | When sourcing literature or scientific formulas     |
-| Architecture decision  | `decisions/` | When making a non-obvious tech or design choice     |
+| Document type       | Folder    | When to create                          |
+| ------------------- | --------- | --------------------------------------- |
+| Implementation plan | `plans/`  | Before starting any multi-stage feature |
+| Design spec         | `plans/`  | When designing a new feature area       |
 
 ### Lifecycle Rules
 
@@ -251,7 +244,6 @@ Out-of-date documentation is worse than no documentation.
 
 **Every commit must**:
 
-- Have tests written BEFORE implementation
 - Pass `pnpm test` (100% pass rate)
 - Pass `pnpm lint` (no warnings, no errors)
 - Use no `any`/`unknown` types
