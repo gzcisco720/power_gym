@@ -169,7 +169,7 @@ For multi-stage work, create `docs/YYYY-MM-DD/plans/IMPLEMENTATION_PLAN.md`:
 docs/
   INDEX.md          # ← Central registry — check here first
   superseded.md     # Permanent audit trail of superseded design docs
-  TODO.md           # Feature backlog (ideas not yet started)
+  roadmap.md        # Feature backlog (ideas not yet started)
   YYYY-MM-DD/       # One folder per work date
     plans/          # Implementation plans and design specs
 ```
