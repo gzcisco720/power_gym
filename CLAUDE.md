@@ -35,7 +35,6 @@ pnpm dev              # Start dev server (localhost:3000)
 pnpm build            # Production build
 pnpm lint             # ESLint check
 pnpm lint --fix       # ESLint auto-fix
-pnpm format           # Prettier format
 pnpm test             # Run all unit/integration tests (Jest)
 pnpm test --watch     # Watch mode
 pnpm test -- --testPathPattern=<path>   # Run a single test file
