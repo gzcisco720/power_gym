@@ -65,78 +65,22 @@ Ownership hierarchy: Owner > Trainer > Member. A member belongs to exactly one t
 
 ## Core Feature Domains
 
-### 1. Authentication
+Feature names are stable; implementation details live in the code and design docs (`docs/INDEX.md`).
 
-- Auth.js (NextAuth v5) with Credentials provider
-- Session stored in httpOnly cookie (database strategy, session document in MongoDB)
-- Three roles (`owner` | `trainer` | `member`) encoded in session and enforced in Next.js Middleware
-- First registered user becomes `owner`; all others must register via invite link containing a signed invite token
-- Invite tokens stored in MongoDB with role, inviterId, and expiry
-
-### 2. Training Plans
-
-- Plan templates with multi-day programs (e.g., Day 1 Push, Day 2 Pull); each day contains exercises with prescribed sets × reps
-- Members log actual weight/reps per set; logged sets are checked off
-- Workout sessions tracked with completion state; trainer/owner can create sessions for their members
-- Exercise notes: trainers can annotate individual exercises for a member
-
-### 3. Nutrition Plans
-
-- Named nutrition templates with daily macro targets (kcal, protein, carbs, fat)
-- Day types supported (e.g., high day, low day); meals broken down into food items with per-item macros
-- Donut chart visualization for daily macro progress
-
-### 4. Body Composition Testing
-
-- Skinfold protocols: **3-site**, **7-site**, **9-site**, and **other** (manual BF%)
-- Measurement sites: tricep, chest, sub-scap, abdominal, suprailiac, thigh, mid-axillary, bicep, lumbar
-- Formulas sourced from published literature (Jackson-Pollock and variants)
-- Tracks current weight + BF% vs goal; displays lean mass, fat mass, recomposition analysis
-
-### 5. Performance Tracking (PBs)
-
-- 1-rep max estimation via Epley formula (weight × reps → estimated 1RM)
-- Personal best tracked per exercise; history chart showing 1RM trend over time
-- First-set detection: prompts for baseline when no prior data exists
-
-### 6. Calendar & Session Scheduling
-
-- Trainers/owner schedule recurring or one-off sessions with member(s)
-- Series support (rolling 12-week window auto-extended by cron)
-- Member unassign side effect: removes member from all future sessions in the series
-- Email reminders sent 24 hours before each session via cron
-
-### 7. Check-In System
-
-- Members submit daily check-ins (weight, sleep, energy, notes)
-- Owner configures check-in schedule (days of week, time window)
-- Cron job sends check-in reminder emails; trainers receive notification on submission
-
-### 8. Equipment Management
-
-- Owner manages gym equipment inventory (name, category, status, images)
-- Condition reports: log maintenance events with severity and notes
-- Image upload via local storage provider (pluggable interface for future cloud)
-
-### 9. Member Health & Injuries
-
-- Trainers record member injuries and medical conditions with severity and affected areas
-- Health dashboard aggregates injury history alongside recent check-ins for trainer view
-
-### 10. User Profiles & Settings
-
-- All roles have a profile (avatar, bio, contact info, fitness goals/level for members)
-- Settings pages under each role's dashboard; profile updates via Server Actions
-
-### 11. Progress Charts & Analytics
-
-- Workout heatmap (last 90 days) showing training frequency
-- Per-exercise 1RM trend chart; trainer can view any member's progress
-
-### 12. Email Notifications
-
-- Triggered emails: invite, member assigned, plan assigned, nutrition assigned, session booked/cancelled/reminder, check-in received/reminder
-- Provider abstraction (`lib/email/`): Nodemailer (dev) and Mailgun (prod) implementations
+| # | Feature | Notes |
+|---|---------|-------|
+| 1 | Authentication | Roles, invite tokens, NextAuth session |
+| 2 | Training Plans | Plan templates, workout session logging, exercise notes |
+| 3 | Nutrition Plans | Nutrition templates, food items, macro tracking |
+| 4 | Body Composition Testing | Skinfold protocols, Jackson-Pollock formulas |
+| 5 | Performance Tracking (PBs) | Epley 1RM estimation, per-exercise history |
+| 6 | Calendar & Session Scheduling | Recurring series, cron reminders |
+| 7 | Check-In System | Daily check-ins, configurable schedule, email reminders |
+| 8 | Equipment Management | Inventory, condition reports, image upload |
+| 9 | Member Health & Injuries | Injury records, health dashboard |
+| 10 | User Profiles & Settings | Per-role profile and settings pages |
+| 11 | Progress Charts & Analytics | Training heatmap, 1RM trend charts |
+| 12 | Email Notifications | Nodemailer (dev) / Mailgun (prod), 9 triggered templates |
 
 ---
 
@@ -144,52 +88,21 @@ Ownership hierarchy: Owner > Trainer > Member. A member belongs to exactly one t
 
 ### Directory Structure (App Router)
 
-```text
-src/
-  app/
-    (auth)/               # Login, register pages (unauthenticated)
-    (dashboard)/          # Protected routes, layout with role guard
-      owner/              # Owner-only pages (dashboard, trainers, members, equipment, …)
-      trainer/            # Trainer-only pages (members hub, calendar, …)
-      member/             # Member pages (plan, nutrition, body-tests, progress, check-in, …)
-    api/
-      auth/               # NextAuth + register
-      owner/              # equipment, invites, members, trainers, stats
-      members/[memberId]/ # body-tests, injuries, nutrition, plan, pbs, profile
-      plan-templates/     # CRUD for training plan templates
-      nutrition-templates/# CRUD for nutrition templates
-      sessions/           # Workout session logging (sets, completion)
-      schedule/           # Calendar session scheduling
-      check-ins/          # Member check-in submissions
-      check-in-config/    # Owner check-in schedule config
-      progress/[memberId] # Progress chart data
-      exercises/          # Exercise library
-      foods/              # Food item library
-      exercise-notes/     # Per-exercise trainer annotations
-      profile/            # Own profile (all roles)
-      upload/             # File upload endpoint
-      cron/               # session-reminders, check-in-reminders, extend-series
-  components/
-    ui/                   # Shadcn primitives (do not modify)
-    shared/               # Shared composite components
-    training/             # Training-specific components
-    calendar/             # Calendar and scheduling components
-  lib/
-    db/
-      connect.ts          # MongoDB singleton
-      models/             # Mongoose models (one file per entity)
-    auth/                 # auth.ts, auth.config.ts, invite.ts, middleware-helpers.ts
-    repositories/         # One repository file per model; interface + MongoDB impl
-    email/                # Provider abstraction + templates
-    storage/              # Upload provider abstraction
-    body-test/            # Jackson-Pollock formula implementations
-    training/             # Epley 1RM formula, exercise label helpers
-    nutrition/            # Macro calculation helpers
-  types/                  # Shared TypeScript interfaces/enums
-  hooks/                  # Custom React hooks
-__tests__/                # Jest unit/integration tests (mirror src/ structure)
-e2e/                      # Playwright tests (auth, access-control, member/, trainer/, owner/)
+For current structure run:
+```bash
+find src/app/api -type d | sort      # API routes
+find src/lib -type d | sort          # lib layer
+find src/components -type d | sort   # components
 ```
+
+**Conventions that don't change:**
+
+- Pages live under `src/app/(dashboard)/{owner|trainer|member}/`
+- API routes grouped by domain under `src/app/api/`; owner-only routes under `src/app/api/owner/`
+- `src/lib/db/models/` — one Mongoose model file per entity
+- `src/lib/repositories/` — one repository file per model (interface + MongoDB impl)
+- `src/components/ui/` — Shadcn primitives, do not modify
+- `__tests__/` mirrors `src/` for Jest; `e2e/` contains Playwright specs grouped by role
 
 ### Key Patterns
 
