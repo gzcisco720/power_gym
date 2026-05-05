@@ -75,31 +75,68 @@ Ownership hierarchy: Owner > Trainer > Member. A member belongs to exactly one t
 
 ### 2. Training Plans
 
-- Multi-day programs (e.g., Day 1 Push, Day 2 Pull)
-- Each day contains exercises with prescribed sets × reps
+- Plan templates with multi-day programs (e.g., Day 1 Push, Day 2 Pull); each day contains exercises with prescribed sets × reps
 - Members log actual weight/reps per set; logged sets are checked off
-- PBs tracked per exercise; performance history queryable
+- Workout sessions tracked with completion state; trainer/owner can create sessions for their members
+- Exercise notes: trainers can annotate individual exercises for a member
 
 ### 3. Nutrition Plans
 
-- Named diet plans with daily macro targets (kcal, protein, carbs, fat)
-- Day types supported (e.g., high day, low day)
-- Meals broken down into food items with per-item macros
+- Named nutrition templates with daily macro targets (kcal, protein, carbs, fat)
+- Day types supported (e.g., high day, low day); meals broken down into food items with per-item macros
 - Donut chart visualization for daily macro progress
 
 ### 4. Body Composition Testing
 
 - Skinfold protocols: **3-site**, **7-site**, **9-site**, and **other** (manual BF%)
 - Measurement sites: tricep, chest, sub-scap, abdominal, suprailiac, thigh, mid-axillary, bicep, lumbar
-- Formulas must be sourced from published literature (Jackson-Pollock and variants)
+- Formulas sourced from published literature (Jackson-Pollock and variants)
 - Tracks current weight + BF% vs goal; displays lean mass, fat mass, recomposition analysis
-- History chart showing changes over time
 
 ### 5. Performance Tracking (PBs)
 
-- 1-rep max estimation table per exercise (weight × reps → estimated 1RM)
-- Exercise history per member
+- 1-rep max estimation via Epley formula (weight × reps → estimated 1RM)
+- Personal best tracked per exercise; history chart showing 1RM trend over time
 - First-set detection: prompts for baseline when no prior data exists
+
+### 6. Calendar & Session Scheduling
+
+- Trainers/owner schedule recurring or one-off sessions with member(s)
+- Series support (rolling 12-week window auto-extended by cron)
+- Member unassign side effect: removes member from all future sessions in the series
+- Email reminders sent 24 hours before each session via cron
+
+### 7. Check-In System
+
+- Members submit daily check-ins (weight, sleep, energy, notes)
+- Owner configures check-in schedule (days of week, time window)
+- Cron job sends check-in reminder emails; trainers receive notification on submission
+
+### 8. Equipment Management
+
+- Owner manages gym equipment inventory (name, category, status, images)
+- Condition reports: log maintenance events with severity and notes
+- Image upload via local storage provider (pluggable interface for future cloud)
+
+### 9. Member Health & Injuries
+
+- Trainers record member injuries and medical conditions with severity and affected areas
+- Health dashboard aggregates injury history alongside recent check-ins for trainer view
+
+### 10. User Profiles & Settings
+
+- All roles have a profile (avatar, bio, contact info, fitness goals/level for members)
+- Settings pages under each role's dashboard; profile updates via Server Actions
+
+### 11. Progress Charts & Analytics
+
+- Workout heatmap (last 90 days) showing training frequency
+- Per-exercise 1RM trend chart; trainer can view any member's progress
+
+### 12. Email Notifications
+
+- Triggered emails: invite, member assigned, plan assigned, nutrition assigned, session booked/cancelled/reminder, check-in received/reminder
+- Provider abstraction (`lib/email/`): Nodemailer (dev) and Mailgun (prod) implementations
 
 ---
 
@@ -110,32 +147,48 @@ Ownership hierarchy: Owner > Trainer > Member. A member belongs to exactly one t
 ```text
 src/
   app/
-    (auth)/           # Login, register pages (unauthenticated)
-    (dashboard)/      # Protected routes, layout with role guard
-      owner/          # Owner-only pages
-      trainer/        # Trainer-only pages
-      member/         # Member view pages
-    api/              # Route handlers (Next.js API routes)
-      auth/
-      users/
-      training-plans/
-      nutrition-plans/
-      body-tests/
+    (auth)/               # Login, register pages (unauthenticated)
+    (dashboard)/          # Protected routes, layout with role guard
+      owner/              # Owner-only pages (dashboard, trainers, members, equipment, …)
+      trainer/            # Trainer-only pages (members hub, calendar, …)
+      member/             # Member pages (plan, nutrition, body-tests, progress, check-in, …)
+    api/
+      auth/               # NextAuth + register
+      owner/              # equipment, invites, members, trainers, stats
+      members/[memberId]/ # body-tests, injuries, nutrition, plan, pbs, profile
+      plan-templates/     # CRUD for training plan templates
+      nutrition-templates/# CRUD for nutrition templates
+      sessions/           # Workout session logging (sets, completion)
+      schedule/           # Calendar session scheduling
+      check-ins/          # Member check-in submissions
+      check-in-config/    # Owner check-in schedule config
+      progress/[memberId] # Progress chart data
+      exercises/          # Exercise library
+      foods/              # Food item library
+      exercise-notes/     # Per-exercise trainer annotations
+      profile/            # Own profile (all roles)
+      upload/             # File upload endpoint
+      cron/               # session-reminders, check-in-reminders, extend-series
   components/
-    ui/               # Shadcn primitives (do not modify)
-    shared/           # Shared composite components
-    training/
-    nutrition/
-    body-test/
+    ui/                   # Shadcn primitives (do not modify)
+    shared/               # Shared composite components
+    training/             # Training-specific components
+    calendar/             # Calendar and scheduling components
   lib/
-    db/               # MongoDB connection singleton
-    auth/             # Auth.js config (auth.ts), invite token helpers
-    repositories/     # Data access interfaces + MongoDB implementations
-    utils/
-  types/              # Shared TypeScript interfaces/enums
-  hooks/              # Custom React hooks
-__tests__/            # Jest unit/integration tests (mirror src/ structure)
-e2e/                  # Playwright tests
+    db/
+      connect.ts          # MongoDB singleton
+      models/             # Mongoose models (one file per entity)
+    auth/                 # auth.ts, auth.config.ts, invite.ts, middleware-helpers.ts
+    repositories/         # One repository file per model; interface + MongoDB impl
+    email/                # Provider abstraction + templates
+    storage/              # Upload provider abstraction
+    body-test/            # Jackson-Pollock formula implementations
+    training/             # Epley 1RM formula, exercise label helpers
+    nutrition/            # Macro calculation helpers
+  types/                  # Shared TypeScript interfaces/enums
+  hooks/                  # Custom React hooks
+__tests__/                # Jest unit/integration tests (mirror src/ structure)
+e2e/                      # Playwright tests (auth, access-control, member/, trainer/, owner/)
 ```
 
 ### Key Patterns
@@ -274,7 +327,7 @@ All generated markdown files use **lowercase kebab-case**:
 
 **Close** an implementation plan by marking all stages `Complete`, then **deleting the file and its INDEX.md row**. The code is the source of truth; no graveyard rows.
 
-**Close** a design doc once the feature it describes is `Complete` and stable — delete the file and its INDEX.md row. Keep design docs only while actively developing or reviewing the feature.
+**Keep** design docs as long as they accurately reflect the implementation — there is no expiry based on feature completion. A doc becomes a candidate for superseding only when it drifts from reality, not when the feature ships.
 
 **Supersede** a design doc when it no longer accurately reflects the implementation:
 1. Remove its row from `INDEX.md`
@@ -282,8 +335,8 @@ All generated markdown files use **lowercase kebab-case**:
 3. Delete the file
 
 **INDEX.md hygiene** — keep under 60 lines total:
-- No `Complete` or `Superseded` rows; delete them along with the file
-- After a release or major milestone, purge all completed-feature rows
+- Implementation plan rows: delete when the plan file is deleted
+- Design doc rows: keep as long as the doc exists and is accurate
 - Use `find docs/ -name "*.md" | wc -l` to spot file creep
 
 **Never**:
