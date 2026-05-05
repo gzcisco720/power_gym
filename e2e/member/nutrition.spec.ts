@@ -17,4 +17,11 @@ test.describe('Member: Nutrition Plan', () => {
     await expect(page.getByText('Rice')).toBeVisible();
     await expect(page.getByText('Chicken Breast')).toBeVisible();
   });
+
+  test('switching to Rest Day tab shows different macro targets', async ({ page }) => {
+    await page.goto('/member/nutrition');
+    await page.getByRole('tab', { name: 'Rest Day' }).click();
+    await expect(page.getByText('2000')).toBeVisible();
+    await expect(page.getByText('160')).toBeVisible();
+  });
 });

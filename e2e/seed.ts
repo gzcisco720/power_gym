@@ -229,6 +229,14 @@ export async function seed(): Promise<void> {
           },
         ],
       },
+      {
+        name: 'Rest Day',
+        targetKcal: 2000,
+        targetProtein: 160,
+        targetCarbs: 180,
+        targetFat: 70,
+        meals: [],
+      },
     ],
   });
 
@@ -413,6 +421,17 @@ export async function seed(): Promise<void> {
     quantity: 1,
     images: [],
     note: null,
+  });
+
+  // dedicated to condition tracking tests — trackCondition enabled
+  await EquipmentModel.create({
+    name: 'E2E Track Machine',
+    status: 'maintenance',
+    brand: null,
+    quantity: 1,
+    images: [],
+    note: null,
+    trackCondition: true,
   });
 
   // ── Check-In Config ───────────────────────────────────────────────────────

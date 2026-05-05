@@ -17,4 +17,10 @@ test.describe('Owner: Dashboard', () => {
     await expect(page.getByText('trainer2@test.com', { exact: true })).toBeVisible();
   });
 
+  test('Manage link navigates to trainers page', async ({ page }) => {
+    await page.goto('/owner');
+    await page.getByRole('link', { name: 'Manage →' }).first().click();
+    await page.waitForURL('/owner/trainers');
+    await expect(page.getByText('trainer@test.com', { exact: true })).toBeVisible();
+  });
 });
