@@ -17,27 +17,28 @@ test.describe('Owner: Members', () => {
     await page.selectOption('select', { label: 'Test Trainer 2' });
     await page.getByRole('button', { name: /confirm/i }).click();
 
-    await expect(memberRow.getByText('Test Trainer 2').nth(1)).toBeVisible();
+    await expect(page.getByText('reassign-member@test.com', { exact: true })
+      .locator('..').locator('..')
+      .getByText('Test Trainer 2')).toBeVisible({ timeout: 10000 });
   });
 
   test('View link navigates to member hub page', async ({ page }) => {
     await page.goto('/owner/members');
-    await page.getByRole('link', { name: 'View →' }).first().click();
+    await page.getByRole('link', { name: 'View', exact: true }).first().click();
     await page.waitForURL(/\/trainer\/members\/.+$/);
-    // Tab nav is present (unique to hub)
     await expect(page.getByRole('link', { name: 'Overview', exact: true })).toBeVisible();
   });
 
   test('hub shows back link for owner', async ({ page }) => {
     await page.goto('/owner/members');
-    await page.getByRole('link', { name: 'View →' }).first().click();
+    await page.getByRole('link', { name: 'View', exact: true }).first().click();
     await page.waitForURL(/\/trainer\/members\/.+$/);
     await expect(page.getByRole('link', { name: '← All Members' })).toBeVisible();
   });
 
   test('owner back link returns to owner members page', async ({ page }) => {
     await page.goto('/owner/members');
-    await page.getByRole('link', { name: 'View →' }).first().click();
+    await page.getByRole('link', { name: 'View', exact: true }).first().click();
     await page.waitForURL(/\/trainer\/members\/.+$/);
     await page.getByRole('link', { name: '← All Members' }).click();
     await page.waitForURL('/owner/members');

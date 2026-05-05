@@ -15,7 +15,7 @@ test.describe('Trainer: Plan Templates', () => {
     await page.waitForURL(/\/trainer\/plans\/.*\/edit/);
 
     await page.fill('#plan-name', 'E2E Edit Plan Updated');
-    await page.getByRole('button', { name: /^save$/i }).click();
+    await page.getByRole('button', { name: 'Save Plan' }).click();
     await page.waitForURL('/trainer/plans');
 
     await expect(page.getByText('E2E Edit Plan Updated')).toBeVisible();

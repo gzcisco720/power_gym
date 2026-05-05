@@ -21,7 +21,8 @@ test.describe('Owner: Equipment', () => {
   test('delete equipment removes it from list', async ({ page }) => {
     await page.goto('/owner/equipment');
 
-    const row = page.getByText('E2E Delete Equipment', { exact: true }).locator('..').locator('..');
+    // 3x ".." to traverse: text → wrapper div → flex-row → grid row
+    const row = page.getByText('E2E Delete Equipment', { exact: true }).locator('..').locator('..').locator('..');
     page.once('dialog', (dialog) => dialog.accept());
     await row.getByRole('button', { name: 'Delete' }).click();
 
@@ -36,7 +37,7 @@ test.describe('Owner: Equipment', () => {
 
   test('condition dialog opens with correct equipment name', async ({ page }) => {
     await page.goto('/owner/equipment');
-    const row = page.getByText('E2E Track Machine', { exact: true }).locator('..').locator('..');
+    const row = page.getByText('E2E Track Machine', { exact: true }).locator('..').locator('..').locator('..');
     await row.getByRole('button', { name: 'Condition' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await expect(page.getByText('Condition — E2E Track Machine')).toBeVisible();
@@ -44,7 +45,7 @@ test.describe('Owner: Equipment', () => {
 
   test('can update equipment status to active via condition dialog', async ({ page }) => {
     await page.goto('/owner/equipment');
-    const row = page.getByText('E2E Track Machine', { exact: true }).locator('..').locator('..');
+    const row = page.getByText('E2E Track Machine', { exact: true }).locator('..').locator('..').locator('..');
     await row.getByRole('button', { name: 'Condition' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
 
@@ -57,7 +58,7 @@ test.describe('Owner: Equipment', () => {
 
   test('can add a condition report', async ({ page }) => {
     await page.goto('/owner/equipment');
-    const row = page.getByText('E2E Track Machine', { exact: true }).locator('..').locator('..');
+    const row = page.getByText('E2E Track Machine', { exact: true }).locator('..').locator('..').locator('..');
     await row.getByRole('button', { name: 'Condition' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
 

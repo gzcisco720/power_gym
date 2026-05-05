@@ -12,9 +12,7 @@ test.describe('Trainer: Members', () => {
     await page.goto('/trainer/members');
     await page.getByText('Test Member').click();
     await page.waitForURL(/\/trainer\/members\/.+$/);
-    // Profile header shows member name
     await expect(page.getByText('Test Member').first()).toBeVisible();
-    // Tab nav is present (unique to hub)
     await expect(page.getByRole('link', { name: 'Overview', exact: true })).toBeVisible();
   });
 
@@ -23,11 +21,11 @@ test.describe('Trainer: Members', () => {
     await page.getByText('Test Member').click();
     await page.waitForURL(/\/trainer\/members\/.+$/);
 
-    await expect(page.getByText('当前体重')).toBeVisible();
-    await expect(page.getByText('体脂率')).toBeVisible();
-    await expect(page.getByText('累计训练')).toBeVisible();
-    await expect(page.getByText('上次训练')).toBeVisible();
-    await expect(page.getByText('当前计划')).toBeVisible();
+    await expect(page.getByText('Weight')).toBeVisible();
+    await expect(page.getByText('Body Fat')).toBeVisible();
+    await expect(page.getByText('Sessions')).toBeVisible();
+    await expect(page.getByText('Last Session')).toBeVisible();
+    await expect(page.getByText('Active Plan')).toBeVisible();
     // Seeded body test: weight 75kg
     await expect(page.getByText('75')).toBeVisible();
     // Active plan name
@@ -50,7 +48,8 @@ test.describe('Trainer: Members', () => {
     await page.getByRole('link', { name: 'Plan', exact: true }).click();
     await page.waitForURL(/\/trainer\/members\/.+\/plan/);
 
-    await page.selectOption('select', { label: 'E2E Test Plan' });
+    // Use the "Assign Plan" section's select (second select on the page)
+    await page.locator('section').filter({ hasText: 'Assign Plan' }).locator('select').selectOption({ label: 'E2E Test Plan' });
     await page.getByRole('button', { name: 'Assign' }).click();
 
     await expect(page.getByRole('paragraph').filter({ hasText: 'E2E Test Plan' })).toBeVisible();

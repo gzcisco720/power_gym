@@ -40,6 +40,6 @@ test.describe('Member: Check-In', () => {
     await expect(page.getByText('Check-In History')).toBeVisible();
     // Seeded check-in has weight 76.5 and wellbeing text
     await expect(page.getByText('76.5 kg')).toBeVisible();
-    await expect(page.getByText('Stuck to diet')).toBeVisible();
+    await expect(page.getByText('Stuck to diet').first()).toBeVisible();
   });
 });

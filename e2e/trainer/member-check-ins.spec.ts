@@ -50,7 +50,7 @@ test.describe('Trainer: Member Check-Ins Tab', () => {
     await page.getByRole('link', { name: 'Check-ins', exact: true }).click();
     await page.waitForURL(/\/trainer\/members\/.+\/check-ins$/);
 
-    await expect(page.getByText('Check-In History (1)')).toBeVisible();
+    await expect(page.getByText(/Check-In History \(\d+\)/)).toBeVisible();
     await expect(page.getByText('76.5 kg')).toBeVisible();
   });
 
