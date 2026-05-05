@@ -4,17 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
-## 🔴 CRITICAL: STRICT TDD ENFORCEMENT 🔴
+## 🔴 CRITICAL: TEST-DRIVEN DEVELOPMENT 🔴
 
-**This project follows MANDATORY Test-Driven Development (TDD).**
+**This project follows TDD. Never write implementation code before writing a failing test.**
 
-**Golden Rule**: NEVER write implementation code before writing a failing test.
-
-**Red-Green-Refactor Cycle**:
-
-1. 🔴 **RED**: Write ONE failing test → STOP and wait for user confirmation
-2. 🟢 **GREEN**: Write minimal implementation → STOP and wait for "继续"
-3. 🔵 **REFACTOR**: Improve code without changing behavior → Wait for "重构"
+TDD mechanics (Red-Green-Refactor cadence, stop points) are governed by the **`superpowers:test-driven-development` skill**, which takes precedence over any TDD instructions below.
 
 ---
 
@@ -106,7 +100,7 @@ find src/components -type d | sort   # components
 
 ### Key Patterns
 
-- **Repository pattern**: Define interfaces (e.g., `ITrainingPlanRepository`) in `lib/repositories/`, implement with MongoDB. Enables mocking in tests.
+- **Repository pattern**: Define interfaces (e.g., `IPlanTemplateRepository`) in `lib/repositories/`, implement with MongoDB. Enables mocking in tests.
 - **Server Actions vs Route Handlers**: Prefer Next.js Server Actions for form mutations; use Route Handlers for REST-style API calls consumed by client components.
 - **Role guard**: Next.js Middleware reads Auth.js session cookie, checks role, and redirects unauthorized requests before rendering.
 - **MongoDB singleton**: Connection is established once via `lib/db/connect.ts`; never open connections in component files.
@@ -134,40 +128,15 @@ const profile: any = {};
 
 ---
 
-## TDD Workflow (MANDATORY)
+## TDD Workflow
 
-**Golden Rule**: NEVER write implementation code before writing a failing test.
+**Golden Rule**: Never write implementation code before writing a failing test.
 
-### Red-Green-Refactor Cycle
+TDD cadence is handled by the `superpowers:test-driven-development` skill. Core principles that always apply regardless of skill:
 
-1. **RED** — Write ONE small failing test. Test must be runnable with clear assertions. **STOP and wait for user confirmation.**
-2. **GREEN** — Write ONLY enough code to make the test pass. No extras. **STOP and wait for "继续".**
-3. **REFACTOR** — Improve without changing behavior; all tests stay green. **STOP and wait for "重构".**
-
-### TDD Rules
-
-**ABSOLUTELY FORBIDDEN**:
-
-- Writing implementation before tests
-- Writing multiple tests at once
-- Skipping any Red-Green-Refactor step
-- Proceeding without user confirmation
-
-**MANDATORY**:
-
-- Every production line driven by a failing test
 - Tests cover typical cases, edge cases, and error cases
-- Run tests after each step to confirm Red/Green state
-
-### Example Flow
-
-```text
-Assistant: [Writes failing test for body fat calculation]
-Assistant: "Test written (RED). Type '继续' when ready for implementation."
-User: "继续"
-Assistant: [Writes minimal Jackson-Pollock formula implementation]
-Assistant: "Implementation complete (GREEN). Type '重构' to refactor, or describe next test."
-```
+- Run tests after each implementation step to confirm state
+- Unit/integration tests via Jest; E2E coverage via Playwright
 
 ---
 
@@ -285,8 +254,11 @@ Out-of-date documentation is worse than no documentation.
 - Have tests written BEFORE implementation
 - Pass `pnpm test` (100% pass rate)
 - Pass `pnpm lint` (no warnings, no errors)
-- Compile via `pnpm build`
 - Use no `any`/`unknown` types
+
+**Before every push**:
+
+- `pnpm build` must pass cleanly
 
 **Never**:
 
