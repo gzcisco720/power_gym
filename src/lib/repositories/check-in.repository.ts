@@ -56,10 +56,10 @@ export class MongoCheckInRepository implements ICheckInRepository {
   }
 
   async hasCheckInThisWeek(memberId: string, weekStart: Date): Promise<boolean> {
-    const count = await CheckInModel.countDocuments({
+    const doc = await CheckInModel.exists({
       memberId: new mongoose.Types.ObjectId(memberId),
       submittedAt: { $gte: weekStart },
     });
-    return count > 0;
+    return doc !== null;
   }
 }

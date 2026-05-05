@@ -4,6 +4,7 @@ jest.mock('@/lib/db/models/invite-token.model', () => ({
     jest.fn(),
     {
       findOne: jest.fn(),
+      findById: jest.fn(),
       find: jest.fn(),
       findOneAndDelete: jest.fn(),
       findOneAndUpdate: jest.fn(),
@@ -140,16 +141,16 @@ describe('MongoInviteRepository extensions', () => {
 
   it('findById returns invite by _id', async () => {
     const invite = { _id: 'inv-1', token: 'abc' };
-    mockModel.findOne.mockResolvedValue(invite as never);
+    mockModel.findById.mockResolvedValue(invite as never);
 
     const result = await repo.findById('inv-1');
 
-    expect(mockModel.findOne).toHaveBeenCalledWith({ _id: 'inv-1' });
+    expect(mockModel.findById).toHaveBeenCalledWith('inv-1');
     expect(result).toEqual(invite);
   });
 
   it('findById returns null when not found', async () => {
-    mockModel.findOne.mockResolvedValue(null as never);
+    mockModel.findById.mockResolvedValue(null as never);
 
     const result = await repo.findById('missing');
 

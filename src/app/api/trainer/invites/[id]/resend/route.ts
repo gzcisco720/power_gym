@@ -2,6 +2,7 @@ import { connectDB } from '@/lib/db/connect';
 import { auth } from '@/lib/auth/auth';
 import { MongoInviteRepository } from '@/lib/repositories/invite.repository';
 import { getEmailService } from '@/lib/email/index';
+import { buildInviteUrl } from '@/lib/api/route-guards';
 
 export async function POST(
   _req: Request,
@@ -21,8 +22,7 @@ export async function POST(
   }
 
   const updated = await inviteRepo.regenerate(id);
-  const baseUrl = process.env.AUTH_URL ?? 'http://localhost:3000';
-  const inviteUrl = `${baseUrl}/register?token=${updated.token}`;
+  const inviteUrl = buildInviteUrl(updated.token);
 
   const emailService = getEmailService();
   await emailService.sendInvite({

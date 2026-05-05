@@ -136,6 +136,29 @@ TDD cadence is handled by the `superpowers:test-driven-development` skill. Core 
 - Run tests after each implementation step to confirm state
 - Unit/integration tests via Jest; E2E coverage via Playwright
 
+The **Refactor** step of Red-Green-Refactor is implemented with `/simplify` — run it after tests go green and before committing.
+
+---
+
+## Code Cleanup with `/simplify`
+
+After any meaningful implementation (new feature, bug fix, refactor), run `/simplify` before committing. It reads the `git diff`, launches three parallel agents, and fixes issues in-place:
+
+| Agent | Checks |
+|-------|--------|
+| **Reuse** | Duplicated logic, copy-pasted functions, utilities already existing elsewhere |
+| **Quality** | WHAT-comments, redundant state, stringly-typed code, unnecessary nesting, hacky patterns |
+| **Efficiency** | N+1 queries, sequential DB calls that can be parallel, unbounded data loads, missing memoization |
+
+**When to run**:
+- After the TDD Green phase, as the Refactor step
+- After any multi-file change before committing
+- Periodically on existing modules with `/simplify` + specify a directory when no git diff exists
+
+**When to skip**:
+- Trivial one-line fixes with no architectural impact
+- Pure test file changes
+
 ---
 
 ## Planning Complex Features
@@ -244,6 +267,7 @@ Out-of-date documentation is worse than no documentation.
 - Pass `pnpm test` (100% pass rate)
 - Pass `pnpm lint` (no warnings, no errors)
 - Use no `any`/`unknown` types
+- Have gone through `/simplify` (the Refactor step)
 
 **Before every push**:
 

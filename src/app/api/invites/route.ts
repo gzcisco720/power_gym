@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth/auth';
 import { createInviteToken } from '@/lib/auth/invite';
 import { getEmailService } from '@/lib/email/index';
 import { MongoInviteRepository } from '@/lib/repositories/invite.repository';
+import { buildInviteUrl } from '@/lib/api/route-guards';
 import type { UserRole } from '@/types/auth';
 
 export async function POST(req: Request): Promise<Response> {
@@ -32,8 +33,7 @@ export async function POST(req: Request): Promise<Response> {
     inviteRepo,
   );
 
-  const baseUrl = process.env.AUTH_URL ?? 'http://localhost:3000';
-  const inviteUrl = `${baseUrl}/register?token=${inviteToken.token}`;
+  const inviteUrl = buildInviteUrl(inviteToken.token);
 
   const emailService = getEmailService();
   await emailService.sendInvite({

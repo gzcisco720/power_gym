@@ -141,10 +141,14 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
     memberId: string,
     exerciseId: string,
   ): Promise<{ date: Date; estimatedOneRM: number }[]> {
-    const sessions = await WorkoutSessionModel.find({
-      memberId: new mongoose.Types.ObjectId(memberId),
-      completedAt: { $ne: null },
-    }).sort({ completedAt: 1 });
+    const sessions = await WorkoutSessionModel.find(
+      {
+        memberId: new mongoose.Types.ObjectId(memberId),
+        completedAt: { $ne: null },
+        'sets.exerciseId': new mongoose.Types.ObjectId(exerciseId),
+      },
+      { completedAt: 1, sets: 1 },
+    ).sort({ completedAt: 1 });
 
     return sessions
       .map((session) => {

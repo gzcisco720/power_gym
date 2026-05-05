@@ -1,5 +1,7 @@
 'use client';
 
+import { RefreshCw } from 'lucide-react';
+
 interface SessionEventCardProps {
   memberNames: string[];
   startTime: string;
@@ -26,7 +28,7 @@ export function SessionEventCard({
       <div className="font-semibold truncate">{memberNames.join(', ')}</div>
       <div className="opacity-80">
         {startTime}–{endTime}
-        {isRecurring ? ' 🔄' : ''}
+        {isRecurring && <RefreshCw className="inline h-2.5 w-2.5 ml-0.5 opacity-80" />}
       </div>
     </button>
   );

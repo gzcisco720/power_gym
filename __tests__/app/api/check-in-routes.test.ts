@@ -12,6 +12,11 @@ jest.mock('@/lib/repositories/check-in-config.repository', () => ({
   MongoCheckInConfigRepository: jest.fn(() => mockConfigRepo),
 }));
 
+const mockUserRepo = { findById: jest.fn() };
+jest.mock('@/lib/repositories/user.repository', () => ({
+  MongoUserRepository: jest.fn(() => mockUserRepo),
+}));
+
 import { auth } from '@/lib/auth/auth';
 const mockAuth = jest.mocked(auth);
 
@@ -93,6 +98,7 @@ describe('GET /api/check-in-config', () => {
 
   it('returns config for member when memberId provided', async () => {
     mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
+    mockUserRepo.findById.mockResolvedValue({ trainerId: { toString: () => 't1' } });
     mockConfigRepo.findByMember.mockResolvedValue({ dayOfWeek: 4, hour: 7, minute: 0, active: true });
     const { GET } = await import('@/app/api/check-in-config/route');
     const res = await GET(new Request('http://localhost/api/check-in-config?memberId=m1'));
@@ -102,6 +108,7 @@ describe('GET /api/check-in-config', () => {
 
   it('returns null when no config exists', async () => {
     mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
+    mockUserRepo.findById.mockResolvedValue({ trainerId: { toString: () => 't1' } });
     mockConfigRepo.findByMember.mockResolvedValue(null);
     const { GET } = await import('@/app/api/check-in-config/route');
     const res = await GET(new Request('http://localhost/api/check-in-config?memberId=m1'));

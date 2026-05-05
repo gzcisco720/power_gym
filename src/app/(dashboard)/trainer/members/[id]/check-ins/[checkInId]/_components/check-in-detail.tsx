@@ -53,7 +53,6 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
 
   return (
     <div className="space-y-8">
-      {/* Ratings */}
       <section>
         <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-[1.5px] text-[#555]">
           Ratings
@@ -70,7 +69,6 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
         </div>
       </section>
 
-      {/* Stats */}
       <section>
         <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-[1.5px] text-[#555]">
           Stats
@@ -94,7 +92,6 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
         </div>
       </section>
 
-      {/* Diet */}
       <section>
         <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-[1.5px] text-[#555]">
           Diet
@@ -105,7 +102,6 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
         )}
       </section>
 
-      {/* Wellbeing & Notes */}
       {(checkIn.wellbeing || checkIn.notes) && (
         <section className="space-y-3">
           {checkIn.wellbeing && (
@@ -123,7 +119,6 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
         </section>
       )}
 
-      {/* Photos + Comparison */}
       {checkIn.photos && checkIn.photos.length > 0 && (
         <section>
           <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-[1.5px] text-[#555]">
@@ -156,7 +151,6 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
           <div className={compareCheckIn ? 'grid grid-cols-2 gap-4' : 'flex flex-wrap gap-3'}>
             {compareCheckIn ? (
               <>
-                {/* Current check-in photos */}
                 <div>
                   <p className="mb-2 text-[11px] uppercase tracking-[1px] text-[#555]">
                     {formatDate(checkIn.submittedAt)}
@@ -168,7 +162,6 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
                     ))}
                   </div>
                 </div>
-                {/* Comparison photos */}
                 <div>
                   <p className="mb-2 text-[11px] uppercase tracking-[1px] text-[#555]">
                     {formatDate(compareCheckIn.submittedAt)}

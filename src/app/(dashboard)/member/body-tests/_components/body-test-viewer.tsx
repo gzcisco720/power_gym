@@ -64,7 +64,6 @@ export function BodyTestViewer({ tests }: Props) {
       <PageHeader title="Body Composition" />
 
       <div className="px-4 sm:px-8 py-7 space-y-7">
-        {/* Latest stats */}
         <div>
           <SectionHeader title="Latest Results" />
           <div className="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
@@ -75,7 +74,6 @@ export function BodyTestViewer({ tests }: Props) {
           </div>
         </div>
 
-        {/* History chart — only when multiple tests */}
         {tests.length > 1 && (
           <div>
             <SectionHeader title="History" />
@@ -100,7 +98,6 @@ export function BodyTestViewer({ tests }: Props) {
           </div>
         )}
 
-        {/* All tests list */}
         <div>
           <SectionHeader title="All Records" />
           <div className="mt-3 space-y-2">

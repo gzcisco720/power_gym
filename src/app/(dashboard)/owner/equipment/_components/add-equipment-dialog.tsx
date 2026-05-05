@@ -135,7 +135,6 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
         </DialogHeader>
 
         <div className="space-y-4 mt-1">
-          {/* Name + autocomplete */}
           <div className="space-y-1.5 relative">
             <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Name</label>
             <Input
@@ -158,7 +157,6 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
             )}
           </div>
 
-          {/* Brand + Quantity */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Brand (optional)</label>
@@ -172,7 +170,6 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
             </div>
           </div>
 
-          {/* Track condition toggle */}
           <div className="flex items-center justify-between rounded-lg border border-[#1e1e1e] bg-[#0a0a0a] px-4 py-3">
             <div>
               <p className="text-[13px] font-medium text-white">Track condition status</p>
@@ -187,7 +184,6 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
             </button>
           </div>
 
-          {/* Status — only when tracking */}
           {trackCondition && (
             <div className="space-y-1.5">
               <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Initial Status</label>
@@ -200,14 +196,12 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
             </div>
           )}
 
-          {/* Note */}
           <div className="space-y-1.5">
             <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Note (optional)</label>
             <Input value={note} onChange={(e) => setNote(e.target.value)}
               className="bg-[#0a0a0a] border-[#1e1e1e] text-white" placeholder="Location, condition, etc." />
           </div>
 
-          {/* Images */}
           <div className="space-y-1.5">
             <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Images (optional)</label>
             {images.length > 0 && (

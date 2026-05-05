@@ -125,8 +125,7 @@ describe('MongoBodyTestRepository', () => {
   describe('findLatestByMember', () => {
     it('returns the first result from findOne sorted by date desc', async () => {
       const mockTest = { _id: 'bt1', weight: 73, bodyFatPct: 18.2 };
-      const limitMock = jest.fn().mockResolvedValue(mockTest);
-      const sortMock = jest.fn().mockReturnValue({ limit: limitMock });
+      const sortMock = jest.fn().mockResolvedValue(mockTest);
       mockModel.findOne = jest.fn().mockReturnValue({ sort: sortMock });
 
       const result = await repo.findLatestByMember(memberId);
@@ -139,8 +138,7 @@ describe('MongoBodyTestRepository', () => {
     });
 
     it('returns null when no tests exist', async () => {
-      const limitMock = jest.fn().mockResolvedValue(null);
-      const sortMock = jest.fn().mockReturnValue({ limit: limitMock });
+      const sortMock = jest.fn().mockResolvedValue(null);
       mockModel.findOne = jest.fn().mockReturnValue({ sort: sortMock });
 
       const result = await repo.findLatestByMember(memberId);

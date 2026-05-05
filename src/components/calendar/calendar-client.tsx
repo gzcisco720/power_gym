@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { WeekCalendarGrid } from './week-calendar-grid';
 import { CreateSessionModal } from './create-session-modal';
 import { EditSessionModal } from './edit-session-modal';
@@ -45,7 +45,6 @@ export function CalendarClient({
   const [sessions, setSessions] = useState<CalendarSession[]>([]);
   const [createSlot, setCreateSlot] = useState<{ date: string; time: string } | null>(null);
   const [editSession, setEditSession] = useState<CalendarSession | null>(null);
-  const refreshCountRef = useRef(0);
   const [refreshTick, setRefreshTick] = useState(0);
 
   const weekEnd = new Date(weekStart);
@@ -57,7 +56,10 @@ export function CalendarClient({
   useEffect(() => {
     let cancelled = false;
     const startIso = weekStart.toISOString();
-    const endIso = weekEnd.toISOString();
+    const end = new Date(weekStart);
+    end.setDate(end.getDate() + 6);
+    end.setHours(23, 59, 59, 999);
+    const endIso = end.toISOString();
 
     async function load() {
       const url = filterTrainerId
@@ -71,7 +73,6 @@ export function CalendarClient({
 
     void load();
     return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [weekStart, refreshTick, filterTrainerId]);
 
   function goToPrevWeek() {
@@ -83,8 +84,7 @@ export function CalendarClient({
   function goToToday() { setWeekStart(getMondayOfWeek(new Date())); }
 
   function handleSuccess() {
-    refreshCountRef.current += 1;
-    setRefreshTick(refreshCountRef.current);
+    setRefreshTick((t) => t + 1);
   }
 
   return (

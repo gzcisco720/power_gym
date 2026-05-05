@@ -30,11 +30,5 @@ const EquipmentSchema = new Schema<IEquipment>(
   { timestamps: { createdAt: true, updatedAt: false } },
 );
 
-// Always re-register in development so schema changes take effect without a full restart.
-// In production each cold start loads modules fresh so this is never needed.
-if (mongoose.models.Equipment) {
-  mongoose.deleteModel('Equipment');
-}
-
 export const EquipmentModel: Model<IEquipment> =
-  mongoose.model<IEquipment>('Equipment', EquipmentSchema);
+  mongoose.models.Equipment ?? mongoose.model<IEquipment>('Equipment', EquipmentSchema);

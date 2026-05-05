@@ -17,9 +17,6 @@ const ConditionReportSchema = new Schema<IConditionReport>(
 
 ConditionReportSchema.index({ equipmentId: 1, reportedAt: -1 });
 
-if (mongoose.models.ConditionReport) {
-  mongoose.deleteModel('ConditionReport');
-}
-
 export const ConditionReportModel: Model<IConditionReport> =
+  mongoose.models.ConditionReport ??
   mongoose.model<IConditionReport>('ConditionReport', ConditionReportSchema);

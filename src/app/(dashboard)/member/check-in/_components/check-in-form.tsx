@@ -117,7 +117,6 @@ export function CheckInForm({ alreadySubmitted }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Ratings */}
       <section>
         <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-[1.5px] text-[#555]">
           Weekly Ratings (1–10)
@@ -142,7 +141,6 @@ export function CheckInForm({ alreadySubmitted }: Props) {
         </div>
       </section>
 
-      {/* Stats */}
       <section>
         <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-[1.5px] text-[#555]">
           Weekly Stats
@@ -171,7 +169,6 @@ export function CheckInForm({ alreadySubmitted }: Props) {
         </div>
       </section>
 
-      {/* Diet */}
       <section>
         <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-[1.5px] text-[#555]">
           Diet Adherence
@@ -202,7 +199,6 @@ export function CheckInForm({ alreadySubmitted }: Props) {
         />
       </section>
 
-      {/* Wellbeing & Notes */}
       <section className="space-y-4">
         <div>
           <label className="mb-1 block text-[13px] text-[#888]">Wellbeing</label>
@@ -226,7 +222,6 @@ export function CheckInForm({ alreadySubmitted }: Props) {
         </div>
       </section>
 
-      {/* Photos */}
       <section>
         <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-[1.5px] text-[#555]">
           Progress Photos (max 5)

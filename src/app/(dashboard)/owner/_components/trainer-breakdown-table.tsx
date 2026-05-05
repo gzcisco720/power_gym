@@ -24,7 +24,6 @@ export function TrainerBreakdownTable({ trainers }: Props) {
 
   return (
     <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl overflow-hidden">
-      {/* Column header — desktop only */}
       <div className="hidden sm:grid grid-cols-[1fr_100px_120px_80px] border-b border-[#141414] px-5 py-2.5 text-[9px] font-semibold uppercase tracking-[1.5px] text-[#555]">
         <div>Trainer</div>
         <div>Members</div>
@@ -40,7 +39,6 @@ export function TrainerBreakdownTable({ trainers }: Props) {
           <div>
             <div className="text-[13px] font-medium text-[#ccc]">{trainer.name}</div>
             <div className="text-[10px] text-[#666] mt-0.5">{trainer.email}</div>
-            {/* Stats inline on mobile */}
             <div className="flex gap-4 mt-1.5 sm:hidden">
               <span className="text-[11px] font-semibold text-[#666]">
                 {trainer.memberCount}
@@ -52,12 +50,10 @@ export function TrainerBreakdownTable({ trainers }: Props) {
               </span>
             </div>
           </div>
-          {/* Members column — desktop only */}
           <div className="hidden sm:block text-[13px] font-semibold text-[#888]">
             {trainer.memberCount}
             <span className="text-[10px] font-medium text-[#666] ml-1">members</span>
           </div>
-          {/* Sessions column — desktop only */}
           <div className="hidden sm:block text-[13px] font-semibold text-[#888]">
             {trainer.sessionsThisMonth}
           </div>

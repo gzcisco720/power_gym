@@ -37,7 +37,6 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
 
   let extraSet;
   if (existingSets.length === 0) {
-    // Brand new exercise added during session
     if (!body.exerciseName) {
       return Response.json(
         { error: 'exerciseName required for new exercise' },
@@ -47,7 +46,7 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
     extraSet = {
       exerciseId: exerciseOId,
       exerciseName: body.exerciseName,
-      groupId: body.exerciseId, // standalone: use exerciseId as its own groupId
+      groupId: body.exerciseId,
       isSuperset: false,
       isBodyweight: false,
       setNumber: 1,

@@ -14,18 +14,13 @@ export async function GET(): Promise<Response> {
   const inviteRepo = new MongoInviteRepository();
   const sessionRepo = new MongoWorkoutSessionRepository();
 
-  const [trainers, members, invites] = await Promise.all([
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const [trainers, members, pendingInviteCount] = await Promise.all([
     userRepo.findByRole('trainer'),
     userRepo.findAllMembers(),
-    inviteRepo.findAll(),
+    inviteRepo.countPending(now),
   ]);
-
-  const now = new Date();
-  const pendingInviteCount = invites.filter(
-    (inv) => !inv.usedAt && inv.expiresAt > now,
-  ).length;
-
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const memberIds = members.map((m) => m._id.toString());
   const sessionsThisMonth = await sessionRepo.countByMemberIdsSince(memberIds, startOfMonth);
 

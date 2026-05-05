@@ -3,15 +3,9 @@ import { redirect } from 'next/navigation';
 import { signIn } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
+import { ROLE_DEFAULT_PATH } from '@/lib/auth/middleware-helpers';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import type { UserRole } from '@/types/auth';
-
-const ROLE_REDIRECT: Record<UserRole, string> = {
-  owner: '/owner',
-  trainer: '/trainer/members',
-  member: '/member/plan',
-};
 
 export default async function LoginPage({
   searchParams,
@@ -46,7 +40,7 @@ export default async function LoginPage({
               await connectDB();
               const repo = new MongoUserRepository();
               const user = await repo.findByEmail(email);
-              if (user) redirectTo = ROLE_REDIRECT[user.role] ?? '/dashboard';
+              if (user) redirectTo = ROLE_DEFAULT_PATH[user.role] ?? '/dashboard';
             } catch {
               // If lookup fails, fall through; signIn will handle the error.
             }

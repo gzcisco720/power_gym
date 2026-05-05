@@ -29,18 +29,23 @@ export interface IFood extends Document {
 }
 
 const Per100gSchema = new Schema<IPer100g>(
-  { kcal: Number, protein: Number, carbs: Number, fat: Number },
+  {
+    kcal: { type: Number, required: true },
+    protein: { type: Number, required: true },
+    carbs: { type: Number, required: true },
+    fat: { type: Number, required: true },
+  },
   { _id: false },
 );
 
 const PerServingSchema = new Schema<IPerServing>(
   {
-    servingLabel: String,
-    grams: Number,
-    kcal: Number,
-    protein: Number,
-    carbs: Number,
-    fat: Number,
+    servingLabel: { type: String, required: true },
+    grams: { type: Number, required: true },
+    kcal: { type: Number, required: true },
+    protein: { type: Number, required: true },
+    carbs: { type: Number, required: true },
+    fat: { type: Number, required: true },
   },
   { _id: false },
 );
@@ -60,6 +65,8 @@ const FoodSchema = new Schema<IFood>(
 );
 
 FoodSchema.index({ name: 1, createdBy: 1 }, { unique: true });
+FoodSchema.index({ isGlobal: 1 });
+FoodSchema.index({ createdBy: 1 });
 
 export const FoodModel: Model<IFood> =
   mongoose.models.Food ?? mongoose.model<IFood>('Food', FoodSchema);

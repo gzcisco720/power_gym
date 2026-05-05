@@ -24,28 +24,28 @@ export class MongoPersonalBestRepository implements IPersonalBestRepository {
 
   async upsertIfBetter(data: UpsertPBData): Promise<void> {
     const newEstimated = estimatedOneRM(data.weight, data.reps);
-
-    const existing = await PersonalBestModel.findOne({
-      memberId: new mongoose.Types.ObjectId(data.memberId),
-      exerciseId: new mongoose.Types.ObjectId(data.exerciseId),
-    });
-
-    if (existing && newEstimated <= existing.estimatedOneRM) return;
-
-    await PersonalBestModel.findOneAndUpdate(
-      {
-        memberId: new mongoose.Types.ObjectId(data.memberId),
-        exerciseId: new mongoose.Types.ObjectId(data.exerciseId),
-      },
-      {
-        exerciseName: data.exerciseName,
-        bestWeight: data.weight,
-        bestReps: data.reps,
-        estimatedOneRM: newEstimated,
-        achievedAt: new Date(),
-        sessionId: new mongoose.Types.ObjectId(data.sessionId),
-      },
-      { upsert: true, new: true },
-    );
+    try {
+      await PersonalBestModel.updateOne(
+        {
+          memberId: new mongoose.Types.ObjectId(data.memberId),
+          exerciseId: new mongoose.Types.ObjectId(data.exerciseId),
+          $or: [{ estimatedOneRM: { $lt: newEstimated } }, { estimatedOneRM: { $exists: false } }],
+        },
+        {
+          $set: {
+            exerciseName: data.exerciseName,
+            bestWeight: data.weight,
+            bestReps: data.reps,
+            estimatedOneRM: newEstimated,
+            achievedAt: new Date(),
+            sessionId: new mongoose.Types.ObjectId(data.sessionId),
+          },
+        },
+        { upsert: true },
+      );
+    } catch (err) {
+      // E11000: a concurrent upsert created the document first — the PB is already recorded
+      if ((err as { code?: number }).code !== 11000) throw err;
+    }
   }
 }

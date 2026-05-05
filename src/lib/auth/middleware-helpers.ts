@@ -6,7 +6,7 @@ const ROLE_ALLOWED_PREFIXES: Record<UserRole, string[]> = {
   member: ['/member'],
 };
 
-const ROLE_DEFAULT_PATH: Record<UserRole, string> = {
+export const ROLE_DEFAULT_PATH: Record<UserRole, string> = {
   owner: '/owner',
   trainer: '/trainer/members',
   member: '/member/plan',

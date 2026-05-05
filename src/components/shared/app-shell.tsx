@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
-import { cn } from '@/lib/utils';
+import { cn, initials } from '@/lib/utils';
 import type { UserRole } from '@/types/auth';
 
 const NAV: Record<UserRole, { group: string; items: { href: string; label: string; exact?: boolean }[] }[]> = {
@@ -157,21 +157,14 @@ interface AppShellProps {
 
 export function AppShell({ role, userName, children, logoutSlot }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const userInitials = userName
-    .split(' ')
-    .map((n) => n[0] ?? '')
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+  const userInitials = initials(userName);
 
   return (
     <div className="flex h-screen bg-[#030303]">
-      {/* Desktop sidebar */}
       <aside className="hidden w-[220px] shrink-0 flex-col border-r border-[#161616] bg-[#0a0a0a] lg:flex">
         <SidebarContent role={role} userName={userName} userInitials={userInitials} logoutSlot={logoutSlot} />
       </aside>
 
-      {/* Mobile drawer */}
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
         <SheetContent
           side="left"
@@ -183,7 +176,6 @@ export function AppShell({ role, userName, children, logoutSlot }: AppShellProps
       </Sheet>
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Mobile top bar */}
         <div className="flex items-center gap-3 border-b border-[#0f0f0f] px-4 py-3 lg:hidden">
           <button
             onClick={() => setDrawerOpen(true)}

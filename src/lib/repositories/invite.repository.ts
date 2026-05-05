@@ -2,6 +2,8 @@ import crypto from 'crypto';
 import type { IInviteToken } from '@/lib/db/models/invite-token.model';
 import { InviteTokenModel } from '@/lib/db/models/invite-token.model';
 
+export const INVITE_TTL_MS = 48 * 60 * 60 * 1000;
+
 export interface CreateInviteData {
   token: string;
   role: 'trainer' | 'member';
@@ -20,6 +22,7 @@ export interface IInviteRepository {
   findByInvitedBy(userId: string): Promise<IInviteToken[]>;
   revoke(inviteId: string): Promise<void>;
   regenerate(inviteId: string): Promise<IInviteToken>;
+  countPending(now: Date): Promise<number>;
 }
 
 export class MongoInviteRepository implements IInviteRepository {
@@ -37,7 +40,7 @@ export class MongoInviteRepository implements IInviteRepository {
   }
 
   async findById(id: string): Promise<IInviteToken | null> {
-    return InviteTokenModel.findOne({ _id: id });
+    return InviteTokenModel.findById(id);
   }
 
   async findAll(): Promise<IInviteToken[]> {
@@ -52,9 +55,13 @@ export class MongoInviteRepository implements IInviteRepository {
     await InviteTokenModel.findOneAndDelete({ _id: inviteId });
   }
 
+  async countPending(now: Date): Promise<number> {
+    return InviteTokenModel.countDocuments({ usedAt: null, expiresAt: { $gt: now } });
+  }
+
   async regenerate(inviteId: string): Promise<IInviteToken> {
     const newToken = crypto.randomUUID();
-    const newExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
+    const newExpiresAt = new Date(Date.now() + INVITE_TTL_MS);
     const updated = await InviteTokenModel.findOneAndUpdate(
       { _id: inviteId },
       { $set: { token: newToken, expiresAt: newExpiresAt, usedAt: null } },

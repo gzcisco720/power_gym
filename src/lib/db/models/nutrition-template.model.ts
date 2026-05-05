@@ -33,7 +33,7 @@ export interface INutritionTemplate extends Document {
   createdAt: Date;
 }
 
-const MealItemSchema = new Schema<IMealItem>(
+export const MealItemSchema = new Schema<IMealItem>(
   {
     foodId: { type: Schema.Types.ObjectId, required: true },
     foodName: { type: String, required: true },
@@ -46,7 +46,7 @@ const MealItemSchema = new Schema<IMealItem>(
   { _id: false },
 );
 
-const MealSchema = new Schema<IMeal>(
+export const MealSchema = new Schema<IMeal>(
   {
     name: { type: String, required: true },
     order: { type: Number, required: true },
@@ -55,7 +55,7 @@ const MealSchema = new Schema<IMeal>(
   { _id: false },
 );
 
-const DayTypeSchema = new Schema<IDayType>(
+export const DayTypeSchema = new Schema<IDayType>(
   {
     name: { type: String, required: true },
     targetKcal: { type: Number, required: true },

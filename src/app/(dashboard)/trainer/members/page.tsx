@@ -6,10 +6,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Card } from '@/components/ui/card';
 import { TrainerInviteDialogTrigger } from '../invites/_components/invite-dialog-trigger';
-
-function initials(name: string) {
-  return name.split(' ').map((n: string) => n[0] ?? '').join('').slice(0, 2).toUpperCase();
-}
+import { initials } from '@/lib/utils';
 
 export default async function TrainerMembersPage() {
   const session = await auth();
@@ -39,12 +36,10 @@ export default async function TrainerMembersPage() {
                 href={`/trainer/members/${member._id}`}
                 className="flex items-center gap-4 px-5 py-4 border-b border-[#0f0f0f] last:border-0 hover:bg-[#0e0e0e] transition-colors"
               >
-                {/* Avatar */}
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1e1e1e] bg-[#181818] text-[11px] font-semibold text-[#888]">
                   {initials(member.name)}
                 </div>
 
-                {/* Name + email */}
                 <div className="flex-1 min-w-0">
                   <div className="text-[14px] font-semibold text-white truncate">{member.name}</div>
                   <div className="text-[11px] text-[#666] mt-0.5 truncate">{member.email}</div>

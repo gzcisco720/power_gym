@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { RefreshCw } from 'lucide-react';
 import { RecurringScopeDialog } from './recurring-scope-dialog';
 import type { CalendarSession } from './week-calendar-grid';
 
@@ -103,7 +104,10 @@ export function EditSessionModal({
               </p>
             </div>
             {isRecurring && (
-              <p className="text-xs text-blue-400">🔄 This is a recurring session</p>
+              <p className="flex items-center gap-1 text-xs text-blue-400">
+                <RefreshCw className="h-3 w-3" />
+                This is a recurring session
+              </p>
             )}
             <div className="flex gap-3">
               <div className="flex-1">

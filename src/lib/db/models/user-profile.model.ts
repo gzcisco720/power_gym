@@ -5,16 +5,13 @@ export interface IUserProfile extends Document {
   userId: mongoose.Types.ObjectId;
   role: UserRole | null;
   phone: string | null;
-  // member
   sex: 'male' | 'female' | null;
   dateOfBirth: Date | null;
   height: number | null;
   fitnessGoal: 'lose_fat' | 'build_muscle' | 'maintain' | 'improve_performance' | null;
   fitnessLevel: 'beginner' | 'intermediate' | 'advanced' | null;
-  // trainer
   bio: string | null;
   specializations: string[];
-  // owner
   gymName: string | null;
   updatedAt: Date;
 }

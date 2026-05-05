@@ -20,6 +20,9 @@ const InviteTokenSchema = new Schema<IInviteToken>({
   trainerId: { type: Schema.Types.ObjectId, default: null },
 });
 
+InviteTokenSchema.index({ invitedBy: 1, expiresAt: -1 });
+InviteTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
 export const InviteTokenModel: Model<IInviteToken> =
   mongoose.models.InviteToken ??
   mongoose.model<IInviteToken>('InviteToken', InviteTokenSchema);

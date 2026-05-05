@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { addOneHour } from '@/lib/time';
 
 interface Trainer {
   _id: string;
@@ -34,13 +35,6 @@ interface CreateSessionModalProps {
   onClose: () => void;
 }
 
-function addOneHour(time: string): string {
-  const [h, m] = time.split(':').map(Number);
-  const totalMin = h * 60 + m + 60;
-  const hh = Math.min(Math.floor(totalMin / 60), 23);
-  const mm = totalMin % 60;
-  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-}
 
 export function CreateSessionModal({
   open,

@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import type { IInviteToken } from '@/lib/db/models/invite-token.model';
-import type { IInviteRepository } from '@/lib/repositories/invite.repository';
+import { INVITE_TTL_MS, type IInviteRepository } from '@/lib/repositories/invite.repository';
 
 interface CreateInviteParams {
   role: 'trainer' | 'member';
@@ -18,7 +18,7 @@ export async function createInviteToken(
   repo: IInviteRepository,
 ): Promise<IInviteToken> {
   const token = crypto.randomUUID();
-  const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + INVITE_TTL_MS);
 
   return repo.create({
     token,

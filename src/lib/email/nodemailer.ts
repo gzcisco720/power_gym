@@ -21,86 +21,72 @@ import { sessionCancelledTemplate } from '@/lib/email/templates/session-cancelle
 import { checkInReminderTemplate } from '@/lib/email/templates/check-in-reminder';
 import { checkInReceivedTemplate } from '@/lib/email/templates/check-in-received';
 
-function createTransport() {
-  const provider = process.env.EMAIL_PROVIDER;
-
-  if (provider === 'mailtrap') {
-    return nodemailer.createTransport({
-      host: process.env.MAILTRAP_HOST,
-      port: Number(process.env.MAILTRAP_PORT ?? 2525),
-      auth: {
-        user: process.env.MAILTRAP_USER,
-        pass: process.env.MAILTRAP_PASS,
-      },
-    });
-  }
-
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT ?? 587),
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-}
-
 export class NodemailerEmailService implements IEmailService {
+  private readonly transporter = process.env.EMAIL_PROVIDER === 'mailtrap'
+    ? nodemailer.createTransport({
+        host: process.env.MAILTRAP_HOST,
+        port: Number(process.env.MAILTRAP_PORT ?? 2525),
+        auth: { user: process.env.MAILTRAP_USER, pass: process.env.MAILTRAP_PASS },
+      })
+    : nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT ?? 587),
+        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+      });
+
   async sendInvite(params: SendInviteParams): Promise<void> {
-    const transporter = createTransport();
     const { subject, html } = inviteEmailTemplate({
       inviterName: params.inviterName,
       role: params.role,
       inviteUrl: params.inviteUrl,
     });
-    await transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
+    await this.transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
   }
 
   async sendSessionReminder(params: SendSessionReminderParams): Promise<void> {
-    const transporter = createTransport();
     const { subject, html } = sessionReminderTemplate(params);
-    await transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
+    await this.transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
   }
 
   async sendPlanAssigned(params: SendPlanAssignedParams): Promise<void> {
-    const transporter = createTransport();
+
     const { subject, html } = planAssignedTemplate(params);
-    await transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
+    await this.transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
   }
 
   async sendNutritionPlanAssigned(params: SendNutritionPlanAssignedParams): Promise<void> {
-    const transporter = createTransport();
+
     const { subject, html } = nutritionAssignedTemplate(params);
-    await transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
+    await this.transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
   }
 
   async sendMemberAssigned(params: SendMemberAssignedParams): Promise<void> {
-    const transporter = createTransport();
+
     const { subject, html } = memberAssignedTemplate(params);
-    await transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
+    await this.transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
   }
 
   async sendSessionBooked(params: SendSessionBookedParams): Promise<void> {
-    const transporter = createTransport();
+
     const { subject, html } = sessionBookedTemplate(params);
-    await transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
+    await this.transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
   }
 
   async sendSessionCancelled(params: SendSessionCancelledParams): Promise<void> {
-    const transporter = createTransport();
+
     const { subject, html } = sessionCancelledTemplate(params);
-    await transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
+    await this.transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
   }
 
   async sendCheckInReminder(params: SendCheckInReminderParams): Promise<void> {
-    const transporter = createTransport();
+
     const { subject, html } = checkInReminderTemplate(params);
-    await transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
+    await this.transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
   }
 
   async sendCheckInReceived(params: SendCheckInReceivedParams): Promise<void> {
-    const transporter = createTransport();
+
     const { subject, html } = checkInReceivedTemplate(params);
-    await transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
+    await this.transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
   }
 }

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { ConditionReportModel } from '@/lib/db/models/condition-report.model';
 import type { IConditionReport } from '@/lib/db/models/condition-report.model';
 
@@ -13,12 +14,12 @@ export interface IConditionReportRepository {
 
 export class MongoConditionReportRepository implements IConditionReportRepository {
   async findByEquipmentId(equipmentId: string): Promise<IConditionReport[]> {
-    return ConditionReportModel.find({ equipmentId }).sort({ reportedAt: -1 });
+    return ConditionReportModel.find({ equipmentId: new mongoose.Types.ObjectId(equipmentId) }).sort({ reportedAt: -1 });
   }
 
   async create(data: CreateConditionReportData): Promise<IConditionReport> {
     return ConditionReportModel.create({
-      equipmentId: data.equipmentId,
+      equipmentId: new mongoose.Types.ObjectId(data.equipmentId),
       note: data.note,
     });
   }

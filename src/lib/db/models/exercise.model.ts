@@ -27,6 +27,8 @@ const ExerciseSchema = new Schema<IExercise>(
 );
 
 ExerciseSchema.index({ name: 1, createdBy: 1 }, { unique: true });
+ExerciseSchema.index({ isGlobal: 1 });
+ExerciseSchema.index({ createdBy: 1 });
 
 export const ExerciseModel: Model<IExercise> =
   mongoose.models.Exercise ?? mongoose.model<IExercise>('Exercise', ExerciseSchema);

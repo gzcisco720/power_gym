@@ -6,17 +6,11 @@ import { connectDB } from '@/lib/db/connect';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { MongoInviteRepository } from '@/lib/repositories/invite.repository';
 import { validateInviteToken } from '@/lib/auth/invite';
-import type { UserRole } from '@/types/auth';
+import { ROLE_DEFAULT_PATH } from '@/lib/auth/middleware-helpers';
 
 export interface RegisterState {
   error: string;
 }
-
-const ROLE_REDIRECT: Record<UserRole, string> = {
-  owner: '/owner',
-  trainer: '/trainer/members',
-  member: '/member/plan',
-};
 
 function isNextRedirect(err: unknown): boolean {
   return (
@@ -68,7 +62,7 @@ export async function registerAction(
       await inviteRepo.markUsed(token);
     }
 
-    await signIn('credentials', { email, password, redirectTo: ROLE_REDIRECT[role] });
+    await signIn('credentials', { email, password, redirectTo: ROLE_DEFAULT_PATH[role] });
   } catch (err) {
     if (isNextRedirect(err)) throw err;
     return { error: err instanceof Error ? err.message : 'Registration failed' };

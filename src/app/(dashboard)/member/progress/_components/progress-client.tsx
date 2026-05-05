@@ -109,12 +109,10 @@ export function ProgressClient({
     <div>
       <PageHeader title={title} />
       <div className="px-4 sm:px-8 py-7 space-y-7">
-        {/* Training Frequency Heatmap */}
         <div>
           <SectionHeader title="Training Frequency" />
           <Card className="mt-3 bg-[#0c0c0c] border-[#141414] rounded-xl p-4">
             <div className="flex gap-1 overflow-x-auto pb-1">
-              {/* Day-of-week labels column */}
               <div className="flex flex-col gap-1 mr-1">
                 <div className="h-3" />
                 {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((label, i) => (
@@ -123,7 +121,6 @@ export function ProgressClient({
                   </div>
                 ))}
               </div>
-              {/* Week columns */}
               {weeks.map((week) => (
                 <div key={week.weekKey} className="flex flex-col gap-1">
                   <div className="h-3 text-[9px] text-[#888] whitespace-nowrap">
@@ -148,7 +145,6 @@ export function ProgressClient({
           </Card>
         </div>
 
-        {/* Strength Progress */}
         <div>
           <SectionHeader title="Strength Progress" />
           {exercises.length === 0 ? (

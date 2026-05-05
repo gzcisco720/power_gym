@@ -3,17 +3,15 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import { auth } from '@/lib/auth/auth';
 
-function getS3Client(): S3Client {
-  return new S3Client({
-    endpoint: process.env.MINIO_ENDPOINT!,
-    region: 'us-east-1',
-    credentials: {
-      accessKeyId: process.env.MINIO_ACCESS_KEY!,
-      secretAccessKey: process.env.MINIO_SECRET_KEY!,
-    },
-    forcePathStyle: true,
-  });
-}
+const s3Client = new S3Client({
+  endpoint: process.env.MINIO_ENDPOINT!,
+  region: 'us-east-1',
+  credentials: {
+    accessKeyId: process.env.MINIO_ACCESS_KEY!,
+    secretAccessKey: process.env.MINIO_SECRET_KEY!,
+  },
+  forcePathStyle: true,
+});
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const session = await auth();
@@ -32,8 +30,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const key = `${folder}/${randomUUID()}.${ext}`;
   const bytes = await file.arrayBuffer();
 
-  const s3 = getS3Client();
-  await s3.send(
+  await s3Client.send(
     new PutObjectCommand({
       Bucket: process.env.MINIO_BUCKET!,
       Key: key,

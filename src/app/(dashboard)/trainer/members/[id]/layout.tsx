@@ -38,7 +38,6 @@ export default async function MemberHubLayout({ children, params }: MemberHubLay
 
   return (
     <div>
-      {/* Profile header */}
       <div className="sticky top-0 z-10 border-b border-[#0f0f0f] bg-[#050505]">
         <div className="flex items-center justify-between px-4 py-4 sm:px-8">
           <div className="flex items-center gap-4">

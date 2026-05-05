@@ -7,6 +7,7 @@ jest.mock('@/lib/db/models/condition-report.model', () => ({
   }),
 }));
 
+import mongoose from 'mongoose';
 import { ConditionReportModel } from '@/lib/db/models/condition-report.model';
 import { MongoConditionReportRepository } from '@/lib/repositories/condition-report.repository';
 
@@ -28,7 +29,7 @@ describe('MongoConditionReportRepository', () => {
     ];
     mockReportModel.find.mockReturnValue({ sort: jest.fn().mockResolvedValue(reports) } as never);
     const result = await repo.findByEquipmentId(EQUIP_ID);
-    expect(mockReportModel.find).toHaveBeenCalledWith({ equipmentId: EQUIP_ID });
+    expect(mockReportModel.find).toHaveBeenCalledWith({ equipmentId: expect.any(mongoose.Types.ObjectId) });
     expect(result).toEqual(reports);
   });
 
@@ -39,7 +40,7 @@ describe('MongoConditionReportRepository', () => {
     const result = await repo.create({ equipmentId: EQUIP_ID, note: 'Routine inspection' });
 
     expect(mockReportModel.create).toHaveBeenCalledWith({
-      equipmentId: EQUIP_ID,
+      equipmentId: expect.any(mongoose.Types.ObjectId),
       note: 'Routine inspection',
     });
     expect(result).toEqual(saved);

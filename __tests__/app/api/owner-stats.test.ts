@@ -3,7 +3,7 @@ jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 jest.mock('@/lib/auth/auth', () => ({ auth: jest.fn() }));
 
 const mockUserRepo = { findByRole: jest.fn(), findAllMembers: jest.fn() };
-const mockInviteRepo = { findAll: jest.fn() };
+const mockInviteRepo = { findAll: jest.fn(), countPending: jest.fn() };
 const mockSessionRepo = { countByMemberIdsSince: jest.fn() };
 
 jest.mock('@/lib/repositories/user.repository', () => ({
@@ -44,12 +44,7 @@ describe('GET /api/owner/stats', () => {
       { _id: { toString: () => 'm2' } },
       { _id: { toString: () => 'm3' } },
     ]);
-    const now = new Date();
-    mockInviteRepo.findAll.mockResolvedValue([
-      { usedAt: null, expiresAt: new Date(now.getTime() + 86400000) },   // pending
-      { usedAt: new Date(), expiresAt: new Date(now.getTime() + 86400000) }, // used
-      { usedAt: null, expiresAt: new Date(now.getTime() - 86400000) },   // expired
-    ]);
+    mockInviteRepo.countPending.mockResolvedValue(1);
     mockSessionRepo.countByMemberIdsSince.mockResolvedValue(12);
 
     const { GET } = await import('@/app/api/owner/stats/route');

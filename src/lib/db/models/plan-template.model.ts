@@ -27,7 +27,7 @@ export interface IPlanTemplate extends Document {
   createdAt: Date;
 }
 
-const PlanDayExerciseSchema = new Schema<IPlanDayExercise>(
+export const PlanDayExerciseSchema = new Schema<IPlanDayExercise>(
   {
     groupId: { type: String, required: true },
     isSuperset: { type: Boolean, required: true, default: false },
@@ -43,7 +43,7 @@ const PlanDayExerciseSchema = new Schema<IPlanDayExercise>(
   { _id: false },
 );
 
-const PlanDaySchema = new Schema<IPlanDay>(
+export const PlanDaySchema = new Schema<IPlanDay>(
   {
     dayNumber: { type: Number, required: true },
     name: { type: String, required: true },

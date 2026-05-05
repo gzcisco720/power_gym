@@ -77,7 +77,6 @@ export function PlanOverview({ plan, sessionBasePath = '/member/plan' }: Props) 
 
   return (
     <div className="flex flex-col h-full">
-      {/* Plan name header */}
       <div className="px-4 sm:px-8 pt-6 pb-3 border-b border-[#0f0f0f]">
         <div className="flex items-center justify-between">
           <div>
@@ -94,7 +93,6 @@ export function PlanOverview({ plan, sessionBasePath = '/member/plan' }: Props) 
         </div>
       </div>
 
-      {/* Day tab strip */}
       <div className="border-b border-[#0f0f0f] overflow-x-auto scrollbar-none">
         <div className="flex min-w-max px-4 sm:px-8">
           {plan.days.map((day) => (
@@ -117,7 +115,6 @@ export function PlanOverview({ plan, sessionBasePath = '/member/plan' }: Props) 
         </div>
       </div>
 
-      {/* Exercise list */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-5 pb-24 space-y-3">
         {exerciseGroups.length === 0 && (
           <p className="text-[12px] text-[#555]">No exercises in this day.</p>
@@ -177,7 +174,6 @@ export function PlanOverview({ plan, sessionBasePath = '/member/plan' }: Props) 
         })}
       </div>
 
-      {/* Sticky bottom bar */}
       <div className="fixed bottom-0 left-0 right-0 lg:left-[220px] border-t border-[#0f0f0f] bg-[#050505] px-4 sm:px-8 py-3">
         <a
           href={`${sessionBasePath}/session/new?day=${activeDay}`}

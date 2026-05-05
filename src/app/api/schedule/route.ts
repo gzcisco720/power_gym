@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth/auth';
 import { getEmailService } from '@/lib/email/index';
 import { MongoScheduledSessionRepository } from '@/lib/repositories/scheduled-session.repository';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
-import mongoose from 'mongoose';
+import { randomUUID } from 'crypto';
 
 function addWeeks(date: Date, weeks: number): Date {
   const d = new Date(date);
@@ -112,7 +112,7 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ sessions: [doc] }, { status: 201 });
   }
 
-  const seriesId = new mongoose.Types.ObjectId().toString();
+  const seriesId = randomUUID();
   const sessions = Array.from({ length: 12 }, (_, i) => ({
     seriesId,
     trainerId,
@@ -158,7 +158,6 @@ export async function GET(req: Request): Promise<Response> {
   } else if (session.user.role === 'member') {
     docs = await repo.findByDateRange(start, end, { memberId: session.user.id });
   } else {
-    // Owner: optionally filter to a specific trainer's sessions
     const trainerIdParam = url.searchParams.get('trainerId');
     if (trainerIdParam && !/^[a-f0-9]{24}$/.test(trainerIdParam)) {
       return Response.json({ error: 'Invalid trainerId format' }, { status: 400 });

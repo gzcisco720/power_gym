@@ -79,18 +79,23 @@ export interface IEmailService {
   sendCheckInReceived(params: SendCheckInReceivedParams): Promise<void>;
 }
 
+let _emailService: IEmailService | null = null;
+
 export function getEmailService(): IEmailService {
+  if (_emailService) return _emailService;
   const provider = process.env.EMAIL_PROVIDER;
   if (provider === 'mailgun') {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { MailgunEmailService } = require('@/lib/email/mailgun') as {
       MailgunEmailService: new () => IEmailService;
     };
-    return new MailgunEmailService();
+    _emailService = new MailgunEmailService();
+  } else {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { NodemailerEmailService } = require('@/lib/email/nodemailer') as {
+      NodemailerEmailService: new () => IEmailService;
+    };
+    _emailService = new NodemailerEmailService();
   }
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { NodemailerEmailService } = require('@/lib/email/nodemailer') as {
-    NodemailerEmailService: new () => IEmailService;
-  };
-  return new NodemailerEmailService();
+  return _emailService;
 }

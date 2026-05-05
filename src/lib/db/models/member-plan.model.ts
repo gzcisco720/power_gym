@@ -1,5 +1,6 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
-import type { IPlanDay, IPlanDayExercise } from './plan-template.model';
+import type { IPlanDay } from './plan-template.model';
+import { PlanDaySchema } from './plan-template.model';
 
 export interface IMemberPlan extends Document {
   memberId: mongoose.Types.ObjectId;
@@ -11,38 +12,13 @@ export interface IMemberPlan extends Document {
   assignedAt: Date;
 }
 
-const MemberPlanDayExerciseSchema = new Schema<IPlanDayExercise>(
-  {
-    groupId: { type: String, required: true },
-    isSuperset: { type: Boolean, required: true, default: false },
-    exerciseId: { type: Schema.Types.ObjectId, required: true },
-    exerciseName: { type: String, required: true },
-    imageUrl: { type: String, default: null },
-    isBodyweight: { type: Boolean, required: true, default: false },
-    sets: { type: Number, required: true },
-    repsMin: { type: Number, required: true },
-    repsMax: { type: Number, required: true },
-    restSeconds: { type: Number, default: null },
-  },
-  { _id: false },
-);
-
-const MemberPlanDaySchema = new Schema<IPlanDay>(
-  {
-    dayNumber: { type: Number, required: true },
-    name: { type: String, required: true },
-    exercises: [MemberPlanDayExerciseSchema],
-  },
-  { _id: false },
-);
-
 const MemberPlanSchema = new Schema<IMemberPlan>(
   {
     memberId: { type: Schema.Types.ObjectId, required: true },
     trainerId: { type: Schema.Types.ObjectId, required: true },
     templateId: { type: Schema.Types.ObjectId, required: true },
     name: { type: String, required: true },
-    days: [MemberPlanDaySchema],
+    days: [PlanDaySchema],
     isActive: { type: Boolean, required: true, default: true },
     assignedAt: { type: Date, required: true },
   },

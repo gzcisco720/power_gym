@@ -225,7 +225,6 @@ export function PlanTemplateForm({ initialData, exercises: initialExercises = []
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
-      {/* Plan name + description */}
       <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-6 space-y-5">
         <div className="space-y-1.5">
           <label htmlFor="plan-name" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]">
@@ -253,7 +252,6 @@ export function PlanTemplateForm({ initialData, exercises: initialExercises = []
         </div>
       </Card>
 
-      {/* Day list */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-[#666]">Training Days</span>
@@ -269,7 +267,6 @@ export function PlanTemplateForm({ initialData, exercises: initialExercises = []
 
           return (
             <Card key={dayIdx} className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4 space-y-3">
-              {/* Day header */}
               <div className="flex items-center gap-2">
                 <Input
                   placeholder={`Day ${dayIdx + 1}`}
@@ -283,7 +280,6 @@ export function PlanTemplateForm({ initialData, exercises: initialExercises = []
                 </Button>
               </div>
 
-              {/* Group as superset button */}
               {canGroup && (
                 <Button type="button" variant="ghost" onClick={() => groupAsSuperset(dayIdx)}
                   className="text-[11px] border border-[#2a2a2a] text-[#777] hover:border-[#444] hover:text-white">
@@ -291,7 +287,6 @@ export function PlanTemplateForm({ initialData, exercises: initialExercises = []
                 </Button>
               )}
 
-              {/* Exercise list */}
               <div className="space-y-2">
                 {day.exercises.map((ex, exIdx) => {
                   const isSupersetMember = ex.isSuperset;

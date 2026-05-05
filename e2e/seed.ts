@@ -289,7 +289,26 @@ export async function seed(): Promise<void> {
     dayTypes: nutritionTemplate.dayTypes,
   });
 
-  // ── Owner Body Test ───────────────────────────────────────────────────────
+  // ── Owner Body Tests ──────────────────────────────────────────────────────
+  const ownerThirtyDaysAgo = new Date();
+  ownerThirtyDaysAgo.setDate(ownerThirtyDaysAgo.getDate() - 30);
+  await BodyTestModel.create({
+    memberId: owner._id,
+    trainerId: owner._id,
+    date: ownerThirtyDaysAgo,
+    age: 35,
+    sex: 'male',
+    weight: 82,
+    protocol: '3site',
+    chest: 20,
+    abdominal: 24,
+    thigh: 16,
+    bodyFatPct: 17.5,
+    leanMassKg: 67.7,
+    fatMassKg: 14.3,
+    targetWeight: null,
+    targetBodyFatPct: null,
+  });
   await BodyTestModel.create({
     memberId: owner._id,
     trainerId: owner._id,

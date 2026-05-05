@@ -1,13 +1,9 @@
 import { connectDB } from '@/lib/db/connect';
 import { auth } from '@/lib/auth/auth';
 import { MongoPlanTemplateRepository } from '@/lib/repositories/plan-template.repository';
+import { requireTrainerOrOwner } from '@/lib/api/route-guards';
 import type { UserRole } from '@/types/auth';
 import type { IPlanDay } from '@/lib/db/models/plan-template.model';
-
-function requireTrainerOrOwner(role: UserRole): Response | null {
-  if (role === 'member') return Response.json({ error: 'Forbidden' }, { status: 403 });
-  return null;
-}
 
 export async function GET(): Promise<Response> {
   const session = await auth();

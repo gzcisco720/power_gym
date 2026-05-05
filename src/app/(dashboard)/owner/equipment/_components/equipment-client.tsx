@@ -95,7 +95,6 @@ export function EquipmentClient({ initialItems }: Props) {
                 key={item._id}
                 className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_140px_60px_110px_120px_60px] items-center px-5 py-3.5 border-b border-[#0f0f0f] last:border-0 gap-2"
               >
-                {/* Name + thumbnail */}
                 <div className="flex items-center gap-3">
                   {item.images?.[0] ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -119,13 +118,10 @@ export function EquipmentClient({ initialItems }: Props) {
                   </div>
                 </div>
 
-                {/* Brand */}
                 <div className="hidden sm:block text-[12px] text-[#666]">{item.brand ?? '—'}</div>
 
-                {/* Qty */}
                 <div className="hidden sm:block text-[12px] text-[#666]">{item.quantity}</div>
 
-                {/* Status — only when tracking */}
                 <div className="hidden sm:flex">
                   {item.trackCondition ? (
                     <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold capitalize ${STATUS_COLOURS[item.status]}`}>
@@ -136,7 +132,6 @@ export function EquipmentClient({ initialItems }: Props) {
                   )}
                 </div>
 
-                {/* Condition button */}
                 <div className="hidden sm:flex justify-center">
                   <Button
                     variant="ghost"
@@ -147,7 +142,6 @@ export function EquipmentClient({ initialItems }: Props) {
                   </Button>
                 </div>
 
-                {/* Delete */}
                 <div className="flex justify-end">
                   <Button
                     variant="ghost"

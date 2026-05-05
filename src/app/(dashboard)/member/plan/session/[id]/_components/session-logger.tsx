@@ -1,4 +1,3 @@
-// src/app/(dashboard)/member/plan/session/[id]/_components/session-logger.tsx
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -302,7 +301,6 @@ export function SessionLogger({
 
     return (
       <div key={exercise.exerciseId}>
-        {/* Exercise header row */}
         <div className="flex items-center gap-2.5 mb-2.5">
           <ExerciseThumbnail imageUrl={exercise.imageUrl} name={exercise.exerciseName} size={36} />
           <div className="flex-1 min-w-0">
@@ -317,7 +315,6 @@ export function SessionLogger({
               <span className="text-[9px] text-[#555] bg-[#141414] rounded px-1.5 py-0.5">{repsLabel}</span>
             </div>
           </div>
-          {/* BW toggle */}
           <label className="flex items-center gap-1.5 text-[10px] text-[#666] cursor-pointer select-none shrink-0">
             <input
               type="checkbox"
@@ -331,7 +328,6 @@ export function SessionLogger({
           </label>
         </div>
 
-        {/* Set rows */}
         <div className="space-y-1.5">
           {exSets.map(({ globalIndex, setNumber, completedAt, actualWeight, actualReps }) => {
             const done = completedAt !== null;
@@ -388,7 +384,6 @@ export function SessionLogger({
           })}
         </div>
 
-        {/* + Add Set */}
         <button
           onClick={() => addSet(exercise.exerciseId)}
           className="mt-2 text-[11px] text-[#555] hover:text-[#888] transition-colors"
@@ -410,7 +405,6 @@ export function SessionLogger({
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header */}
       <div className="flex items-center justify-between px-4 sm:px-8 py-5 border-b border-[#0f0f0f]">
         <div>
           <button
@@ -427,7 +421,6 @@ export function SessionLogger({
         <div className="text-[18px] font-mono font-semibold text-[#666]">{elapsed}</div>
       </div>
 
-      {/* Exercise cards */}
       <div className="flex-1 px-4 sm:px-8 py-5 pb-32 space-y-4">
         {groups.map((group) => {
           if (group.type === 'standalone') {
@@ -455,7 +448,6 @@ export function SessionLogger({
           );
         })}
 
-        {/* + Add Exercise */}
         <button
           onClick={() => setExerciseSheetOpen(true)}
           className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#1e1e1e] py-4 text-[12px] text-[#555] hover:border-[#333] hover:text-[#777] transition-colors"
@@ -464,7 +456,6 @@ export function SessionLogger({
         </button>
       </div>
 
-      {/* Sticky Complete Workout button */}
       <div className="fixed bottom-0 left-0 right-0 lg:left-[220px] border-t border-[#0f0f0f] bg-[#050505] px-4 sm:px-8 py-3">
         <Button
           onClick={() => setShowCompleteModal(true)}
@@ -483,7 +474,6 @@ export function SessionLogger({
         />
       )}
 
-      {/* Exercise search sheet */}
       <ExerciseSearchSheet
         open={exerciseSheetOpen}
         onOpenChange={setExerciseSheetOpen}

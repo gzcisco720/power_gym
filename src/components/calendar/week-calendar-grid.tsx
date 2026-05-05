@@ -1,6 +1,7 @@
 'use client';
 
 import { SessionEventCard } from './session-event-card';
+import { timeToMinutes } from '@/lib/time';
 
 const HOUR_START = 6;
 const HOUR_END = 22;
@@ -26,11 +27,6 @@ interface WeekCalendarGridProps {
   trainerColorMap: Record<string, string>;
   onSlotClick: (date: Date, time: string) => void;
   onSessionClick: (session: CalendarSession) => void;
-}
-
-function timeToMinutes(t: string): number {
-  const [h, m] = t.split(':').map(Number);
-  return h * 60 + m;
 }
 
 function getTopPx(startTime: string): number {
@@ -83,7 +79,6 @@ export function WeekCalendarGrid({
 
   return (
     <div className="flex flex-col h-full overflow-auto">
-      {/* Header row */}
       <div className="flex border-b border-[#1e1e2e] sticky top-0 bg-[#0c0c0c] z-10">
         <div className="w-14 flex-shrink-0" />
         {days.map((day, i) => (
@@ -94,9 +89,7 @@ export function WeekCalendarGrid({
         ))}
       </div>
 
-      {/* Grid body */}
       <div className="flex flex-1" style={{ height: totalHeight }}>
-        {/* Time labels */}
         <div className="w-14 flex-shrink-0 relative">
           {hours.map((h) => (
             <div
@@ -109,10 +102,8 @@ export function WeekCalendarGrid({
           ))}
         </div>
 
-        {/* Day columns */}
         {days.map((day, di) => (
           <div key={di} className="flex-1 relative border-l border-[#1a1a2e]">
-            {/* Slot click areas */}
             {Array.from({ length: (HOUR_END - HOUR_START) * 2 }, (_, si) => {
               const totalMin = HOUR_START * 60 + si * 30;
               const hh = Math.floor(totalMin / 60);
@@ -128,7 +119,6 @@ export function WeekCalendarGrid({
               );
             })}
 
-            {/* Events */}
             {sessionsByDay[di].map((s) => (
               <div
                 key={s._id}

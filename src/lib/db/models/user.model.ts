@@ -7,7 +7,6 @@ export interface IUser extends Document {
   passwordHash: string;
   role: UserRole;
   trainerId: mongoose.Types.ObjectId | null;
-  gymId: mongoose.Types.ObjectId | null;
   createdAt: Date;
 }
 
@@ -18,10 +17,11 @@ const UserSchema = new Schema<IUser>(
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ['owner', 'trainer', 'member'], required: true },
     trainerId: { type: Schema.Types.ObjectId, default: null },
-    gymId: { type: Schema.Types.ObjectId, default: null },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 );
+
+UserSchema.index({ role: 1, trainerId: 1 });
 
 export const UserModel: Model<IUser> =
   mongoose.models.User ?? mongoose.model<IUser>('User', UserSchema);

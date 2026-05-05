@@ -6,7 +6,7 @@ jest.mock('@/lib/db/models/check-in.model', () => ({
   CheckInModel: Object.assign(jest.fn(), {
     find: jest.fn(),
     findOne: jest.fn(),
-    countDocuments: jest.fn(),
+    exists: jest.fn(),
   }),
 }));
 
@@ -75,11 +75,18 @@ describe('MongoCheckInRepository', () => {
   });
 
   describe('hasCheckInThisWeek', () => {
-    it('returns true when countDocuments is 1', async () => {
-      mockModel.countDocuments.mockResolvedValue(1 as never);
+    it('returns true when a check-in exists this week', async () => {
+      mockModel.exists.mockResolvedValue({ _id: 'ci1' } as never);
       const weekStart = new Date('2026-04-27T00:00:00Z');
       const result = await repo.hasCheckInThisWeek(memberId, weekStart);
       expect(result).toBe(true);
+    });
+
+    it('returns false when no check-in exists this week', async () => {
+      mockModel.exists.mockResolvedValue(null as never);
+      const weekStart = new Date('2026-04-27T00:00:00Z');
+      const result = await repo.hasCheckInThisWeek(memberId, weekStart);
+      expect(result).toBe(false);
     });
   });
 });

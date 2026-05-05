@@ -19,6 +19,13 @@ export default defineConfig({
     env: {
       MONGODB_URI:
         'mongodb://power_gym_user:power_gym_pass@localhost:27017/power_gym_test?authSource=admin',
+      AUTH_SECRET: 'e2e-test-secret-do-not-use-in-production',
+      AUTH_URL: 'http://localhost:3000',
+      EMAIL_PROVIDER: 'nodemailer',
+      SMTP_HOST: 'localhost',
+      SMTP_PORT: '1025',
+      SMTP_FROM: 'noreply@test.com',
+      UPLOAD_PROVIDER: 'local',
     },
   },
 });

@@ -140,7 +140,6 @@ export function ConditionDialog({ equipment, onClose, onStatusUpdated }: Props) 
           </DialogTitle>
         </DialogHeader>
 
-        {/* Status section — only when tracking */}
         {equipment?.trackCondition && (
           <div className="rounded-lg border border-[#1a1a1a] bg-[#080808] px-4 py-3 mb-4">
             <div className="flex items-center justify-between">
@@ -192,9 +191,7 @@ export function ConditionDialog({ equipment, onClose, onStatusUpdated }: Props) 
           </div>
         )}
 
-        {/* Reports */}
         <div className="flex-1 overflow-y-auto space-y-3 min-h-0">
-          {/* Add report form */}
           {showForm ? (
             <div className="rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] p-4 space-y-3">
               <p className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#555]">New Report</p>

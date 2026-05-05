@@ -57,7 +57,7 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
     trainerId: session.user.id,
     templateId: body.templateId,
     name: template.name,
-    dayTypes: JSON.parse(JSON.stringify(template.dayTypes)) as typeof template.dayTypes,
+    dayTypes: structuredClone(template.dayTypes) as typeof template.dayTypes,
     assignedAt: new Date(),
   });
 

@@ -19,8 +19,8 @@ const ScheduledSessionSchema = new Schema<IScheduledSession>(
     trainerId: { type: Schema.Types.ObjectId, required: true },
     memberIds: { type: [Schema.Types.ObjectId], default: [] },
     date: { type: Date, required: true },
-    startTime: { type: String, required: true },
-    endTime: { type: String, required: true },
+    startTime: { type: String, required: true, match: /^\d{2}:\d{2}$/ },
+    endTime: { type: String, required: true, match: /^\d{2}:\d{2}$/ },
     status: { type: String, enum: ['scheduled', 'cancelled'], default: 'scheduled' },
     reminderSentAt: { type: Date, default: null },
   },
@@ -31,6 +31,7 @@ ScheduledSessionSchema.index({ date: 1, trainerId: 1 });
 ScheduledSessionSchema.index({ memberIds: 1, date: 1 });
 ScheduledSessionSchema.index({ seriesId: 1, date: 1 });
 ScheduledSessionSchema.index({ status: 1, date: 1, reminderSentAt: 1 });
+ScheduledSessionSchema.index({ status: 1, date: 1, seriesId: 1 });
 
 export const ScheduledSessionModel: Model<IScheduledSession> =
   mongoose.models.ScheduledSession ??

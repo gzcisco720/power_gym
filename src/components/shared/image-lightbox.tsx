@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Props {
@@ -13,8 +13,9 @@ interface Props {
 export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props) {
   const [index, setIndex] = useState(initialIndex);
   const [prevOpen, setPrevOpen] = useState(open);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; });
 
-  // Reset index to initialIndex when the lightbox re-opens (derived state, no effect needed)
   if (open !== prevOpen) {
     setPrevOpen(open);
     if (open) setIndex(initialIndex);
@@ -26,13 +27,13 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props
   useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onCloseRef.current();
       if (e.key === 'ArrowLeft') prev();
       if (e.key === 'ArrowRight') next();
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose, prev, next]);
+  }, [open, prev, next]);
 
   if (!open || images.length === 0) return null;
 

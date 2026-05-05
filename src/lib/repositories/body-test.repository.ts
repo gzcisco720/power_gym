@@ -57,7 +57,6 @@ export class MongoBodyTestRepository implements IBodyTestRepository {
     return BodyTestModel.findOne({
       memberId: new mongoose.Types.ObjectId(memberId),
     })
-      .sort({ date: -1 })
-      .limit(1);
+      .sort({ date: -1 });
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,21 +32,21 @@ export function WorkoutCalendar({ sessions, onSelectSession, selectedSessionId }
 
   const { startOffset, daysInMonth } = getMonthDays(year, month);
 
-  const sessionsByDay = new Map<number, SessionSummary>();
-  for (const s of sessions) {
-    const d = new Date(s.completedAt);
-    if (d.getFullYear() === year && d.getMonth() + 1 === month) {
-      sessionsByDay.set(d.getDate(), s);
+  const sessionsByDay = useMemo(() => {
+    const map = new Map<number, SessionSummary>();
+    for (const s of sessions) {
+      const d = new Date(s.completedAt);
+      if (d.getFullYear() === year && d.getMonth() + 1 === month) {
+        map.set(d.getDate(), s);
+      }
     }
-  }
+    return map;
+  }, [sessions, year, month]);
 
-  function prevMonth() {
-    if (month === 1) { setYear((y) => y - 1); setMonth(12); }
-    else setMonth((m) => m - 1);
-  }
-  function nextMonth() {
-    if (month === 12) { setYear((y) => y + 1); setMonth(1); }
-    else setMonth((m) => m + 1);
+  function shiftMonth(delta: 1 | -1) {
+    const d = new Date(year, month - 1 + delta);
+    setYear(d.getFullYear());
+    setMonth(d.getMonth() + 1);
   }
 
   const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -55,11 +55,11 @@ export function WorkoutCalendar({ sessions, onSelectSession, selectedSessionId }
   return (
     <div className="bg-[#0c0c0c] border border-[#141414] rounded-xl p-4">
       <div className="flex items-center justify-between mb-4">
-        <button onClick={prevMonth} className="text-[#555] hover:text-[#888] transition-colors">
+        <button onClick={() => shiftMonth(-1)} className="text-[#555] hover:text-[#888] transition-colors">
           <ChevronLeft className="h-4 w-4" />
         </button>
         <span className="text-[13px] font-semibold text-white">{monthName}</span>
-        <button onClick={nextMonth} className="text-[#555] hover:text-[#888] transition-colors">
+        <button onClick={() => shiftMonth(1)} className="text-[#555] hover:text-[#888] transition-colors">
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
