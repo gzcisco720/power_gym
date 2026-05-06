@@ -79,6 +79,25 @@ describe('fatsecretSearch', () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 500 });
     await expect(fatsecretSearch('x')).rejects.toThrow(/FatSecret search failed/);
   });
+
+  it('drops servings with non-gram metric units', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        foods_search: { results: { food: [{
+          food_id: '3', food_name: 'Milk', food_type: 'Generic',
+          servings: { serving: [
+            { serving_id: 'cup', serving_description: '1 cup', metric_serving_amount: '240', metric_serving_unit: 'ml', calories: '150', protein: '8', carbohydrate: '12', fat: '8' },
+            { serving_id: 'g',   serving_description: '100 g', metric_serving_amount: '100', metric_serving_unit: 'g',  calories: '62',  protein: '3.3', carbohydrate: '5', fat: '3.3' },
+          ] },
+        }] } },
+      }),
+    });
+    const out = await fatsecretSearch('milk');
+    expect(out).toHaveLength(1);
+    expect(out[0].servings).toHaveLength(1);
+    expect(out[0].servings[0].servingId).toBe('g');
+  });
 });
 
 describe('fatsecretGetFood', () => {
