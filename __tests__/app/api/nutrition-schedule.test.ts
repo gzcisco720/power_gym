@@ -22,6 +22,7 @@ function makeParams(memberId: string) {
 const validBody = {
   weeklyPattern: [{ dayOfWeek: 1, dayTypeName: 'Training' }],
   calendarOverrides: [],
+  iterate: true,
 };
 
 beforeEach(() => jest.clearAllMocks());
@@ -58,6 +59,17 @@ describe('PATCH /api/members/[memberId]/nutrition/schedule', () => {
     expect(res.status).toBe(403);
   });
 
+  it('400 when iterate field is missing', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
+    const bodyWithoutIterate = { weeklyPattern: [], calendarOverrides: [] };
+    const { PATCH } = await import('@/app/api/members/[memberId]/nutrition/schedule/route');
+    const res = await PATCH(
+      new Request('http://localhost/', { method: 'PATCH', body: JSON.stringify(bodyWithoutIterate) }),
+      makeParams('m1'),
+    );
+    expect(res.status).toBe(400);
+  });
+
   it('200 updates schedule and returns updated plan', async () => {
     mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
     mockUserRepo.findById.mockResolvedValue({ _id: 'm1', trainerId: { toString: () => 't1' } });
@@ -69,6 +81,20 @@ describe('PATCH /api/members/[memberId]/nutrition/schedule', () => {
     );
     expect(res.status).toBe(200);
     expect(mockPlanRepo.updateSchedule).toHaveBeenCalledWith('m1', validBody);
+  });
+
+  it('200 persists iterate=false in the schedule', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
+    mockUserRepo.findById.mockResolvedValue({ _id: 'm1', trainerId: { toString: () => 't1' } });
+    const bodyNoIterate = { weeklyPattern: [], calendarOverrides: [], iterate: false };
+    mockPlanRepo.updateSchedule.mockResolvedValue({ _id: 'np1', schedule: bodyNoIterate });
+    const { PATCH } = await import('@/app/api/members/[memberId]/nutrition/schedule/route');
+    const res = await PATCH(
+      new Request('http://localhost/', { method: 'PATCH', body: JSON.stringify(bodyNoIterate) }),
+      makeParams('m1'),
+    );
+    expect(res.status).toBe(200);
+    expect(mockPlanRepo.updateSchedule).toHaveBeenCalledWith('m1', bodyNoIterate);
   });
 
   it('404 when no active plan exists', async () => {

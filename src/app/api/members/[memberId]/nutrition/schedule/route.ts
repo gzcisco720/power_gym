@@ -9,8 +9,12 @@ type RouteContext = { params: Promise<{ memberId: string }> };
 
 function isSchedule(b: unknown): b is ISchedule {
   if (!b || typeof b !== 'object') return false;
-  const s = b as { weeklyPattern?: unknown; calendarOverrides?: unknown };
-  return Array.isArray(s.weeklyPattern) && Array.isArray(s.calendarOverrides);
+  const s = b as { weeklyPattern?: unknown; calendarOverrides?: unknown; iterate?: unknown };
+  return (
+    Array.isArray(s.weeklyPattern) &&
+    Array.isArray(s.calendarOverrides) &&
+    typeof s.iterate === 'boolean'
+  );
 }
 
 export async function PATCH(req: Request, { params }: RouteContext): Promise<Response> {
