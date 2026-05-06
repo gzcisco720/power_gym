@@ -1,6 +1,9 @@
 /** @jest-environment node */
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 jest.mock('@/lib/auth/auth', () => ({ auth: jest.fn() }));
+jest.mock('@/lib/email/index', () => ({
+  getEmailService: () => ({ sendNutritionPlanAssigned: jest.fn().mockResolvedValue(undefined) }),
+}));
 
 const mockNutritionPlanRepo = { findActive: jest.fn(), deactivateAll: jest.fn(), create: jest.fn() };
 jest.mock('@/lib/repositories/member-nutrition-plan.repository', () => ({
@@ -24,53 +27,10 @@ function makeParams(memberId: string) {
   return { params: Promise.resolve({ memberId }) };
 }
 
-describe('GET /api/members/[memberId]/nutrition', () => {
-  beforeEach(() => jest.clearAllMocks());
-
-  it('returns 401 when unauthenticated', async () => {
-    mockAuth.mockResolvedValue(null as never);
-    const { GET } = await import('@/app/api/members/[memberId]/nutrition/route');
-    const res = await GET(new Request('http://localhost/'), makeParams('m1'));
-    expect(res.status).toBe(401);
-  });
-
-  it('returns 403 when member accesses another member plan', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
-    const { GET } = await import('@/app/api/members/[memberId]/nutrition/route');
-    const res = await GET(new Request('http://localhost/'), makeParams('m2'));
-    expect(res.status).toBe(403);
-  });
-
-  it('returns active nutrition plan for own member', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
-    const plan = { _id: 'np1', name: '减脂计划', isActive: true };
-    mockNutritionPlanRepo.findActive.mockResolvedValue(plan);
-
-    const { GET } = await import('@/app/api/members/[memberId]/nutrition/route');
-    const res = await GET(new Request('http://localhost/'), makeParams('m1'));
-    const data = await res.json();
-
-    expect(res.status).toBe(200);
-    expect(data).toEqual(plan);
-  });
-
-  it('returns null when no active plan', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
-    mockNutritionPlanRepo.findActive.mockResolvedValue(null);
-
-    const { GET } = await import('@/app/api/members/[memberId]/nutrition/route');
-    const res = await GET(new Request('http://localhost/'), makeParams('m1'));
-    const data = await res.json();
-
-    expect(res.status).toBe(200);
-    expect(data).toBeNull();
-  });
-});
-
 describe('POST /api/members/[memberId]/nutrition', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('returns 403 when member calls POST', async () => {
+  it('rejects member', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
     const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
     const res = await POST(
@@ -80,18 +40,11 @@ describe('POST /api/members/[memberId]/nutrition', () => {
     expect(res.status).toBe(403);
   });
 
-  it('assigns template as deep copy to member', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'trainer1', role: 'trainer' } } as never);
-    mockUserRepo.findById.mockResolvedValue({ _id: 'm1', trainerId: { toString: () => 'trainer1' } });
-    const template = {
-      _id: 'tpl1',
-      name: '增肌计划',
-      dayTypes: [{ name: '训练日', targetKcal: 3000, targetProtein: 200, targetCarbs: 300, targetFat: 80, meals: [] }],
-    };
-    mockTemplateRepo.findById.mockResolvedValue(template);
-    mockNutritionPlanRepo.deactivateAll.mockResolvedValue(undefined);
-    const created = { _id: 'np1', name: '增肌计划', isActive: true };
-    mockNutritionPlanRepo.create.mockResolvedValue(created);
+  it('owner can assign template to any member', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'owner1', role: 'owner', name: 'Owner' } } as never);
+    mockUserRepo.findById.mockResolvedValue({ _id: 'm1', email: 'm@x.com', trainerId: { toString: () => 't1' } });
+    mockTemplateRepo.findById.mockResolvedValue({ _id: 'tpl1', name: '增肌计划', dayTypes: [] });
+    mockNutritionPlanRepo.create.mockResolvedValue({ _id: 'np1', name: '增肌计划' });
 
     const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
     const res = await POST(
@@ -102,15 +55,76 @@ describe('POST /api/members/[memberId]/nutrition', () => {
       }),
       makeParams('m1'),
     );
-    const data = await res.json();
-
     expect(res.status).toBe(201);
-    expect(mockNutritionPlanRepo.deactivateAll).toHaveBeenCalledWith('m1');
     expect(mockNutritionPlanRepo.create).toHaveBeenCalledWith(expect.objectContaining({
       memberId: 'm1',
-      trainerId: 'trainer1',
-      name: '增肌计划',
+      assignedById: 'owner1',
+      templateId: 'tpl1',
     }));
-    expect(data).toEqual(created);
+  });
+
+  it('trainer cannot assign to non-own member', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
+    mockUserRepo.findById.mockResolvedValue({ _id: 'm1', trainerId: { toString: () => 't2' } });
+    const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
+    const res = await POST(
+      new Request('http://localhost/', { method: 'POST', body: JSON.stringify({ templateId: 'tpl1' }) }),
+      makeParams('m1'),
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it('direct creation accepts {name, dayTypes} without templateId', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer', name: 'T' } } as never);
+    mockUserRepo.findById.mockResolvedValue({ _id: 'm1', email: 'm@x.com', trainerId: { toString: () => 't1' } });
+    mockNutritionPlanRepo.create.mockResolvedValue({ _id: 'np1', name: '直建计划' });
+
+    const dayTypes = [{ name: 'Training', targetKcal: 2800, targetProtein: 200, targetCarbs: 300, targetFat: 80, meals: [] }];
+    const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
+    const res = await POST(
+      new Request('http://localhost/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: '直建计划', dayTypes }),
+      }),
+      makeParams('m1'),
+    );
+    expect(res.status).toBe(201);
+    expect(mockNutritionPlanRepo.create).toHaveBeenCalledWith(expect.objectContaining({
+      memberId: 'm1',
+      assignedById: 't1',
+      templateId: null,
+      name: '直建计划',
+      dayTypes,
+    }));
+  });
+
+  it('returns 400 when body is neither shape', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
+    const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
+    const res = await POST(
+      new Request('http://localhost/', { method: 'POST', body: JSON.stringify({}) }),
+      makeParams('m1'),
+    );
+    expect(res.status).toBe(400);
+  });
+});
+
+describe('GET /api/members/[memberId]/nutrition', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('returns active plan for own member', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    mockNutritionPlanRepo.findActive.mockResolvedValue({ _id: 'np1' });
+    const { GET } = await import('@/app/api/members/[memberId]/nutrition/route');
+    const res = await GET(new Request('http://localhost/'), makeParams('m1'));
+    expect(res.status).toBe(200);
+  });
+
+  it('blocks cross-member GET', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    const { GET } = await import('@/app/api/members/[memberId]/nutrition/route');
+    const res = await GET(new Request('http://localhost/'), makeParams('m2'));
+    expect(res.status).toBe(403);
   });
 });

@@ -4,9 +4,21 @@ import { getEmailService } from '@/lib/email/index';
 import { MongoMemberNutritionPlanRepository } from '@/lib/repositories/member-nutrition-plan.repository';
 import { MongoNutritionTemplateRepository } from '@/lib/repositories/nutrition-template.repository';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
+import type { IDayType } from '@/lib/db/models/nutrition-template.model';
 import type { UserRole } from '@/types/auth';
 
 type RouteContext = { params: Promise<{ memberId: string }> };
+
+interface AssignFromTemplate { templateId: string }
+interface AssignDirect { name: string; dayTypes: IDayType[] }
+type AssignBody = AssignFromTemplate | AssignDirect;
+
+function isFromTemplate(b: AssignBody): b is AssignFromTemplate {
+  return typeof (b as AssignFromTemplate).templateId === 'string';
+}
+function isDirect(b: AssignBody): b is AssignDirect {
+  return typeof (b as AssignDirect).name === 'string' && Array.isArray((b as AssignDirect).dayTypes);
+}
 
 export async function GET(_req: Request, { params }: RouteContext): Promise<Response> {
   const session = await auth();
@@ -33,7 +45,11 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
   if (role === 'member') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
   const { memberId } = await params;
-  const body = (await req.json()) as { templateId: string };
+  const body = (await req.json()) as AssignBody;
+
+  if (!isFromTemplate(body) && !isDirect(body)) {
+    return Response.json({ error: 'Body must be {templateId} or {name, dayTypes}' }, { status: 400 });
+  }
 
   await connectDB();
 
@@ -45,19 +61,32 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
     return Response.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const templateRepo = new MongoNutritionTemplateRepository();
-  const template = await templateRepo.findById(body.templateId);
-  if (!template) return Response.json({ error: 'Template not found' }, { status: 404 });
-
   const planRepo = new MongoMemberNutritionPlanRepository();
-  await planRepo.deactivateAll(memberId);
 
+  let name: string;
+  let dayTypes: IDayType[];
+  let templateId: string | null;
+
+  if (isFromTemplate(body)) {
+    const templateRepo = new MongoNutritionTemplateRepository();
+    const template = await templateRepo.findById(body.templateId);
+    if (!template) return Response.json({ error: 'Template not found' }, { status: 404 });
+    name = template.name;
+    dayTypes = structuredClone(template.dayTypes) as IDayType[];
+    templateId = body.templateId;
+  } else {
+    name = body.name;
+    dayTypes = body.dayTypes;
+    templateId = null;
+  }
+
+  await planRepo.deactivateAll(memberId);
   const plan = await planRepo.create({
     memberId,
-    trainerId: session.user.id,
-    templateId: body.templateId,
-    name: template.name,
-    dayTypes: structuredClone(template.dayTypes) as typeof template.dayTypes,
+    assignedById: session.user.id,
+    templateId,
+    name,
+    dayTypes,
     assignedAt: new Date(),
   });
 
@@ -65,7 +94,7 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
     await getEmailService().sendNutritionPlanAssigned({
       to: member.email,
       trainerName: session.user.name ?? 'Your trainer',
-      planName: template.name,
+      planName: name,
     });
   } catch (e) {
     console.error('sendNutritionPlanAssigned failed:', e);
