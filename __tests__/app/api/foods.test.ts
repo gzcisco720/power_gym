@@ -285,6 +285,21 @@ describe('PATCH /api/foods/[foodId]', () => {
     expect(res.status).toBe(200);
     expect(json.food).toBeDefined();
   });
+
+  it('returns 400 on invalid body (wrong type)', async () => {
+    mockAuth.mockResolvedValue(makeSession('trainer', VALID_OID));
+    mockFoodRepo.findById.mockResolvedValue(makeFood(VALID_OID));
+    const { PATCH } = await import('@/app/api/foods/[foodId]/route');
+    const res = await PATCH(
+      new Request('http://localhost/api/foods/x', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 123 }),
+      }),
+      { params: Promise.resolve({ foodId: VALID_OID }) },
+    );
+    expect(res.status).toBe(400);
+  });
 });
 
 // ─── DELETE /api/foods/[foodId] ───────────────────────────────────────────────
