@@ -1,13 +1,9 @@
 import { auth } from '@/lib/auth/auth';
-import { searchFoods } from '@/lib/nutrition/food-search';
-import type { UserRole } from '@/types/auth';
+import { fatsecretSearch } from '@/lib/nutrition/fatsecret-client';
 
 export async function GET(req: Request): Promise<Response> {
   const session = await auth();
   if (!session?.user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const role = session.user.role as UserRole;
-  if (role === 'member') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
   const url = new URL(req.url);
   const q = url.searchParams.get('q')?.trim() ?? '';
@@ -17,7 +13,7 @@ export async function GET(req: Request): Promise<Response> {
   const pageSize = Number.isFinite(pageSizeRaw) ? Math.min(Math.max(pageSizeRaw, 1), 50) : 20;
 
   try {
-    const results = await searchFoods(q, pageSize);
+    const results = await fatsecretSearch(q, pageSize);
     return Response.json({ results });
   } catch (error) {
     console.error('food-search failed:', error);
