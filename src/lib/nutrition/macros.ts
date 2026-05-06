@@ -10,6 +10,10 @@ export interface MacroSnapshot {
   polyunsaturated?: number;
   monounsaturated?: number;
   polyols?: number;
+  cholesterol?: number;
+  sodium?: number;
+  potassium?: number;
+  transFat?: number;
 }
 
 interface BaseMacros {
@@ -27,6 +31,10 @@ interface ExtendedMacros extends BaseMacros {
   polyunsaturated?: number;
   monounsaturated?: number;
   polyols?: number;
+  cholesterol?: number;
+  sodium?: number;
+  potassium?: number;
+  transFat?: number;
 }
 
 interface FoodMacroSource {
@@ -36,6 +44,7 @@ interface FoodMacroSource {
 
 const OPTIONAL_KEYS = [
   'fiber', 'sugar', 'salt', 'saturated', 'polyunsaturated', 'monounsaturated', 'polyols',
+  'cholesterol', 'sodium', 'potassium', 'transFat',
 ] as const;
 
 function scaleOptional(source: ExtendedMacros, ratio: number, target: MacroSnapshot): void {

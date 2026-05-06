@@ -14,11 +14,19 @@ export interface IMealItem {
   polyunsaturated?: number;
   monounsaturated?: number;
   polyols?: number;
+  cholesterol?: number;
+  sodium?: number;
+  potassium?: number;
+  transFat?: number;
 }
 
 export interface IMeal {
   name: string;
   order: number;
+  targetKcal: number;
+  targetProtein: number;
+  targetCarbs: number;
+  targetFat: number;
   items: IMealItem[];
 }
 
@@ -54,6 +62,10 @@ export const MealItemSchema = new Schema<IMealItem>(
     polyunsaturated: { type: Number },
     monounsaturated: { type: Number },
     polyols: { type: Number },
+    cholesterol: { type: Number },
+    sodium: { type: Number },
+    potassium: { type: Number },
+    transFat: { type: Number },
   },
   { _id: false },
 );
@@ -62,6 +74,10 @@ export const MealSchema = new Schema<IMeal>(
   {
     name: { type: String, required: true },
     order: { type: Number, required: true },
+    targetKcal: { type: Number, required: true, default: 0 },
+    targetProtein: { type: Number, required: true, default: 0 },
+    targetCarbs: { type: Number, required: true, default: 0 },
+    targetFat: { type: Number, required: true, default: 0 },
     items: [MealItemSchema],
   },
   { _id: false },

@@ -71,3 +71,16 @@ describe('calculateMacros — extended', () => {
     expect(result.sugar).toBeUndefined();
   });
 });
+
+describe('calculateMacros — extended micros', () => {
+  it('scales cholesterol/sodium/potassium/transFat from per100g', () => {
+    const out = calculateMacros({
+      per100g: { kcal: 100, protein: 0, carbs: 0, fat: 0, cholesterol: 50, sodium: 300, potassium: 200, transFat: 0.5 },
+      perServing: null,
+    }, 50);
+    expect(out.cholesterol).toBe(25);
+    expect(out.sodium).toBe(150);
+    expect(out.potassium).toBe(100);
+    expect(out.transFat).toBe(0.25);
+  });
+});
