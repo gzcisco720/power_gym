@@ -21,9 +21,7 @@ function makeSession(role: string, id = 'u1') {
 
 function makeChain(logs: unknown[]) {
   return {
-    sort: jest.fn().mockReturnValue({
-      limit: jest.fn().mockResolvedValue(logs),
-    }),
+    sort: jest.fn().mockResolvedValue(logs),
   };
 }
 
@@ -184,5 +182,32 @@ describe('GET /api/members/[memberId]/nutrition/recent', () => {
       params: Promise.resolve({ memberId: 'not-an-object-id' }),
     });
     expect(res.status).toBe(400);
+  });
+
+  it('excludes logs older than 30 days', async () => {
+    mockAuth.mockResolvedValue(makeSession('member', MEMBER_ID));
+
+    const oldDate = new Date();
+    oldDate.setUTCDate(oldDate.getUTCDate() - 60);
+    const oldISO = oldDate.toISOString().slice(0, 10);
+
+    const recentDate = new Date();
+    recentDate.setUTCDate(recentDate.getUTCDate() - 5);
+    const recentISO = recentDate.toISOString().slice(0, 10);
+
+    mockFind.mockImplementation((filter: { date?: { $gte?: string } }) => {
+      expect(filter.date?.$gte).toBeDefined();
+      const cutoff = filter.date!.$gte!;
+      // cutoff should be between 60 days ago and 5 days ago (i.e. ~30 days ago)
+      expect(cutoff < recentISO).toBe(true);
+      expect(cutoff > oldISO).toBe(true);
+      return { sort: jest.fn().mockResolvedValue([]) };
+    });
+
+    const { GET } = await import('@/app/api/members/[memberId]/nutrition/recent/route');
+    const res = await GET(new Request('http://localhost'), {
+      params: Promise.resolve({ memberId: MEMBER_ID }),
+    });
+    expect(res.status).toBe(200);
   });
 });

@@ -6,7 +6,7 @@ import { MongoUserRepository } from '@/lib/repositories/user.repository';
 
 const users = new MongoUserRepository();
 const LIMIT = 20;
-const LOG_LOOKBACK = 30;
+const LOG_LOOKBACK_DAYS = 30; // date window: returns logs from the last 30 calendar days
 
 interface RecentItem {
   foodName: string;
@@ -44,9 +44,14 @@ export async function GET(
   }
   // owner: always allowed
 
-  const logs = await NutritionDailyLogModel.find({ memberId: new mongoose.Types.ObjectId(memberId) })
-    .sort({ date: -1 })
-    .limit(LOG_LOOKBACK);
+  const cutoff = new Date();
+  cutoff.setUTCDate(cutoff.getUTCDate() - LOG_LOOKBACK_DAYS);
+  const cutoffISO = cutoff.toISOString().slice(0, 10);
+
+  const logs = await NutritionDailyLogModel.find({
+    memberId: new mongoose.Types.ObjectId(memberId),
+    date: { $gte: cutoffISO },
+  }).sort({ date: -1 });
 
   const seen = new Set<string>();
   const recent: RecentItem[] = [];
