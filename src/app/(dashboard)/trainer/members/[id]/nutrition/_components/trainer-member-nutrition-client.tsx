@@ -87,7 +87,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, basePathPref
               {active.dayTypes.map((d) => (
                 <li key={d.name} className="py-1.5 flex justify-between">
                   <span>{d.name}</span>
-                  <span className="text-muted-foreground">{d.targetKcal} kcal · {d.targetProtein}P · {d.targetCarbs}C · {d.targetFat}F</span>
+                  <span className="text-muted-foreground">{d.meals.length} meals</span>
                 </li>
               ))}
             </ul>

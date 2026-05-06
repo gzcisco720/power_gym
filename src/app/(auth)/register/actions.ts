@@ -7,6 +7,7 @@ import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { MongoInviteRepository } from '@/lib/repositories/invite.repository';
 import { validateInviteToken } from '@/lib/auth/invite';
 import { ROLE_DEFAULT_PATH } from '@/lib/auth/middleware-helpers';
+import type { UserRole } from '@/types/auth';
 
 export interface RegisterState {
   error: string;
