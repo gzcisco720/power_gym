@@ -34,12 +34,12 @@ describe('getFatSecretToken', () => {
   });
 
   it('throws on upstream error', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 401 });
+    (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 401, text: async () => '' });
     await expect(getFatSecretToken()).rejects.toThrow(/FatSecret token request failed/);
   });
 
   it('rejects all concurrent callers when token fetch fails, without leaving stale inflight', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 500 });
+    (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 500, text: async () => '' });
     const [a, b] = await Promise.allSettled([getFatSecretToken(), getFatSecretToken()]);
     expect(a.status).toBe('rejected');
     expect(b.status).toBe('rejected');

@@ -1,6 +1,6 @@
 import { getFatSecretToken } from './fatsecret-auth';
 
-const SEARCH_URL = 'https://platform.fatsecret.com/rest/foods/search/v3';
+const SEARCH_URL = 'https://platform.fatsecret.com/rest/foods/search/v5';
 const GET_URL = 'https://platform.fatsecret.com/rest/food/v5';
 
 export interface FatSecretServing {
