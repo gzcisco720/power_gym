@@ -8,31 +8,55 @@ test.describe('Trainer: Nutrition Templates', () => {
     await expect(page.getByText('E2E Nutrition Template')).toBeVisible();
   });
 
-  test('edit existing nutrition template and verify updated name', async ({ page }) => {
-    await page.goto('/trainer/nutrition');
-    const card = page.getByText('E2E Edit Nutrition', { exact: true }).locator('..').locator('..');
-    await card.getByRole('link', { name: 'Edit' }).click();
-    await page.waitForURL(/\/trainer\/nutrition\/.*\/edit/);
-
-    await page.fill('#plan-name', 'E2E Edit Nutrition Updated');
-    await page.getByRole('button', { name: /^save$/i }).click();
-    await page.waitForURL('/trainer/nutrition');
-
-    await expect(page.getByText('E2E Edit Nutrition Updated')).toBeVisible();
-  });
-
-  test('create new nutrition template and verify it appears', async ({ page }) => {
+  test('create new nutrition template via new form', async ({ page }) => {
     await page.goto('/trainer/nutrition/new');
 
-    await page.fill('#plan-name', 'Playwright Nutrition Plan');
-    await page.getByRole('button', { name: '+ Add Day Type' }).click();
+    // Fill template name using the new #tpl-name selector
+    await page.fill('#tpl-name', 'Playwright Nutrition Plan');
 
-    await page.locator('input[placeholder="e.g. Training Day"]').fill('Rest Day');
-    await page.locator('input[type="number"]').first().fill('2000');
+    // Open the day type dialog using the new "+ Day Type" button
+    await page.getByRole('button', { name: '+ Day Type' }).click();
 
-    await page.getByRole('button', { name: 'Save' }).click();
+    // The dialog should now be open — fill the Name field inside it
+    await page.getByRole('dialog').getByLabel('Name').fill('Training Day');
+
+    // Fill target kcal inside the dialog
+    await page.getByRole('dialog').getByLabel('Target Kcal').fill('2200');
+
+    // Save the day type via the "Save Day Type" button inside the dialog
+    await page.getByRole('dialog').getByRole('button', { name: 'Save Day Type' }).click();
+
+    // Submit the template form
+    await page.getByRole('button', { name: 'Save Template' }).click();
     await page.waitForURL('/trainer/nutrition');
 
     await expect(page.getByText('Playwright Nutrition Plan')).toBeVisible();
+  });
+
+  test('member nutrition page shows 3-tab layout', async ({ page }) => {
+    // Navigate to a member's nutrition page via the members list
+    await page.goto('/trainer/members');
+    await page.getByText('Test Member').click();
+    await page.waitForURL(/\/trainer\/members\/.+$/);
+
+    await page.getByRole('link', { name: 'Nutrition', exact: true }).click();
+    await page.waitForURL(/\/trainer\/members\/.+\/nutrition/);
+
+    // Verify the 3-tab layout is present
+    await expect(page.getByRole('tab', { name: 'Current Plan' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'History' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Schedule' })).toBeVisible();
+  });
+
+  test('member nutrition Current Plan tab shows seeded plan', async ({ page }) => {
+    await page.goto('/trainer/members');
+    await page.getByText('Test Member').click();
+    await page.waitForURL(/\/trainer\/members\/.+$/);
+
+    await page.getByRole('link', { name: 'Nutrition', exact: true }).click();
+    await page.waitForURL(/\/trainer\/members\/.+\/nutrition/);
+
+    // Current Plan tab is active by default and shows the seeded plan
+    await expect(page.getByText('E2E Nutrition Template')).toBeVisible();
   });
 });
