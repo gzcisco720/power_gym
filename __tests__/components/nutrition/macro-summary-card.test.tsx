@@ -7,8 +7,7 @@ jest.mock('@/components/nutrition/macro-ring', () => ({
 }));
 
 describe('MacroSummaryCard', () => {
-  const targets = { kcal: 2000, protein: 150, carbs: 200, fat: 60 };
-  const actuals = {
+  const macros = {
     kcal: 1000,
     protein: 75,
     carbs: 100,
@@ -23,27 +22,24 @@ describe('MacroSummaryCard', () => {
     sodium: 800,
   };
 
-  it('renders core page by default with actual/target rows + ring', () => {
-    render(<MacroSummaryCard actuals={actuals} targets={targets} />);
-    expect(screen.getByText(/1000/)).toBeInTheDocument();
-    expect(screen.getByText(/2000/)).toBeInTheDocument(); // target
+  it('renders core page by default with single-value rows + ring', () => {
+    render(<MacroSummaryCard macros={macros} />);
+    expect(screen.getByText(/1000kcal/)).toBeInTheDocument();
+    expect(screen.getByText(/75/)).toBeInTheDocument();
     expect(screen.getByTestId('macro-ring')).toBeInTheDocument();
   });
 
   it('switches to extended page on dot click', () => {
-    render(<MacroSummaryCard actuals={actuals} targets={targets} />);
-    const extendedDot = screen.getByLabelText('Extended macros');
-    fireEvent.click(extendedDot);
+    render(<MacroSummaryCard macros={macros} />);
+    fireEvent.click(screen.getByLabelText('Extended macros'));
     expect(screen.getByText(/Fiber/)).toBeInTheDocument();
     expect(screen.getByText(/Polyunsat/)).toBeInTheDocument();
   });
 
   it('shows em-dash for missing extended values', () => {
-    const minimal = { kcal: 0, protein: 0, carbs: 0, fat: 0 }; // no extended
-    render(<MacroSummaryCard actuals={minimal} targets={targets} />);
+    const minimal = { kcal: 0, protein: 0, carbs: 0, fat: 0 };
+    render(<MacroSummaryCard macros={minimal} />);
     fireEvent.click(screen.getByLabelText('Extended macros'));
-    // 8 missing fields → at least 8 em-dashes
-    const dashes = screen.getAllByText('—');
-    expect(dashes.length).toBeGreaterThanOrEqual(8);
+    expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(8);
   });
 });

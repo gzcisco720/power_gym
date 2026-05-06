@@ -4,27 +4,15 @@ import { Card } from '@/components/ui/card';
 import { MacroRing } from './macro-ring';
 import type { MacroSnapshot } from '@/lib/nutrition/macros';
 
-interface Targets {
-  kcal: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-}
-
 interface Props {
-  actuals: MacroSnapshot;
-  targets: Targets;
+  macros: MacroSnapshot;
 }
 
-export function MacroSummaryCard({ actuals, targets }: Props) {
+export function MacroSummaryCard({ macros }: Props) {
   const [page, setPage] = useState<0 | 1>(0);
   return (
     <Card className="p-3 space-y-3">
-      {page === 0 ? (
-        <CorePage actuals={actuals} targets={targets} />
-      ) : (
-        <ExtendedPage actuals={actuals} />
-      )}
+      {page === 0 ? <CorePage macros={macros} /> : <ExtendedPage macros={macros} />}
       <div className="flex justify-center gap-1.5">
         <button
           aria-label="Core macros"
@@ -41,57 +29,52 @@ export function MacroSummaryCard({ actuals, targets }: Props) {
   );
 }
 
-function CorePage({ actuals, targets }: Props) {
+function CorePage({ macros }: Props) {
   return (
     <div className="flex justify-between items-center">
       <div className="space-y-1 text-sm">
-        <Row label="Kcal" actual={actuals.kcal} target={targets.kcal} unit="kcal" color="text-blue-400" />
-        <Row label="Protein" actual={actuals.protein} target={targets.protein} unit="g" color="text-emerald-400" />
-        <Row label="Carbs" actual={actuals.carbs} target={targets.carbs} unit="g" color="text-amber-400" />
-        <Row label="Fat" actual={actuals.fat} target={targets.fat} unit="g" color="text-pink-400" />
+        <Row label="Kcal" value={macros.kcal} unit="kcal" color="text-blue-400" />
+        <Row label="Protein" value={macros.protein} unit="g" color="text-emerald-400" />
+        <Row label="Carbs" value={macros.carbs} unit="g" color="text-amber-400" />
+        <Row label="Fat" value={macros.fat} unit="g" color="text-pink-400" />
       </div>
-      <MacroRing
-        values={{
-          kcal: { actual: actuals.kcal, target: targets.kcal },
-          protein: { actual: actuals.protein, target: targets.protein },
-          carbs: { actual: actuals.carbs, target: targets.carbs },
-          fat: { actual: actuals.fat, target: targets.fat },
-        }}
-      />
+      <MacroRing protein={macros.protein} carbs={macros.carbs} fat={macros.fat} />
     </div>
   );
 }
 
-interface RowProps {
+function Row({
+  label,
+  value,
+  unit,
+  color,
+}: {
   label: string;
-  actual: number;
-  target: number;
+  value: number;
   unit: string;
   color: string;
-}
-
-function Row({ label, actual, target, unit, color }: RowProps) {
+}) {
   return (
     <div>
       <span className="text-muted-foreground w-16 inline-block">{label}</span>
       <span className={color}>
-        {actual.toFixed(actual >= 100 ? 0 : 1)}/{target.toFixed(0)}
+        {value.toFixed(value >= 100 ? 0 : 1)}
         {unit}
       </span>
     </div>
   );
 }
 
-function ExtendedPage({ actuals }: { actuals: MacroSnapshot }) {
+function ExtendedPage({ macros }: Props) {
   const fields: Array<[string, number | undefined, string]> = [
-    ['Fiber', actuals.fiber, 'g'],
-    ['Polyunsat', actuals.polyunsaturated, 'g'],
-    ['Sugar', actuals.sugar, 'g'],
-    ['Monounsat', actuals.monounsaturated, 'g'],
-    ['Polyols', actuals.polyols, 'g'],
-    ['Saturated', actuals.saturated, 'g'],
-    ['Salt', actuals.salt, 'g'],
-    ['Sodium', actuals.sodium, 'mg'],
+    ['Fiber', macros.fiber, 'g'],
+    ['Polyunsat', macros.polyunsaturated, 'g'],
+    ['Sugar', macros.sugar, 'g'],
+    ['Monounsat', macros.monounsaturated, 'g'],
+    ['Polyols', macros.polyols, 'g'],
+    ['Saturated', macros.saturated, 'g'],
+    ['Salt', macros.salt, 'g'],
+    ['Sodium', macros.sodium, 'mg'],
   ];
   return (
     <div className="grid grid-cols-2 gap-y-1 gap-x-6 text-sm">
