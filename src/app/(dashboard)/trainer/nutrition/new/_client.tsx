@@ -6,21 +6,7 @@ import { NutritionTemplateForm } from '../_components/nutrition-template-form';
 import { PageHeader } from '@/components/shared/page-header';
 import type { IDayType } from '@/lib/db/models/nutrition-template.model';
 
-interface FoodOption {
-  _id: string;
-  name: string;
-  per100g: { kcal: number; protein: number; carbs: number; fat: number } | null;
-  perServing: {
-    servingLabel: string;
-    grams: number;
-    kcal: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-  } | null;
-}
-
-export function NewNutritionTemplateClient({ foods, backPath = '/trainer/nutrition' }: { foods: FoodOption[]; backPath?: string }) {
+export function NewNutritionTemplateClient({ backPath = '/trainer/nutrition' }: { backPath?: string }) {
   const router = useRouter();
 
   async function handleSubmit(data: {
@@ -46,7 +32,7 @@ export function NewNutritionTemplateClient({ foods, backPath = '/trainer/nutriti
     <div>
       <PageHeader title="New Nutrition Plan" />
       <div className="px-4 sm:px-8 py-7">
-        <NutritionTemplateForm onSubmit={handleSubmit} foods={foods} />
+        <NutritionTemplateForm onSubmit={handleSubmit} />
       </div>
     </div>
   );

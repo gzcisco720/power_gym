@@ -6,28 +6,13 @@ import { NutritionTemplateForm } from '../../_components/nutrition-template-form
 import { PageHeader } from '@/components/shared/page-header';
 import type { IDayType } from '@/lib/db/models/nutrition-template.model';
 
-interface FoodOption {
-  _id: string;
-  name: string;
-  per100g: { kcal: number; protein: number; carbs: number; fat: number } | null;
-  perServing: {
-    servingLabel: string;
-    grams: number;
-    kcal: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-  } | null;
-}
-
 interface Props {
   id: string;
   initialData: { name: string; description: string | null; dayTypes: IDayType[] };
-  foods: FoodOption[];
   backPath?: string;
 }
 
-export function EditNutritionTemplateClient({ id, initialData, foods, backPath = '/trainer/nutrition' }: Props) {
+export function EditNutritionTemplateClient({ id, initialData, backPath = '/trainer/nutrition' }: Props) {
   const router = useRouter();
 
   async function handleSubmit(data: {
@@ -53,7 +38,7 @@ export function EditNutritionTemplateClient({ id, initialData, foods, backPath =
     <div>
       <PageHeader title="Edit Nutrition Plan" />
       <div className="px-4 sm:px-8 py-7">
-        <NutritionTemplateForm initialData={initialData} onSubmit={handleSubmit} foods={foods} />
+        <NutritionTemplateForm initialData={initialData} onSubmit={handleSubmit} />
       </div>
     </div>
   );

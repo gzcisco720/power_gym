@@ -6,21 +6,7 @@ import { NutritionTemplateForm } from '@/app/(dashboard)/trainer/nutrition/_comp
 import { PageHeader } from '@/components/shared/page-header';
 import type { IDayType } from '@/lib/db/models/nutrition-template.model';
 
-interface FoodOption {
-  _id: string;
-  name: string;
-  per100g: { kcal: number; protein: number; carbs: number; fat: number } | null;
-  perServing: {
-    servingLabel: string;
-    grams: number;
-    kcal: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-  } | null;
-}
-
-export function OwnerNewNutritionTemplateClient({ foods }: { foods: FoodOption[] }) {
+export function OwnerNewNutritionTemplateClient() {
   const router = useRouter();
 
   async function handleSubmit(data: { name: string; description: string | null; dayTypes: IDayType[] }) {
@@ -42,7 +28,7 @@ export function OwnerNewNutritionTemplateClient({ foods }: { foods: FoodOption[]
     <div>
       <PageHeader title="New Nutrition Plan" />
       <div className="px-4 sm:px-8 py-7">
-        <NutritionTemplateForm onSubmit={handleSubmit} foods={foods} />
+        <NutritionTemplateForm onSubmit={handleSubmit} />
       </div>
     </div>
   );
