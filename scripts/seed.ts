@@ -232,7 +232,7 @@ async function seedDevData() {
     ],
   });
   await MemberNutritionPlanModel.create({
-    memberId: member._id, trainerId: trainer._id, templateId: nutritionTemplate._id,
+    memberId: member._id, assignedById: trainer._id, templateId: nutritionTemplate._id,
     name: nutritionTemplate.name, isActive: true, assignedAt: daysAgo(25), dayTypes: nutritionTemplate.dayTypes,
   });
   console.log('  ✓ Nutrition template + member plan created');

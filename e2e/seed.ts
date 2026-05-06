@@ -281,7 +281,7 @@ export async function seed(): Promise<void> {
   // ── Member Nutrition Plan (deep copy) ────────────────────────────────────
   await MemberNutritionPlanModel.create({
     memberId: member._id,
-    trainerId: trainer._id,
+    assignedById: trainer._id,
     templateId: nutritionTemplate._id,
     name: nutritionTemplate.name,
     isActive: true,
