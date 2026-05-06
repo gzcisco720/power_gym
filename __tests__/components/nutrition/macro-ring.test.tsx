@@ -2,39 +2,43 @@ import { render } from '@testing-library/react';
 import { MacroRing } from '@/components/nutrition/macro-ring';
 
 describe('MacroRing', () => {
-  const fullTarget = {
-    kcal: { actual: 100, target: 100 },
-    protein: { actual: 50, target: 100 },
-    carbs: { actual: 200, target: 100 }, // over-target
-    fat: { actual: 0, target: 0 },        // no target
-  };
-
-  it('renders 8 circles (4 tracks + 4 fills)', () => {
-    const { container } = render(<MacroRing values={fullTarget} />);
-    const circles = container.querySelectorAll('circle');
-    expect(circles).toHaveLength(8);
+  it('renders 6 circles (3 tracks + 3 fills)', () => {
+    const { container } = render(<MacroRing protein={50} carbs={100} fat={20} />);
+    expect(container.querySelectorAll('circle')).toHaveLength(6);
   });
 
   it('respects custom size', () => {
-    const { container } = render(<MacroRing values={fullTarget} size={200} />);
+    const { container } = render(<MacroRing protein={0} carbs={0} fat={0} size={200} />);
     const svg = container.querySelector('svg');
     expect(svg?.getAttribute('width')).toBe('200');
     expect(svg?.getAttribute('height')).toBe('200');
   });
 
-  it('caps over-target at 100% filled', () => {
-    const { container } = render(<MacroRing values={fullTarget} />);
-    const carbsFill = container.querySelectorAll('circle')[5]; // index for carbs fill (3rd ring × 2 = 6, then +1 for fill, but ordering is per-key: track,fill,track,fill...)
-    // Verify carbs fill has dasharray '100 0' (100% filled)
-    // Allow small floating tolerance
-    const dash = carbsFill.getAttribute('stroke-dasharray');
-    expect(dash).toMatch(/^100\s/);
+  it('renders empty rings when totalKcal is zero', () => {
+    const { container } = render(<MacroRing protein={0} carbs={0} fat={0} />);
+    const fills = container.querySelectorAll('circle');
+    // Every other circle starting at index 1 is a fill circle (track, fill, track, fill, ...)
+    const fillCircles = Array.from(fills).filter((_, idx) => idx % 2 === 1);
+    expect(fillCircles).toHaveLength(3);
+    fillCircles.forEach(c => {
+      expect(c.getAttribute('stroke-dasharray')).toMatch(/^0\s/);
+    });
   });
 
-  it('handles target=0 with 0% filled', () => {
-    const { container } = render(<MacroRing values={fullTarget} />);
-    const fatFill = container.querySelectorAll('circle')[7]; // last circle (fat fill)
-    const dash = fatFill.getAttribute('stroke-dasharray');
-    expect(dash).toMatch(/^0\s/);
+  it('computes correct percentages', () => {
+    // protein 50g = 200 kcal, carbs 100g = 400 kcal, fat 20g = 180 kcal → total 780
+    // protein% = 200/780 ≈ 25.64
+    // carbs%   = 400/780 ≈ 51.28
+    // fat%     = 180/780 ≈ 23.08
+    const { container } = render(<MacroRing protein={50} carbs={100} fat={20} />);
+    const fills = Array.from(container.querySelectorAll('circle')).filter(
+      (_, idx) => idx % 2 === 1,
+    );
+    const proteinDash = fills[0].getAttribute('stroke-dasharray');
+    const carbsDash = fills[1].getAttribute('stroke-dasharray');
+    const fatDash = fills[2].getAttribute('stroke-dasharray');
+    expect(parseFloat(proteinDash!)).toBeCloseTo(25.64, 0);
+    expect(parseFloat(carbsDash!)).toBeCloseTo(51.28, 0);
+    expect(parseFloat(fatDash!)).toBeCloseTo(23.08, 0);
   });
 });
