@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { MealCard } from './meal-card';
-import { FoodAddSheet, type AddedMealItem } from './food-add-sheet';
+import { MacroSummaryCard } from './macro-summary-card';
+import { MealSection } from './meal-section';
 import type { IDailyLogMeal } from '@/lib/db/models/nutrition-daily-log.model';
+import type { MacroSnapshot } from '@/lib/nutrition/macros';
 
 interface DailyLog {
   memberId: string;
@@ -21,6 +22,42 @@ interface Props {
   initialDate: string;
 }
 
+const OPTIONAL_MACRO_KEYS = [
+  'fiber', 'sugar', 'salt', 'saturated', 'polyunsaturated', 'monounsaturated',
+  'polyols', 'cholesterol', 'sodium', 'potassium', 'transFat',
+] as const;
+
+function aggregateMacros(meals: IDailyLogMeal[]): MacroSnapshot {
+  const totals: MacroSnapshot = { kcal: 0, protein: 0, carbs: 0, fat: 0 };
+  for (const m of meals) {
+    for (const i of m.items) {
+      totals.kcal += i.kcal;
+      totals.protein += i.protein;
+      totals.carbs += i.carbs;
+      totals.fat += i.fat;
+      for (const k of OPTIONAL_MACRO_KEYS) {
+        const v = i[k];
+        if (typeof v === 'number') {
+          totals[k] = (totals[k] ?? 0) + v;
+        }
+      }
+    }
+  }
+  return totals;
+}
+
+function aggregateTargets(meals: IDailyLogMeal[]): { kcal: number; protein: number; carbs: number; fat: number } {
+  return meals.reduce(
+    (acc, m) => ({
+      kcal: acc.kcal + m.targetKcal,
+      protein: acc.protein + m.targetProtein,
+      carbs: acc.carbs + m.targetCarbs,
+      fat: acc.fat + m.targetFat,
+    }),
+    { kcal: 0, protein: 0, carbs: 0, fat: 0 },
+  );
+}
+
 function shiftDate(iso: string, days: number): string {
   const d = new Date(`${iso}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
@@ -33,7 +70,6 @@ export function DailyNutritionView({ memberId, initialDate }: Props) {
   const [date, setDate] = useState(initialDate);
   const [log, setLog] = useState<DailyLog | null>(null);
   const [loading, setLoading] = useState(true);
-  const [sheetMealIdx, setSheetMealIdx] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,15 +99,11 @@ export function DailyNutritionView({ memberId, initialDate }: Props) {
     });
   }
 
-  function addFood(idx: number, item: AddedMealItem): void {
-    if (!log) return;
-    const meals = log.meals.map((m, i) => i === idx ? { ...m, items: [...m.items, item] } : m);
-    void persist({ ...log, meals });
-  }
-
   function removeItem(mealIdx: number, itemIdx: number): void {
     if (!log) return;
-    const meals = log.meals.map((m, i) => i === mealIdx ? { ...m, items: m.items.filter((_, j) => j !== itemIdx) } : m);
+    const meals = log.meals.map((m, i) =>
+      i === mealIdx ? { ...m, items: m.items.filter((_, j) => j !== itemIdx) } : m,
+    );
     void persist({ ...log, meals });
   }
 
@@ -79,6 +111,21 @@ export function DailyNutritionView({ memberId, initialDate }: Props) {
     if (!log) return;
     const meals = log.meals.map((m, i) => i === idx ? { ...m, completed: !m.completed } : m);
     void persist({ ...log, meals });
+  }
+
+  function addMeal(): void {
+    if (!log) return;
+    const newMeal: IDailyLogMeal = {
+      name: 'New Meal',
+      order: log.meals.length,
+      completed: false,
+      targetKcal: 0,
+      targetProtein: 0,
+      targetCarbs: 0,
+      targetFat: 0,
+      items: [],
+    };
+    void persist({ ...log, meals: [...log.meals, newMeal] });
   }
 
   function completeDay(): void {
@@ -89,37 +136,45 @@ export function DailyNutritionView({ memberId, initialDate }: Props) {
   if (loading) return <div>Loading...</div>;
   if (!log) {
     return (
-      <Card className="p-6 text-center text-muted-foreground">
-        Your trainer hasn&apos;t scheduled today yet.
+      <Card className="p-6 space-y-3 text-center text-muted-foreground">
+        <p>Your trainer hasn&apos;t scheduled today yet.</p>
         <DateNav date={date} onChange={setDate} />
       </Card>
     );
   }
 
+  const actuals = aggregateMacros(log.meals);
+  const targets = aggregateTargets(log.meals);
+
   return (
     <div className="space-y-3">
       <Card className="p-3 flex justify-between items-center">
-        <span className="font-medium text-sm">{log.date} · {log.dayTypeName}</span>
+        <span className="font-medium text-sm">{log.dayTypeName} · {log.date}</span>
         <DateNav date={date} onChange={setDate} />
       </Card>
+
+      <MacroSummaryCard actuals={actuals} targets={targets} />
+
       {log.meals.map((m, idx) => (
-        <MealCard
+        <MealSection
           key={`${m.name}-${idx}`}
           meal={m}
           locked={log.dayCompleted}
-          onAddFood={() => setSheetMealIdx(idx)}
+          addFoodHref={`/member/nutrition/add?date=${date}&mealIndex=${idx}`}
           onToggleComplete={() => toggleComplete(idx)}
           onRemoveItem={(i) => removeItem(idx, i)}
         />
       ))}
+
+      {!log.dayCompleted && (
+        <Button variant="outline" className="w-full" onClick={addMeal}>
+          + Add Meal
+        </Button>
+      )}
+
       <Button onClick={completeDay} disabled={log.dayCompleted} className="w-full">
         {log.dayCompleted ? 'Day Completed' : 'Complete Day'}
       </Button>
-      <FoodAddSheet
-        open={sheetMealIdx !== null}
-        onOpenChange={(o) => !o && setSheetMealIdx(null)}
-        onAdd={(item) => sheetMealIdx !== null && addFood(sheetMealIdx, item)}
-      />
     </div>
   );
 }
