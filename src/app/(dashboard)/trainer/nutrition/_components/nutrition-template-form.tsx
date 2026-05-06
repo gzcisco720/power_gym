@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -145,6 +145,21 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
   const [addingFor, setAddingFor] = useState<AddingFor | null>(null);
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // Dirty tracking — disable Save when nothing has changed
+  const initialSnapshot = useMemo(
+    () =>
+      JSON.stringify({
+        name: initialData?.name ?? '',
+        description: initialData?.description ?? '',
+        dayTypes: initialData?.dayTypes ?? [],
+      }),
+    [initialData],
+  );
+  const isDirty = useMemo(
+    () => JSON.stringify({ name, description, dayTypes }) !== initialSnapshot,
+    [name, description, dayTypes, initialSnapshot],
+  );
 
   function confirmDelete(): void {
     if (!pendingDelete) return;
@@ -488,7 +503,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
               Cancel
             </Button>
           )}
-          <Button type="submit" className="flex-1" disabled={saving}>
+          <Button type="submit" className="flex-1" disabled={saving || !isDirty}>
             {saving ? 'Saving…' : 'Save Plan'}
           </Button>
         </div>

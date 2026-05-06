@@ -39,6 +39,19 @@ describe('NutritionTemplateForm', () => {
     expect(screen.getByDisplayValue('Training Day')).toBeInTheDocument();
   });
 
+  it('disables Save when nothing has changed; enables once a field is edited', () => {
+    const initialData = {
+      name: 'Cutting Plan',
+      description: '1800 kcal',
+      dayTypes: [],
+    };
+    render(<NutritionTemplateForm initialData={initialData} onSubmit={async () => undefined} />);
+    const save = screen.getByRole('button', { name: /save plan/i });
+    expect(save).toBeDisabled();
+    fireEvent.change(screen.getByLabelText(/plan name/i), { target: { value: 'Cutting Plan v2' } });
+    expect(save).not.toBeDisabled();
+  });
+
   it('renders with initial data', () => {
     const initialData = {
       name: 'Off Season',
