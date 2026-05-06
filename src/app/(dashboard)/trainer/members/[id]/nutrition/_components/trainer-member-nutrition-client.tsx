@@ -1,106 +1,137 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { SectionHeader } from '@/components/shared/section-header';
-import { PageHeader } from '@/components/shared/page-header';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScheduleEditor } from '@/components/nutrition/schedule-editor';
+import type { IMemberNutritionPlan } from '@/lib/db/models/member-nutrition-plan.model';
 
-interface Template {
+interface TemplateOption {
   _id: string;
   name: string;
-}
-
-interface ActivePlan {
-  _id: string;
-  name: string;
-  dayTypes: { name: string }[];
-  assignedAt: string;
 }
 
 interface Props {
   memberId: string;
-  memberName?: string;
-  templates: Template[];
-  activePlan: ActivePlan | null;
+  templates: TemplateOption[];
+  basePathPrefix: 'trainer' | 'owner';
 }
 
-export function TrainerMemberNutritionClient({ memberId, memberName, templates, activePlan }: Props) {
-  const router = useRouter();
-  const [selectedTemplate, setSelectedTemplate] = useState('');
-  const [assigning, setAssigning] = useState(false);
+export function TrainerMemberNutritionClient({ memberId, templates, basePathPrefix }: Props): JSX.Element {
+  const [active, setActive] = useState<IMemberNutritionPlan | null>(null);
+  const [history, setHistory] = useState<IMemberNutritionPlan[]>([]);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [pickedTemplate, setPickedTemplate] = useState<string>('');
 
-  async function assignPlan() {
-    if (!selectedTemplate) return;
-    setAssigning(true);
-    try {
-      const res = await fetch(`/api/members/${memberId}/nutrition`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ templateId: selectedTemplate }),
-      });
-      if (!res.ok) {
-        const data = (await res.json()) as { error?: string };
-        toast.error(data.error ?? 'Failed to assign nutrition plan');
-        return;
-      }
-      toast.success('Nutrition plan assigned');
-      router.refresh();
-    } catch {
-      toast.error('Something went wrong');
-    } finally {
-      setAssigning(false);
+  useEffect(() => {
+    let cancelled = false;
+    void Promise.all([
+      fetch(`/api/members/${memberId}/nutrition`).then((r) => r.json()),
+      fetch(`/api/members/${memberId}/nutrition/history`).then((r) => r.json()),
+    ]).then(([a, h]: [IMemberNutritionPlan | null, IMemberNutritionPlan[]]) => {
+      if (cancelled) return;
+      setActive(a);
+      setHistory(h);
+    });
+    return () => { cancelled = true; };
+  }, [memberId]);
+
+  async function assignTemplate(): Promise<void> {
+    if (!pickedTemplate) return;
+    const res = await fetch(`/api/members/${memberId}/nutrition`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ templateId: pickedTemplate }),
+    });
+    if (res.ok) {
+      const next = (await res.json()) as IMemberNutritionPlan;
+      setActive(next);
+      setHistory((h) => [next, ...h]);
+      setAssignOpen(false);
     }
   }
 
   return (
-    <div className="space-y-8">
-      <PageHeader title={memberName ? `${memberName}'s Nutrition Plan` : 'Nutrition Plan'} />
+    <Tabs defaultValue="current" className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="current">Current Plan</TabsTrigger>
+        <TabsTrigger value="history">History</TabsTrigger>
+        <TabsTrigger value="schedule">Schedule</TabsTrigger>
+      </TabsList>
 
-      <section className="px-4 sm:px-8">
-        <SectionHeader title="Current Plan" />
-        {activePlan ? (
-          <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4 mt-3">
-            <p className="text-[14px] font-semibold text-white">{activePlan.name}</p>
-            <div className="mt-2 flex items-center gap-2">
-              <Badge className="bg-[#1a1a1a] text-[#888] border-0 text-[10px]">
-                {activePlan.dayTypes.length} {activePlan.dayTypes.length !== 1 ? 'day types' : 'day type'}
-              </Badge>
-              <span className="text-[11px] text-[#777]">
-                Assigned {new Date(activePlan.assignedAt).toLocaleDateString('en-US')}
-              </span>
-            </div>
+      <TabsContent value="current">
+        {!active ? (
+          <Card className="p-6 text-center text-muted-foreground">
+            No active plan.
+            <div className="mt-3"><Button size="sm" onClick={() => setAssignOpen(true)}>Assign Plan</Button></div>
           </Card>
         ) : (
-          <p className="text-[13px] text-[#888] mt-3">No nutrition plan assigned</p>
+          <Card className="p-3 space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="font-medium text-sm">{active.name} · {active.dayTypes.length} day types · Assigned {new Date(active.assignedAt).toISOString().slice(0, 10)}</span>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={() => setAssignOpen(true)}>From Template</Button>
+                <Button size="sm" variant="outline" asChild>
+                  <Link href={`/${basePathPrefix}/members/${memberId}/nutrition/new`}>Create Direct</Link>
+                </Button>
+              </div>
+            </div>
+            <ul className="divide-y text-sm">
+              {active.dayTypes.map((d) => (
+                <li key={d.name} className="py-1.5 flex justify-between">
+                  <span>{d.name}</span>
+                  <span className="text-muted-foreground">{d.targetKcal} kcal · {d.targetProtein}P · {d.targetCarbs}C · {d.targetFat}F</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
         )}
-      </section>
+      </TabsContent>
 
-      <section className="px-4 sm:px-8">
-        <SectionHeader title="Assign Plan" />
-        <div className="flex gap-3 items-center mt-3">
-          <select
-            value={selectedTemplate}
-            onChange={(e) => setSelectedTemplate(e.target.value)}
-            className="flex-1 rounded-md border border-[#1e1e1e] bg-[#0c0c0c] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white"
-          >
-            <option value="" disabled>Select a nutrition template</option>
-            {templates.map((t) => (
-              <option key={t._id} value={t._id}>{t.name}</option>
+      <TabsContent value="history">
+        <Card className="p-3">
+          <ul className="divide-y text-sm">
+            {history.map((p) => (
+              <li key={String(p._id)} className="py-1.5 flex justify-between">
+                <span>{p.name}</span>
+                <span className="text-muted-foreground">
+                  {new Date(p.assignedAt).toISOString().slice(0, 10)} · {p.dayTypes.length} day types · {p.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </li>
             ))}
-          </select>
-          <Button
-            onClick={assignPlan}
-            disabled={!selectedTemplate || assigning}
-            className="bg-white text-black hover:bg-white/90 font-semibold disabled:opacity-50"
-          >
-            {assigning ? 'Assigning...' : 'Assign'}
-          </Button>
-        </div>
-      </section>
-    </div>
+            {!history.length && <li className="py-2 text-muted-foreground text-center">No history.</li>}
+          </ul>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="schedule">
+        {!active ? (
+          <Card className="p-6 text-center text-muted-foreground">Assign a plan first to set a schedule.</Card>
+        ) : (
+          <ScheduleEditor
+            memberId={memberId}
+            dayTypeNames={active.dayTypes.map((d) => d.name)}
+            initialSchedule={active.schedule}
+          />
+        )}
+      </TabsContent>
+
+      <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Assign Template</DialogTitle></DialogHeader>
+          <Select value={pickedTemplate} onValueChange={setPickedTemplate}>
+            <SelectTrigger><SelectValue placeholder="Select template" /></SelectTrigger>
+            <SelectContent>
+              {templates.map((t) => <SelectItem key={t._id} value={t._id}>{t.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Button onClick={assignTemplate} disabled={!pickedTemplate}>Assign</Button>
+        </DialogContent>
+      </Dialog>
+    </Tabs>
   );
 }
