@@ -1,7 +1,9 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
+import { Loader2Icon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { calculateMacros, type MacroSnapshot } from '@/lib/nutrition/macros';
 import type { FatSecretFood, FatSecretServing } from '@/lib/nutrition/fatsecret-client';
 
@@ -174,30 +176,32 @@ function FoodTableHeader() {
 }
 
 // ---------------------------------------------------------------------------
-// AllTab — FatSecret search with debounce
+// AllTab — FatSecret search triggered by button / Enter
 // ---------------------------------------------------------------------------
 
 function AllTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void }) {
   const [q, setQ] = useState('');
   const [results, setResults] = useState<FatSecretFood[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    const handle = setTimeout(async () => {
-      if (!q.trim()) {
+  async function runSearch(): Promise<void> {
+    const query = q.trim();
+    if (!query || loading) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/food-search?q=${encodeURIComponent(query)}`);
+      if (!res.ok) {
         setResults([]);
         return;
       }
-      const res = await fetch(`/api/food-search?q=${encodeURIComponent(q)}`);
-      if (!res.ok || cancelled) return;
       const data = (await res.json()) as { results: FatSecretFood[] };
-      if (!cancelled) setResults(data.results);
-    }, 300);
-    return () => {
-      cancelled = true;
-      clearTimeout(handle);
-    };
-  }, [q]);
+      setResults(data.results);
+    } finally {
+      setHasSearched(true);
+      setLoading(false);
+    }
+  }
 
   function handleRowClick(food: FatSecretFood): void {
     const entry: FoodEntry = {
@@ -231,11 +235,22 @@ function AllTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void }) 
 
   return (
     <div className="space-y-2 mt-2">
-      <Input
-        placeholder="Search foods..."
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-      />
+      <form
+        className="flex gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void runSearch();
+        }}
+      >
+        <Input
+          placeholder="Search foods..."
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+        <Button type="submit" disabled={loading || !q.trim()}>
+          {loading ? <Loader2Icon className="size-4 animate-spin" /> : 'Search'}
+        </Button>
+      </form>
       <div className="border rounded overflow-hidden">
         <FoodTableHeader />
         <div className="max-h-96 overflow-auto divide-y">
@@ -252,7 +267,7 @@ function AllTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void }) 
               onClick={() => handleRowClick(f)}
             />
           ))}
-          {results.length === 0 && q.trim() && (
+          {results.length === 0 && hasSearched && !loading && (
             <div className="p-3 text-center text-sm text-muted-foreground">No results</div>
           )}
         </div>

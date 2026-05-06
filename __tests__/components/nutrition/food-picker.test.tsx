@@ -1,4 +1,4 @@
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { FoodPicker } from '@/components/nutrition/food-picker';
 import type { FoodEntry } from '@/components/nutrition/food-picker';
 
@@ -156,58 +156,41 @@ describe('FoodPicker', () => {
     expect(screen.queryByRole('link', { name: /create new/i })).not.toBeInTheDocument();
   });
 
-  // ---- All tab: search input + debounce ------------------------------------
+  // ---- All tab: search input + button --------------------------------------
 
-  it('does not call /api/food-search before user types', () => {
+  it('does not call /api/food-search before user clicks Search', () => {
     render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
+    fireEvent.change(screen.getByPlaceholderText(/search foods/i), { target: { value: 'chicken' } });
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  it('calls /api/food-search after 300ms debounce on input', async () => {
-    jest.useFakeTimers();
+  it('calls /api/food-search when Search button is clicked', async () => {
     (global.fetch as jest.Mock).mockResolvedValue(
       new Response(JSON.stringify({ results: [makeFatSecretFood()] }), { status: 200 }),
     );
 
     render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
-    const input = screen.getByPlaceholderText(/search foods/i);
+    fireEvent.change(screen.getByPlaceholderText(/search foods/i), { target: { value: 'chicken' } });
+    fireEvent.click(screen.getByRole('button', { name: /^search$/i }));
 
-    await act(async () => {
-      fireEvent.change(input, { target: { value: 'chicken' } });
-      jest.advanceTimersByTime(299);
-    });
-    expect(global.fetch).not.toHaveBeenCalled();
-
-    await act(async () => {
-      jest.advanceTimersByTime(1);
-      await Promise.resolve();
-    });
-    expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/food-search?q=chicken'),
+    await waitFor(() =>
+      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/food-search?q=chicken')),
     );
-    jest.useRealTimers();
   });
 
   // ---- All tab: row click emits FoodEntry ----------------------------------
 
   it('renders search results as table rows and emits FoodEntry on row click', async () => {
-    jest.useFakeTimers();
     (global.fetch as jest.Mock).mockResolvedValue(
       new Response(JSON.stringify({ results: [makeFatSecretFood()] }), { status: 200 }),
     );
 
     render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
-    const input = screen.getByPlaceholderText(/search foods/i);
-
-    await act(async () => {
-      fireEvent.change(input, { target: { value: 'chicken' } });
-      jest.advanceTimersByTime(300);
-      await Promise.resolve();
-    });
+    fireEvent.change(screen.getByPlaceholderText(/search foods/i), { target: { value: 'chicken' } });
+    fireEvent.click(screen.getByRole('button', { name: /^search$/i }));
 
     await waitFor(() => expect(screen.getByText('Chicken Breast')).toBeInTheDocument());
 
-    // Click the row
     fireEvent.click(screen.getByText('Chicken Breast'));
 
     expect(onSelectFood).toHaveBeenCalledTimes(1);
@@ -217,30 +200,22 @@ describe('FoodPicker', () => {
     expect(entry.brand).toBeNull();
     expect(entry.servings).toHaveLength(2);
     expect(entry.defaultServingId).toBe('s1');
-    jest.useRealTimers();
   });
 
   it('table header row is rendered for All tab after search', async () => {
-    jest.useFakeTimers();
     (global.fetch as jest.Mock).mockResolvedValue(
       new Response(JSON.stringify({ results: [makeFatSecretFood()] }), { status: 200 }),
     );
 
     render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
-    const input = screen.getByPlaceholderText(/search foods/i);
-
-    await act(async () => {
-      fireEvent.change(input, { target: { value: 'chicken' } });
-      jest.advanceTimersByTime(300);
-      await Promise.resolve();
-    });
+    fireEvent.change(screen.getByPlaceholderText(/search foods/i), { target: { value: 'chicken' } });
+    fireEvent.click(screen.getByRole('button', { name: /^search$/i }));
 
     await waitFor(() => expect(screen.getByText('Chicken Breast')).toBeInTheDocument());
     expect(screen.getByText('Kcal')).toBeInTheDocument();
     expect(screen.getByText('Protein')).toBeInTheDocument();
     expect(screen.getByText('Carbs')).toBeInTheDocument();
     expect(screen.getByText('Fat')).toBeInTheDocument();
-    jest.useRealTimers();
   });
 
   // ---- Recent tab ----------------------------------------------------------

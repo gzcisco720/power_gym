@@ -40,7 +40,10 @@ async function fetchToken(): Promise<string> {
     },
     body: body.toString(),
   });
-  if (!res.ok) throw new Error(`FatSecret token request failed: ${res.status}`);
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '');
+    throw new Error(`FatSecret token request failed: ${res.status} ${detail}`);
+  }
   const json = (await res.json()) as { access_token: string; expires_in: number };
   cached = {
     token: json.access_token,

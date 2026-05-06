@@ -1,4 +1,9 @@
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
+
+function triggerSearch(query: string): void {
+  fireEvent.change(screen.getByPlaceholderText(/search foods/i), { target: { value: query } });
+  fireEvent.click(screen.getByRole('button', { name: /^search$/i }));
+}
 import { FoodPickerDialog } from '@/components/nutrition/food-picker-dialog';
 import type { PickedFood } from '@/components/nutrition/food-picker';
 
@@ -102,50 +107,33 @@ describe('FoodPickerDialog', () => {
   // ---- List → Detail transition -------------------------------------------
 
   it('swaps to detail view when a food row is clicked', async () => {
-    jest.useFakeTimers();
     (global.fetch as jest.Mock).mockResolvedValue(
       new Response(JSON.stringify({ results: [makeFatSecretFood()] }), { status: 200 }),
     );
 
     renderDialog();
-    const input = screen.getByPlaceholderText(/search foods/i);
-
-    await act(async () => {
-      fireEvent.change(input, { target: { value: 'chicken' } });
-      jest.advanceTimersByTime(300);
-      await Promise.resolve();
-    });
+    triggerSearch('chicken');
 
     await waitFor(() => expect(screen.getByText('Chicken Breast')).toBeInTheDocument());
     fireEvent.click(screen.getByText('Chicken Breast'));
 
-    // Detail view should be shown
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /add to meal/i })).toBeInTheDocument();
     });
 
-    // List view should be gone
     expect(screen.queryByRole('tab', { name: /all/i })).not.toBeInTheDocument();
-    jest.useRealTimers();
   });
 
   // ---- Detail → List (back button) ----------------------------------------
 
   it('returns to list view when Back button is clicked in detail view', async () => {
-    jest.useFakeTimers();
     (global.fetch as jest.Mock).mockResolvedValue(
       new Response(JSON.stringify({ results: [makeFatSecretFood()] }), { status: 200 }),
     );
 
     renderDialog();
-    const input = screen.getByPlaceholderText(/search foods/i);
-
-    await act(async () => {
-      fireEvent.change(input, { target: { value: 'chicken' } });
-      jest.advanceTimersByTime(300);
-      await Promise.resolve();
-    });
+    triggerSearch('chicken');
 
     await waitFor(() => expect(screen.getByText('Chicken Breast')).toBeInTheDocument());
     fireEvent.click(screen.getByText('Chicken Breast'));
@@ -153,17 +141,14 @@ describe('FoodPickerDialog', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: /back/i }));
 
-    // Should be back to list view
     await waitFor(() => {
       expect(screen.getByRole('tab', { name: /all/i })).toBeInTheDocument();
     });
-    jest.useRealTimers();
   });
 
   // ---- Add button calls onSelect + closes dialog ---------------------------
 
   it('calls onSelect with PickedFood and closes dialog when Add is clicked', async () => {
-    jest.useFakeTimers();
     const onSelect = jest.fn<void, [PickedFood]>();
     const onOpenChange = jest.fn();
 
@@ -179,13 +164,7 @@ describe('FoodPickerDialog', () => {
         onSelect={onSelect}
       />,
     );
-    const input = screen.getByPlaceholderText(/search foods/i);
-
-    await act(async () => {
-      fireEvent.change(input, { target: { value: 'chicken' } });
-      jest.advanceTimersByTime(300);
-      await Promise.resolve();
-    });
+    triggerSearch('chicken');
 
     await waitFor(() => expect(screen.getByText('Chicken Breast')).toBeInTheDocument());
     fireEvent.click(screen.getByText('Chicken Breast'));
@@ -206,9 +185,7 @@ describe('FoodPickerDialog', () => {
       fat: expect.any(Number),
     });
 
-    // Dialog should be requested to close
     expect(onOpenChange).toHaveBeenCalledWith(false);
-    jest.useRealTimers();
   });
 
   // ---- List → Create transition -------------------------------------------
@@ -287,30 +264,21 @@ describe('FoodPickerDialog', () => {
   // ---- Macro preview in detail view ----------------------------------------
 
   it('shows macro preview in detail view', async () => {
-    jest.useFakeTimers();
     (global.fetch as jest.Mock).mockResolvedValue(
       new Response(JSON.stringify({ results: [makeFatSecretFood()] }), { status: 200 }),
     );
 
     renderDialog();
-    const input = screen.getByPlaceholderText(/search foods/i);
-
-    await act(async () => {
-      fireEvent.change(input, { target: { value: 'chicken' } });
-      jest.advanceTimersByTime(300);
-      await Promise.resolve();
-    });
+    triggerSearch('chicken');
 
     await waitFor(() => expect(screen.getByText('Chicken Breast')).toBeInTheDocument());
     fireEvent.click(screen.getByText('Chicken Breast'));
 
     await waitFor(() => {
-      // Should show macro labels in detail view
       expect(screen.getByText('kcal')).toBeInTheDocument();
       expect(screen.getByText('protein')).toBeInTheDocument();
       expect(screen.getByText('carbs')).toBeInTheDocument();
       expect(screen.getByText('fat')).toBeInTheDocument();
     });
-    jest.useRealTimers();
   });
 });
