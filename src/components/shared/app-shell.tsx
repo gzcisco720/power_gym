@@ -72,7 +72,6 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
     {
       group: 'HEALTH',
       items: [
-        { href: '/owner/my-nutrition', label: 'Nutrition' },
         { href: '/owner/my-body-tests', label: 'Body Tests' },
         { href: '/owner/nutrition-templates', label: 'Nutrition Templates' },
       ],

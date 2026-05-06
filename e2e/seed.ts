@@ -2,7 +2,6 @@ import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import { UserModel } from '../src/lib/db/models/user.model';
 import { ExerciseModel } from '../src/lib/db/models/exercise.model';
-import { FoodModel } from '../src/lib/db/models/food.model';
 import { PlanTemplateModel } from '../src/lib/db/models/plan-template.model';
 import { MemberPlanModel } from '../src/lib/db/models/member-plan.model';
 import { WorkoutSessionModel } from '../src/lib/db/models/workout-session.model';
@@ -79,23 +78,6 @@ export async function seed(): Promise<void> {
     createdBy: null,
     imageUrl: null,
     isBodyweight: false,
-  });
-
-  // ── Foods ─────────────────────────────────────────────────────────────────
-  const rice = await FoodModel.create({
-    name: 'Rice',
-    brand: null,
-    source: 'manual',
-    isGlobal: true,
-    per100g: { kcal: 365, protein: 7.1, carbs: 79.0, fat: 0.7 },
-  });
-
-  const chickenBreast = await FoodModel.create({
-    name: 'Chicken Breast',
-    brand: null,
-    source: 'manual',
-    isGlobal: true,
-    per100g: { kcal: 165, protein: 31.0, carbs: 0.0, fat: 3.6 },
   });
 
   // ── Plan Template ─────────────────────────────────────────────────────────
@@ -223,7 +205,6 @@ export async function seed(): Promise<void> {
             order: 1,
             items: [
               {
-                foodId: rice._id,
                 foodName: 'Rice',
                 quantityG: 100,
                 kcal: 365,
@@ -232,7 +213,6 @@ export async function seed(): Promise<void> {
                 fat: 0.7,
               },
               {
-                foodId: chickenBreast._id,
                 foodName: 'Chicken Breast',
                 quantityG: 150,
                 kcal: 247.5,

@@ -23,7 +23,6 @@ dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 // ── App models ───────────────────────────────────────────────────────────────
 import { UserModel } from '../src/lib/db/models/user.model';
 import { ExerciseModel } from '../src/lib/db/models/exercise.model';
-import { FoodModel } from '../src/lib/db/models/food.model';
 import { PlanTemplateModel } from '../src/lib/db/models/plan-template.model';
 import { MemberPlanModel } from '../src/lib/db/models/member-plan.model';
 import { WorkoutSessionModel } from '../src/lib/db/models/workout-session.model';
@@ -108,15 +107,6 @@ async function seedDevData() {
     ExerciseModel.create({ name: 'Pull-Up', muscleGroup: 'back', isGlobal: true, createdBy: null, imageUrl: null, isBodyweight: true }),
   ]);
   console.log('  ✓ Exercises: 4 created (dev plan exercises)');
-
-  // ── Foods ──────────────────────────────────────────────────────────────────
-  const [rice, chicken, egg, oats] = await Promise.all([
-    FoodModel.create({ name: 'White Rice', brand: null, source: 'manual', isGlobal: true, per100g: { kcal: 365, protein: 7.1, carbs: 79.0, fat: 0.7 } }),
-    FoodModel.create({ name: 'Chicken Breast', brand: null, source: 'manual', isGlobal: true, per100g: { kcal: 165, protein: 31.0, carbs: 0.0, fat: 3.6 } }),
-    FoodModel.create({ name: 'Whole Egg', brand: null, source: 'manual', isGlobal: true, per100g: { kcal: 155, protein: 13.0, carbs: 1.1, fat: 11.0 } }),
-    FoodModel.create({ name: 'Rolled Oats', brand: null, source: 'manual', isGlobal: true, per100g: { kcal: 389, protein: 17.0, carbs: 66.0, fat: 7.0 } }),
-  ]);
-  console.log('  ✓ Foods: 4 created');
 
   // ── Equipment ──────────────────────────────────────────────────────────────
   const [treadmill, smithMachine, legPress] = await Promise.all([
@@ -203,16 +193,16 @@ async function seedDevData() {
         name: 'Training Day', targetKcal: 2800, targetProtein: 210, targetCarbs: 310, targetFat: 70,
         meals: [
           { name: 'Breakfast', order: 1, items: [
-            { foodId: oats._id, foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 },
-            { foodId: egg._id, foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 },
+            { foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 },
+            { foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 },
           ]},
           { name: 'Lunch', order: 2, items: [
-            { foodId: rice._id, foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 },
-            { foodId: chicken._id, foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 },
+            { foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 },
+            { foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 },
           ]},
           { name: 'Dinner', order: 3, items: [
-            { foodId: rice._id, foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
-            { foodId: chicken._id, foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 },
+            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
+            { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 },
           ]},
         ],
       },
@@ -220,12 +210,12 @@ async function seedDevData() {
         name: 'Rest Day', targetKcal: 2300, targetProtein: 200, targetCarbs: 230, targetFat: 70,
         meals: [
           { name: 'Breakfast', order: 1, items: [
-            { foodId: oats._id, foodName: 'Rolled Oats', quantityG: 60, kcal: 233, protein: 10.2, carbs: 39.6, fat: 4.2 },
-            { foodId: egg._id, foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 },
+            { foodName: 'Rolled Oats', quantityG: 60, kcal: 233, protein: 10.2, carbs: 39.6, fat: 4.2 },
+            { foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 },
           ]},
           { name: 'Lunch', order: 2, items: [
-            { foodId: rice._id, foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
-            { foodId: chicken._id, foodName: 'Chicken Breast', quantityG: 180, kcal: 297, protein: 55.8, carbs: 0.0, fat: 6.5 },
+            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
+            { foodName: 'Chicken Breast', quantityG: 180, kcal: 297, protein: 55.8, carbs: 0.0, fat: 6.5 },
           ]},
         ],
       },
