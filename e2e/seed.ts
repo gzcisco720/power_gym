@@ -15,6 +15,8 @@ import { MemberInjuryModel } from '../src/lib/db/models/member-injury.model';
 import { EquipmentModel } from '../src/lib/db/models/equipment.model';
 import { CheckInConfigModel } from '../src/lib/db/models/check-in-config.model';
 import { CheckInModel } from '../src/lib/db/models/check-in.model';
+import { FoodModel } from '../src/lib/db/models/food.model';
+import { NutritionDailyLogModel } from '../src/lib/db/models/nutrition-daily-log.model';
 
 export async function seed(): Promise<void> {
   const passwordHash = await bcrypt.hash('TestPass123!', 10);
@@ -195,10 +197,6 @@ export async function seed(): Promise<void> {
     dayTypes: [
       {
         name: 'Training Day',
-        targetKcal: 2500,
-        targetProtein: 180,
-        targetCarbs: 280,
-        targetFat: 70,
         meals: [
           {
             name: 'Lunch',
@@ -226,10 +224,6 @@ export async function seed(): Promise<void> {
       },
       {
         name: 'Rest Day',
-        targetKcal: 2000,
-        targetProtein: 160,
-        targetCarbs: 180,
-        targetFat: 70,
         meals: [],
       },
     ],
@@ -258,8 +252,12 @@ export async function seed(): Promise<void> {
     dayTypes: [],
   });
 
+  // Determine today's day-of-week to make the member's diary show data on test run day
+  const todayDow = new Date().getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  const todayISO = new Date().toISOString().slice(0, 10);
+
   // ── Member Nutrition Plan (deep copy) ────────────────────────────────────
-  await MemberNutritionPlanModel.create({
+  const memberNutritionPlan = await MemberNutritionPlanModel.create({
     memberId: member._id,
     assignedById: trainer._id,
     templateId: nutritionTemplate._id,
@@ -267,6 +265,47 @@ export async function seed(): Promise<void> {
     isActive: true,
     assignedAt: new Date(),
     dayTypes: nutritionTemplate.dayTypes,
+    schedule: {
+      weeklyPattern: [{ dayOfWeek: todayDow, dayTypeName: 'Training Day' }],
+      calendarOverrides: [],
+      iterate: true,
+    },
+  });
+
+  // ── Custom Foods ──────────────────────────────────────────────────────────
+  await FoodModel.create([
+    {
+      createdBy: trainer._id,
+      name: 'E2E Test Food',
+      brand: 'E2E Brand',
+      macrosPer100g: { kcal: 200, protein: 20, carbs: 20, fat: 5, sodium: 100 },
+      servings: [{ label: '100 g', grams: 100 }],
+    },
+    {
+      createdBy: owner._id,
+      name: 'E2E Owner Food',
+      brand: null,
+      macrosPer100g: { kcal: 150, protein: 10, carbs: 15, fat: 4, sodium: 50 },
+      servings: [{ label: '50 g serve', grams: 50 }],
+    },
+  ]);
+
+  // ── Daily Nutrition Log (today — so the diary has data to display) ────────
+  await NutritionDailyLogModel.create({
+    memberId: member._id,
+    planId: memberNutritionPlan._id,
+    date: todayISO,
+    dayTypeName: 'Training Day',
+    meals: [
+      {
+        name: 'Lunch', order: 1, completed: true,
+        items: [
+          { foodName: 'Rice', quantityG: 100, kcal: 365, protein: 7.1, carbs: 79.0, fat: 0.7 },
+          { foodName: 'Chicken Breast', quantityG: 150, kcal: 247.5, protein: 46.5, carbs: 0.0, fat: 5.4 },
+        ],
+      },
+    ],
+    dayCompleted: false,
   });
 
   // ── Owner Body Tests ──────────────────────────────────────────────────────

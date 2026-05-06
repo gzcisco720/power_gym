@@ -32,6 +32,8 @@ import { ScheduledSessionModel } from '../src/lib/db/models/scheduled-session.mo
 import { MemberInjuryModel } from '../src/lib/db/models/member-injury.model';
 import { CheckInConfigModel } from '../src/lib/db/models/check-in-config.model';
 import { CheckInModel } from '../src/lib/db/models/check-in.model';
+import { FoodModel } from '../src/lib/db/models/food.model';
+import { NutritionDailyLogModel } from '../src/lib/db/models/nutrition-daily-log.model';
 
 const RESET = process.argv.includes('--reset');
 const PASS = 'Dev123!';
@@ -207,10 +209,6 @@ async function main() {
     dayTypes: [
       {
         name: 'Training Day',
-        targetKcal: 2800,
-        targetProtein: 210,
-        targetCarbs: 310,
-        targetFat: 70,
         meals: [
           {
             name: 'Breakfast',
@@ -240,10 +238,6 @@ async function main() {
       },
       {
         name: 'Rest Day',
-        targetKcal: 2300,
-        targetProtein: 200,
-        targetCarbs: 230,
-        targetFat: 70,
         meals: [
           {
             name: 'Breakfast',
@@ -266,7 +260,15 @@ async function main() {
     ],
   });
 
-  await MemberNutritionPlanModel.create({
+  // Next Monday ISO date (for calendar override deload week example)
+  const nextMonIso = (() => {
+    const d = new Date();
+    const dow = d.getDay();
+    d.setDate(d.getDate() + (dow === 0 ? 1 : 8 - dow));
+    return d.toISOString().slice(0, 10);
+  })();
+
+  const memberNutritionPlan = await MemberNutritionPlanModel.create({
     memberId: member._id,
     assignedById: trainer._id,
     templateId: nutritionTemplate._id,
@@ -274,7 +276,308 @@ async function main() {
     isActive: true,
     assignedAt: daysAgo(25),
     dayTypes: nutritionTemplate.dayTypes,
+    schedule: {
+      weeklyPattern: [
+        { dayOfWeek: 1, dayTypeName: 'Training Day' },
+        { dayOfWeek: 2, dayTypeName: 'Rest Day' },
+        { dayOfWeek: 3, dayTypeName: 'Training Day' },
+        { dayOfWeek: 4, dayTypeName: 'Rest Day' },
+        { dayOfWeek: 5, dayTypeName: 'Training Day' },
+        { dayOfWeek: 6, dayTypeName: 'Rest Day' },
+        { dayOfWeek: 0, dayTypeName: 'Rest Day' },
+      ],
+      calendarOverrides: [
+        // Next Monday overridden to Rest Day (simulating a deload week)
+        { date: nextMonIso, dayTypeName: 'Rest Day' },
+      ],
+      iterate: true,
+    },
   });
+
+  // ── Custom Foods (trainer + owner libraries) ───────────────────────────────
+  await FoodModel.create([
+    {
+      createdBy: trainer._id,
+      name: 'Coles Chicken Breast 100g Pack',
+      brand: 'Coles',
+      macrosPer100g: { kcal: 165, protein: 31, carbs: 0, fat: 3.6, sodium: 60 },
+      servings: [{ label: '100 g', grams: 100 }, { label: 'Whole pack 500 g', grams: 500 }],
+    },
+    {
+      createdBy: trainer._id,
+      name: 'Woolworths Rolled Oats',
+      brand: 'Woolworths',
+      macrosPer100g: { kcal: 389, protein: 17, carbs: 58, fat: 7, fiber: 10, sodium: 2 },
+      servings: [{ label: '40 g serving', grams: 40 }, { label: '80 g serving', grams: 80 }],
+    },
+    {
+      createdBy: trainer._id,
+      name: 'Tip Top Wholemeal Bread',
+      brand: 'Tip Top',
+      macrosPer100g: { kcal: 244, protein: 10, carbs: 40, fat: 3.8, fiber: 5.7, sodium: 390 },
+      servings: [{ label: '1 slice (40 g)', grams: 40 }, { label: '2 slices (80 g)', grams: 80 }],
+    },
+    {
+      createdBy: trainer._id,
+      name: 'Bega Cheese',
+      brand: 'Bega',
+      macrosPer100g: { kcal: 395, protein: 24, carbs: 0.2, fat: 33, sodium: 650 },
+      servings: [{ label: '20 g slice', grams: 20 }, { label: '40 g serve', grams: 40 }],
+    },
+    {
+      createdBy: trainer._id,
+      name: 'Vegemite',
+      brand: 'Bega',
+      macrosPer100g: { kcal: 185, protein: 27, carbs: 15, fat: 0.6, sodium: 3450 },
+      servings: [{ label: '5 g serve', grams: 5 }],
+    },
+    {
+      createdBy: owner._id,
+      name: 'Reset Whey Protein',
+      brand: 'Reset Nutrition',
+      macrosPer100g: { kcal: 390, protein: 75, carbs: 8, fat: 6, sodium: 200 },
+      servings: [{ label: '30 g scoop', grams: 30 }],
+    },
+    {
+      createdBy: owner._id,
+      name: 'Premium Almonds',
+      brand: null,
+      macrosPer100g: { kcal: 579, protein: 21, carbs: 22, fat: 50, fiber: 12.5, sodium: 1 },
+      servings: [{ label: '30 g handful', grams: 30 }],
+    },
+    {
+      createdBy: owner._id,
+      name: 'MCT Oil',
+      brand: null,
+      macrosPer100g: { kcal: 870, protein: 0, carbs: 0, fat: 97, sodium: 0 },
+      servings: [{ label: '1 tbsp (15 g)', grams: 15 }],
+    },
+  ]);
+
+  // ── Daily Nutrition Logs (7 days of member history) ───────────────────────
+  const dateISO = (offset: number): string => {
+    const d = new Date();
+    d.setDate(d.getDate() - offset);
+    return d.toISOString().slice(0, 10);
+  };
+
+  // Day-of-week → dayTypeName based on schedule (Mon/Wed/Fri = Training, rest = Rest)
+  const dayTypeForDate = (offset: number): string => {
+    const d = new Date();
+    d.setDate(d.getDate() - offset);
+    const dow = d.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+    return [1, 3, 5].includes(dow) ? 'Training Day' : 'Rest Day';
+  };
+
+  await NutritionDailyLogModel.create([
+    // Day 0 — today: partially complete (breakfast done, rest untouched)
+    {
+      memberId: member._id,
+      planId: memberNutritionPlan._id,
+      date: dateISO(0),
+      dayTypeName: dayTypeForDate(0),
+      meals: [
+        {
+          name: 'Breakfast', order: 1, completed: true,
+          items: [
+            { foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 },
+            { foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 },
+          ],
+        },
+        {
+          name: 'Lunch', order: 2, completed: false,
+          items: [
+            { foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 },
+            { foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 },
+          ],
+        },
+        {
+          name: 'Dinner', order: 3, completed: false,
+          items: [
+            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
+            { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 },
+          ],
+        },
+      ],
+      dayCompleted: false,
+    },
+    // Day 1 — yesterday: fully complete (member nailed it)
+    {
+      memberId: member._id,
+      planId: memberNutritionPlan._id,
+      date: dateISO(1),
+      dayTypeName: dayTypeForDate(1),
+      meals: [
+        {
+          name: 'Breakfast', order: 1, completed: true,
+          items: [
+            { foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 },
+            { foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 },
+          ],
+        },
+        {
+          name: 'Lunch', order: 2, completed: true,
+          items: [
+            { foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 },
+            { foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 },
+          ],
+        },
+        {
+          name: 'Dinner', order: 3, completed: true,
+          items: [
+            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
+            { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 },
+          ],
+        },
+      ],
+      dayCompleted: true,
+    },
+    // Day 2 — 2 days ago: member substituted lunch (Tip Top bread instead of rice — demos Recent tab variety)
+    {
+      memberId: member._id,
+      planId: memberNutritionPlan._id,
+      date: dateISO(2),
+      dayTypeName: dayTypeForDate(2),
+      meals: [
+        {
+          name: 'Breakfast', order: 1, completed: true,
+          items: [
+            { foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 },
+            { foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 },
+          ],
+        },
+        {
+          name: 'Lunch', order: 2, completed: true,
+          items: [
+            // Member substituted: Tip Top Wholemeal Bread instead of rice
+            { foodName: 'Tip Top Wholemeal Bread', quantityG: 80, kcal: 195, protein: 8.0, carbs: 32.0, fat: 3.0, fiber: 4.6 },
+            { foodName: 'Bega Cheese', quantityG: 40, kcal: 158, protein: 9.6, carbs: 0.1, fat: 13.2 },
+            { foodName: 'Coles Chicken Breast 100g Pack', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 },
+          ],
+        },
+        {
+          name: 'Dinner', order: 3, completed: false,
+          items: [
+            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
+            { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 },
+          ],
+        },
+      ],
+      dayCompleted: false,
+    },
+    // Day 3 — 3 days ago: rest day, both meals complete
+    {
+      memberId: member._id,
+      planId: memberNutritionPlan._id,
+      date: dateISO(3),
+      dayTypeName: dayTypeForDate(3),
+      meals: [
+        {
+          name: 'Breakfast', order: 1, completed: true,
+          items: [
+            { foodName: 'Rolled Oats', quantityG: 60, kcal: 233, protein: 10.2, carbs: 39.6, fat: 4.2 },
+            { foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 },
+          ],
+        },
+        {
+          name: 'Lunch', order: 2, completed: true,
+          items: [
+            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
+            { foodName: 'Chicken Breast', quantityG: 180, kcal: 297, protein: 55.8, carbs: 0.0, fat: 6.5 },
+          ],
+        },
+      ],
+      dayCompleted: true,
+    },
+    // Day 4 — 4 days ago: partially complete, added a protein shake (member added item)
+    {
+      memberId: member._id,
+      planId: memberNutritionPlan._id,
+      date: dateISO(4),
+      dayTypeName: dayTypeForDate(4),
+      meals: [
+        {
+          name: 'Breakfast', order: 1, completed: true,
+          items: [
+            { foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 },
+            { foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 },
+            // Member added a scoop of protein
+            { foodName: 'Reset Whey Protein', quantityG: 30, kcal: 117, protein: 22.5, carbs: 2.4, fat: 1.8 },
+          ],
+        },
+        {
+          name: 'Lunch', order: 2, completed: false,
+          items: [
+            { foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 },
+            { foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 },
+          ],
+        },
+        {
+          name: 'Dinner', order: 3, completed: false,
+          items: [
+            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
+            { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 },
+          ],
+        },
+      ],
+      dayCompleted: false,
+    },
+    // Day 5 — 5 days ago: fully complete (great day)
+    {
+      memberId: member._id,
+      planId: memberNutritionPlan._id,
+      date: dateISO(5),
+      dayTypeName: dayTypeForDate(5),
+      meals: [
+        {
+          name: 'Breakfast', order: 1, completed: true,
+          items: [
+            { foodName: 'Rolled Oats', quantityG: 60, kcal: 233, protein: 10.2, carbs: 39.6, fat: 4.2 },
+            { foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 },
+          ],
+        },
+        {
+          name: 'Lunch', order: 2, completed: true,
+          items: [
+            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
+            { foodName: 'Chicken Breast', quantityG: 180, kcal: 297, protein: 55.8, carbs: 0.0, fat: 6.5 },
+          ],
+        },
+      ],
+      dayCompleted: true,
+    },
+    // Day 6 — 6 days ago: no meals touched (member had a busy day)
+    {
+      memberId: member._id,
+      planId: memberNutritionPlan._id,
+      date: dateISO(6),
+      dayTypeName: dayTypeForDate(6),
+      meals: [
+        {
+          name: 'Breakfast', order: 1, completed: false,
+          items: [
+            { foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 },
+            { foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 },
+          ],
+        },
+        {
+          name: 'Lunch', order: 2, completed: false,
+          items: [
+            { foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 },
+            { foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 },
+          ],
+        },
+        {
+          name: 'Dinner', order: 3, completed: false,
+          items: [
+            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
+            { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 },
+          ],
+        },
+      ],
+      dayCompleted: false,
+    },
+  ]);
 
   // ── Body Tests (8 weeks of history) ──────────────────────────────────────
   const bodyTestData = [
@@ -399,7 +702,10 @@ async function main() {
   console.log('  member2@dev.com / Dev123!  (member — no data yet)');
   console.log('\nData seeded for member@dev.com:');
   console.log('  • PPL training plan + 12 sessions + bench press PB');
-  console.log('  • Lean Bulk nutrition plan (training + rest day types)');
+  console.log('  • Lean Bulk nutrition plan — Mon/Wed/Fri Training, Tue/Thu/Sat/Sun Rest');
+  console.log('  • 1 schedule calendar override (next Monday → Rest Day, deload week)');
+  console.log('  • 5 trainer custom foods (AU-themed) + 3 owner custom foods');
+  console.log('  • 7 days of nutrition daily logs (varied completion states)');
   console.log('  • 5 body tests (56 days history)');
   console.log('  • 1 upcoming session (next Monday 09:00)');
   console.log('  • 1 past session (last week)');

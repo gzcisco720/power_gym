@@ -36,6 +36,7 @@ import { CheckInConfigModel } from '../src/lib/db/models/check-in-config.model';
 import { CheckInModel } from '../src/lib/db/models/check-in.model';
 import { EquipmentModel } from '../src/lib/db/models/equipment.model';
 import { ConditionReportModel } from '../src/lib/db/models/condition-report.model';
+import { FoodModel } from '../src/lib/db/models/food.model';
 
 // ── Catalog model (inline — not used by the app at runtime) ─────────────────
 const GymEquipmentCatalogModel: mongoose.Model<mongoose.Document & { catalogId: string; name: string }> =
@@ -190,7 +191,7 @@ async function seedDevData() {
     name: 'Lean Bulk — 2800 kcal', description: null, createdBy: trainer._id,
     dayTypes: [
       {
-        name: 'Training Day', targetKcal: 2800, targetProtein: 210, targetCarbs: 310, targetFat: 70,
+        name: 'Training Day',
         meals: [
           { name: 'Breakfast', order: 1, items: [
             { foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 },
@@ -207,7 +208,7 @@ async function seedDevData() {
         ],
       },
       {
-        name: 'Rest Day', targetKcal: 2300, targetProtein: 200, targetCarbs: 230, targetFat: 70,
+        name: 'Rest Day',
         meals: [
           { name: 'Breakfast', order: 1, items: [
             { foodName: 'Rolled Oats', quantityG: 60, kcal: 233, protein: 10.2, carbs: 39.6, fat: 4.2 },
@@ -224,8 +225,61 @@ async function seedDevData() {
   await MemberNutritionPlanModel.create({
     memberId: member._id, assignedById: trainer._id, templateId: nutritionTemplate._id,
     name: nutritionTemplate.name, isActive: true, assignedAt: daysAgo(25), dayTypes: nutritionTemplate.dayTypes,
+    schedule: {
+      weeklyPattern: [
+        { dayOfWeek: 1, dayTypeName: 'Training Day' },
+        { dayOfWeek: 2, dayTypeName: 'Rest Day' },
+        { dayOfWeek: 3, dayTypeName: 'Training Day' },
+        { dayOfWeek: 4, dayTypeName: 'Rest Day' },
+        { dayOfWeek: 5, dayTypeName: 'Training Day' },
+        { dayOfWeek: 6, dayTypeName: 'Rest Day' },
+        { dayOfWeek: 0, dayTypeName: 'Rest Day' },
+      ],
+      calendarOverrides: [],
+      iterate: true,
+    },
   });
   console.log('  ✓ Nutrition template + member plan created');
+
+  // ── Custom Foods ───────────────────────────────────────────────────────────
+  await FoodModel.create([
+    {
+      createdBy: trainer._id,
+      name: 'Coles Chicken Breast',
+      brand: 'Coles',
+      macrosPer100g: { kcal: 165, protein: 31, carbs: 0, fat: 3.6, sodium: 60 },
+      servings: [{ label: '100 g', grams: 100 }, { label: 'Whole pack 500 g', grams: 500 }],
+    },
+    {
+      createdBy: trainer._id,
+      name: 'Woolworths Rolled Oats',
+      brand: 'Woolworths',
+      macrosPer100g: { kcal: 389, protein: 17, carbs: 58, fat: 7, fiber: 10, sodium: 2 },
+      servings: [{ label: '40 g serving', grams: 40 }, { label: '80 g serving', grams: 80 }],
+    },
+    {
+      createdBy: trainer._id,
+      name: 'Vegemite',
+      brand: 'Bega',
+      macrosPer100g: { kcal: 185, protein: 27, carbs: 15, fat: 0.6, sodium: 3450 },
+      servings: [{ label: '5 g serve', grams: 5 }],
+    },
+    {
+      createdBy: owner._id,
+      name: 'Reset Whey Protein',
+      brand: 'Reset Nutrition',
+      macrosPer100g: { kcal: 390, protein: 75, carbs: 8, fat: 6, sodium: 200 },
+      servings: [{ label: '30 g scoop', grams: 30 }],
+    },
+    {
+      createdBy: owner._id,
+      name: 'Premium Almonds',
+      brand: null,
+      macrosPer100g: { kcal: 579, protein: 21, carbs: 22, fat: 50, fiber: 12.5, sodium: 1 },
+      servings: [{ label: '30 g handful', grams: 30 }],
+    },
+  ]);
+  console.log('  ✓ Custom foods: 3 trainer + 2 owner created');
 
   // ── Body Tests (5 data points, 8 weeks) ───────────────────────────────────
   const bodyTestData = [
