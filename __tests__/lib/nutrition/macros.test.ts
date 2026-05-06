@@ -42,3 +42,32 @@ describe('calculateMacros', () => {
     expect(result.kcal).toBeCloseTo(66, 1);
   });
 });
+
+const foodWithExtended = {
+  per100g: {
+    kcal: 200, protein: 20, carbs: 10, fat: 8,
+    fiber: 4, sugar: 6, salt: 1, saturated: 2,
+    polyunsaturated: 1, monounsaturated: 3, polyols: 0.5,
+  },
+  perServing: null,
+};
+
+describe('calculateMacros — extended', () => {
+  it('scales optional fields proportionally with quantityG', () => {
+    const result = calculateMacros(foodWithExtended, 50);
+    expect(result.fiber).toBeCloseTo(2);
+    expect(result.sugar).toBeCloseTo(3);
+    expect(result.salt).toBeCloseTo(0.5);
+    expect(result.saturated).toBeCloseTo(1);
+    expect(result.polyunsaturated).toBeCloseTo(0.5);
+    expect(result.monounsaturated).toBeCloseTo(1.5);
+    expect(result.polyols).toBeCloseTo(0.25);
+  });
+
+  it('omits optional fields when source omits them', () => {
+    const food = { per100g: { kcal: 200, protein: 20, carbs: 10, fat: 8 }, perServing: null };
+    const result = calculateMacros(food, 100);
+    expect(result.fiber).toBeUndefined();
+    expect(result.sugar).toBeUndefined();
+  });
+});
