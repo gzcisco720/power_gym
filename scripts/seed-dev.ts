@@ -94,12 +94,12 @@ async function main() {
     trainerId: trainer._id,
   });
 
-  await UserModel.create({
+  const member2 = await UserModel.create({
     name: 'Dev Member 2',
     email: 'member2@dev.com',
     passwordHash: hash,
     role: 'member',
-    trainerId: trainer._id,
+    trainerId: owner._id,
   });
 
   // ── Exercises ─────────────────────────────────────────────────────────────
@@ -579,6 +579,225 @@ async function main() {
     },
   ]);
 
+  // ── Owner Plan Template ───────────────────────────────────────────────────
+  const ownerPlanTemplate = await PlanTemplateModel.create({
+    name: 'Full Body 3-Day',
+    description: 'Beginner-friendly full-body rotation',
+    createdBy: owner._id,
+    days: [
+      {
+        dayNumber: 1,
+        name: 'Day A',
+        exercises: [
+          { groupId: new mongoose.Types.ObjectId().toString(), isSuperset: false, exerciseId: squat._id, exerciseName: 'Squat', imageUrl: null, isBodyweight: false, sets: 3, repsMin: 8, repsMax: 12, restSeconds: 120 },
+          { groupId: new mongoose.Types.ObjectId().toString(), isSuperset: false, exerciseId: benchPress._id, exerciseName: 'Bench Press', imageUrl: null, isBodyweight: false, sets: 3, repsMin: 8, repsMax: 12, restSeconds: 120 },
+        ],
+      },
+      {
+        dayNumber: 2,
+        name: 'Day B',
+        exercises: [
+          { groupId: new mongoose.Types.ObjectId().toString(), isSuperset: false, exerciseId: deadlift._id, exerciseName: 'Deadlift', imageUrl: null, isBodyweight: false, sets: 3, repsMin: 5, repsMax: 8, restSeconds: 180 },
+          { groupId: new mongoose.Types.ObjectId().toString(), isSuperset: false, exerciseId: pullUp._id, exerciseName: 'Pull-Up', imageUrl: null, isBodyweight: true, sets: 3, repsMin: 6, repsMax: 10, restSeconds: 90 },
+        ],
+      },
+      {
+        dayNumber: 3,
+        name: 'Day C',
+        exercises: [
+          { groupId: new mongoose.Types.ObjectId().toString(), isSuperset: false, exerciseId: squat._id, exerciseName: 'Squat', imageUrl: null, isBodyweight: false, sets: 3, repsMin: 10, repsMax: 15, restSeconds: 90 },
+        ],
+      },
+    ],
+  });
+
+  const member2Plan = await MemberPlanModel.create({
+    memberId: member2._id,
+    trainerId: owner._id,
+    templateId: ownerPlanTemplate._id,
+    name: ownerPlanTemplate.name,
+    days: ownerPlanTemplate.days,
+    isActive: true,
+    assignedAt: daysAgo(20),
+  });
+
+  // ── Owner Nutrition Template ──────────────────────────────────────────────
+  const ownerNutritionTemplate = await NutritionTemplateModel.create({
+    name: 'Cutting Plan — 1800 kcal',
+    description: 'Moderate deficit, high protein',
+    createdBy: owner._id,
+    dayTypes: [
+      {
+        name: 'Training Day',
+        meals: [
+          {
+            name: 'Breakfast',
+            order: 1,
+            items: [
+              { foodName: 'Greek Yoghurt', quantityG: 200, kcal: 118, protein: 18, carbs: 8, fat: 0.8 },
+              { foodName: 'Blueberries', quantityG: 100, kcal: 57, protein: 0.7, carbs: 14, fat: 0.3 },
+              { foodName: 'Whey Protein', quantityG: 30, kcal: 117, protein: 24, carbs: 2.5, fat: 1.2 },
+            ],
+          },
+          {
+            name: 'Lunch',
+            order: 2,
+            items: [
+              { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0, fat: 5.4 },
+              { foodName: 'Sweet Potato', quantityG: 200, kcal: 172, protein: 3.2, carbs: 41, fat: 0.2 },
+              { foodName: 'Mixed Greens', quantityG: 100, kcal: 23, protein: 2.2, carbs: 3.6, fat: 0.4 },
+            ],
+          },
+          {
+            name: 'Dinner',
+            order: 3,
+            items: [
+              { foodName: 'Salmon Fillet', quantityG: 150, kcal: 312, protein: 31.5, carbs: 0, fat: 19.5 },
+              { foodName: 'Brown Rice', quantityG: 120, kcal: 135, protein: 2.8, carbs: 28.5, fat: 1.1 },
+            ],
+          },
+        ],
+      },
+      {
+        name: 'Rest Day',
+        meals: [
+          {
+            name: 'Breakfast',
+            order: 1,
+            items: [
+              { foodName: 'Greek Yoghurt', quantityG: 200, kcal: 118, protein: 18, carbs: 8, fat: 0.8 },
+              { foodName: 'Almonds', quantityG: 30, kcal: 174, protein: 6.4, carbs: 6.5, fat: 15 },
+            ],
+          },
+          {
+            name: 'Lunch',
+            order: 2,
+            items: [
+              { foodName: 'Tuna', quantityG: 120, kcal: 132, protein: 30, carbs: 0, fat: 1.1 },
+              { foodName: 'Mixed Greens', quantityG: 150, kcal: 35, protein: 3.3, carbs: 5.4, fat: 0.6 },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
+  const member2NutritionPlan = await MemberNutritionPlanModel.create({
+    memberId: member2._id,
+    assignedById: owner._id,
+    templateId: ownerNutritionTemplate._id,
+    name: ownerNutritionTemplate.name,
+    isActive: true,
+    assignedAt: daysAgo(15),
+    dayTypes: ownerNutritionTemplate.dayTypes,
+    schedule: {
+      weeklyPattern: [
+        { dayOfWeek: 1, dayTypeName: 'Training Day' }, // Mon
+        { dayOfWeek: 2, dayTypeName: 'Rest Day' },     // Tue
+        { dayOfWeek: 3, dayTypeName: 'Training Day' }, // Wed
+        { dayOfWeek: 4, dayTypeName: 'Rest Day' },     // Thu
+        { dayOfWeek: 5, dayTypeName: 'Training Day' }, // Fri
+        { dayOfWeek: 6, dayTypeName: 'Rest Day' },     // Sat
+        { dayOfWeek: 0, dayTypeName: 'Rest Day' },     // Sun
+      ],
+      calendarOverrides: [],
+      iterate: true,
+    },
+  });
+
+  // ── Member 2 Body Tests (3 entries, from owner) ───────────────────────────
+  await BodyTestModel.create([
+    { memberId: member2._id, trainerId: owner._id, date: daysAgo(45), age: 28, sex: 'female', weight: 65, protocol: '3site', tricep: 18, suprailiac: 16, thigh: 22, bodyFatPct: 22.5, leanMassKg: 50.4, fatMassKg: 14.6, targetWeight: 60, targetBodyFatPct: 18 },
+    { memberId: member2._id, trainerId: owner._id, date: daysAgo(28), age: 28, sex: 'female', weight: 64, protocol: '3site', tricep: 16, suprailiac: 14, thigh: 20, bodyFatPct: 20.8, leanMassKg: 50.7, fatMassKg: 13.3, targetWeight: 60, targetBodyFatPct: 18 },
+    { memberId: member2._id, trainerId: owner._id, date: daysAgo(7), age: 28, sex: 'female', weight: 62.5, protocol: '3site', tricep: 14, suprailiac: 12, thigh: 18, bodyFatPct: 18.9, leanMassKg: 50.7, fatMassKg: 11.8, targetWeight: 60, targetBodyFatPct: 18 },
+  ]);
+
+  // ── Member 2 Workout Sessions (4 sessions) ────────────────────────────────
+  const m2DayNames = ['Day A', 'Day B', 'Day C'];
+  const m2SessionDays = [daysAgo(15), daysAgo(11), daysAgo(7), daysAgo(3)];
+  for (let i = 0; i < m2SessionDays.length; i++) {
+    const d = m2SessionDays[i];
+    await WorkoutSessionModel.create({
+      memberId: member2._id,
+      memberPlanId: member2Plan._id,
+      dayNumber: (i % 3) + 1,
+      dayName: m2DayNames[i % 3],
+      startedAt: d,
+      completedAt: d,
+      sets: [],
+    });
+  }
+
+  // ── Member 2 Daily Nutrition Logs (4 days) ────────────────────────────────
+  await NutritionDailyLogModel.create([
+    {
+      memberId: member2._id,
+      planId: member2NutritionPlan._id,
+      date: dateISO(0),
+      dayTypeName: 'Training Day',
+      meals: [
+        { name: 'Breakfast', order: 1, completed: true, items: [
+          { foodName: 'Greek Yoghurt', quantityG: 200, kcal: 118, protein: 18, carbs: 8, fat: 0.8 },
+          { foodName: 'Blueberries', quantityG: 100, kcal: 57, protein: 0.7, carbs: 14, fat: 0.3 },
+        ]},
+        { name: 'Lunch', order: 2, completed: false, items: [] },
+        { name: 'Dinner', order: 3, completed: false, items: [] },
+      ],
+      dayCompleted: false,
+    },
+    {
+      memberId: member2._id,
+      planId: member2NutritionPlan._id,
+      date: dateISO(1),
+      dayTypeName: 'Rest Day',
+      meals: [
+        { name: 'Breakfast', order: 1, completed: true, items: [
+          { foodName: 'Greek Yoghurt', quantityG: 200, kcal: 118, protein: 18, carbs: 8, fat: 0.8 },
+        ]},
+        { name: 'Lunch', order: 2, completed: true, items: [
+          { foodName: 'Tuna', quantityG: 120, kcal: 132, protein: 30, carbs: 0, fat: 1.1 },
+        ]},
+      ],
+      dayCompleted: true,
+    },
+    {
+      memberId: member2._id,
+      planId: member2NutritionPlan._id,
+      date: dateISO(2),
+      dayTypeName: 'Training Day',
+      meals: [
+        { name: 'Breakfast', order: 1, completed: true, items: [
+          { foodName: 'Greek Yoghurt', quantityG: 200, kcal: 118, protein: 18, carbs: 8, fat: 0.8 },
+          { foodName: 'Whey Protein', quantityG: 30, kcal: 117, protein: 24, carbs: 2.5, fat: 1.2 },
+        ]},
+        { name: 'Lunch', order: 2, completed: true, items: [
+          { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0, fat: 5.4 },
+          { foodName: 'Sweet Potato', quantityG: 200, kcal: 172, protein: 3.2, carbs: 41, fat: 0.2 },
+        ]},
+        { name: 'Dinner', order: 3, completed: true, items: [
+          { foodName: 'Salmon Fillet', quantityG: 150, kcal: 312, protein: 31.5, carbs: 0, fat: 19.5 },
+        ]},
+      ],
+      dayCompleted: true,
+    },
+    {
+      memberId: member2._id,
+      planId: member2NutritionPlan._id,
+      date: dateISO(4),
+      dayTypeName: 'Rest Day',
+      meals: [
+        { name: 'Breakfast', order: 1, completed: false, items: [] },
+        { name: 'Lunch', order: 2, completed: true, items: [
+          { foodName: 'Tuna', quantityG: 120, kcal: 132, protein: 30, carbs: 0, fat: 1.1 },
+          { foodName: 'Mixed Greens', quantityG: 150, kcal: 35, protein: 3.3, carbs: 5.4, fat: 0.6 },
+        ]},
+      ],
+      dayCompleted: false,
+    },
+  ]);
+
+  console.log('  ✓ Owner plans + member2 data created');
+
   // ── Body Tests (8 weeks of history) ──────────────────────────────────────
   const bodyTestData = [
     { ago: 56, weight: 82, chest: 26, abdominal: 32, thigh: 20 },
@@ -699,7 +918,10 @@ async function main() {
   console.log('  owner@dev.com   / Dev123!  (owner)');
   console.log('  trainer@dev.com / Dev123!  (trainer)');
   console.log('  member@dev.com  / Dev123!  (member — full data)');
-  console.log('  member2@dev.com / Dev123!  (member — no data yet)');
+  console.log('  member2@dev.com / Dev123!  (member — managed by owner directly, has plans and nutrition)');
+  console.log('\nOwner data:');
+  console.log('  • Full Body 3-Day plan template + Cutting Plan — 1800 kcal nutrition template');
+  console.log('  • Member 2: owner-managed, 4 workout sessions, 3 body tests, 4 daily nutrition logs');
   console.log('\nData seeded for member@dev.com:');
   console.log('  • PPL training plan + 12 sessions + bench press PB');
   console.log('  • Lean Bulk nutrition plan — Mon/Wed/Fri Training, Tue/Thu/Sat/Sun Rest');
