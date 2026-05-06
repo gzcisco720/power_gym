@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
 import { DailyNutritionView } from '@/components/nutrition/daily-nutrition-view';
 
-export default async function MemberNutritionPage(): Promise<JSX.Element> {
+export default async function MemberNutritionPage() {
   const session = await auth();
   if (!session?.user || session.user.role !== 'member') redirect('/login');
 

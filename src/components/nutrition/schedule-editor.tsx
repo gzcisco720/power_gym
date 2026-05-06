@@ -19,7 +19,7 @@ interface Props {
 
 const NONE = '__none__';
 
-export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule }: Props): JSX.Element {
+export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule }: Props) {
   const [weekly, setWeekly] = useState<Record<DayOfWeek, string>>(() => {
     const map = {} as Record<DayOfWeek, string>;
     for (const d of DAY_VALUES) {

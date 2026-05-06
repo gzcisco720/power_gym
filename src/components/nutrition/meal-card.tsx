@@ -12,7 +12,7 @@ interface Props {
   onRemoveItem: (idx: number) => void;
 }
 
-export function MealCard({ meal, locked, onAddFood, onToggleComplete, onRemoveItem }: Props): JSX.Element {
+export function MealCard({ meal, locked, onAddFood, onToggleComplete, onRemoveItem }: Props) {
   const totals = meal.items.reduce(
     (acc, i) => ({
       kcal: acc.kcal + i.kcal,

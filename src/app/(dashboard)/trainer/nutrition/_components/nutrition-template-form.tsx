@@ -21,7 +21,7 @@ interface Props {
   onSubmit: (data: FormData) => Promise<void>;
 }
 
-export function NutritionTemplateForm({ initialData, onSubmit }: Props): JSX.Element {
+export function NutritionTemplateForm({ initialData, onSubmit }: Props) {
   const [name, setName] = useState(initialData?.name ?? '');
   const [description, setDescription] = useState(initialData?.description ?? '');
   const [dayTypes, setDayTypes] = useState<IDayType[]>(initialData?.dayTypes ?? []);

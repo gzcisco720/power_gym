@@ -52,7 +52,7 @@ const NUM_FIELDS = [
 
 type ManualKey = (typeof NUM_FIELDS)[number][0];
 
-export function FoodAddSheet({ open, onOpenChange, onAdd }: Props): JSX.Element {
+export function FoodAddSheet({ open, onOpenChange, onAdd }: Props) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
@@ -76,7 +76,7 @@ export function FoodAddSheet({ open, onOpenChange, onAdd }: Props): JSX.Element 
   );
 }
 
-function SearchTab({ onAdd }: { onAdd: (item: AddedMealItem) => void }): JSX.Element {
+function SearchTab({ onAdd }: { onAdd: (item: AddedMealItem) => void }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [selected, setSelected] = useState<SearchResult | null>(null);
@@ -146,7 +146,7 @@ function SearchTab({ onAdd }: { onAdd: (item: AddedMealItem) => void }): JSX.Ele
   );
 }
 
-function ManualTab({ onAdd }: { onAdd: (item: AddedMealItem) => void }): JSX.Element {
+function ManualTab({ onAdd }: { onAdd: (item: AddedMealItem) => void }) {
   const [name, setName] = useState('');
   const [vals, setVals] = useState<Record<ManualKey, number>>({
     kcal: 0,

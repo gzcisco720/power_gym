@@ -29,7 +29,7 @@ function shiftDate(iso: string, days: number): string {
 
 const todayISO = (): string => new Date().toISOString().slice(0, 10);
 
-export function DailyNutritionView({ memberId, initialDate }: Props): JSX.Element {
+export function DailyNutritionView({ memberId, initialDate }: Props) {
   const [date, setDate] = useState(initialDate);
   const [log, setLog] = useState<DailyLog | null>(null);
   const [loading, setLoading] = useState(true);
@@ -124,7 +124,7 @@ export function DailyNutritionView({ memberId, initialDate }: Props): JSX.Elemen
   );
 }
 
-function DateNav({ date, onChange }: { date: string; onChange: (d: string) => void }): JSX.Element {
+function DateNav({ date, onChange }: { date: string; onChange: (d: string) => void }) {
   const today = todayISO();
   return (
     <div className="flex gap-1">
