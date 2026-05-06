@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { MacroSummaryCard } from './macro-summary-card';
 import { MealSection } from './meal-section';
+import { FoodPickerDialog } from './food-picker-dialog';
 import type { IDailyLogMeal } from '@/lib/db/models/nutrition-daily-log.model';
+import type { IMealItem } from '@/lib/db/models/nutrition-template.model';
 import type { MacroSnapshot } from '@/lib/nutrition/macros';
 
 interface DailyLog {
@@ -46,18 +48,6 @@ function aggregateMacros(meals: IDailyLogMeal[]): MacroSnapshot {
   return totals;
 }
 
-function aggregateTargets(meals: IDailyLogMeal[]): { kcal: number; protein: number; carbs: number; fat: number } {
-  return meals.reduce(
-    (acc, m) => ({
-      kcal: acc.kcal + m.targetKcal,
-      protein: acc.protein + m.targetProtein,
-      carbs: acc.carbs + m.targetCarbs,
-      fat: acc.fat + m.targetFat,
-    }),
-    { kcal: 0, protein: 0, carbs: 0, fat: 0 },
-  );
-}
-
 function shiftDate(iso: string, days: number): string {
   const d = new Date(`${iso}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
@@ -70,6 +60,7 @@ export function DailyNutritionView({ memberId, initialDate }: Props) {
   const [date, setDate] = useState(initialDate);
   const [log, setLog] = useState<DailyLog | null>(null);
   const [loading, setLoading] = useState(true);
+  const [addingForMealIdx, setAddingForMealIdx] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -119,13 +110,17 @@ export function DailyNutritionView({ memberId, initialDate }: Props) {
       name: 'New Meal',
       order: log.meals.length,
       completed: false,
-      targetKcal: 0,
-      targetProtein: 0,
-      targetCarbs: 0,
-      targetFat: 0,
       items: [],
     };
     void persist({ ...log, meals: [...log.meals, newMeal] });
+  }
+
+  function addFood(mealIdx: number, item: IMealItem): void {
+    if (!log) return;
+    const meals = log.meals.map((m, i) =>
+      i === mealIdx ? { ...m, items: [...m.items, item] } : m,
+    );
+    void persist({ ...log, meals });
   }
 
   function completeDay(): void {
@@ -143,8 +138,7 @@ export function DailyNutritionView({ memberId, initialDate }: Props) {
     );
   }
 
-  const actuals = aggregateMacros(log.meals);
-  const targets = aggregateTargets(log.meals);
+  const dayMacros = aggregateMacros(log.meals);
 
   return (
     <div className="space-y-3">
@@ -153,14 +147,14 @@ export function DailyNutritionView({ memberId, initialDate }: Props) {
         <DateNav date={date} onChange={setDate} />
       </Card>
 
-      <MacroSummaryCard actuals={actuals} targets={targets} />
+      <MacroSummaryCard macros={dayMacros} />
 
       {log.meals.map((m, idx) => (
         <MealSection
           key={`${m.name}-${idx}`}
           meal={m}
           locked={log.dayCompleted}
-          addFoodHref={`/member/nutrition/add?date=${date}&mealIndex=${idx}`}
+          onAddFood={() => setAddingForMealIdx(idx)}
           onToggleComplete={() => toggleComplete(idx)}
           onRemoveItem={(i) => removeItem(idx, i)}
         />
@@ -175,6 +169,21 @@ export function DailyNutritionView({ memberId, initialDate }: Props) {
       <Button onClick={completeDay} disabled={log.dayCompleted} className="w-full">
         {log.dayCompleted ? 'Day Completed' : 'Complete Day'}
       </Button>
+
+      <FoodPickerDialog
+        open={addingForMealIdx !== null}
+        onOpenChange={(o) => { if (!o) setAddingForMealIdx(null); }}
+        memberId={memberId}
+        onSelect={(picked) => {
+          if (addingForMealIdx === null) return;
+          addFood(addingForMealIdx, {
+            foodName: picked.foodName,
+            quantityG: picked.quantityG,
+            ...picked.macros,
+          });
+          setAddingForMealIdx(null);
+        }}
+      />
     </div>
   );
 }

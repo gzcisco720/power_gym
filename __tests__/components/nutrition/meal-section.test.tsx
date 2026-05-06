@@ -18,7 +18,7 @@ describe('MealSection', () => {
       <MealSection
         meal={meal}
         locked={false}
-        addFoodHref="/x"
+        onAddFood={() => {}}
         onToggleComplete={() => {}}
         onRemoveItem={() => {}}
       />,
@@ -33,7 +33,7 @@ describe('MealSection', () => {
       <MealSection
         meal={meal}
         locked={false}
-        addFoodHref="/x"
+        onAddFood={() => {}}
         onToggleComplete={() => {}}
         onRemoveItem={() => {}}
       />,
@@ -42,18 +42,32 @@ describe('MealSection', () => {
     expect(screen.getByText(/512kcal/)).toBeInTheDocument();
   });
 
-  it('+ Add Food link points to addFoodHref', () => {
+  it('+ Add Food button calls onAddFood callback', () => {
+    const onAddFood = jest.fn();
     render(
       <MealSection
         meal={meal}
         locked={false}
-        addFoodHref="/member/nutrition/add?date=2026-05-06&mealIndex=0"
+        onAddFood={onAddFood}
         onToggleComplete={() => {}}
         onRemoveItem={() => {}}
       />,
     );
-    const link = screen.getByRole('link', { name: /Add Food/i });
-    expect(link).toHaveAttribute('href', '/member/nutrition/add?date=2026-05-06&mealIndex=0');
+    fireEvent.click(screen.getByRole('button', { name: /Add Food/i }));
+    expect(onAddFood).toHaveBeenCalledTimes(1);
+  });
+
+  it('+ Add Food button is disabled when locked', () => {
+    render(
+      <MealSection
+        meal={meal}
+        locked={true}
+        onAddFood={() => {}}
+        onToggleComplete={() => {}}
+        onRemoveItem={() => {}}
+      />,
+    );
+    expect(screen.getByRole('button', { name: /Add Food/i })).toBeDisabled();
   });
 
   it('Complete button toggles', () => {
@@ -62,7 +76,7 @@ describe('MealSection', () => {
       <MealSection
         meal={meal}
         locked={false}
-        addFoodHref="/x"
+        onAddFood={() => {}}
         onToggleComplete={onToggle}
         onRemoveItem={() => {}}
       />,
@@ -76,7 +90,7 @@ describe('MealSection', () => {
       <MealSection
         meal={meal}
         locked={true}
-        addFoodHref="/x"
+        onAddFood={() => {}}
         onToggleComplete={() => {}}
         onRemoveItem={() => {}}
       />,
@@ -90,7 +104,7 @@ describe('MealSection', () => {
       <MealSection
         meal={emptyMeal}
         locked={false}
-        addFoodHref="/x"
+        onAddFood={() => {}}
         onToggleComplete={() => {}}
         onRemoveItem={() => {}}
       />,

@@ -39,35 +39,11 @@ test.describe('Member: Nutrition (Daily Diary)', () => {
     await expect(page.getByRole('heading', { name: 'My Nutrition' })).toBeVisible();
   });
 
-  // --- New tests for the redesigned Add Food full-page route ---
+  // --- Add Food now opens a Dialog (v3.1) instead of navigating to a full-page route ---
 
-  test('add food page renders the FoodPicker with All / Recent / My Food tabs', async ({ page }) => {
-    // Navigate directly to the full-page Add Food route (no log state dependency)
-    await page.goto('/member/nutrition/add');
-
-    // All three tabs must be present on the picker
-    await expect(page.getByRole('tab', { name: 'All' })).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'Recent' })).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'My Food' })).toBeVisible();
-  });
-
-  test('add food page heading reads Add Food', async ({ page }) => {
-    await page.goto('/member/nutrition/add');
-    await expect(page.getByRole('heading', { name: 'Add Food' })).toBeVisible();
-  });
-
-  test('add food page search input is present on the All tab', async ({ page }) => {
-    await page.goto('/member/nutrition/add');
-
-    // The All tab is default; its search input should be visible immediately
-    await expect(page.getByPlaceholder('Search foods...')).toBeVisible();
-  });
-
-  test('clicking Add Food link on a meal navigates to full-page picker', async ({ page }) => {
+  test('clicking + Add Food on a meal opens the food picker dialog', async ({ page }) => {
     await page.goto('/member/nutrition');
 
-    // Only run if a meal log is active (link won't exist in empty state)
-    const addFoodLink = page.getByRole('link', { name: '+ Add Food' }).first();
     const emptyState = page.getByText("hasn't scheduled today");
 
     if (await emptyState.isVisible()) {
@@ -75,10 +51,13 @@ test.describe('Member: Nutrition (Daily Diary)', () => {
       return;
     }
 
-    await expect(addFoodLink).toBeVisible();
-    await addFoodLink.click();
-    await page.waitForURL(/\/member\/nutrition\/add/);
-    await expect(page.getByRole('tab', { name: 'All' })).toBeVisible();
+    const addFoodBtn = page.getByRole('button', { name: '+ Add Food' }).first();
+    await expect(addFoodBtn).toBeVisible();
+    await addFoodBtn.click();
+
+    // Dialog should open with "Add Food" heading
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Add Food' })).toBeVisible();
   });
 
   test('macro ring renders on diary when a log is active', async ({ page }) => {

@@ -1,19 +1,18 @@
 'use client';
 
-import Link from 'next/link';
 import { Card } from '@/components/ui/card';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import type { IDailyLogMeal } from '@/lib/db/models/nutrition-daily-log.model';
 
 interface Props {
   meal: IDailyLogMeal;
   locked: boolean;
-  addFoodHref: string;
+  onAddFood: () => void;
   onToggleComplete: () => void;
   onRemoveItem: (idx: number) => void;
 }
 
-export function MealSection({ meal, locked, addFoodHref, onToggleComplete, onRemoveItem }: Props) {
+export function MealSection({ meal, locked, onAddFood, onToggleComplete, onRemoveItem }: Props) {
   const totals = meal.items.reduce(
     (acc, i) => ({
       kcal: acc.kcal + i.kcal,
@@ -52,9 +51,9 @@ export function MealSection({ meal, locked, addFoodHref, onToggleComplete, onRem
         )}
       </ul>
       <div className="flex justify-between">
-        <Link href={addFoodHref} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+        <Button variant="outline" size="sm" onClick={onAddFood} disabled={locked}>
           + Add Food
-        </Link>
+        </Button>
         <Button
           variant={meal.completed ? 'secondary' : 'default'}
           size="sm"
