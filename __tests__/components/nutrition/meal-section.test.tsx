@@ -28,6 +28,20 @@ describe('MealSection', () => {
     expect(screen.getByText('Bread')).toBeInTheDocument();
   });
 
+  it('renders aggregate meal total in header', () => {
+    render(
+      <MealSection
+        meal={meal}
+        locked={false}
+        addFoodHref="/x"
+        onToggleComplete={() => {}}
+        onRemoveItem={() => {}}
+      />,
+    );
+    // Sum: 512kcal, 32.5P, 45C, 22F
+    expect(screen.getByText(/512kcal/)).toBeInTheDocument();
+  });
+
   it('+ Add Food link points to addFoodHref', () => {
     render(
       <MealSection
@@ -68,5 +82,19 @@ describe('MealSection', () => {
       />,
     );
     expect(screen.queryByRole('button', { name: '×' })).not.toBeInTheDocument();
+  });
+
+  it('shows empty state when no items', () => {
+    const emptyMeal: IDailyLogMeal = { ...meal, items: [] };
+    render(
+      <MealSection
+        meal={emptyMeal}
+        locked={false}
+        addFoodHref="/x"
+        onToggleComplete={() => {}}
+        onRemoveItem={() => {}}
+      />,
+    );
+    expect(screen.getByText(/No items/)).toBeInTheDocument();
   });
 });
