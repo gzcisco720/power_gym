@@ -9,6 +9,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Topic | File | Status |
 | ----- | ---- | ------ |
 | Phase 1 — Full Feature Summary | [phase-one-summary.md](2026-04-23/phase-one-summary.md) | Complete |
+| Nutrition Redesign Implementation | [nutrition-redesign-implementation-plan.md](2026-05-06/plans/nutrition-redesign-implementation-plan.md) | In Progress |
 | Roadmap & Backlog | [roadmap.md](roadmap.md) | Living |
 | Superseded Doc Archive | [superseded.md](superseded.md) | Permanent |
 
