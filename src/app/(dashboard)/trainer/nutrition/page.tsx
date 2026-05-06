@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
 import { MongoNutritionTemplateRepository } from '@/lib/repositories/nutrition-template.repository';
+import { buildTemplateOverview } from '@/lib/nutrition/template-overview';
 import { NutritionTemplateList } from './_components/nutrition-template-list';
 import { revalidatePath } from 'next/cache';
 
@@ -11,12 +12,16 @@ export default async function TrainerNutritionPage() {
   await connectDB();
   const repo = new MongoNutritionTemplateRepository();
   const templates = await repo.findByCreator(session.user.id);
-  const plain = JSON.parse(JSON.stringify(templates)) as {
-    _id: string;
-    name: string;
-    description: string | null;
-    dayTypes: { name: string }[];
-  }[];
+  const slim = templates.map((t) => {
+    const overview = buildTemplateOverview(t.dayTypes);
+    return {
+      _id: String(t._id),
+      name: t.name,
+      description: t.description,
+      dayTypeNames: overview.dayTypeNames,
+      avgPerDay: overview.avgPerDay,
+    };
+  });
 
   async function handleDelete(id: string) {
     'use server';
@@ -28,5 +33,5 @@ export default async function TrainerNutritionPage() {
     revalidatePath('/trainer/nutrition');
   }
 
-  return <NutritionTemplateList templates={plain} onDelete={handleDelete} />;
+  return <NutritionTemplateList templates={slim} onDelete={handleDelete} />;
 }

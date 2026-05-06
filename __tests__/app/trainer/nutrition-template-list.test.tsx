@@ -11,8 +11,20 @@ jest.mock('framer-motion', () => ({
 }));
 
 const mockTemplates = [
-  { _id: 'tpl1', name: '减脂计划', description: '低热量方案', dayTypes: [{ name: '训练日' }, { name: '休息日' }] },
-  { _id: 'tpl2', name: '增肌计划', description: null, dayTypes: [] },
+  {
+    _id: 'tpl1',
+    name: '减脂计划',
+    description: '低热量方案',
+    dayTypeNames: ['训练日', '休息日'],
+    avgPerDay: { kcal: 1850, protein: 185, carbs: 200, fat: 50 },
+  },
+  {
+    _id: 'tpl2',
+    name: '增肌计划',
+    description: null,
+    dayTypeNames: [],
+    avgPerDay: null,
+  },
 ];
 
 describe('NutritionTemplateList', () => {
@@ -27,9 +39,23 @@ describe('NutritionTemplateList', () => {
     expect(screen.getByText('低热量方案')).toBeInTheDocument();
   });
 
-  it('shows day type count', () => {
+  it('shows day type names as chips', () => {
     render(<NutritionTemplateList templates={mockTemplates} />);
-    expect(screen.getByText('2 day types')).toBeInTheDocument();
+    expect(screen.getByText('训练日')).toBeInTheDocument();
+    expect(screen.getByText('休息日')).toBeInTheDocument();
+  });
+
+  it('shows macro averages when present', () => {
+    render(<NutritionTemplateList templates={mockTemplates} />);
+    expect(screen.getByText('1850')).toBeInTheDocument();
+    expect(screen.getByText('185')).toBeInTheDocument();
+    expect(screen.getByText('200')).toBeInTheDocument();
+    expect(screen.getByText('50')).toBeInTheDocument();
+  });
+
+  it('shows "No day types yet" when template has none', () => {
+    render(<NutritionTemplateList templates={mockTemplates} />);
+    expect(screen.getByText(/No day types yet/i)).toBeInTheDocument();
   });
 
   it('shows "New Template" link', () => {

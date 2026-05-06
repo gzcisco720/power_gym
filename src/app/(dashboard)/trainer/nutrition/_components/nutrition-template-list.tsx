@@ -2,24 +2,65 @@
 
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/shared/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
+
+interface MacroAvg {
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
 
 interface Template {
   _id: string;
   name: string;
   description: string | null;
-  dayTypes: { name: string }[];
+  dayTypeNames: string[];
+  avgPerDay: MacroAvg | null;
 }
 
 interface Props {
   templates: Template[];
   onDelete?: (id: string) => Promise<void>;
   basePath?: string;
+}
+
+const ACCENT_BORDERS = [
+  'border-t-emerald-400/50',
+  'border-t-violet-400/50',
+  'border-t-sky-400/50',
+  'border-t-amber-400/50',
+  'border-t-rose-400/50',
+];
+
+const CHIP_COLORS = [
+  'bg-emerald-500/10 text-emerald-300 ring-emerald-500/20',
+  'bg-violet-500/10 text-violet-300 ring-violet-500/20',
+  'bg-sky-500/10 text-sky-300 ring-sky-500/20',
+  'bg-amber-500/10 text-amber-300 ring-amber-500/20',
+];
+
+function hashIndex(s: string, mod: number): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (h * 31 + s.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h) % mod;
+}
+
+function MacroStat({ value, suffix, label, color }: { value: number; suffix?: string; label: string; color: string }) {
+  return (
+    <div>
+      <div className={`text-[14px] font-semibold leading-none ${color}`}>
+        {value}
+        {suffix && <span className="text-[10px] opacity-60">{suffix}</span>}
+      </div>
+      <div className={`mt-1 text-[9px] uppercase tracking-wider ${color} opacity-50`}>{label}</div>
+    </div>
+  );
 }
 
 export function NutritionTemplateList({ templates, onDelete, basePath = '/trainer/nutrition' }: Props) {
@@ -56,51 +97,74 @@ export function NutritionTemplateList({ templates, onDelete, basePath = '/traine
             }
           />
         ) : (
-          <div className="space-y-2.5">
-            {templates.map((template, i) => (
-              <motion.div
-                key={template._id}
-                initial={{ opacity: 0, y: shouldReduce ? 0 : 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: shouldReduce ? 0 : i * 0.04 }}
-              >
-                <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4 flex items-center justify-between hover:border-[#2a2a2a] transition-colors">
-                  <div>
-                    <div className="text-[14px] font-semibold text-white">{template.name}</div>
-                    {template.description && (
-                      <div className="text-[12px] text-[#888] mt-0.5">{template.description}</div>
-                    )}
-                    <div className="mt-1 flex items-center gap-2">
-                      <Badge className="bg-[#1a1a1a] text-[#888] border-0 text-[10px]">
-                        {template.dayTypes.length} {template.dayTypes.length !== 1 ? 'day types' : 'day type'}
-                      </Badge>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {templates.map((template, i) => {
+              const accent = ACCENT_BORDERS[hashIndex(template._id, ACCENT_BORDERS.length)];
+              return (
+                <motion.div
+                  key={template._id}
+                  initial={{ opacity: 0, y: shouldReduce ? 0 : 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: shouldReduce ? 0 : i * 0.04 }}
+                  className="relative"
+                >
+                  <Link
+                    href={`${basePath}/${template._id}/edit`}
+                    aria-label={`Edit ${template.name}`}
+                    className={`block h-full rounded-xl border border-[#141414] border-t-2 ${accent} bg-[#0c0c0c] p-4 pr-11 transition-colors hover:border-[#2a2a2a]`}
+                  >
+                    <div className="line-clamp-1 text-[14px] font-semibold text-white">
+                      {template.name}
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href={`${basePath}/${template._id}/edit`}
-                      className="inline-flex size-8 items-center justify-center rounded-lg border border-transparent text-[#777] hover:text-[#aaa] hover:bg-[#141414] transition-all"
-                      aria-label="Edit"
-                    >
-                      <Pencil className="h-4 w-4" />
-                      <span className="sr-only">Edit</span>
-                    </Link>
-                    {onDelete && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onDelete(template._id)}
-                        className="text-[#777] hover:text-red-400 hover:bg-[#141414]"
-                        aria-label="Delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Delete</span>
-                      </Button>
+                    {template.description ? (
+                      <p className="mt-1 line-clamp-2 min-h-[2.4em] text-[12px] text-[#888]">
+                        {template.description}
+                      </p>
+                    ) : (
+                      <p className="mt-1 min-h-[2.4em] text-[12px] italic text-[#444]">
+                        No description
+                      </p>
                     )}
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
+
+                    {template.dayTypeNames.length > 0 ? (
+                      <div className="mt-3 flex flex-wrap gap-1">
+                        {template.dayTypeNames.map((name, idx) => (
+                          <span
+                            key={`${name}-${idx}`}
+                            className={`rounded px-1.5 py-0.5 text-[10px] ring-1 ${CHIP_COLORS[idx % CHIP_COLORS.length]}`}
+                          >
+                            {name}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="mt-3 text-[10px] italic text-[#444]">No day types yet</div>
+                    )}
+
+                    {template.avgPerDay && (
+                      <div className="mt-3 grid grid-cols-4 gap-2 border-t border-[#1a1a1a] pt-3 text-center">
+                        <MacroStat value={template.avgPerDay.kcal} label="kcal/d" color="text-orange-300" />
+                        <MacroStat value={template.avgPerDay.protein} suffix="g" label="protein" color="text-rose-300" />
+                        <MacroStat value={template.avgPerDay.carbs} suffix="g" label="carbs" color="text-sky-300" />
+                        <MacroStat value={template.avgPerDay.fat} suffix="g" label="fat" color="text-amber-300" />
+                      </div>
+                    )}
+                  </Link>
+                  {onDelete && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onDelete(template._id)}
+                      className="absolute right-2 top-2 size-8 text-[#777] hover:bg-[#141414] hover:text-red-400"
+                      aria-label="Delete"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Delete</span>
+                    </Button>
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </div>
