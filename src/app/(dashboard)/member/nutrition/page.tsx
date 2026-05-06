@@ -1,14 +1,17 @@
 import { auth } from '@/lib/auth/auth';
-import { connectDB } from '@/lib/db/connect';
-import { MongoMemberNutritionPlanRepository } from '@/lib/repositories/member-nutrition-plan.repository';
-import { NutritionPlanViewer } from './_components/nutrition-plan-viewer';
+import { redirect } from 'next/navigation';
+import { DailyNutritionView } from '@/components/nutrition/daily-nutrition-view';
 
-export default async function MemberNutritionPage() {
+export default async function MemberNutritionPage(): Promise<JSX.Element> {
   const session = await auth();
-  if (!session?.user) return null;
+  if (!session?.user || session.user.role !== 'member') redirect('/login');
 
-  await connectDB();
-  const plan = await new MongoMemberNutritionPlanRepository().findActive(session.user.id);
+  const today = new Date().toISOString().slice(0, 10);
 
-  return <NutritionPlanViewer plan={JSON.parse(JSON.stringify(plan))} />;
+  return (
+    <div className="container py-6 max-w-3xl">
+      <h1 className="text-xl font-semibold mb-4">My Nutrition</h1>
+      <DailyNutritionView memberId={session.user.id} initialDate={today} />
+    </div>
+  );
 }
