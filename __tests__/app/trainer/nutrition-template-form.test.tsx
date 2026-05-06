@@ -21,12 +21,22 @@ describe('NutritionTemplateForm', () => {
     expect(screen.getByDisplayValue('Meal')).toBeInTheDocument();
   });
 
-  it('removes a day type when × button clicked', () => {
+  it('removes a day type after confirming the delete dialog', () => {
     render(<NutritionTemplateForm onSubmit={async () => undefined} />);
     fireEvent.click(screen.getByRole('button', { name: /\+ add day type/i }));
     expect(screen.getByDisplayValue('Training Day')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /remove day type/i }));
+    // Confirmation dialog appears — clicking Delete confirms the removal
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(screen.queryByDisplayValue('Training Day')).not.toBeInTheDocument();
+  });
+
+  it('cancels deletion when Cancel clicked in the confirm dialog', () => {
+    render(<NutritionTemplateForm onSubmit={async () => undefined} />);
+    fireEvent.click(screen.getByRole('button', { name: /\+ add day type/i }));
+    fireEvent.click(screen.getByRole('button', { name: /remove day type/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.getByDisplayValue('Training Day')).toBeInTheDocument();
   });
 
   it('renders with initial data', () => {

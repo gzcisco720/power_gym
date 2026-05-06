@@ -32,7 +32,7 @@ export function NewNutritionTemplateClient({ backPath = '/trainer/nutrition' }: 
     <div>
       <PageHeader title="New Nutrition Plan" />
       <div className="px-4 sm:px-8 py-7">
-        <NutritionTemplateForm onSubmit={handleSubmit} />
+        <NutritionTemplateForm onSubmit={handleSubmit} onCancel={() => router.push(backPath)} />
       </div>
     </div>
   );

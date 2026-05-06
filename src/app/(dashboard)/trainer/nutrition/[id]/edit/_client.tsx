@@ -38,7 +38,11 @@ export function EditNutritionTemplateClient({ id, initialData, backPath = '/trai
     <div>
       <PageHeader title="Edit Nutrition Plan" />
       <div className="px-4 sm:px-8 py-7">
-        <NutritionTemplateForm initialData={initialData} onSubmit={handleSubmit} />
+        <NutritionTemplateForm
+          initialData={initialData}
+          onSubmit={handleSubmit}
+          onCancel={() => router.push(backPath)}
+        />
       </div>
     </div>
   );

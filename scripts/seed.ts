@@ -37,6 +37,7 @@ import { CheckInModel } from '../src/lib/db/models/check-in.model';
 import { EquipmentModel } from '../src/lib/db/models/equipment.model';
 import { ConditionReportModel } from '../src/lib/db/models/condition-report.model';
 import { FoodModel } from '../src/lib/db/models/food.model';
+import { FOOD_EXTRAS_PER_100G, withExtras } from './food-extras';
 
 // ── Catalog model (inline — not used by the app at runtime) ─────────────────
 const GymEquipmentCatalogModel: mongoose.Model<mongoose.Document & { catalogId: string; name: string }> =
@@ -194,16 +195,16 @@ async function seedDevData() {
         name: 'Training Day',
         meals: [
           { name: 'Breakfast', order: 1, items: [
-            { foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 },
-            { foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 },
+            withExtras({ foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 }),
+            withExtras({ foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 }),
           ]},
           { name: 'Lunch', order: 2, items: [
-            { foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 },
-            { foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 },
+            withExtras({ foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 }),
+            withExtras({ foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 }),
           ]},
           { name: 'Dinner', order: 3, items: [
-            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
-            { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 },
+            withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }),
+            withExtras({ foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 }),
           ]},
         ],
       },
@@ -211,12 +212,12 @@ async function seedDevData() {
         name: 'Rest Day',
         meals: [
           { name: 'Breakfast', order: 1, items: [
-            { foodName: 'Rolled Oats', quantityG: 60, kcal: 233, protein: 10.2, carbs: 39.6, fat: 4.2 },
-            { foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 },
+            withExtras({ foodName: 'Rolled Oats', quantityG: 60, kcal: 233, protein: 10.2, carbs: 39.6, fat: 4.2 }),
+            withExtras({ foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 }),
           ]},
           { name: 'Lunch', order: 2, items: [
-            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
-            { foodName: 'Chicken Breast', quantityG: 180, kcal: 297, protein: 55.8, carbs: 0.0, fat: 6.5 },
+            withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }),
+            withExtras({ foodName: 'Chicken Breast', quantityG: 180, kcal: 297, protein: 55.8, carbs: 0.0, fat: 6.5 }),
           ]},
         ],
       },
@@ -247,35 +248,35 @@ async function seedDevData() {
       createdBy: trainer._id,
       name: 'Coles Chicken Breast',
       brand: 'Coles',
-      macrosPer100g: { kcal: 165, protein: 31, carbs: 0, fat: 3.6, sodium: 60 },
+      macrosPer100g: { ...FOOD_EXTRAS_PER_100G['Coles Chicken Breast'], kcal: 165, protein: 31, carbs: 0, fat: 3.6 },
       servings: [{ label: '100 g', grams: 100 }, { label: 'Whole pack 500 g', grams: 500 }],
     },
     {
       createdBy: trainer._id,
       name: 'Woolworths Rolled Oats',
       brand: 'Woolworths',
-      macrosPer100g: { kcal: 389, protein: 17, carbs: 58, fat: 7, fiber: 10, sodium: 2 },
+      macrosPer100g: { ...FOOD_EXTRAS_PER_100G['Woolworths Rolled Oats'], kcal: 389, protein: 17, carbs: 58, fat: 7 },
       servings: [{ label: '40 g serving', grams: 40 }, { label: '80 g serving', grams: 80 }],
     },
     {
       createdBy: trainer._id,
       name: 'Vegemite',
       brand: 'Bega',
-      macrosPer100g: { kcal: 185, protein: 27, carbs: 15, fat: 0.6, sodium: 3450 },
+      macrosPer100g: { ...FOOD_EXTRAS_PER_100G['Vegemite'], kcal: 185, protein: 27, carbs: 15, fat: 0.6 },
       servings: [{ label: '5 g serve', grams: 5 }],
     },
     {
       createdBy: owner._id,
       name: 'Reset Whey Protein',
       brand: 'Reset Nutrition',
-      macrosPer100g: { kcal: 390, protein: 75, carbs: 8, fat: 6, sodium: 200 },
+      macrosPer100g: { ...FOOD_EXTRAS_PER_100G['Reset Whey Protein'], kcal: 390, protein: 75, carbs: 8, fat: 6 },
       servings: [{ label: '30 g scoop', grams: 30 }],
     },
     {
       createdBy: owner._id,
       name: 'Premium Almonds',
       brand: null,
-      macrosPer100g: { kcal: 579, protein: 21, carbs: 22, fat: 50, fiber: 12.5, sodium: 1 },
+      macrosPer100g: { ...FOOD_EXTRAS_PER_100G['Premium Almonds'], kcal: 579, protein: 21, carbs: 22, fat: 50 },
       servings: [{ label: '30 g handful', grams: 30 }],
     },
   ]);

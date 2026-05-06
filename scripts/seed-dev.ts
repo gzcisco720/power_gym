@@ -34,6 +34,7 @@ import { CheckInConfigModel } from '../src/lib/db/models/check-in-config.model';
 import { CheckInModel } from '../src/lib/db/models/check-in.model';
 import { FoodModel } from '../src/lib/db/models/food.model';
 import { NutritionDailyLogModel } from '../src/lib/db/models/nutrition-daily-log.model';
+import { FOOD_EXTRAS_PER_100G, withExtras } from './food-extras';
 
 const RESET = process.argv.includes('--reset');
 const PASS = 'Dev123!';
@@ -214,24 +215,24 @@ async function main() {
             name: 'Breakfast',
             order: 1,
             items: [
-              { foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 },
-              { foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 },
+              withExtras({ foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 }),
+              withExtras({ foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 }),
             ],
           },
           {
             name: 'Lunch',
             order: 2,
             items: [
-              { foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 },
-              { foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 },
+              withExtras({ foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 }),
+              withExtras({ foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 }),
             ],
           },
           {
             name: 'Dinner',
             order: 3,
             items: [
-              { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
-              { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 },
+              withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }),
+              withExtras({ foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 }),
             ],
           },
         ],
@@ -243,16 +244,16 @@ async function main() {
             name: 'Breakfast',
             order: 1,
             items: [
-              { foodName: 'Rolled Oats', quantityG: 60, kcal: 233, protein: 10.2, carbs: 39.6, fat: 4.2 },
-              { foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 },
+              withExtras({ foodName: 'Rolled Oats', quantityG: 60, kcal: 233, protein: 10.2, carbs: 39.6, fat: 4.2 }),
+              withExtras({ foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 }),
             ],
           },
           {
             name: 'Lunch',
             order: 2,
             items: [
-              { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
-              { foodName: 'Chicken Breast', quantityG: 180, kcal: 297, protein: 55.8, carbs: 0.0, fat: 6.5 },
+              withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }),
+              withExtras({ foodName: 'Chicken Breast', quantityG: 180, kcal: 297, protein: 55.8, carbs: 0.0, fat: 6.5 }),
             ],
           },
         ],
@@ -300,56 +301,56 @@ async function main() {
       createdBy: trainer._id,
       name: 'Coles Chicken Breast 100g Pack',
       brand: 'Coles',
-      macrosPer100g: { kcal: 165, protein: 31, carbs: 0, fat: 3.6, sodium: 60 },
+      macrosPer100g: { ...FOOD_EXTRAS_PER_100G['Coles Chicken Breast 100g Pack'], kcal: 165, protein: 31, carbs: 0, fat: 3.6 },
       servings: [{ label: '100 g', grams: 100 }, { label: 'Whole pack 500 g', grams: 500 }],
     },
     {
       createdBy: trainer._id,
       name: 'Woolworths Rolled Oats',
       brand: 'Woolworths',
-      macrosPer100g: { kcal: 389, protein: 17, carbs: 58, fat: 7, fiber: 10, sodium: 2 },
+      macrosPer100g: { ...FOOD_EXTRAS_PER_100G['Woolworths Rolled Oats'], kcal: 389, protein: 17, carbs: 58, fat: 7 },
       servings: [{ label: '40 g serving', grams: 40 }, { label: '80 g serving', grams: 80 }],
     },
     {
       createdBy: trainer._id,
       name: 'Tip Top Wholemeal Bread',
       brand: 'Tip Top',
-      macrosPer100g: { kcal: 244, protein: 10, carbs: 40, fat: 3.8, fiber: 5.7, sodium: 390 },
+      macrosPer100g: { ...FOOD_EXTRAS_PER_100G['Tip Top Wholemeal Bread'], kcal: 244, protein: 10, carbs: 40, fat: 3.8 },
       servings: [{ label: '1 slice (40 g)', grams: 40 }, { label: '2 slices (80 g)', grams: 80 }],
     },
     {
       createdBy: trainer._id,
       name: 'Bega Cheese',
       brand: 'Bega',
-      macrosPer100g: { kcal: 395, protein: 24, carbs: 0.2, fat: 33, sodium: 650 },
+      macrosPer100g: { ...FOOD_EXTRAS_PER_100G['Bega Cheese'], kcal: 395, protein: 24, carbs: 0.2, fat: 33 },
       servings: [{ label: '20 g slice', grams: 20 }, { label: '40 g serve', grams: 40 }],
     },
     {
       createdBy: trainer._id,
       name: 'Vegemite',
       brand: 'Bega',
-      macrosPer100g: { kcal: 185, protein: 27, carbs: 15, fat: 0.6, sodium: 3450 },
+      macrosPer100g: { ...FOOD_EXTRAS_PER_100G['Vegemite'], kcal: 185, protein: 27, carbs: 15, fat: 0.6 },
       servings: [{ label: '5 g serve', grams: 5 }],
     },
     {
       createdBy: owner._id,
       name: 'Reset Whey Protein',
       brand: 'Reset Nutrition',
-      macrosPer100g: { kcal: 390, protein: 75, carbs: 8, fat: 6, sodium: 200 },
+      macrosPer100g: { ...FOOD_EXTRAS_PER_100G['Reset Whey Protein'], kcal: 390, protein: 75, carbs: 8, fat: 6 },
       servings: [{ label: '30 g scoop', grams: 30 }],
     },
     {
       createdBy: owner._id,
       name: 'Premium Almonds',
       brand: null,
-      macrosPer100g: { kcal: 579, protein: 21, carbs: 22, fat: 50, fiber: 12.5, sodium: 1 },
+      macrosPer100g: { ...FOOD_EXTRAS_PER_100G['Premium Almonds'], kcal: 579, protein: 21, carbs: 22, fat: 50 },
       servings: [{ label: '30 g handful', grams: 30 }],
     },
     {
       createdBy: owner._id,
       name: 'MCT Oil',
       brand: null,
-      macrosPer100g: { kcal: 870, protein: 0, carbs: 0, fat: 97, sodium: 0 },
+      macrosPer100g: { ...FOOD_EXTRAS_PER_100G['MCT Oil'], kcal: 870, protein: 0, carbs: 0, fat: 97 },
       servings: [{ label: '1 tbsp (15 g)', grams: 15 }],
     },
   ]);
@@ -380,22 +381,22 @@ async function main() {
         {
           name: 'Breakfast', order: 1, completed: true,
           items: [
-            { foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 },
-            { foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 },
+            withExtras({ foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 }),
+            withExtras({ foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 }),
           ],
         },
         {
           name: 'Lunch', order: 2, completed: false,
           items: [
-            { foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 },
-            { foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 },
+            withExtras({ foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 }),
+            withExtras({ foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 }),
           ],
         },
         {
           name: 'Dinner', order: 3, completed: false,
           items: [
-            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
-            { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 },
+            withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }),
+            withExtras({ foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 }),
           ],
         },
       ],
@@ -411,22 +412,22 @@ async function main() {
         {
           name: 'Breakfast', order: 1, completed: true,
           items: [
-            { foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 },
-            { foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 },
+            withExtras({ foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 }),
+            withExtras({ foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 }),
           ],
         },
         {
           name: 'Lunch', order: 2, completed: true,
           items: [
-            { foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 },
-            { foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 },
+            withExtras({ foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 }),
+            withExtras({ foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 }),
           ],
         },
         {
           name: 'Dinner', order: 3, completed: true,
           items: [
-            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
-            { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 },
+            withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }),
+            withExtras({ foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 }),
           ],
         },
       ],
@@ -442,24 +443,24 @@ async function main() {
         {
           name: 'Breakfast', order: 1, completed: true,
           items: [
-            { foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 },
-            { foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 },
+            withExtras({ foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 }),
+            withExtras({ foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 }),
           ],
         },
         {
           name: 'Lunch', order: 2, completed: true,
           items: [
             // Member substituted: Tip Top Wholemeal Bread instead of rice
-            { foodName: 'Tip Top Wholemeal Bread', quantityG: 80, kcal: 195, protein: 8.0, carbs: 32.0, fat: 3.0, fiber: 4.6 },
-            { foodName: 'Bega Cheese', quantityG: 40, kcal: 158, protein: 9.6, carbs: 0.1, fat: 13.2 },
-            { foodName: 'Coles Chicken Breast 100g Pack', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 },
+            withExtras({ foodName: 'Tip Top Wholemeal Bread', quantityG: 80, kcal: 195, protein: 8.0, carbs: 32.0, fat: 3.0, fiber: 4.6 }),
+            withExtras({ foodName: 'Bega Cheese', quantityG: 40, kcal: 158, protein: 9.6, carbs: 0.1, fat: 13.2 }),
+            withExtras({ foodName: 'Coles Chicken Breast 100g Pack', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 }),
           ],
         },
         {
           name: 'Dinner', order: 3, completed: false,
           items: [
-            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
-            { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 },
+            withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }),
+            withExtras({ foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 }),
           ],
         },
       ],
@@ -475,15 +476,15 @@ async function main() {
         {
           name: 'Breakfast', order: 1, completed: true,
           items: [
-            { foodName: 'Rolled Oats', quantityG: 60, kcal: 233, protein: 10.2, carbs: 39.6, fat: 4.2 },
-            { foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 },
+            withExtras({ foodName: 'Rolled Oats', quantityG: 60, kcal: 233, protein: 10.2, carbs: 39.6, fat: 4.2 }),
+            withExtras({ foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 }),
           ],
         },
         {
           name: 'Lunch', order: 2, completed: true,
           items: [
-            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
-            { foodName: 'Chicken Breast', quantityG: 180, kcal: 297, protein: 55.8, carbs: 0.0, fat: 6.5 },
+            withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }),
+            withExtras({ foodName: 'Chicken Breast', quantityG: 180, kcal: 297, protein: 55.8, carbs: 0.0, fat: 6.5 }),
           ],
         },
       ],
@@ -499,24 +500,24 @@ async function main() {
         {
           name: 'Breakfast', order: 1, completed: true,
           items: [
-            { foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 },
-            { foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 },
+            withExtras({ foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 }),
+            withExtras({ foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 }),
             // Member added a scoop of protein
-            { foodName: 'Reset Whey Protein', quantityG: 30, kcal: 117, protein: 22.5, carbs: 2.4, fat: 1.8 },
+            withExtras({ foodName: 'Reset Whey Protein', quantityG: 30, kcal: 117, protein: 22.5, carbs: 2.4, fat: 1.8 }),
           ],
         },
         {
           name: 'Lunch', order: 2, completed: false,
           items: [
-            { foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 },
-            { foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 },
+            withExtras({ foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 }),
+            withExtras({ foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 }),
           ],
         },
         {
           name: 'Dinner', order: 3, completed: false,
           items: [
-            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
-            { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 },
+            withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }),
+            withExtras({ foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 }),
           ],
         },
       ],
@@ -532,15 +533,15 @@ async function main() {
         {
           name: 'Breakfast', order: 1, completed: true,
           items: [
-            { foodName: 'Rolled Oats', quantityG: 60, kcal: 233, protein: 10.2, carbs: 39.6, fat: 4.2 },
-            { foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 },
+            withExtras({ foodName: 'Rolled Oats', quantityG: 60, kcal: 233, protein: 10.2, carbs: 39.6, fat: 4.2 }),
+            withExtras({ foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 }),
           ],
         },
         {
           name: 'Lunch', order: 2, completed: true,
           items: [
-            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
-            { foodName: 'Chicken Breast', quantityG: 180, kcal: 297, protein: 55.8, carbs: 0.0, fat: 6.5 },
+            withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }),
+            withExtras({ foodName: 'Chicken Breast', quantityG: 180, kcal: 297, protein: 55.8, carbs: 0.0, fat: 6.5 }),
           ],
         },
       ],
@@ -556,22 +557,22 @@ async function main() {
         {
           name: 'Breakfast', order: 1, completed: false,
           items: [
-            { foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 },
-            { foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 },
+            withExtras({ foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 }),
+            withExtras({ foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 }),
           ],
         },
         {
           name: 'Lunch', order: 2, completed: false,
           items: [
-            { foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 },
-            { foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 },
+            withExtras({ foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 }),
+            withExtras({ foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 }),
           ],
         },
         {
           name: 'Dinner', order: 3, completed: false,
           items: [
-            { foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 },
-            { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 },
+            withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }),
+            withExtras({ foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 }),
           ],
         },
       ],
@@ -634,26 +635,26 @@ async function main() {
             name: 'Breakfast',
             order: 1,
             items: [
-              { foodName: 'Greek Yoghurt', quantityG: 200, kcal: 118, protein: 18, carbs: 8, fat: 0.8 },
-              { foodName: 'Blueberries', quantityG: 100, kcal: 57, protein: 0.7, carbs: 14, fat: 0.3 },
-              { foodName: 'Whey Protein', quantityG: 30, kcal: 117, protein: 24, carbs: 2.5, fat: 1.2 },
+              withExtras({ foodName: 'Greek Yoghurt', quantityG: 200, kcal: 118, protein: 18, carbs: 8, fat: 0.8 }),
+              withExtras({ foodName: 'Blueberries', quantityG: 100, kcal: 57, protein: 0.7, carbs: 14, fat: 0.3 }),
+              withExtras({ foodName: 'Whey Protein', quantityG: 30, kcal: 117, protein: 24, carbs: 2.5, fat: 1.2 }),
             ],
           },
           {
             name: 'Lunch',
             order: 2,
             items: [
-              { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0, fat: 5.4 },
-              { foodName: 'Sweet Potato', quantityG: 200, kcal: 172, protein: 3.2, carbs: 41, fat: 0.2 },
-              { foodName: 'Mixed Greens', quantityG: 100, kcal: 23, protein: 2.2, carbs: 3.6, fat: 0.4 },
+              withExtras({ foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0, fat: 5.4 }),
+              withExtras({ foodName: 'Sweet Potato', quantityG: 200, kcal: 172, protein: 3.2, carbs: 41, fat: 0.2 }),
+              withExtras({ foodName: 'Mixed Greens', quantityG: 100, kcal: 23, protein: 2.2, carbs: 3.6, fat: 0.4 }),
             ],
           },
           {
             name: 'Dinner',
             order: 3,
             items: [
-              { foodName: 'Salmon Fillet', quantityG: 150, kcal: 312, protein: 31.5, carbs: 0, fat: 19.5 },
-              { foodName: 'Brown Rice', quantityG: 120, kcal: 135, protein: 2.8, carbs: 28.5, fat: 1.1 },
+              withExtras({ foodName: 'Salmon Fillet', quantityG: 150, kcal: 312, protein: 31.5, carbs: 0, fat: 19.5 }),
+              withExtras({ foodName: 'Brown Rice', quantityG: 120, kcal: 135, protein: 2.8, carbs: 28.5, fat: 1.1 }),
             ],
           },
         ],
@@ -665,16 +666,16 @@ async function main() {
             name: 'Breakfast',
             order: 1,
             items: [
-              { foodName: 'Greek Yoghurt', quantityG: 200, kcal: 118, protein: 18, carbs: 8, fat: 0.8 },
-              { foodName: 'Almonds', quantityG: 30, kcal: 174, protein: 6.4, carbs: 6.5, fat: 15 },
+              withExtras({ foodName: 'Greek Yoghurt', quantityG: 200, kcal: 118, protein: 18, carbs: 8, fat: 0.8 }),
+              withExtras({ foodName: 'Almonds', quantityG: 30, kcal: 174, protein: 6.4, carbs: 6.5, fat: 15 }),
             ],
           },
           {
             name: 'Lunch',
             order: 2,
             items: [
-              { foodName: 'Tuna', quantityG: 120, kcal: 132, protein: 30, carbs: 0, fat: 1.1 },
-              { foodName: 'Mixed Greens', quantityG: 150, kcal: 35, protein: 3.3, carbs: 5.4, fat: 0.6 },
+              withExtras({ foodName: 'Tuna', quantityG: 120, kcal: 132, protein: 30, carbs: 0, fat: 1.1 }),
+              withExtras({ foodName: 'Mixed Greens', quantityG: 150, kcal: 35, protein: 3.3, carbs: 5.4, fat: 0.6 }),
             ],
           },
         ],
@@ -737,8 +738,8 @@ async function main() {
       dayTypeName: 'Training Day',
       meals: [
         { name: 'Breakfast', order: 1, completed: true, items: [
-          { foodName: 'Greek Yoghurt', quantityG: 200, kcal: 118, protein: 18, carbs: 8, fat: 0.8 },
-          { foodName: 'Blueberries', quantityG: 100, kcal: 57, protein: 0.7, carbs: 14, fat: 0.3 },
+          withExtras({ foodName: 'Greek Yoghurt', quantityG: 200, kcal: 118, protein: 18, carbs: 8, fat: 0.8 }),
+          withExtras({ foodName: 'Blueberries', quantityG: 100, kcal: 57, protein: 0.7, carbs: 14, fat: 0.3 }),
         ]},
         { name: 'Lunch', order: 2, completed: false, items: [] },
         { name: 'Dinner', order: 3, completed: false, items: [] },
@@ -752,10 +753,10 @@ async function main() {
       dayTypeName: 'Rest Day',
       meals: [
         { name: 'Breakfast', order: 1, completed: true, items: [
-          { foodName: 'Greek Yoghurt', quantityG: 200, kcal: 118, protein: 18, carbs: 8, fat: 0.8 },
+          withExtras({ foodName: 'Greek Yoghurt', quantityG: 200, kcal: 118, protein: 18, carbs: 8, fat: 0.8 }),
         ]},
         { name: 'Lunch', order: 2, completed: true, items: [
-          { foodName: 'Tuna', quantityG: 120, kcal: 132, protein: 30, carbs: 0, fat: 1.1 },
+          withExtras({ foodName: 'Tuna', quantityG: 120, kcal: 132, protein: 30, carbs: 0, fat: 1.1 }),
         ]},
       ],
       dayCompleted: true,
@@ -767,15 +768,15 @@ async function main() {
       dayTypeName: 'Training Day',
       meals: [
         { name: 'Breakfast', order: 1, completed: true, items: [
-          { foodName: 'Greek Yoghurt', quantityG: 200, kcal: 118, protein: 18, carbs: 8, fat: 0.8 },
-          { foodName: 'Whey Protein', quantityG: 30, kcal: 117, protein: 24, carbs: 2.5, fat: 1.2 },
+          withExtras({ foodName: 'Greek Yoghurt', quantityG: 200, kcal: 118, protein: 18, carbs: 8, fat: 0.8 }),
+          withExtras({ foodName: 'Whey Protein', quantityG: 30, kcal: 117, protein: 24, carbs: 2.5, fat: 1.2 }),
         ]},
         { name: 'Lunch', order: 2, completed: true, items: [
-          { foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0, fat: 5.4 },
-          { foodName: 'Sweet Potato', quantityG: 200, kcal: 172, protein: 3.2, carbs: 41, fat: 0.2 },
+          withExtras({ foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0, fat: 5.4 }),
+          withExtras({ foodName: 'Sweet Potato', quantityG: 200, kcal: 172, protein: 3.2, carbs: 41, fat: 0.2 }),
         ]},
         { name: 'Dinner', order: 3, completed: true, items: [
-          { foodName: 'Salmon Fillet', quantityG: 150, kcal: 312, protein: 31.5, carbs: 0, fat: 19.5 },
+          withExtras({ foodName: 'Salmon Fillet', quantityG: 150, kcal: 312, protein: 31.5, carbs: 0, fat: 19.5 }),
         ]},
       ],
       dayCompleted: true,
@@ -788,8 +789,8 @@ async function main() {
       meals: [
         { name: 'Breakfast', order: 1, completed: false, items: [] },
         { name: 'Lunch', order: 2, completed: true, items: [
-          { foodName: 'Tuna', quantityG: 120, kcal: 132, protein: 30, carbs: 0, fat: 1.1 },
-          { foodName: 'Mixed Greens', quantityG: 150, kcal: 35, protein: 3.3, carbs: 5.4, fat: 0.6 },
+          withExtras({ foodName: 'Tuna', quantityG: 120, kcal: 132, protein: 30, carbs: 0, fat: 1.1 }),
+          withExtras({ foodName: 'Mixed Greens', quantityG: 150, kcal: 35, protein: 3.3, carbs: 5.4, fat: 0.6 }),
         ]},
       ],
       dayCompleted: false,
