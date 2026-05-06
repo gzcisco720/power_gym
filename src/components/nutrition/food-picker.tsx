@@ -183,7 +183,7 @@ function AllTab({ onSelect }: { onSelect: (i: PickedFood) => void }) {
       {selected && serving && macros && (
         <Card className="p-3 space-y-2">
           <div className="font-medium">{selected.name}</div>
-          <Select value={servingId} onValueChange={(v) => setServingId(v)}>
+          <Select value={servingId} onValueChange={(v) => setServingId(v ?? '')}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>

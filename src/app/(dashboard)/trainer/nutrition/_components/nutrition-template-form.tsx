@@ -57,7 +57,7 @@ export function NutritionTemplateForm({ initialData, onSubmit }: Props) {
 
   function addMealToDraft(): void {
     if (!draftDay) return;
-    setDraftDay({ ...draftDay, meals: [...draftDay.meals, { name: 'Meal', order: draftDay.meals.length + 1, items: [] }] });
+    setDraftDay({ ...draftDay, meals: [...draftDay.meals, { name: 'Meal', order: draftDay.meals.length + 1, targetKcal: 0, targetProtein: 0, targetCarbs: 0, targetFat: 0, items: [] }] });
   }
 
   function addFoodToMeal(picked: PickedFood): void {
