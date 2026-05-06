@@ -111,7 +111,7 @@ describe('FoodPicker', () => {
     expect(screen.getByText(/powered by fatsecret/i)).toBeInTheDocument();
   });
 
-  // ---- Create New link -----------------------------------------------------
+  // ---- Create New link / button --------------------------------------------
 
   it('renders "+ Create New" link when onCreateNewHref is provided', () => {
     render(
@@ -124,6 +124,35 @@ describe('FoodPicker', () => {
 
   it('does not render "+ Create New" link when onCreateNewHref is absent', () => {
     render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
+    expect(screen.queryByRole('link', { name: /create new/i })).not.toBeInTheDocument();
+  });
+
+  it('renders "+ Create New" button when onCreateNew callback is provided', () => {
+    const onCreateNew = jest.fn();
+    render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} onCreateNew={onCreateNew} />);
+    const btn = screen.getByRole('button', { name: /create new/i });
+    expect(btn).toBeInTheDocument();
+  });
+
+  it('calls onCreateNew callback when "+ Create New" button is clicked', () => {
+    const onCreateNew = jest.fn();
+    render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} onCreateNew={onCreateNew} />);
+    fireEvent.click(screen.getByRole('button', { name: /create new/i }));
+    expect(onCreateNew).toHaveBeenCalledTimes(1);
+  });
+
+  it('prefers onCreateNew button over onCreateNewHref when both are provided', () => {
+    const onCreateNew = jest.fn();
+    render(
+      <FoodPicker
+        memberId="m1"
+        onSelectFood={onSelectFood}
+        onCreateNew={onCreateNew}
+        onCreateNewHref="/trainer/foods/new"
+      />,
+    );
+    // onCreateNew is provided → renders a button, not a link
+    expect(screen.getByRole('button', { name: /create new/i })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /create new/i })).not.toBeInTheDocument();
   });
 

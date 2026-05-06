@@ -211,6 +211,79 @@ describe('FoodPickerDialog', () => {
     jest.useRealTimers();
   });
 
+  // ---- List → Create transition -------------------------------------------
+
+  it('shows create-food form when "+ Create New" button is clicked', async () => {
+    renderDialog({ open: true });
+    const createBtn = screen.getByRole('button', { name: /create new/i });
+    fireEvent.click(createBtn);
+    // Dialog title should be visible as a heading
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /create food/i })).toBeInTheDocument();
+    });
+    // Food list should be gone
+    expect(screen.queryByRole('tab', { name: /all/i })).not.toBeInTheDocument();
+  });
+
+  it('returns to list view when Cancel is clicked in create view', async () => {
+    renderDialog({ open: true });
+    fireEvent.click(screen.getByRole('button', { name: /create new/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: /create food/i })).toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Add Food')).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /all/i })).toBeInTheDocument();
+    });
+  });
+
+  it('transitions to detail view after successful food creation', async () => {
+    const createdFood = {
+      _id: 'food123',
+      name: 'My Protein Bar',
+      brand: 'TestBrand',
+      macrosPer100g: { kcal: 400, protein: 30, carbs: 40, fat: 10 },
+      servings: [{ label: '1 bar (50g)', grams: 50 }],
+      createdBy: 'user1',
+      createdAt: new Date().toISOString(),
+    };
+
+    (global.fetch as jest.Mock).mockResolvedValue(
+      new Response(JSON.stringify({ food: createdFood }), { status: 200 }),
+    );
+
+    renderDialog({ open: true });
+    fireEvent.click(screen.getByRole('button', { name: /create new/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: /create food/i })).toBeInTheDocument(),
+    );
+
+    // Fill in required fields
+    fireEvent.change(screen.getByPlaceholderText(/e\.g\. chicken breast/i), {
+      target: { value: 'My Protein Bar' },
+    });
+    // Fill macros
+    const numberInputs = screen.getAllByPlaceholderText('0');
+    fireEvent.change(numberInputs[0], { target: { value: '400' } }); // kcal
+    fireEvent.change(numberInputs[1], { target: { value: '30' } });  // protein
+    fireEvent.change(numberInputs[2], { target: { value: '40' } });  // carbs
+    fireEvent.change(numberInputs[3], { target: { value: '10' } });  // fat
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /create food/i }));
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      // Should be in detail view now
+      expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /add to meal/i })).toBeInTheDocument();
+    });
+  });
+
   // ---- Macro preview in detail view ----------------------------------------
 
   it('shows macro preview in detail view', async () => {

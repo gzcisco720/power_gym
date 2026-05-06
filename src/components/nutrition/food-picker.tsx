@@ -65,24 +65,39 @@ interface FoodPickerProps {
   /** null = trainer/template context — hides the Recent tab */
   memberId: string | null;
   onSelectFood: (entry: FoodEntry) => void;
+  /** Navigate to a new-food page (closes dialog context) */
   onCreateNewHref?: string;
+  /** Open create-food form inline (preferred in dialog context) */
+  onCreateNew?: () => void;
 }
 
 // ---------------------------------------------------------------------------
 // Root component
 // ---------------------------------------------------------------------------
 
-export function FoodPicker({ memberId, onSelectFood, onCreateNewHref }: FoodPickerProps) {
+export function FoodPicker({ memberId, onSelectFood, onCreateNewHref, onCreateNew }: FoodPickerProps) {
   const showRecent = memberId !== null;
   const tabCols = showRecent ? 'grid-cols-3' : 'grid-cols-2';
 
+  const hasCreateAction = onCreateNew ?? onCreateNewHref;
+
   return (
     <div className="space-y-3">
-      {onCreateNewHref && (
+      {hasCreateAction && (
         <div className="flex justify-end">
-          <a href={onCreateNewHref} className="text-sm text-primary underline">
-            + Create New
-          </a>
+          {onCreateNew ? (
+            <button
+              type="button"
+              onClick={onCreateNew}
+              className="text-sm text-primary underline"
+            >
+              + Create New
+            </button>
+          ) : (
+            <a href={onCreateNewHref} className="text-sm text-primary underline">
+              + Create New
+            </a>
+          )}
         </div>
       )}
       <Tabs defaultValue="all">

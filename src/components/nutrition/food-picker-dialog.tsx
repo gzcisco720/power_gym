@@ -10,7 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FoodPicker, computePickedFood, useMacroPreview } from '@/components/nutrition/food-picker';
+import { FoodCreateForm } from '@/components/nutrition/food-create-form';
+import { calculateMacros } from '@/lib/nutrition/macros';
 import type { FoodEntry, PickedFood } from '@/components/nutrition/food-picker';
+import type { IFood } from '@/lib/db/models/food.model';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -25,7 +28,46 @@ export interface FoodPickerDialogProps {
   onCreateNewHref?: string;
 }
 
-type DialogView = 'list' | 'detail';
+type DialogView = 'list' | 'detail' | 'create';
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Convert an IFood document returned by POST /api/foods into a FoodEntry. */
+function ifoodToEntry(food: IFood): FoodEntry {
+  return {
+    source: 'myfood',
+    name: food.name,
+    brand: food.brand,
+    servings: food.servings.map((s, i) => {
+      const macros = calculateMacros({ per100g: food.macrosPer100g, perServing: null }, s.grams);
+      return {
+        id: String(i),
+        label: s.label,
+        grams: s.grams,
+        macros: {
+          kcal: macros.kcal,
+          protein: macros.protein,
+          carbs: macros.carbs,
+          fat: macros.fat,
+          fiber: macros.fiber,
+          sugar: macros.sugar,
+          salt: macros.salt,
+          saturated: macros.saturated,
+          polyunsaturated: macros.polyunsaturated,
+          monounsaturated: macros.monounsaturated,
+          polyols: macros.polyols,
+          cholesterol: macros.cholesterol,
+          sodium: macros.sodium,
+          potassium: macros.potassium,
+          transFat: macros.transFat,
+        },
+      };
+    }),
+    defaultServingId: '0',
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Detail view — shown inside the Dialog when a food row is clicked
@@ -168,6 +210,20 @@ export function FoodPickerDialog({
     [onSelect, onOpenChange],
   );
 
+  const handleCreated = useCallback((food: IFood) => {
+    const entry = ifoodToEntry(food);
+    setSelectedEntry(entry);
+    setView('detail');
+  }, []);
+
+  const handleCreateNew = useCallback(() => {
+    setView('create');
+  }, []);
+
+  const handleCancelCreate = useCallback(() => {
+    setView('list');
+  }, []);
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto" showCloseButton={view === 'list'}>
@@ -179,6 +235,7 @@ export function FoodPickerDialog({
             <FoodPicker
               memberId={memberId}
               onSelectFood={handleSelectFood}
+              onCreateNew={handleCreateNew}
               onCreateNewHref={onCreateNewHref}
             />
           </>
@@ -189,6 +246,17 @@ export function FoodPickerDialog({
             onBack={handleBack}
             onAdd={handleAdd}
           />
+        )}
+        {view === 'create' && (
+          <>
+            <DialogHeader>
+              <DialogTitle>Create Food</DialogTitle>
+            </DialogHeader>
+            <FoodCreateForm
+              onCreated={handleCreated}
+              onCancel={handleCancelCreate}
+            />
+          </>
         )}
       </DialogContent>
     </Dialog>
