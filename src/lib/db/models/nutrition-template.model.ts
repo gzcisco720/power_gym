@@ -1,13 +1,19 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IMealItem {
-  foodId: mongoose.Types.ObjectId;
   foodName: string;
   quantityG: number;
   kcal: number;
   protein: number;
   carbs: number;
   fat: number;
+  fiber?: number;
+  sugar?: number;
+  salt?: number;
+  saturated?: number;
+  polyunsaturated?: number;
+  monounsaturated?: number;
+  polyols?: number;
 }
 
 export interface IMeal {
@@ -35,13 +41,19 @@ export interface INutritionTemplate extends Document {
 
 export const MealItemSchema = new Schema<IMealItem>(
   {
-    foodId: { type: Schema.Types.ObjectId, required: true },
     foodName: { type: String, required: true },
     quantityG: { type: Number, required: true },
     kcal: { type: Number, required: true },
     protein: { type: Number, required: true },
     carbs: { type: Number, required: true },
     fat: { type: Number, required: true },
+    fiber: { type: Number },
+    sugar: { type: Number },
+    salt: { type: Number },
+    saturated: { type: Number },
+    polyunsaturated: { type: Number },
+    monounsaturated: { type: Number },
+    polyols: { type: Number },
   },
   { _id: false },
 );
