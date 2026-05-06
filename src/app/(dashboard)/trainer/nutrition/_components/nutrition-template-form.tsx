@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FoodAddSheet, type AddedMealItem } from '@/components/nutrition/food-add-sheet';
+import { FoodPicker, type PickedFood } from '@/components/nutrition/food-picker';
 import type { IDayType } from '@/lib/db/models/nutrition-template.model';
 
 interface FormData {
@@ -28,7 +28,7 @@ export function NutritionTemplateForm({ initialData, onSubmit }: Props) {
 
   const [editingDayIdx, setEditingDayIdx] = useState<number | null>(null);
   const [draftDay, setDraftDay] = useState<IDayType | null>(null);
-  const [addingFood, setAddingFood] = useState<{ dayIdx: number; mealIdx: number } | null>(null);
+  const [addingFoodMealIdx, setAddingFoodMealIdx] = useState<number | null>(null);
 
   function openNewDayDialog(): void {
     setDraftDay({ name: '', targetKcal: 0, targetProtein: 0, targetCarbs: 0, targetFat: 0, meals: [] });
@@ -60,13 +60,21 @@ export function NutritionTemplateForm({ initialData, onSubmit }: Props) {
     setDraftDay({ ...draftDay, meals: [...draftDay.meals, { name: 'Meal', order: draftDay.meals.length + 1, items: [] }] });
   }
 
-  function addFoodToMeal(item: AddedMealItem): void {
-    if (!addingFood || !draftDay) return;
-    const meals = draftDay.meals.map((m, i) => i === addingFood.mealIdx
-      ? { ...m, items: [...m.items, item] }
-      : m,
+  function addFoodToMeal(picked: PickedFood): void {
+    if (addingFoodMealIdx === null || !draftDay) return;
+    const newItem = {
+      foodName: picked.foodName,
+      quantityG: picked.quantityG,
+      kcal: picked.macros.kcal,
+      protein: picked.macros.protein,
+      carbs: picked.macros.carbs,
+      fat: picked.macros.fat,
+    };
+    const meals = draftDay.meals.map((m, i) =>
+      i === addingFoodMealIdx ? { ...m, items: [...m.items, newItem] } : m,
     );
     setDraftDay({ ...draftDay, meals });
+    setAddingFoodMealIdx(null);
   }
 
   return (
@@ -130,7 +138,7 @@ export function NutritionTemplateForm({ initialData, onSubmit }: Props) {
                           setDraftDay({ ...draftDay, meals });
                         }}
                       />
-                      <Button type="button" size="sm" onClick={() => setAddingFood({ dayIdx: editingDayIdx ?? 0, mealIdx: mIdx })}>+ Food</Button>
+                      <Button type="button" size="sm" onClick={() => setAddingFoodMealIdx(mIdx)}>+ Food</Button>
                     </div>
                     <ul className="text-xs divide-y">
                       {m.items.map((it, iIdx) => (
@@ -150,11 +158,19 @@ export function NutritionTemplateForm({ initialData, onSubmit }: Props) {
         </DialogContent>
       </Dialog>
 
-      <FoodAddSheet
-        open={addingFood !== null}
-        onOpenChange={(o) => !o && setAddingFood(null)}
-        onAdd={addFoodToMeal}
-      />
+      <Dialog open={addingFoodMealIdx !== null} onOpenChange={(o) => { if (!o) setAddingFoodMealIdx(null); }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add Food</DialogTitle>
+          </DialogHeader>
+          <FoodPicker
+            memberId=""
+            onSelect={addFoodToMeal}
+            onCreateNewHref="/trainer/foods/new"
+            hideRecent
+          />
+        </DialogContent>
+      </Dialog>
     </form>
   );
 }
