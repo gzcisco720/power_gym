@@ -15,6 +15,7 @@ export interface ICalendarOverride {
 export interface ISchedule {
   weeklyPattern: IWeeklyPatternEntry[];
   calendarOverrides: ICalendarOverride[];
+  iterate: boolean;
 }
 
 export interface IMemberNutritionPlan extends Document {
@@ -49,6 +50,7 @@ const ScheduleSchema = new Schema<ISchedule>(
   {
     weeklyPattern: { type: [WeeklyPatternEntrySchema], default: [] },
     calendarOverrides: { type: [CalendarOverrideSchema], default: [] },
+    iterate: { type: Boolean, required: true, default: true },
   },
   { _id: false },
 );
@@ -63,7 +65,7 @@ const MemberNutritionPlanSchema = new Schema<IMemberNutritionPlan>(
     assignedAt: { type: Date, required: true },
     deactivatedAt: { type: Date, default: null },
     dayTypes: [DayTypeSchema],
-    schedule: { type: ScheduleSchema, default: () => ({ weeklyPattern: [], calendarOverrides: [] }) },
+    schedule: { type: ScheduleSchema, default: () => ({ weeklyPattern: [], calendarOverrides: [], iterate: true }) },
   },
   { timestamps: false },
 );

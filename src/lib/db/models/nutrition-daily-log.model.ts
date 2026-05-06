@@ -5,10 +5,6 @@ export interface IDailyLogMeal {
   name: string;
   order: number;
   completed: boolean;
-  targetKcal: number;
-  targetProtein: number;
-  targetCarbs: number;
-  targetFat: number;
   items: IMealItem[];
 }
 
@@ -28,10 +24,6 @@ const DailyLogMealSchema = new Schema<IDailyLogMeal>(
     name: { type: String, required: true },
     order: { type: Number, required: true },
     completed: { type: Boolean, required: true, default: false },
-    targetKcal: { type: Number, required: true, default: 0 },
-    targetProtein: { type: Number, required: true, default: 0 },
-    targetCarbs: { type: Number, required: true, default: 0 },
-    targetFat: { type: Number, required: true, default: 0 },
     items: [MealItemSchema],
   },
   { _id: false },

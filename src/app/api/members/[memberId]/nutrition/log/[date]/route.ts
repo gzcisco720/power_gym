@@ -58,7 +58,8 @@ export async function GET(_req: Request, { params }: RouteContext): Promise<Resp
   const plan = await planRepo.findActive(memberId);
   if (!plan) return Response.json(null);
 
-  const dayTypeName = resolveDayType(plan.schedule, date);
+  const startDateISO = plan.assignedAt.toISOString().slice(0, 10);
+  const dayTypeName = resolveDayType(plan.schedule, date, startDateISO);
   if (!dayTypeName) return Response.json(null);
   const dayType = plan.dayTypes.find((d) => d.name === dayTypeName);
   if (!dayType) return Response.json(null);
@@ -72,10 +73,6 @@ export async function GET(_req: Request, { params }: RouteContext): Promise<Resp
       name: m.name,
       order: m.order,
       completed: false,
-      targetKcal: m.targetKcal,
-      targetProtein: m.targetProtein,
-      targetCarbs: m.targetCarbs,
-      targetFat: m.targetFat,
       items: m.items,
     })),
     dayCompleted: false,

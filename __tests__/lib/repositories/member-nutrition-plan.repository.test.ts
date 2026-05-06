@@ -70,7 +70,7 @@ describe('MongoMemberNutritionPlanRepository', () => {
   it('updateSchedule sets schedule on active plan', async () => {
     const updated = { _id: 'np1', schedule: { weeklyPattern: [], calendarOverrides: [] } };
     mockModel.findOneAndUpdate.mockResolvedValue(updated as never);
-    const schedule = { weeklyPattern: [{ dayOfWeek: 1 as const, dayTypeName: 'Training' }], calendarOverrides: [] };
+    const schedule = { weeklyPattern: [{ dayOfWeek: 1 as const, dayTypeName: 'Training' }], calendarOverrides: [], iterate: true };
     const result = await repo.updateSchedule(new mongoose.Types.ObjectId().toString(), schedule);
     expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(
       { memberId: expect.any(mongoose.Types.ObjectId), isActive: true },

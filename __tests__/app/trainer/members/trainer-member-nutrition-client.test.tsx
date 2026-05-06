@@ -21,8 +21,8 @@ describe('TrainerMemberNutritionClient', () => {
   it('renders active plan summary', async () => {
     mockFetch
       .mockResolvedValueOnce(new Response(JSON.stringify({
-        _id: 'np1', name: 'Bulk', dayTypes: [{ name: 'Training', targetKcal: 2800, targetProtein: 200, targetCarbs: 300, targetFat: 80, meals: [] }],
-        assignedAt: '2026-04-10T00:00:00Z', schedule: { weeklyPattern: [], calendarOverrides: [] },
+        _id: 'np1', name: 'Bulk', dayTypes: [{ name: 'Training', meals: [] }],
+        assignedAt: '2026-04-10T00:00:00Z', schedule: { weeklyPattern: [], calendarOverrides: [], iterate: true },
       }), { status: 200 }))
       .mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }));
     render(<TrainerMemberNutritionClient memberId="m1" templates={[]} basePathPrefix="trainer" />);

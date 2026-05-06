@@ -40,9 +40,11 @@ describe('GET /api/members/[memberId]/nutrition/log/[date]', () => {
     mockLogRepo.findByDate.mockResolvedValue(null);
     mockPlanRepo.findActive.mockResolvedValue({
       _id: 'np1',
+      assignedAt: new Date('2026-05-01'),
       schedule: {
         weeklyPattern: [{ dayOfWeek: 3, dayTypeName: 'Training' }],
         calendarOverrides: [],
+        iterate: true,
       },
       dayTypes: [{ name: 'Training', meals: [{ name: 'Breakfast', order: 1, items: [{ foodName: 'Egg', quantityG: 100, kcal: 155, protein: 13, carbs: 1, fat: 11 }] }] }],
     });

@@ -23,19 +23,11 @@ export interface IMealItem {
 export interface IMeal {
   name: string;
   order: number;
-  targetKcal: number;
-  targetProtein: number;
-  targetCarbs: number;
-  targetFat: number;
   items: IMealItem[];
 }
 
 export interface IDayType {
   name: string;
-  targetKcal: number;
-  targetProtein: number;
-  targetCarbs: number;
-  targetFat: number;
   meals: IMeal[];
 }
 
@@ -74,10 +66,6 @@ export const MealSchema = new Schema<IMeal>(
   {
     name: { type: String, required: true },
     order: { type: Number, required: true },
-    targetKcal: { type: Number, required: true, default: 0 },
-    targetProtein: { type: Number, required: true, default: 0 },
-    targetCarbs: { type: Number, required: true, default: 0 },
-    targetFat: { type: Number, required: true, default: 0 },
     items: [MealItemSchema],
   },
   { _id: false },
@@ -86,10 +74,6 @@ export const MealSchema = new Schema<IMeal>(
 export const DayTypeSchema = new Schema<IDayType>(
   {
     name: { type: String, required: true },
-    targetKcal: { type: Number, required: true },
-    targetProtein: { type: Number, required: true },
-    targetCarbs: { type: Number, required: true },
-    targetFat: { type: Number, required: true },
     meals: [MealSchema],
   },
   { _id: false },

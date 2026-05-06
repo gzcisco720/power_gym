@@ -8,6 +8,7 @@ const dayTypeNames = ['Training', 'Rest'];
 const initialSchedule = {
   weeklyPattern: [{ dayOfWeek: 1 as const, dayTypeName: 'Training' }],
   calendarOverrides: [{ date: '2026-05-04', dayTypeName: 'Rest' }],
+  iterate: true,
 };
 
 beforeEach(() => jest.clearAllMocks());

@@ -79,7 +79,7 @@ describe('POST /api/members/[memberId]/nutrition', () => {
     mockUserRepo.findById.mockResolvedValue({ _id: 'm1', email: 'm@x.com', trainerId: { toString: () => 't1' } });
     mockNutritionPlanRepo.create.mockResolvedValue({ _id: 'np1', name: '直建计划' });
 
-    const dayTypes = [{ name: 'Training', targetKcal: 2800, targetProtein: 200, targetCarbs: 300, targetFat: 80, meals: [] }];
+    const dayTypes = [{ name: 'Training', meals: [] }];
     const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
     const res = await POST(
       new Request('http://localhost/', {
