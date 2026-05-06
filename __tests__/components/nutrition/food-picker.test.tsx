@@ -1,5 +1,6 @@
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { FoodPicker } from '@/components/nutrition/food-picker';
+import type { FoodEntry } from '@/components/nutrition/food-picker';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -70,7 +71,7 @@ function makeMyFoodItem() {
 // ---------------------------------------------------------------------------
 
 describe('FoodPicker', () => {
-  const onSelect = jest.fn();
+  const onSelectFood = jest.fn<void, [FoodEntry]>();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -83,22 +84,22 @@ describe('FoodPicker', () => {
 
   // ---- Tab rendering -------------------------------------------------------
 
-  it('renders 3 tabs by default (All, Recent, My Food)', () => {
-    render(<FoodPicker memberId="m1" onSelect={onSelect} />);
+  it('renders 3 tabs by default (All, Recent, My Food) when memberId is set', () => {
+    render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
     expect(screen.getByRole('tab', { name: /all/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /recent/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /my food/i })).toBeInTheDocument();
   });
 
-  it('renders only 2 tabs (All, My Food) when hideRecent is true', () => {
-    render(<FoodPicker memberId="m1" onSelect={onSelect} hideRecent />);
+  it('renders only 2 tabs (All, My Food) when memberId is null', () => {
+    render(<FoodPicker memberId={null} onSelectFood={onSelectFood} />);
     expect(screen.getByRole('tab', { name: /all/i })).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: /recent/i })).not.toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /my food/i })).toBeInTheDocument();
   });
 
-  it('shows a 2-column grid when hideRecent is true', () => {
-    render(<FoodPicker memberId="m1" onSelect={onSelect} hideRecent />);
+  it('shows a 2-column grid when memberId is null', () => {
+    render(<FoodPicker memberId={null} onSelectFood={onSelectFood} />);
     const tabsList = screen.getByRole('tablist');
     expect(tabsList).toHaveClass('grid-cols-2');
   });
@@ -106,28 +107,30 @@ describe('FoodPicker', () => {
   // ---- Attribution ---------------------------------------------------------
 
   it('renders "Powered by FatSecret" attribution', () => {
-    render(<FoodPicker memberId="m1" onSelect={onSelect} />);
+    render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
     expect(screen.getByText(/powered by fatsecret/i)).toBeInTheDocument();
   });
 
   // ---- Create New link -----------------------------------------------------
 
   it('renders "+ Create New" link when onCreateNewHref is provided', () => {
-    render(<FoodPicker memberId="m1" onSelect={onSelect} onCreateNewHref="/trainer/foods/new" />);
+    render(
+      <FoodPicker memberId="m1" onSelectFood={onSelectFood} onCreateNewHref="/trainer/foods/new" />,
+    );
     const link = screen.getByRole('link', { name: /create new/i });
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute('href', '/trainer/foods/new');
   });
 
   it('does not render "+ Create New" link when onCreateNewHref is absent', () => {
-    render(<FoodPicker memberId="m1" onSelect={onSelect} />);
+    render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
     expect(screen.queryByRole('link', { name: /create new/i })).not.toBeInTheDocument();
   });
 
   // ---- All tab: search input + debounce ------------------------------------
 
   it('does not call /api/food-search before user types', () => {
-    render(<FoodPicker memberId="m1" onSelect={onSelect} />);
+    render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
@@ -137,7 +140,7 @@ describe('FoodPicker', () => {
       new Response(JSON.stringify({ results: [makeFatSecretFood()] }), { status: 200 }),
     );
 
-    render(<FoodPicker memberId="m1" onSelect={onSelect} />);
+    render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
     const input = screen.getByPlaceholderText(/search foods/i);
 
     await act(async () => {
@@ -156,15 +159,15 @@ describe('FoodPicker', () => {
     jest.useRealTimers();
   });
 
-  // ---- All tab: selecting a result reveals detail panel --------------------
+  // ---- All tab: row click emits FoodEntry ----------------------------------
 
-  it('renders search results and shows detail panel on row click', async () => {
+  it('renders search results as table rows and emits FoodEntry on row click', async () => {
     jest.useFakeTimers();
     (global.fetch as jest.Mock).mockResolvedValue(
       new Response(JSON.stringify({ results: [makeFatSecretFood()] }), { status: 200 }),
     );
 
-    render(<FoodPicker memberId="m1" onSelect={onSelect} />);
+    render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
     const input = screen.getByPlaceholderText(/search foods/i);
 
     await act(async () => {
@@ -175,23 +178,26 @@ describe('FoodPicker', () => {
 
     await waitFor(() => expect(screen.getByText('Chicken Breast')).toBeInTheDocument());
 
-    // Click the list row
+    // Click the row
     fireEvent.click(screen.getByText('Chicken Breast'));
 
-    // Detail panel should appear
-    expect(screen.getByRole('button', { name: /add/i })).toBeInTheDocument();
+    expect(onSelectFood).toHaveBeenCalledTimes(1);
+    const entry: FoodEntry = onSelectFood.mock.calls[0][0];
+    expect(entry.source).toBe('fatsecret');
+    expect(entry.name).toBe('Chicken Breast');
+    expect(entry.brand).toBeNull();
+    expect(entry.servings).toHaveLength(2);
+    expect(entry.defaultServingId).toBe('s1');
     jest.useRealTimers();
   });
 
-  // ---- All tab: clicking Add calls onSelect with computed macros -----------
-
-  it('calls onSelect with correct macros when Add is clicked', async () => {
+  it('table header row is rendered for All tab after search', async () => {
     jest.useFakeTimers();
     (global.fetch as jest.Mock).mockResolvedValue(
       new Response(JSON.stringify({ results: [makeFatSecretFood()] }), { status: 200 }),
     );
 
-    render(<FoodPicker memberId="m1" onSelect={onSelect} />);
+    render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
     const input = screen.getByPlaceholderText(/search foods/i);
 
     await act(async () => {
@@ -201,21 +207,10 @@ describe('FoodPicker', () => {
     });
 
     await waitFor(() => expect(screen.getByText('Chicken Breast')).toBeInTheDocument());
-    fireEvent.click(screen.getByText('Chicken Breast'));
-
-    await waitFor(() => expect(screen.getByRole('button', { name: /add/i })).toBeInTheDocument());
-    fireEvent.click(screen.getByRole('button', { name: /add/i }));
-
-    expect(onSelect).toHaveBeenCalledTimes(1);
-    const picked = onSelect.mock.calls[0][0];
-    expect(picked.foodName).toBe('Chicken Breast');
-    expect(picked.quantityG).toBeGreaterThan(0);
-    expect(picked.macros).toMatchObject({
-      kcal: expect.any(Number),
-      protein: expect.any(Number),
-      carbs: expect.any(Number),
-      fat: expect.any(Number),
-    });
+    expect(screen.getByText('Kcal')).toBeInTheDocument();
+    expect(screen.getByText('Protein')).toBeInTheDocument();
+    expect(screen.getByText('Carbs')).toBeInTheDocument();
+    expect(screen.getByText('Fat')).toBeInTheDocument();
     jest.useRealTimers();
   });
 
@@ -226,7 +221,7 @@ describe('FoodPicker', () => {
       new Response(JSON.stringify({ recent: [makeRecentItem()] }), { status: 200 }),
     );
 
-    render(<FoodPicker memberId="m1" onSelect={onSelect} />);
+    render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
     fireEvent.click(screen.getByRole('tab', { name: /recent/i }));
 
     await waitFor(() =>
@@ -236,22 +231,24 @@ describe('FoodPicker', () => {
     await waitFor(() => expect(screen.getByText('Oats')).toBeInTheDocument());
   });
 
-  it('calls onSelect when a recent item is clicked', async () => {
+  it('emits FoodEntry with source=recent when a recent row is clicked', async () => {
     (global.fetch as jest.Mock).mockResolvedValue(
       new Response(JSON.stringify({ recent: [makeRecentItem()] }), { status: 200 }),
     );
 
-    render(<FoodPicker memberId="m1" onSelect={onSelect} />);
+    render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
     fireEvent.click(screen.getByRole('tab', { name: /recent/i }));
 
     await waitFor(() => expect(screen.getByText('Oats')).toBeInTheDocument());
     fireEvent.click(screen.getByText('Oats'));
 
-    expect(onSelect).toHaveBeenCalledWith({
-      foodName: 'Oats',
-      quantityG: 80,
-      macros: { kcal: 300, protein: 10, carbs: 54, fat: 5 },
-    });
+    expect(onSelectFood).toHaveBeenCalledTimes(1);
+    const entry: FoodEntry = onSelectFood.mock.calls[0][0];
+    expect(entry.source).toBe('recent');
+    expect(entry.name).toBe('Oats');
+    expect(entry.servings).toHaveLength(1);
+    expect(entry.servings[0].macros.kcal).toBe(300);
+    expect(entry.servings[0].macros.protein).toBe(10);
   });
 
   it('shows "No recent items" when recent list is empty', async () => {
@@ -259,7 +256,7 @@ describe('FoodPicker', () => {
       new Response(JSON.stringify({ recent: [] }), { status: 200 }),
     );
 
-    render(<FoodPicker memberId="m1" onSelect={onSelect} />);
+    render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
     fireEvent.click(screen.getByRole('tab', { name: /recent/i }));
 
     await waitFor(() => expect(screen.getByText(/no recent items/i)).toBeInTheDocument());
@@ -272,30 +269,32 @@ describe('FoodPicker', () => {
       new Response(JSON.stringify({ foods: [makeMyFoodItem()] }), { status: 200 }),
     );
 
-    render(<FoodPicker memberId="m1" onSelect={onSelect} />);
+    render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
     fireEvent.click(screen.getByRole('tab', { name: /my food/i }));
 
     await waitFor(() => expect(global.fetch).toHaveBeenCalledWith('/api/foods'));
     await waitFor(() => expect(screen.getByText(/protein powder/i)).toBeInTheDocument());
   });
 
-  it('calls onSelect with macros when My Food Add button clicked', async () => {
+  it('emits FoodEntry with source=myfood and correct macros when My Food row is clicked', async () => {
     (global.fetch as jest.Mock).mockResolvedValue(
       new Response(JSON.stringify({ foods: [makeMyFoodItem()] }), { status: 200 }),
     );
 
-    render(<FoodPicker memberId="m1" onSelect={onSelect} />);
+    render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
     fireEvent.click(screen.getByRole('tab', { name: /my food/i }));
 
-    await waitFor(() => expect(screen.getByText('MyBrand · Protein Powder')).toBeInTheDocument());
-    fireEvent.click(screen.getByText('MyBrand · Protein Powder'));
+    await waitFor(() => expect(screen.getByText(/protein powder/i)).toBeInTheDocument());
+    // The row title cell renders "Name · Brand" combined — use regex to match the row
+    fireEvent.click(screen.getByText(/protein powder/i));
 
-    await waitFor(() => expect(screen.getByRole('button', { name: /add/i })).toBeInTheDocument());
-    fireEvent.click(screen.getByRole('button', { name: /add/i }));
-
-    expect(onSelect).toHaveBeenCalledTimes(1);
-    const picked = onSelect.mock.calls[0][0];
-    expect(picked.foodName).toBe('MyBrand Protein Powder');
-    expect(picked.macros.kcal).toBeCloseTo(380 * (30 / 100));
+    expect(onSelectFood).toHaveBeenCalledTimes(1);
+    const entry: FoodEntry = onSelectFood.mock.calls[0][0];
+    expect(entry.source).toBe('myfood');
+    expect(entry.name).toBe('Protein Powder');
+    expect(entry.brand).toBe('MyBrand');
+    expect(entry.servings).toHaveLength(1);
+    // 30g serving: kcal = 380 * 30/100 = 114
+    expect(entry.servings[0].macros.kcal).toBeCloseTo(114);
   });
 });
