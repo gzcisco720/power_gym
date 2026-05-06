@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScheduleEditor } from '@/components/nutrition/schedule-editor';
@@ -21,7 +21,7 @@ interface Props {
   basePathPrefix: 'trainer' | 'owner';
 }
 
-export function TrainerMemberNutritionClient({ memberId, templates, basePathPrefix }: Props): JSX.Element {
+export function TrainerMemberNutritionClient({ memberId, templates, basePathPrefix }: Props) {
   const [active, setActive] = useState<IMemberNutritionPlan | null>(null);
   const [history, setHistory] = useState<IMemberNutritionPlan[]>([]);
   const [assignOpen, setAssignOpen] = useState(false);
@@ -75,9 +75,12 @@ export function TrainerMemberNutritionClient({ memberId, templates, basePathPref
               <span className="font-medium text-sm">{active.name} · {active.dayTypes.length} day types · Assigned {new Date(active.assignedAt).toISOString().slice(0, 10)}</span>
               <div className="flex gap-2">
                 <Button size="sm" onClick={() => setAssignOpen(true)}>From Template</Button>
-                <Button size="sm" variant="outline" asChild>
-                  <Link href={`/${basePathPrefix}/members/${memberId}/nutrition/new`}>Create Direct</Link>
-                </Button>
+                <Link
+                  href={`/${basePathPrefix}/members/${memberId}/nutrition/new`}
+                  className={buttonVariants({ size: 'sm', variant: 'outline' })}
+                >
+                  Create Direct
+                </Link>
               </div>
             </div>
             <ul className="divide-y text-sm">
@@ -123,7 +126,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, basePathPref
       <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Assign Template</DialogTitle></DialogHeader>
-          <Select value={pickedTemplate} onValueChange={setPickedTemplate}>
+          <Select value={pickedTemplate} onValueChange={(v) => setPickedTemplate(v ?? '')}>
             <SelectTrigger><SelectValue placeholder="Select template" /></SelectTrigger>
             <SelectContent>
               {templates.map((t) => <SelectItem key={t._id} value={t._id}>{t.name}</SelectItem>)}

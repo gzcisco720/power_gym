@@ -6,7 +6,7 @@ import { TrainerMemberNutritionClient } from './_components/trainer-member-nutri
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export default async function Page({ params }: RouteContext): Promise<JSX.Element> {
+export default async function Page({ params }: RouteContext) {
   const session = await auth();
   if (!session?.user || session.user.role === 'member') redirect('/login');
   const { id } = await params;
