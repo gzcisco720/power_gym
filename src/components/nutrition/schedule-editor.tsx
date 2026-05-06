@@ -91,7 +91,7 @@ export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule }: Prop
         </ul>
         <div className="flex gap-2 items-end">
           <Input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} className="w-40" />
-          <Select value={newDayType} onValueChange={setNewDayType}>
+          <Select value={newDayType} onValueChange={(v) => setNewDayType(v ?? '')}>
             <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
               {dayTypeNames.map((n) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
