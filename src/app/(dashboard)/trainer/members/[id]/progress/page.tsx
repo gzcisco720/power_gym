@@ -24,7 +24,7 @@ export default async function TrainerMemberProgressPage({
 
   return (
     <Suspense fallback={<ProgressSkeleton />}>
-      <ProgressContent memberId={memberId} title={`${member.name}'s Progress`} />
+      <ProgressContent memberId={memberId} />
     </Suspense>
   );
 }

@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { SectionHeader } from '@/components/shared/section-header';
 import type { ICheckInConfig } from '@/lib/db/models/check-in-config.model';
 import { upsertCheckInConfigAction } from '../actions';
 
@@ -21,75 +23,69 @@ export function CheckInScheduleForm({ memberId, initialConfig }: Props) {
   const [dayOfWeek, setDayOfWeek] = useState(initialConfig?.dayOfWeek ?? 4);
   const [hour, setHour] = useState(initialConfig?.hour ?? 7);
   const [active, setActive] = useState(initialConfig?.active ?? true);
-  const [error, setError] = useState('');
-  const [saved, setSaved] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
-    setSaved(false);
     startTransition(async () => {
       const result = await upsertCheckInConfigAction(memberId, { dayOfWeek, hour, minute: 0, active });
       if (result.error) {
-        setError(result.error);
+        toast.error(result.error);
       } else {
-        setSaved(true);
+        toast.success('Schedule saved');
       }
     });
   }
 
   return (
-    <section>
-      <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-[1.5px] text-[#555]">
-        Weekly Check-In Schedule
-      </h3>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex flex-wrap gap-4">
-          <div>
-            <label className="mb-1 block text-[12px] text-[#666]">Day</label>
-            <select
-              value={dayOfWeek}
-              onChange={(e) => setDayOfWeek(Number(e.target.value))}
-              className="rounded-md border border-[#1a1a1a] bg-[#0d0d0d] px-3 py-2 text-[13px] text-white"
-            >
-              {DAYS.map((d, i) => (
-                <option key={d} value={i}>{d}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-[12px] text-[#666]">Hour</label>
-            <select
-              value={hour}
-              onChange={(e) => setHour(Number(e.target.value))}
-              className="rounded-md border border-[#1a1a1a] bg-[#0d0d0d] px-3 py-2 text-[13px] text-white"
-            >
-              {HOURS.map((h) => (
-                <option key={h} value={h}>{pad(h)}:00</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-end">
-            <label className="flex cursor-pointer items-center gap-2 text-[13px] text-[#888]">
-              <input
-                type="checkbox"
-                checked={active}
-                onChange={(e) => setActive(e.target.checked)}
-                className="accent-white"
-              />
-              Active
-            </label>
-          </div>
+    <section className="px-4 sm:px-8">
+      <SectionHeader title="Weekly Reminder" />
+      <form
+        onSubmit={handleSubmit}
+        className="mt-3 rounded-xl bg-card ring-1 ring-foreground/10 p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap"
+      >
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-foreground/65" htmlFor="day-select">Day</label>
+          <select
+            id="day-select"
+            value={dayOfWeek}
+            onChange={(e) => setDayOfWeek(Number(e.target.value))}
+            className="rounded-md bg-muted border border-border/60 px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+          >
+            {DAYS.map((d, i) => (
+              <option key={d} value={i}>{d}</option>
+            ))}
+          </select>
         </div>
-        {error && <p className="text-[13px] text-red-400">{error}</p>}
-        {saved && <p className="text-[13px] text-green-400">Schedule saved.</p>}
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-foreground/65" htmlFor="hour-select">Hour</label>
+          <select
+            id="hour-select"
+            value={hour}
+            onChange={(e) => setHour(Number(e.target.value))}
+            className="rounded-md bg-muted border border-border/60 px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+          >
+            {HOURS.map((h) => (
+              <option key={h} value={h}>{pad(h)}:00</option>
+            ))}
+          </select>
+        </div>
+        <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-foreground/65">
+          <input
+            type="checkbox"
+            checked={active}
+            onChange={(e) => setActive(e.target.checked)}
+            className="accent-emerald-500 size-3.5"
+          />
+          Active
+        </label>
         <Button
           type="submit"
           disabled={isPending}
-          className="bg-white font-semibold text-black hover:bg-white/90 disabled:opacity-50"
+          size="sm"
+          className="text-xs font-semibold sm:ml-auto"
         >
-          {isPending ? 'Saving...' : 'Save Schedule'}
+          {isPending ? 'Saving…' : 'Save'}
         </Button>
       </form>
     </section>

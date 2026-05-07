@@ -1,11 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { SectionHeader } from '@/components/shared/section-header';
+import { Trash2, Check, RotateCcw, Pencil } from 'lucide-react';
 import type { SerializedInjury } from '../page';
 
 interface Props {
@@ -25,15 +32,21 @@ const EMPTY_FORM: AddForm = { title: '', affectedMovements: '', trainerNotes: ''
 export function InjuryClient({ memberId, initialInjuries, role }: Props) {
   const router = useRouter();
   const [injuries, setInjuries] = useState(initialInjuries);
-  const [showForm, setShowForm] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState<AddForm>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
   const [memberNoteDraft, setMemberNoteDraft] = useState('');
 
   const canEdit = role === 'trainer' || role === 'owner';
-  const active = injuries.filter((i) => i.status === 'active');
-  const resolved = injuries.filter((i) => i.status === 'resolved');
+  const { active, resolved } = useMemo(
+    () => ({
+      active: injuries.filter((i) => i.status === 'active'),
+      resolved: injuries.filter((i) => i.status === 'resolved'),
+    }),
+    [injuries],
+  );
 
   async function handleAdd() {
     if (!form.title.trim()) return;
@@ -56,7 +69,7 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
       const created = (await res.json()) as SerializedInjury;
       setInjuries((prev) => [created, ...prev]);
       setForm(EMPTY_FORM);
-      setShowForm(false);
+      setAddOpen(false);
       toast.success('Injury record added');
       router.refresh();
     } finally {
@@ -77,11 +90,12 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
     router.refresh();
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('Delete this injury record? This cannot be undone.')) return;
-    const res = await fetch(`/api/members/${memberId}/injuries/${id}`, { method: 'DELETE' });
-    if (!res.ok) { toast.error('Failed to delete'); return; }
-    setInjuries((prev) => prev.filter((i) => i._id !== id));
+  async function handleConfirmDelete() {
+    if (!deleteId) return;
+    const res = await fetch(`/api/members/${memberId}/injuries/${deleteId}`, { method: 'DELETE' });
+    if (!res.ok) { toast.error('Failed to delete'); setDeleteId(null); return; }
+    setInjuries((prev) => prev.filter((i) => i._id !== deleteId));
+    setDeleteId(null);
     toast.success('Record deleted');
     router.refresh();
   }
@@ -99,175 +113,225 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
     toast.success('Notes saved');
   }
 
-  function renderInjuryRow(injury: SerializedInjury, isResolved: boolean) {
+  function renderInjury(injury: SerializedInjury, isResolved: boolean) {
     const isEditingNotes = editingNotesId === injury._id;
     return (
-      <div key={injury._id} className="px-5 py-4 border-b border-[#0f0f0f] last:border-0 space-y-1.5">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-[13px] font-medium text-white">{injury.title}</p>
+      <li
+        key={injury._id}
+        className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-3"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-foreground">{injury.title}</p>
             {injury.affectedMovements && (
-              <p className="text-[11px] text-[#666] mt-0.5">{injury.affectedMovements}</p>
+              <p className="mt-0.5 text-xs text-foreground/65">{injury.affectedMovements}</p>
+            )}
+            {injury.trainerNotes && (
+              <p className="mt-1.5 text-xs text-foreground/65">
+                <span className="font-medium text-foreground/80">Notes: </span>
+                {injury.trainerNotes}
+              </p>
             )}
           </div>
           {canEdit && (
-            <div className="flex gap-1 shrink-0">
-              {!isResolved ? (
-                <Button
-                  variant="ghost"
-                  onClick={() => handleStatusChange(injury._id, 'resolved')}
-                  className="text-[#555] hover:text-emerald-400 hover:bg-[#141414] text-xs h-7 px-2"
-                >
-                  Resolve
-                </Button>
-              ) : (
-                <Button
-                  variant="ghost"
-                  onClick={() => handleStatusChange(injury._id, 'active')}
-                  className="text-[#555] hover:text-yellow-400 hover:bg-[#141414] text-xs h-7 px-2"
-                >
-                  Reactivate
-                </Button>
-              )}
-              {!isResolved && (
-                <Button
-                  variant="ghost"
-                  onClick={() => handleDelete(injury._id)}
-                  className="text-[#555] hover:text-red-400 hover:bg-[#141414] text-xs h-7 px-2"
-                >
-                  Delete
-                </Button>
-              )}
+            <div className="flex shrink-0 items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={isResolved ? 'Reactivate' : 'Mark resolved'}
+                onClick={() => handleStatusChange(injury._id, isResolved ? 'active' : 'resolved')}
+                className="text-foreground/65 hover:text-foreground"
+              >
+                {isResolved ? <RotateCcw className="size-3.5" /> : <Check className="size-3.5" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Delete"
+                onClick={() => setDeleteId(injury._id)}
+                className="text-foreground/65 hover:text-destructive"
+              >
+                <Trash2 className="size-3.5" />
+              </Button>
             </div>
           )}
         </div>
-        {injury.trainerNotes && (
-          <p className="text-[11px] text-[#777]">
-            <span className="text-[#555]">Notes: </span>{injury.trainerNotes}
-          </p>
-        )}
-        <div className="text-[11px] text-[#666]">
-          {role === 'member' ? (
-            isEditingNotes ? (
-              <div className="flex gap-2 mt-1">
+
+        {role === 'member' && (
+          <div className="mt-2">
+            {isEditingNotes ? (
+              <div className="flex gap-2">
                 <Input
                   value={memberNoteDraft}
                   onChange={(e) => setMemberNoteDraft(e.target.value)}
-                  className="bg-[#0a0a0a] border-[#1e1e1e] text-white text-xs h-7"
-                  placeholder="Your notes..."
+                  className="text-xs h-7"
+                  placeholder="Your notes…"
                 />
                 <Button
                   onClick={() => handleSaveMemberNotes(injury._id)}
-                  className="bg-white text-black hover:bg-white/90 text-xs h-7 px-3"
+                  size="sm"
+                  className="text-xs"
                 >
                   Save
                 </Button>
                 <Button
                   variant="ghost"
+                  size="sm"
                   onClick={() => setEditingNotesId(null)}
-                  className="text-[#666] text-xs h-7 px-2"
+                  className="text-xs"
                 >
                   Cancel
                 </Button>
               </div>
             ) : (
-              <span
-                className="cursor-pointer hover:text-[#aaa] transition-colors"
-                onClick={() => { setEditingNotesId(injury._id); setMemberNoteDraft(injury.memberNotes ?? ''); }}
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingNotesId(injury._id);
+                  setMemberNoteDraft(injury.memberNotes ?? '');
+                }}
+                className="inline-flex items-center gap-1 text-xs text-foreground/65 hover:text-foreground transition-colors"
               >
-                {injury.memberNotes ? `My notes: ${injury.memberNotes}` : '+ Add my notes'}
-              </span>
-            )
-          ) : (
-            injury.memberNotes && <span><span className="text-[#555]">Member notes: </span>{injury.memberNotes}</span>
-          )}
-        </div>
-      </div>
+                <Pencil className="size-3" />
+                {injury.memberNotes ? `My notes: ${injury.memberNotes}` : 'Add my notes'}
+              </button>
+            )}
+          </div>
+        )}
+        {role !== 'member' && injury.memberNotes && (
+          <p className="mt-1.5 text-xs text-foreground/65">
+            <span className="font-medium text-foreground/80">Member notes: </span>
+            {injury.memberNotes}
+          </p>
+        )}
+      </li>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-3">
+    <div className="space-y-8 py-6">
+      <section className="px-4 sm:px-8">
         <div className="flex items-center justify-between">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#555]">Active</h2>
+          <SectionHeader title="Active Injuries" />
           {canEdit && (
-            <Button
-              onClick={() => setShowForm((v) => !v)}
-              className="bg-white text-black hover:bg-white/90 font-semibold text-xs h-7 px-3"
-            >
-              + Add
-            </Button>
+            <Dialog open={addOpen} onOpenChange={setAddOpen}>
+              <DialogTrigger
+                render={
+                  <Button variant="outline" size="sm" className="text-xs font-medium">
+                    + Add
+                  </Button>
+                }
+              />
+              <DialogContent className="sm:max-w-md">
+                <DialogTitle>New Injury Record</DialogTitle>
+                <div className="space-y-3 mt-2">
+                  <FieldRow label="Title" required>
+                    <Input
+                      value={form.title}
+                      onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                      placeholder="e.g. Left knee ligament strain"
+                    />
+                  </FieldRow>
+                  <FieldRow label="Affected Movements">
+                    <Input
+                      value={form.affectedMovements}
+                      onChange={(e) => setForm((f) => ({ ...f, affectedMovements: e.target.value }))}
+                      placeholder="e.g. Avoid squats, jumping"
+                    />
+                  </FieldRow>
+                  <FieldRow label="Notes">
+                    <Input
+                      value={form.trainerNotes}
+                      onChange={(e) => setForm((f) => ({ ...f, trainerNotes: e.target.value }))}
+                      placeholder="Additional notes"
+                    />
+                  </FieldRow>
+                  <div className="flex justify-end gap-2 pt-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => { setAddOpen(false); setForm(EMPTY_FORM); }}
+                      className="text-xs"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleAdd}
+                      disabled={saving || !form.title.trim()}
+                      size="sm"
+                      className="text-xs font-semibold"
+                    >
+                      {saving ? 'Saving…' : 'Save'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           )}
         </div>
 
-        {canEdit && showForm && (
-          <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-5 space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Title *</label>
-              <Input
-                value={form.title}
-                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                className="bg-[#0a0a0a] border-[#1e1e1e] text-white"
-                placeholder="e.g. Left knee ligament strain"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Affected Movements</label>
-              <Input
-                value={form.affectedMovements}
-                onChange={(e) => setForm((f) => ({ ...f, affectedMovements: e.target.value }))}
-                className="bg-[#0a0a0a] border-[#1e1e1e] text-white"
-                placeholder="e.g. Avoid squats, jumping"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Notes</label>
-              <Input
-                value={form.trainerNotes}
-                onChange={(e) => setForm((f) => ({ ...f, trainerNotes: e.target.value }))}
-                className="bg-[#0a0a0a] border-[#1e1e1e] text-white"
-                placeholder="Additional notes"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={handleAdd}
-                disabled={saving || !form.title.trim()}
-                className="bg-white text-black hover:bg-white/90 font-semibold text-sm disabled:opacity-50"
-              >
-                {saving ? 'Saving...' : 'Save'}
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => { setShowForm(false); setForm(EMPTY_FORM); }}
-                className="text-[#777] hover:text-[#aaa] text-sm"
-              >
-                Cancel
-              </Button>
-            </div>
-          </Card>
-        )}
-
-        <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl overflow-hidden">
-          {active.length === 0 ? (
-            <p className="px-5 py-6 text-center text-[13px] text-[#555]">No active injuries</p>
-          ) : (
-            active.map((i) => renderInjuryRow(i, false))
-          )}
-        </Card>
-      </div>
-
-      <div className="space-y-3">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#555]">Resolved</h2>
-        {resolved.length === 0 ? (
-          <p className="text-[13px] text-[#555]">No resolved records</p>
+        {active.length === 0 ? (
+          <div className="mt-3 rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-4">
+            <p className="text-sm text-foreground/65">No active injuries</p>
+          </div>
         ) : (
-          <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl overflow-hidden">
-            {resolved.map((i) => renderInjuryRow(i, true))}
-          </Card>
+          <ul className="mt-3 space-y-2">{active.map((i) => renderInjury(i, false))}</ul>
         )}
-      </div>
+      </section>
+
+      <section className="px-4 sm:px-8">
+        <SectionHeader title="Resolved" />
+        {resolved.length === 0 ? (
+          <p className="mt-3 text-sm text-foreground/65">No resolved records</p>
+        ) : (
+          <ul className="mt-3 space-y-2">{resolved.map((i) => renderInjury(i, true))}</ul>
+        )}
+      </section>
+
+      <Dialog open={deleteId !== null} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogTitle>Delete injury record?</DialogTitle>
+          <p className="text-xs text-foreground/65 -mt-1">This cannot be undone.</p>
+          <div className="flex justify-end gap-2 mt-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setDeleteId(null)}
+              className="text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleConfirmDelete}
+              className="text-xs font-semibold"
+            >
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function FieldRow({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1">
+      <label className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold block">
+        {label}
+        {required && <span className="ml-1 text-destructive">*</span>}
+      </label>
+      {children}
     </div>
   );
 }

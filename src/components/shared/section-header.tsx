@@ -7,11 +7,12 @@ interface SectionHeaderProps {
 export function SectionHeader({ title, action, onAction }: SectionHeaderProps) {
   return (
     <div className="flex items-baseline justify-between">
-      <h2 className="text-[13px] font-semibold text-white">{title}</h2>
+      <h2 className="text-sm font-semibold text-foreground">{title}</h2>
       {action && onAction && (
         <button
+          type="button"
           onClick={onAction}
-          className="text-[11px] text-[#555] hover:text-[#888] transition-colors"
+          className="text-xs text-foreground/65 hover:text-foreground transition-colors"
         >
           {action}
         </button>

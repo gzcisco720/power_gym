@@ -43,8 +43,6 @@ export default async function MemberHealthPage({
   const role = session.user.role as 'owner' | 'trainer' | 'member';
 
   return (
-    <div className="px-4 sm:px-8 py-7">
-      <InjuryClient memberId={memberId} initialInjuries={plain} role={role} />
-    </div>
+    <InjuryClient memberId={memberId} initialInjuries={plain} role={role} />
   );
 }

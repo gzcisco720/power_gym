@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Card } from '@/components/ui/card';
 import { PageHeader } from '@/components/shared/page-header';
 import { SectionHeader } from '@/components/shared/section-header';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
@@ -73,7 +72,7 @@ export function ProgressClient({
   heatmapData,
   exercises,
   memberId,
-  title = 'My Progress',
+  title,
 }: ProgressClientProps) {
   const [selectedExerciseId, setSelectedExerciseId] = useState(exercises[0]?.exerciseId ?? '');
   const [history, setHistory] = useState<HistoryPoint[]>([]);
@@ -105,56 +104,68 @@ export function ProgressClient({
     estimatedOneRM: h.estimatedOneRM,
   }));
 
+  const totalSessions = activeDates.size;
+
   return (
     <div>
-      <PageHeader title={title} />
-      <div className="px-4 sm:px-8 py-7 space-y-7">
-        <div>
-          <SectionHeader title="Training Frequency" />
-          <Card className="mt-3 bg-[#0c0c0c] border-[#141414] rounded-xl p-4">
-            <div className="flex gap-1 overflow-x-auto pb-1">
+      {title && <PageHeader title={title} />}
+      <div className="space-y-8 py-6">
+        <section className="px-4 sm:px-8">
+          <div className="flex items-baseline justify-between">
+            <SectionHeader title="Training Frequency" />
+            <span className="text-xs text-foreground/65 tabular-nums">
+              {totalSessions} {totalSessions === 1 ? 'session' : 'sessions'} · last 90 days
+            </span>
+          </div>
+          <div className="mt-3 rounded-xl bg-card ring-1 ring-foreground/10 p-4 overflow-x-auto">
+            <div className="flex gap-1 min-w-max">
               <div className="flex flex-col gap-1 mr-1">
                 <div className="h-3" />
                 {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((label, i) => (
-                  <div key={`${label}-${i}`} className="h-3 w-3 flex items-center justify-center text-[9px] text-[#888]">
+                  <div
+                    key={`${label}-${i}`}
+                    className="h-3 w-3 flex items-center justify-center text-[9px] text-foreground/65"
+                  >
                     {label}
                   </div>
                 ))}
               </div>
               {weeks.map((week) => (
                 <div key={week.weekKey} className="flex flex-col gap-1">
-                  <div className="h-3 text-[9px] text-[#888] whitespace-nowrap">
+                  <div className="h-3 text-[9px] text-foreground/65 whitespace-nowrap">
                     {week.monthLabel ?? ''}
                   </div>
                   {week.days.map((day, di) => (
                     <div
                       key={`${week.weekKey}-${di}`}
-                      className="w-3 h-3 rounded-[2px]"
-                      style={{
-                        backgroundColor: day.hasSession
-                          ? '#2563eb'
+                      className={`w-3 h-3 rounded-[2px] ${
+                        day.hasSession
+                          ? 'bg-emerald-500'
                           : day.inRange
-                            ? '#1a1a1a'
-                            : 'transparent',
-                      }}
+                            ? 'bg-muted'
+                            : 'bg-transparent'
+                      }`}
                     />
                   ))}
                 </div>
               ))}
             </div>
-          </Card>
-        </div>
+          </div>
+        </section>
 
-        <div>
+        <section className="px-4 sm:px-8">
           <SectionHeader title="Strength Progress" />
           {exercises.length === 0 ? (
-            <p className="mt-3 text-[12px] text-[#888]">No exercise history yet.</p>
+            <div className="mt-3 rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-4">
+              <p className="text-sm text-foreground/65">No exercise history yet.</p>
+            </div>
           ) : (
-            <>
+            <div className="mt-3 rounded-xl bg-card ring-1 ring-foreground/10 p-4 space-y-3">
               <select
                 value={selectedExerciseId}
                 onChange={(e) => setSelectedExerciseId(e.target.value)}
-                className="mt-3 bg-[#0c0c0c] border border-[#141414] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:border-[#333]"
+                aria-label="Select exercise"
+                className="rounded-md bg-muted border border-border/60 px-3 py-1.5 text-xs text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
               >
                 {exercises.map((ex) => (
                   <option key={ex.exerciseId} value={ex.exerciseId}>
@@ -163,43 +174,53 @@ export function ProgressClient({
                 ))}
               </select>
 
-              <Card
-                className={`mt-3 bg-[#0c0c0c] border-[#141414] rounded-xl p-4 transition-opacity ${loading ? 'opacity-50' : 'opacity-100'}`}
-              >
+              <div className={`transition-opacity ${loading ? 'opacity-50' : 'opacity-100'}`}>
                 {chartData.length === 0 ? (
-                  <p className="text-[12px] text-[#888] text-center py-8">
+                  <p className="text-sm text-foreground/65 text-center py-8">
                     No history yet for this exercise.
                   </p>
                 ) : (
                   <div className="h-52">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={chartData}>
-                        <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#333' }} />
-                        <YAxis tick={{ fontSize: 10, fill: '#333' }} unit=" kg" />
+                        <XAxis
+                          dataKey="date"
+                          tick={{ fontSize: 10, fill: 'currentColor' }}
+                          className="text-foreground/65"
+                          stroke="currentColor"
+                        />
+                        <YAxis
+                          tick={{ fontSize: 10, fill: 'currentColor' }}
+                          className="text-foreground/65"
+                          stroke="currentColor"
+                          unit=" kg"
+                        />
                         <Tooltip
                           contentStyle={{
-                            backgroundColor: '#0c0c0c',
-                            border: '1px solid #141414',
+                            backgroundColor: 'var(--popover)',
+                            border: '1px solid var(--border)',
                             borderRadius: 8,
+                            fontSize: 11,
                           }}
-                          labelStyle={{ color: '#666', fontSize: 10 }}
-                          itemStyle={{ color: '#ccc', fontSize: 11 }}
+                          labelStyle={{ color: 'var(--muted-foreground)', fontSize: 10 }}
+                          itemStyle={{ color: 'var(--foreground)', fontSize: 11 }}
                           formatter={(value) => [`${value ?? ''} kg`, 'Est. 1RM']}
                         />
                         <Line
                           type="monotone"
                           dataKey="estimatedOneRM"
-                          stroke="#2563eb"
-                          dot={{ fill: '#2563eb', r: 3 }}
+                          stroke="rgb(16 185 129)"
+                          strokeWidth={2}
+                          dot={{ fill: 'rgb(16 185 129)', r: 3 }}
                         />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
                 )}
-              </Card>
-            </>
+              </div>
+            </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );

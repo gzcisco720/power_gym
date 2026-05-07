@@ -15,13 +15,9 @@ export default async function Page({ params }: RouteContext) {
   const templates = await new MongoNutritionTemplateRepository().findByCreator(session.user.id);
 
   return (
-    <div className="container py-6 max-w-4xl space-y-4">
-      <h1 className="text-xl font-semibold">Member Nutrition</h1>
-      <TrainerMemberNutritionClient
-        memberId={id}
-        templates={templates.map((t) => ({ _id: String(t._id), name: t.name }))}
-        basePathPrefix="trainer"
-      />
-    </div>
+    <TrainerMemberNutritionClient
+      memberId={id}
+      templates={templates.map((t) => ({ _id: String(t._id), name: t.name }))}
+    />
   );
 }

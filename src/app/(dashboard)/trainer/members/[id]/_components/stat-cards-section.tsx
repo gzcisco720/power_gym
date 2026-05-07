@@ -25,7 +25,7 @@ export async function StatCardsSection({ memberId }: { memberId: string }) {
       />
       <StatCard
         label="Body Fat"
-        value={latestTest ? String(latestTest.bodyFatPct) : '—'}
+        value={latestTest ? latestTest.bodyFatPct.toFixed(1) : '—'}
         unit={latestTest ? '%' : undefined}
       />
       <StatCard label="Sessions" value={String(stats.completedCount)} />

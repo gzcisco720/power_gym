@@ -25,7 +25,7 @@ export default async function TrainerMemberCheckInsPage({
   const checkIns = JSON.parse(JSON.stringify(rawCheckIns)) as ICheckIn[];
 
   return (
-    <div className="px-4 sm:px-8 py-7 max-w-3xl space-y-10">
+    <div className="space-y-8 py-6">
       <CheckInScheduleForm memberId={memberId} initialConfig={config} />
       <CheckInList memberId={memberId} checkIns={checkIns} />
     </div>

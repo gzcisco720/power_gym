@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { SectionHeader } from '@/components/shared/section-header';
 import type { ICheckIn } from '@/lib/db/models/check-in.model';
 
 interface Props {
@@ -10,62 +11,69 @@ interface Props {
 
 function formatDate(val: string | Date) {
   return new Date(val).toLocaleDateString('en-GB', {
-    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+    day: 'numeric', month: 'short', year: 'numeric',
   });
 }
 
 const DIET_LABEL: Record<string, string> = {
-  yes: 'Stuck to diet',
-  no: 'Did not stick',
+  yes: 'Stuck',
+  no: 'Off track',
   partial: 'Partial',
 };
 
 export function CheckInList({ memberId, checkIns }: Props) {
-  if (checkIns.length === 0) {
-    return (
-      <section>
-        <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-[1.5px] text-[#555]">
-          Check-In History
-        </h3>
-        <p className="text-[14px] text-[#555]">No check-ins submitted yet.</p>
-      </section>
-    );
-  }
-
   return (
-    <section>
-      <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-[1.5px] text-[#555]">
-        Check-In History ({checkIns.length})
-      </h3>
-      <div className="space-y-3">
-        {checkIns.map((ci) => {
-          const id = String((ci as ICheckIn & { _id: unknown })._id);
-          const avgRating = Math.round(
-            (ci.sleepQuality + ci.energy + ci.recovery + ci.stress + ci.fatigue + ci.hunger + ci.digestion) / 7,
-          );
-          return (
-            <Link
-              key={id}
-              href={`/trainer/members/${memberId}/check-ins/${id}`}
-              className="block rounded-lg border border-[#1a1a1a] bg-[#0d0d0d] p-4 transition-colors hover:border-[#333]"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[13px] font-medium text-white">
-                  {formatDate(ci.submittedAt)}
-                </span>
-                <div className="flex items-center gap-4 text-[12px] text-[#666]">
-                  <span>Avg rating: <strong className="text-[#999]">{avgRating}/10</strong></span>
-                  {ci.weight && <span>Weight: <strong className="text-[#999]">{ci.weight} kg</strong></span>}
-                  <span>{DIET_LABEL[ci.stuckToDiet]}</span>
-                  {ci.photos?.length > 0 && (
-                    <span className="text-[#555]">{ci.photos.length} photo{ci.photos.length > 1 ? 's' : ''}</span>
-                  )}
-                </div>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
+    <section className="px-4 sm:px-8">
+      <SectionHeader title={`Check-In History${checkIns.length ? ` (${checkIns.length})` : ''}`} />
+      {checkIns.length === 0 ? (
+        <div className="mt-3 rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-4">
+          <p className="text-sm text-foreground/65">No check-ins submitted yet.</p>
+        </div>
+      ) : (
+        <ul className="mt-3 space-y-1.5">
+          {checkIns.map((ci) => {
+            const id = String((ci as ICheckIn & { _id: unknown })._id);
+            const avgRating = Math.round(
+              (ci.sleepQuality + ci.energy + ci.recovery + ci.stress + ci.fatigue + ci.hunger + ci.digestion) / 7,
+            );
+            return (
+              <li key={id}>
+                <Link
+                  href={`/trainer/members/${memberId}/check-ins/${id}`}
+                  className="block rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 hover:ring-foreground/25 transition-colors"
+                >
+                  <div className="flex items-center">
+                    <span className="text-sm font-semibold text-foreground">
+                      {formatDate(ci.submittedAt)}
+                    </span>
+                    <div className="ml-auto flex items-center gap-3 text-xs text-foreground/65 tabular-nums">
+                      <span>
+                        Avg <strong className="text-foreground">{avgRating}</strong>/10
+                      </span>
+                      {ci.weight !== null && ci.weight !== undefined && (
+                        <>
+                          <span className="text-foreground/40">·</span>
+                          <span>
+                            <strong className="text-foreground">{ci.weight}</strong> kg
+                          </span>
+                        </>
+                      )}
+                      <span className="text-foreground/40">·</span>
+                      <span>{DIET_LABEL[ci.stuckToDiet]}</span>
+                      {ci.photos?.length > 0 && (
+                        <>
+                          <span className="text-foreground/40">·</span>
+                          <span>{ci.photos.length} 📷</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </section>
   );
 }

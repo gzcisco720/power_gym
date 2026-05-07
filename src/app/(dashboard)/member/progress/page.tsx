@@ -9,7 +9,7 @@ export default async function MemberProgressPage() {
 
   return (
     <Suspense fallback={<ProgressSkeleton />}>
-      <ProgressContent memberId={session.user.id} />
+      <ProgressContent memberId={session.user.id} title="My Progress" />
     </Suspense>
   );
 }
