@@ -384,7 +384,7 @@ export function FoodPickerDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto" showCloseButton={view === 'list'}>
+      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto" showCloseButton={view === 'list'}>
         {view === 'list' && (
           <>
             <DialogHeader>

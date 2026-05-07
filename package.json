@@ -16,7 +16,8 @@
     "seed:reset": "ts-node --project tsconfig.scripts.json scripts/seed.ts --reset",
     "seed:dev": "ts-node --project tsconfig.scripts.json scripts/seed-dev.ts",
     "seed:dev:reset": "ts-node --project tsconfig.scripts.json scripts/seed-dev.ts --reset",
-    "migrate:equipment": "ts-node --project tsconfig.scripts.json scripts/migrate-equipment-schema.ts"
+    "migrate:equipment": "ts-node --project tsconfig.scripts.json scripts/migrate-equipment-schema.ts",
+    "seed:exercises": "ts-node --project tsconfig.scripts.json scripts/seed-exercises.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1041.0",
