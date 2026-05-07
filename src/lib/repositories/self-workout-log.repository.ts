@@ -14,7 +14,6 @@ export interface CreateSelfWorkoutLogData {
 export interface UpdateSelfSetData {
   actualWeight: number | null;
   actualReps: number | null;
-  completedAt: Date;
 }
 
 export interface ISelfWorkoutLogRepository {
@@ -83,7 +82,7 @@ export class MongoSelfWorkoutLogRepository implements ISelfWorkoutLogRepository 
         $set: {
           [`sets.${setIndex}.actualWeight`]: patch.actualWeight,
           [`sets.${setIndex}.actualReps`]: patch.actualReps,
-          [`sets.${setIndex}.completedAt`]: patch.completedAt,
+          [`sets.${setIndex}.completedAt`]: new Date(),
         },
       },
       { new: true },

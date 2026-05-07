@@ -1,9 +1,9 @@
+/** @jest-environment node */
 jest.mock('@/lib/db/models/self-workout-log.model', () => ({
   SelfWorkoutLogModel: Object.assign(jest.fn(), {
     find: jest.fn(),
     findOne: jest.fn(),
-    findById: jest.fn(),
-    findByIdAndUpdate: jest.fn(),
+    findOneAndUpdate: jest.fn(),
     findOneAndDelete: jest.fn(),
   }),
 }));
@@ -16,8 +16,7 @@ import type { ISelfWorkoutSet } from '@/lib/db/models/self-workout-log.model';
 const mockModel = jest.mocked(SelfWorkoutLogModel) as jest.MockedFunction<typeof SelfWorkoutLogModel> & {
   find: jest.Mock;
   findOne: jest.Mock;
-  findById: jest.Mock;
-  findByIdAndUpdate: jest.Mock;
+  findOneAndUpdate: jest.Mock;
   findOneAndDelete: jest.Mock;
 };
 
@@ -63,7 +62,7 @@ describe('MongoSelfWorkoutLogRepository', () => {
       });
       expect(mockModel).toHaveBeenCalledWith(
         expect.objectContaining({
-          userId: expect.any(mongoose.Types.ObjectId),
+          userId: new mongoose.Types.ObjectId(USER_A),
           dayName: 'Freestyle',
         }),
       );
@@ -76,8 +75,8 @@ describe('MongoSelfWorkoutLogRepository', () => {
       mockModel.findOne.mockResolvedValue({ _id: LOG_ID } as never);
       const result = await repo.findById(LOG_ID, USER_B);
       expect(mockModel.findOne).toHaveBeenCalledWith({
-        _id: expect.any(mongoose.Types.ObjectId),
-        userId: expect.any(mongoose.Types.ObjectId),
+        _id: new mongoose.Types.ObjectId(LOG_ID),
+        userId: new mongoose.Types.ObjectId(USER_B),
       });
       expect(result).toEqual({ _id: LOG_ID });
     });
@@ -89,7 +88,7 @@ describe('MongoSelfWorkoutLogRepository', () => {
       mockModel.findOne.mockReturnValue({ sort: sortFn } as never);
       const result = await repo.findActive(USER_A);
       expect(mockModel.findOne).toHaveBeenCalledWith({
-        userId: expect.any(mongoose.Types.ObjectId),
+        userId: new mongoose.Types.ObjectId(USER_A),
         completedAt: null,
       });
       expect(sortFn).toHaveBeenCalledWith({ startedAt: -1 });
@@ -103,7 +102,7 @@ describe('MongoSelfWorkoutLogRepository', () => {
       mockModel.find.mockReturnValue({ sort: sortFn } as never);
       await repo.findByUserMonth(USER_A, 2026, 5);
       const arg = mockModel.find.mock.calls[0][0] as { userId: unknown; completedAt: { $gte: Date; $lt: Date } };
-      expect(arg.userId).toBeInstanceOf(mongoose.Types.ObjectId);
+      expect(arg.userId).toEqual(new mongoose.Types.ObjectId(USER_A));
       expect(arg.completedAt.$gte).toEqual(new Date(2026, 4, 1));
       expect(arg.completedAt.$lt).toEqual(new Date(2026, 5, 1));
     });
@@ -111,12 +110,12 @@ describe('MongoSelfWorkoutLogRepository', () => {
 
   describe('appendSet', () => {
     it('uses $push and scopes by userId', async () => {
-      mockModel.findOneAndUpdate = jest.fn().mockResolvedValue({ _id: LOG_ID }) as never;
+      mockModel.findOneAndUpdate.mockResolvedValue({ _id: LOG_ID } as never);
       await repo.appendSet(LOG_ID, USER_A, sampleSet);
       expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(
         {
-          _id: expect.any(mongoose.Types.ObjectId),
-          userId: expect.any(mongoose.Types.ObjectId),
+          _id: new mongoose.Types.ObjectId(LOG_ID),
+          userId: new mongoose.Types.ObjectId(USER_A),
         },
         { $push: { sets: sampleSet } },
         { new: true },
@@ -125,19 +124,18 @@ describe('MongoSelfWorkoutLogRepository', () => {
   });
 
   describe('updateSet', () => {
-    it('patches a specific set index and scopes by userId', async () => {
-      mockModel.findOneAndUpdate = jest.fn().mockResolvedValue({ _id: LOG_ID }) as never;
-      const patch = { actualWeight: 100, actualReps: 5, completedAt: new Date('2026-05-08T10:00:00Z') };
-      await repo.updateSet(LOG_ID, USER_A, 0, patch);
+    it('patches a specific set index, scopes by userId, stamps completedAt server-side', async () => {
+      mockModel.findOneAndUpdate.mockResolvedValue({ _id: LOG_ID } as never);
+      await repo.updateSet(LOG_ID, USER_A, 0, { actualWeight: 100, actualReps: 5 });
       expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(
         {
-          _id: expect.any(mongoose.Types.ObjectId),
-          userId: expect.any(mongoose.Types.ObjectId),
+          _id: new mongoose.Types.ObjectId(LOG_ID),
+          userId: new mongoose.Types.ObjectId(USER_A),
         },
         { $set: {
           'sets.0.actualWeight': 100,
           'sets.0.actualReps': 5,
-          'sets.0.completedAt': patch.completedAt,
+          'sets.0.completedAt': expect.any(Date),
         } },
         { new: true },
       );
@@ -146,12 +144,12 @@ describe('MongoSelfWorkoutLogRepository', () => {
 
   describe('complete', () => {
     it('sets completedAt + rpe + note and scopes by userId', async () => {
-      mockModel.findOneAndUpdate = jest.fn().mockResolvedValue({ _id: LOG_ID }) as never;
+      mockModel.findOneAndUpdate.mockResolvedValue({ _id: LOG_ID } as never);
       await repo.complete(LOG_ID, USER_A, 8, 'felt strong');
-      const call = (mockModel.findOneAndUpdate as jest.Mock).mock.calls[0];
+      const call = mockModel.findOneAndUpdate.mock.calls[0];
       expect(call[0]).toMatchObject({
-        _id: expect.any(mongoose.Types.ObjectId),
-        userId: expect.any(mongoose.Types.ObjectId),
+        _id: new mongoose.Types.ObjectId(LOG_ID),
+        userId: new mongoose.Types.ObjectId(USER_A),
       });
       expect(call[1].$set).toMatchObject({ rpe: 8, note: 'felt strong' });
       expect(call[1].$set.completedAt).toBeInstanceOf(Date);
@@ -163,8 +161,8 @@ describe('MongoSelfWorkoutLogRepository', () => {
       mockModel.findOneAndDelete.mockResolvedValue({ _id: LOG_ID } as never);
       await repo.delete(LOG_ID, USER_A);
       expect(mockModel.findOneAndDelete).toHaveBeenCalledWith({
-        _id: expect.any(mongoose.Types.ObjectId),
-        userId: expect.any(mongoose.Types.ObjectId),
+        _id: new mongoose.Types.ObjectId(LOG_ID),
+        userId: new mongoose.Types.ObjectId(USER_A),
       });
     });
   });
