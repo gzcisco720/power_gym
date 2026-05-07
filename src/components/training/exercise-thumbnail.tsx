@@ -13,14 +13,14 @@ interface Props {
 
 function computePopupStyle(el: HTMLDivElement): React.CSSProperties {
   const rect = el.getBoundingClientRect();
-  const popupWidth = 148;
+  const popupWidth = 248;
   const fitsRight = rect.right + popupWidth <= window.innerWidth;
   return {
     position: 'fixed',
     zIndex: 50,
     top: rect.top + rect.height / 2,
     transform: 'translateY(-50%)',
-    ...(fitsRight ? { left: rect.right + 8 } : { left: rect.left - 156 }),
+    ...(fitsRight ? { left: rect.right + 8 } : { left: rect.left - 256 }),
   };
 }
 
@@ -66,12 +66,12 @@ export function ExerciseThumbnail({ imageUrl, name, size = 40, className }: Prop
         />
         {popupStyle !== null && (
           <div data-testid="hover-popup" style={popupStyle}>
-            <div className="w-[140px] rounded-xl bg-card border border-foreground/10 p-2 shadow-2xl">
+            <div className="w-[240px] rounded-xl bg-card border border-foreground/10 p-2 shadow-2xl">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imageUrl}
                 alt={name}
-                className="w-full h-24 rounded-md object-cover"
+                className="w-full h-44 rounded-md object-cover"
               />
               <p className="mt-2 text-[11px] font-semibold text-foreground text-center">{name}</p>
             </div>
