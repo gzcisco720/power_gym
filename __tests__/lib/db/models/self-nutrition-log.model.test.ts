@@ -9,7 +9,12 @@ describe('SelfNutritionLogModel', () => {
     expect(paths.sourceTemplateDayTypeName.instance).toBe('String');
     expect(paths.dayLabel.instance).toBe('String');
     expect(paths.dayCompleted.instance).toBe('Boolean');
-    expect(paths.meals).toBeDefined();
+    expect(paths.meals.instance).toBe('Array');
+    const mealPaths = paths.meals.schema.paths;
+    expect(mealPaths.name.instance).toBe('String');
+    expect(mealPaths.order.instance).toBe('Number');
+    expect(mealPaths.completed.instance).toBe('Boolean');
+    expect(mealPaths.items).toBeDefined();
   });
 
   it('declares a unique index on userId+date', () => {
