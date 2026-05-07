@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ChevronUp, ChevronDown, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,6 +40,7 @@ interface Props {
   initialData?: { name: string; description: string | null; days: IPlanDay[] };
   exercises?: ExerciseOption[];
   onSubmit: (data: FormData) => Promise<void>;
+  onCancel?: () => void;
 }
 
 function rowToIPlanDayExercise(row: ExerciseRow): IPlanDayExercise {
@@ -68,7 +69,7 @@ function toDayState(day: IPlanDay): DayState {
   };
 }
 
-export function PlanTemplateForm({ initialData, exercises: initialExercises = [], onSubmit }: Props) {
+export function PlanTemplateForm({ initialData, exercises: initialExercises = [], onSubmit, onCancel }: Props) {
   const [name, setName] = useState(initialData?.name ?? '');
   const [description, setDescription] = useState(initialData?.description ?? '');
   const [days, setDays] = useState<DayState[]>(initialData?.days.map(toDayState) ?? []);
@@ -76,6 +77,20 @@ export function PlanTemplateForm({ initialData, exercises: initialExercises = []
   const [selectedExercises, setSelectedExercises] = useState<Set<string>>(new Set());
   const [exerciseSheetDay, setExerciseSheetDay] = useState<number | null>(null);
   const [availableExercises, setAvailableExercises] = useState<ExerciseOption[]>(initialExercises);
+
+  const initialSnapshot = useMemo(
+    () =>
+      JSON.stringify({
+        name: initialData?.name ?? '',
+        description: initialData?.description ?? '',
+        days: initialData?.days ?? [],
+      }),
+    [initialData],
+  );
+  const isDirty = useMemo(
+    () => JSON.stringify({ name, description, days }) !== initialSnapshot,
+    [name, description, days, initialSnapshot],
+  );
 
   function addDay() {
     const num = days.length + 1;
@@ -224,7 +239,7 @@ export function PlanTemplateForm({ initialData, exercises: initialExercises = []
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+    <form onSubmit={handleSubmit} className="space-y-6 pb-24 max-w-3xl mx-auto">
       <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-6 space-y-5">
         <div className="space-y-1.5">
           <label htmlFor="plan-name" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]">
@@ -398,13 +413,22 @@ export function PlanTemplateForm({ initialData, exercises: initialExercises = []
         })}
       </div>
 
-      <Button
-        type="submit"
-        disabled={saving}
-        className="bg-white text-black hover:bg-white/90 font-semibold disabled:opacity-50"
-      >
-        {saving ? 'Saving...' : 'Save Plan'}
-      </Button>
+      <div className="sticky bottom-0 -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 bg-background/95 backdrop-blur-sm border-t border-border/60 flex flex-col gap-2 z-10">
+        <Button type="submit" className="w-full" disabled={saving || !isDirty}>
+          {saving ? 'Saving…' : 'Save Plan'}
+        </Button>
+        {onCancel && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={saving}
+            className="w-full border-border/70 text-foreground/65 hover:bg-muted hover:text-foreground hover:border-border"
+          >
+            Cancel
+          </Button>
+        )}
+      </div>
 
       {exerciseSheetDay !== null && (
         <ExerciseSearchSheet

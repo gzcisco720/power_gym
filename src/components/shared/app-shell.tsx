@@ -43,7 +43,7 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
     {
       group: 'TEMPLATES',
       items: [
-        { href: '/trainer/plans', label: 'Plan Templates' },
+        { href: '/trainer/plans', label: 'Training Templates' },
         { href: '/trainer/nutrition', label: 'Nutrition Templates' },
       ],
     },
@@ -75,7 +75,7 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
     {
       group: 'TEMPLATES',
       items: [
-        { href: '/owner/plans', label: 'Plan Templates' },
+        { href: '/owner/plans', label: 'Training Templates' },
         { href: '/owner/nutrition-templates', label: 'Nutrition Templates' },
       ],
     },

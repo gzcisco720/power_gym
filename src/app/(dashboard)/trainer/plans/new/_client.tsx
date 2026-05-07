@@ -34,7 +34,7 @@ export function NewPlanClient({ exercises, backPath }: Props) {
     <div>
       <PageHeader title="New Plan" />
       <div className="px-4 sm:px-8 py-7">
-        <PlanTemplateForm exercises={exercises} onSubmit={handleSubmit} />
+        <PlanTemplateForm exercises={exercises} onSubmit={handleSubmit} onCancel={() => router.push(backPath)} />
       </div>
     </div>
   );

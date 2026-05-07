@@ -4,15 +4,19 @@ import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/shared/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
+
+interface PlanDay {
+  name: string;
+  exercises: unknown[];
+}
 
 interface Template {
   _id: string;
   name: string;
   description: string | null;
-  days: unknown[];
+  days: PlanDay[];
 }
 
 interface Props {
@@ -21,13 +25,45 @@ interface Props {
   basePath?: string;
 }
 
+const ACCENT_BORDERS = [
+  'border-t-blue-400/50',
+  'border-t-violet-400/50',
+  'border-t-cyan-400/50',
+  'border-t-indigo-400/50',
+  'border-t-purple-400/50',
+];
+
+const CHIP_COLORS = [
+  'bg-blue-500/10 text-blue-300 ring-blue-500/20',
+  'bg-violet-500/10 text-violet-300 ring-violet-500/20',
+  'bg-cyan-500/10 text-cyan-300 ring-cyan-500/20',
+  'bg-indigo-500/10 text-indigo-300 ring-indigo-500/20',
+];
+
+function hashIndex(s: string, mod: number): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (h * 31 + s.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h) % mod;
+}
+
+function PlanStat({ value, label, color }: { value: number; label: string; color: string }) {
+  return (
+    <div>
+      <div className={`text-[14px] font-semibold leading-none ${color}`}>{value}</div>
+      <div className={`mt-1 text-[9px] uppercase tracking-wider ${color} opacity-50`}>{label}</div>
+    </div>
+  );
+}
+
 export function PlanTemplateList({ templates, onDelete, basePath = '/trainer/plans' }: Props) {
   const shouldReduce = useReducedMotion();
 
   return (
     <div>
       <PageHeader
-        title="Plan Templates"
+        title="Training Templates"
         subtitle={`${templates.length} template${templates.length !== 1 ? 's' : ''}`}
         actions={
           <Link
@@ -56,51 +92,70 @@ export function PlanTemplateList({ templates, onDelete, basePath = '/trainer/pla
           />
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {templates.map((template, i) => (
-              <motion.div
-                key={template._id}
-                initial={{ opacity: 0, y: shouldReduce ? 0 : 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: shouldReduce ? 0 : i * 0.04 }}
-                className="relative"
-              >
-                <Link
-                  href={`${basePath}/${template._id}/edit`}
-                  aria-label={`Edit ${template.name}`}
-                  className="block h-full rounded-xl border border-[#141414] bg-[#0c0c0c] p-4 pr-11 transition-colors hover:border-[#2a2a2a]"
+            {templates.map((template, i) => {
+              const accent = ACCENT_BORDERS[hashIndex(template._id, ACCENT_BORDERS.length)];
+              const totalExercises = template.days.reduce((sum, d) => sum + d.exercises.length, 0);
+              return (
+                <motion.div
+                  key={template._id}
+                  initial={{ opacity: 0, y: shouldReduce ? 0 : 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: shouldReduce ? 0 : i * 0.04 }}
+                  className="relative"
                 >
-                  <div className="line-clamp-1 text-[14px] font-semibold text-white">
-                    {template.name}
-                  </div>
-                  {template.description ? (
-                    <p className="mt-1 line-clamp-2 min-h-[2.4em] text-[12px] text-[#888]">
-                      {template.description}
-                    </p>
-                  ) : (
-                    <p className="mt-1 min-h-[2.4em] text-[12px] italic text-[#444]">
-                      No description
-                    </p>
-                  )}
-                  <div className="mt-3">
-                    <Badge className="border-0 bg-[#1a1a1a] text-[10px] text-[#888]">
-                      {template.days.length} {template.days.length !== 1 ? 'days' : 'day'}
-                    </Badge>
-                  </div>
-                </Link>
-                {onDelete && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onDelete(template._id)}
-                    className="absolute right-2 top-2 size-8 text-[#777] hover:bg-[#141414] hover:text-red-400"
-                    aria-label="Delete"
+                  <Link
+                    href={`${basePath}/${template._id}/edit`}
+                    aria-label={`Edit ${template.name}`}
+                    className={`block h-full rounded-xl border border-[#141414] border-t-2 ${accent} bg-[#0c0c0c] p-4 pr-11 transition-colors hover:border-[#2a2a2a]`}
                   >
-                    <Trash2 className="h-4 w-4" />
-                    <span className="sr-only">Delete</span>
-                  </Button>
-                )}
-              </motion.div>
-            ))}
+                    <div className="line-clamp-1 text-[14px] font-semibold text-white">
+                      {template.name}
+                    </div>
+                    {template.description ? (
+                      <p className="mt-1 line-clamp-2 min-h-[2.4em] text-[12px] text-[#888]">
+                        {template.description}
+                      </p>
+                    ) : (
+                      <p className="mt-1 min-h-[2.4em] text-[12px] italic text-[#444]">
+                        No description
+                      </p>
+                    )}
+
+                    {template.days.length > 0 ? (
+                      <div className="mt-3 flex flex-wrap gap-1">
+                        {template.days.map((day, idx) => (
+                          <span
+                            key={`${day.name}-${idx}`}
+                            className={`rounded px-1.5 py-0.5 text-[10px] ring-1 ${CHIP_COLORS[idx % CHIP_COLORS.length]}`}
+                          >
+                            {day.name}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="mt-3 text-[10px] italic text-[#444]">No days yet</div>
+                    )}
+
+                    <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[#1a1a1a] pt-3 text-center">
+                      <PlanStat value={template.days.length} label="days" color="text-blue-300" />
+                      <PlanStat value={totalExercises} label="exercises" color="text-violet-300" />
+                    </div>
+                  </Link>
+                  {onDelete && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onDelete(template._id)}
+                      className="absolute right-2 top-2 size-8 text-[#777] hover:bg-[#141414] hover:text-red-400"
+                      aria-label="Delete"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Delete</span>
+                    </Button>
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </div>

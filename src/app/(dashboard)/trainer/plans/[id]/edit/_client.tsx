@@ -36,7 +36,7 @@ export function EditPlanClient({ id, initialData, exercises, backPath }: Props) 
     <div>
       <PageHeader title="Edit Plan" />
       <div className="px-4 sm:px-8 py-7">
-        <PlanTemplateForm initialData={initialData} exercises={exercises} onSubmit={handleSubmit} />
+        <PlanTemplateForm initialData={initialData} exercises={exercises} onSubmit={handleSubmit} onCancel={() => router.push(backPath)} />
       </div>
     </div>
   );

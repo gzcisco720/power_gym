@@ -28,7 +28,7 @@ export async function TrainerStatsSection({ trainerId }: { trainerId: string }) 
     <div className="grid grid-cols-3 gap-3">
       <StatCard label="Members" value={String(members.length)} />
       <StatCard label="Sessions This Month" value={String(sessionsThisMonth)} />
-      <StatCard label="Plan Templates" value={String(templateCount)} />
+      <StatCard label="Training Templates" value={String(templateCount)} />
     </div>
   );
 }

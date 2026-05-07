@@ -15,7 +15,7 @@ export default async function OwnerPlansPage() {
     _id: string;
     name: string;
     description: string | null;
-    days: unknown[];
+    days: { name: string; exercises: unknown[] }[];
   }[];
 
   async function handleDelete(id: string) {

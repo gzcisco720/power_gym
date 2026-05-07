@@ -33,7 +33,11 @@ export function OwnerEditNutritionTemplateClient({ id, initialData }: Props) {
     <div>
       <PageHeader title="Edit Nutrition Plan" />
       <div className="px-4 sm:px-8 py-7">
-        <NutritionTemplateForm initialData={initialData} onSubmit={handleSubmit} />
+        <NutritionTemplateForm
+          initialData={initialData}
+          onSubmit={handleSubmit}
+          onCancel={() => router.push('/owner/nutrition-templates')}
+        />
       </div>
     </div>
   );
