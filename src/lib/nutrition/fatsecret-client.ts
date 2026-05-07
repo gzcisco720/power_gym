@@ -104,7 +104,26 @@ interface RawFood {
   food_name?: string;
   brand_name?: string;
   food_type?: string;
+  food_description?: string;
   servings?: { serving?: RawServing | RawServing[] };
+}
+
+// OAuth 1.0 foods.search returns no structured servings — only food_description:
+// "Per 101g - Calories: 197kcal | Fat: 7.79g | Carbs: 0.00g | Protein: 29.80g"
+function parseDescriptionServing(desc: string): FatSecretServing | null {
+  const g = desc.match(/Per\s+([\d.]+)\s*g/i);
+  const cal = desc.match(/Calories:\s*([\d.]+)\s*kcal/i);
+  const fat = desc.match(/Fat:\s*([\d.]+)\s*g/i);
+  const carb = desc.match(/Carbs:\s*([\d.]+)\s*g/i);
+  const prot = desc.match(/Protein:\s*([\d.]+)\s*g/i);
+  if (!g || !cal || !fat || !carb || !prot) return null;
+  const grams = parseFloat(g[1]);
+  const calories = parseFloat(cal[1]);
+  const protein = parseFloat(prot[1]);
+  const carbs = parseFloat(carb[1]);
+  const fatVal = parseFloat(fat[1]);
+  if (!Number.isFinite(grams) || !Number.isFinite(calories)) return null;
+  return { servingId: 'desc', description: `${grams} g`, grams, calories, protein, carbs, fat: fatVal };
 }
 
 function mapFood(f: RawFood): FatSecretFood | null {
@@ -112,7 +131,11 @@ function mapFood(f: RawFood): FatSecretFood | null {
   const name = f.food_name?.trim();
   if (!foodId || !name) return null;
   const rawServings = ensureArray(f.servings?.serving);
-  const servings = rawServings.map(mapServing).filter((s): s is FatSecretServing => s !== null);
+  let servings = rawServings.map(mapServing).filter((s): s is FatSecretServing => s !== null);
+  if (servings.length === 0 && f.food_description) {
+    const fallback = parseDescriptionServing(f.food_description);
+    if (fallback) servings = [fallback];
+  }
   if (servings.length === 0) return null;
   return {
     foodId, name,
