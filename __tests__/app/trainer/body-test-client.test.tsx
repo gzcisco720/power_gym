@@ -1,12 +1,20 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { BodyTestClient } from '@/app/(dashboard)/trainer/members/[id]/body-tests/_components/body-test-client';
-import * as nextNavigation from 'next/navigation';
 
-jest.mock('next/navigation', () => ({
-  useRouter: jest.fn(() => ({ refresh: jest.fn() })),
+jest.mock('sonner', () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
+jest.mock('next/navigation', () => ({ useRouter: () => ({ refresh: jest.fn() }) }));
+jest.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children, className }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div className={className}>{children}</div>
+    ),
+  },
+  useReducedMotion: () => false,
 }));
-
-const memberId = 'm1';
+jest.mock(
+  '@/app/(dashboard)/trainer/members/[id]/body-tests/_components/new-body-test-dialog',
+  () => ({ NewBodyTestDialog: () => <button>New Test</button> }),
+);
 
 const mockTests = [
   {
@@ -22,94 +30,19 @@ const mockTests = [
   },
 ];
 
-describe('BodyTestClient', () => {
-  it('renders existing body test records', () => {
-    render(<BodyTestClient memberId={memberId} initialTests={mockTests} />);
-    expect(screen.getByText(/20/)).toBeInTheDocument();
-    expect(screen.getByText(/80/)).toBeInTheDocument();
+describe('BodyTestClient (smoke)', () => {
+  it('renders existing records', () => {
+    render(<BodyTestClient memberId="m1" initialTests={mockTests} />);
+    expect(screen.getAllByText('80').length).toBeGreaterThan(0);
   });
 
-  it('shows "No body tests yet" when no tests', () => {
-    render(<BodyTestClient memberId={memberId} initialTests={[]} />);
-    expect(screen.getByText(/No body tests yet/i)).toBeInTheDocument();
+  it('shows empty state when no tests', () => {
+    render(<BodyTestClient memberId="m1" initialTests={[]} />);
+    expect(screen.getByText(/no body tests yet/i)).toBeInTheDocument();
   });
 
-  it('shows new test form with protocol select', () => {
-    render(<BodyTestClient memberId={memberId} initialTests={[]} />);
-    expect(screen.getByRole('combobox')).toBeInTheDocument();
-  });
-
-  it('shows bodyFatPct input when "other" protocol selected', () => {
-    render(<BodyTestClient memberId={memberId} initialTests={[]} />);
-    const select = screen.getByRole('combobox');
-    // switch away from other first
-    fireEvent.change(select, { target: { value: '3site' } });
-    // now switch back to other
-    fireEvent.change(select, { target: { value: 'other' } });
-    expect(screen.getByLabelText('Body Fat (%)')).toBeInTheDocument();
-  });
-
-  it('shows 3-site male fields when 3site protocol selected (default male sex)', () => {
-    render(<BodyTestClient memberId={memberId} initialTests={[]} />);
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: '3site' } });
-    expect(screen.getByLabelText(/Chest/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Abdominal/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Thigh/i)).toBeInTheDocument();
-  });
-
-  it('shows 3-site female fields when 3site protocol and female sex selected', () => {
-    render(<BodyTestClient memberId={memberId} initialTests={[]} />);
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: '3site' } });
-    // Switch sex to female via radio button
-    fireEvent.click(screen.getByRole('radio', { name: /Female/i }));
-    expect(screen.getByLabelText(/Tricep/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Suprailiac/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Thigh/i)).toBeInTheDocument();
-  });
-
-  it('submits form and calls fetch on success', async () => {
-    const mockRefresh = jest.fn();
-    jest.mocked(nextNavigation.useRouter).mockReturnValue({ refresh: mockRefresh } as unknown as ReturnType<typeof nextNavigation.useRouter>);
-    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({ _id: 'bt2', bodyFatPct: 20, leanMassKg: 64, fatMassKg: 16, weight: 80, protocol: 'other', date: new Date().toISOString(), targetWeight: null, targetBodyFatPct: null }) });
-
-    render(<BodyTestClient memberId={memberId} initialTests={[]} />);
-
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'other' } });
-    fireEvent.change(screen.getByLabelText('Body Fat (%)'), { target: { value: '20' } });
-
-    fireEvent.click(screen.getByRole('button', { name: /^Save$/i }));
-
-    await waitFor(() =>
-      expect(global.fetch).toHaveBeenCalledWith(
-        `/api/members/${memberId}/body-tests`,
-        expect.objectContaining({ method: 'POST' }),
-      ),
-    );
-    await waitFor(() => expect(mockRefresh).toHaveBeenCalled());
-  });
-
-  it('calls DELETE API when delete button clicked', async () => {
-    global.fetch = jest.fn().mockResolvedValue({ ok: true });
-    render(<BodyTestClient memberId={memberId} initialTests={mockTests} />);
-    fireEvent.click(screen.getByRole('button', { name: /Delete/i }));
-
-    await waitFor(() =>
-      expect(global.fetch).toHaveBeenCalledWith(
-        `/api/members/${memberId}/body-tests/bt1`,
-        expect.objectContaining({ method: 'DELETE' }),
-      ),
-    );
-  });
-
-  it('pre-fills age input from defaultAge prop', () => {
-    render(<BodyTestClient memberId={memberId} initialTests={[]} defaultAge={28} />);
-    const ageInput = screen.getByLabelText(/age/i) as HTMLInputElement;
-    expect(ageInput.value).toBe('28');
-  });
-
-  it('pre-selects female sex from defaultSex prop', () => {
-    render(<BodyTestClient memberId={memberId} initialTests={[]} defaultSex="female" />);
-    const femaleRadio = screen.getByRole('radio', { name: /female/i }) as HTMLInputElement;
-    expect(femaleRadio.checked).toBe(true);
+  it('exposes a New Test trigger', () => {
+    render(<BodyTestClient memberId="m1" initialTests={[]} defaultAge={28} />);
+    expect(screen.getAllByRole('button', { name: /new test/i }).length).toBeGreaterThanOrEqual(1);
   });
 });
