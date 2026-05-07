@@ -33,7 +33,12 @@ describe('POST /api/members/[memberId]/nutrition', () => {
     jest.clearAllMocks();
     mockGetEmailService.mockReturnValue({ sendNutritionPlanAssigned: sendNutritionPlanAssignedMock } as unknown as ReturnType<typeof getEmailService>);
     mockUserRepo.findById.mockResolvedValue({ _id: 'm1', name: 'Alice', email: 'alice@test.com', trainerId: { toString: () => 't1' } });
-    mockTemplateRepo.findById.mockResolvedValue({ _id: 'tpl1', name: 'Bulk Diet', dayTypes: [] });
+    mockTemplateRepo.findById.mockResolvedValue({
+      _id: 'tpl1',
+      name: 'Bulk Diet',
+      dayTypes: [],
+      toObject: () => ({ _id: 'tpl1', name: 'Bulk Diet', dayTypes: [] }),
+    });
     mockPlanRepo.deactivateAll.mockResolvedValue(undefined);
     mockPlanRepo.create.mockResolvedValue({ _id: 'plan1' });
   });

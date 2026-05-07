@@ -83,10 +83,12 @@ describe('POST /api/members/[memberId]/plan', () => {
   it('assigns template as deep copy to member', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'trainer1', role: 'trainer' } } as never);
     mockUserRepo.findById.mockResolvedValue({ _id: 'm1', trainerId: { toString: () => 'trainer1' } });
+    const days = [{ dayNumber: 1, name: 'Day 1 — Push', exercises: [] }];
     const template = {
       _id: 'tpl1',
       name: 'Push Pull Legs',
-      days: [{ dayNumber: 1, name: 'Day 1 — Push', exercises: [] }],
+      days,
+      toObject: () => ({ _id: 'tpl1', name: 'Push Pull Legs', days }),
     };
     mockTemplateRepo.findById.mockResolvedValue(template);
     mockMemberPlanRepo.deactivateAll.mockResolvedValue(undefined);
@@ -107,7 +109,29 @@ describe('POST /api/members/[memberId]/plan', () => {
       memberId: 'm1',
       trainerId: 'trainer1',
       name: 'Push Pull Legs',
+      days,
     }));
     expect(data).toEqual(created);
+  });
+
+  it('uses toObject() to copy days (regression: structuredClone fails on Mongoose subdocs)', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'trainer1', role: 'trainer' } } as never);
+    mockUserRepo.findById.mockResolvedValue({ _id: 'm1', trainerId: { toString: () => 'trainer1' } });
+    const days = [{ dayNumber: 1, name: 'Day A', exercises: [] }];
+    const toObject = jest.fn().mockReturnValue({ _id: 'tpl1', name: 'Test', days });
+    const template = { _id: 'tpl1', name: 'Test', days, toObject };
+    mockTemplateRepo.findById.mockResolvedValue(template);
+    mockMemberPlanRepo.deactivateAll.mockResolvedValue(undefined);
+    mockMemberPlanRepo.create.mockResolvedValue({ _id: 'mp1' });
+
+    const { POST } = await import('@/app/api/members/[memberId]/plan/route');
+    const res = await POST(new Request('http://localhost/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ templateId: 'tpl1' }),
+    }), makeParams('m1'));
+
+    expect(res.status).toBe(201);
+    expect(toObject).toHaveBeenCalled();
   });
 });

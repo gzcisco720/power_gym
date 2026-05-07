@@ -42,8 +42,8 @@ export function TrainerMemberPlanClient({ memberId, templates, activePlan, sessi
   const [selectedDay, setSelectedDay] = useState<number>(activePlan?.days[0]?.dayNumber ?? 1);
   const [peekSession, setPeekSession] = useState<SessionSummary | null>(null);
 
-  async function assignPlan() {
-    if (!selectedTemplate) return;
+  async function assignPlan(): Promise<boolean> {
+    if (!selectedTemplate) return false;
     setAssigning(true);
     try {
       const res = await fetch(`/api/members/${memberId}/plan`, {
@@ -54,12 +54,15 @@ export function TrainerMemberPlanClient({ memberId, templates, activePlan, sessi
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
         toast.error(data.error ?? 'Failed to assign plan');
-        return;
+        return false;
       }
       toast.success('Plan assigned');
+      setSelectedTemplate('');
       router.refresh();
+      return true;
     } catch {
       toast.error('Something went wrong');
+      return false;
     } finally {
       setAssigning(false);
     }
@@ -221,11 +224,18 @@ function ChangePlanDialog({
   assigning: boolean;
   selectedTemplate: string;
   onSelect: (id: string) => void;
-  onAssign: () => void;
+  onAssign: () => Promise<boolean>;
   triggerLabel?: string;
 }) {
+  const [open, setOpen] = useState(false);
+
+  async function handleAssign() {
+    const ok = await onAssign();
+    if (ok) setOpen(false);
+  }
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
           <Button variant="outline" size="sm" className="text-xs font-medium">
@@ -256,7 +266,7 @@ function ChangePlanDialog({
           </select>
           <div className="flex justify-end gap-2 pt-1">
             <Button
-              onClick={onAssign}
+              onClick={handleAssign}
               disabled={!selectedTemplate || assigning}
               className="text-xs font-semibold"
             >

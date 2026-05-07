@@ -72,7 +72,7 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
     const template = await templateRepo.findById(body.templateId);
     if (!template) return Response.json({ error: 'Template not found' }, { status: 404 });
     name = template.name;
-    dayTypes = structuredClone(template.dayTypes) as IDayType[];
+    dayTypes = template.toObject().dayTypes;
     templateId = body.templateId;
   } else {
     name = body.name;

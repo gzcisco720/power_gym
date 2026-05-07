@@ -43,7 +43,12 @@ describe('POST /api/members/[memberId]/nutrition', () => {
   it('owner can assign template to any member', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'owner1', role: 'owner', name: 'Owner' } } as never);
     mockUserRepo.findById.mockResolvedValue({ _id: 'm1', email: 'm@x.com', trainerId: { toString: () => 't1' } });
-    mockTemplateRepo.findById.mockResolvedValue({ _id: 'tpl1', name: '增肌计划', dayTypes: [] });
+    mockTemplateRepo.findById.mockResolvedValue({
+      _id: 'tpl1',
+      name: '增肌计划',
+      dayTypes: [],
+      toObject: () => ({ _id: 'tpl1', name: '增肌计划', dayTypes: [] }),
+    });
     mockNutritionPlanRepo.create.mockResolvedValue({ _id: 'np1', name: '增肌计划' });
 
     const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');

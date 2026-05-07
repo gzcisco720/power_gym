@@ -52,7 +52,12 @@ describe('POST /api/members/[memberId]/plan', () => {
     jest.clearAllMocks();
     mockGetEmailService.mockReturnValue({ sendPlanAssigned: sendPlanAssignedMock } as unknown as ReturnType<typeof getEmailService>);
     mockUserRepo.findById.mockResolvedValue({ _id: 'm1', name: 'Alice', email: 'alice@test.com', trainerId: { toString: () => 't1' } });
-    mockTemplateRepo.findById.mockResolvedValue({ _id: 'tpl1', name: 'PPL', days: [] });
+    mockTemplateRepo.findById.mockResolvedValue({
+      _id: 'tpl1',
+      name: 'PPL',
+      days: [],
+      toObject: () => ({ _id: 'tpl1', name: 'PPL', days: [] }),
+    });
     mockMemberPlanRepo.deactivateAll.mockResolvedValue(undefined);
     mockMemberPlanRepo.create.mockResolvedValue({ _id: 'plan1' });
   });
