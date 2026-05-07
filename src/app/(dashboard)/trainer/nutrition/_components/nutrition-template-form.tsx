@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { MacroSummaryCard } from '@/components/nutrition/macro-summary-card';
 import { FoodPickerDialog } from '@/components/nutrition/food-picker-dialog';
+import { MacroPill } from '@/components/nutrition/macro-pill';
 import { ChevronDown, ChevronRight, X, Trash2 } from 'lucide-react';
 import type { IDayType, IMeal, IMealItem } from '@/lib/db/models/nutrition-template.model';
 import type { MacroSnapshot } from '@/lib/nutrition/macros';
@@ -100,25 +101,6 @@ function pickedToMealItem(picked: PickedFood): IMealItem {
 
 function emptyMeal(order: number) {
   return { name: 'Meal', order, items: [] as IMealItem[] };
-}
-
-type MacroTone = 'emerald' | 'amber' | 'pink';
-
-const MACRO_PILL_STYLES: Record<MacroTone, string> = {
-  emerald: 'bg-emerald-500/15 text-emerald-300',
-  amber: 'bg-amber-500/15 text-amber-300',
-  pink: 'bg-pink-500/15 text-pink-300',
-};
-
-function MacroPill({ value, label, tone }: { value: number; label: string; tone: MacroTone }) {
-  return (
-    <span
-      className={`inline-flex items-baseline px-1.5 py-0.5 rounded font-semibold tabular-nums ${MACRO_PILL_STYLES[tone]}`}
-    >
-      {value.toFixed(0)}
-      <span className="opacity-70 font-normal ml-0.5">{label}</span>
-    </span>
-  );
 }
 
 function sumMealMacros(meal: IMeal): CoreMacros {

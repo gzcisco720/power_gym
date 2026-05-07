@@ -1,22 +1,33 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import { PageHeader } from '@/components/shared/page-header';
 import { FoodForm } from '@/components/nutrition/food-form';
+import type { IFoodMacros, IFoodServing } from '@/lib/db/models/food.model';
+
+export interface InitialFoodData {
+  _id: string;
+  name: string;
+  brand: string | null;
+  macrosPer100g: IFoodMacros;
+  servings: IFoodServing[];
+}
 
 interface Props {
   basePath: string;
+  initialFood: InitialFoodData;
 }
 
-export function FoodsCreateClient({ basePath }: Props) {
+export function FoodsEditClient({ basePath, initialFood }: Props) {
   const router = useRouter();
 
   return (
     <div>
       <PageHeader
-        title="Create Food"
+        title="Edit Food"
+        subtitle={initialFood.name}
         actions={
           <Link
             href={basePath}
@@ -29,8 +40,9 @@ export function FoodsCreateClient({ basePath }: Props) {
       />
       <div className="px-4 sm:px-8 py-7 max-w-2xl mx-auto">
         <FoodForm
-          mode="create"
+          mode="edit"
           stickyFooter
+          initialFood={initialFood}
           onSaved={() => router.push(basePath)}
           onCancel={() => router.push(basePath)}
         />

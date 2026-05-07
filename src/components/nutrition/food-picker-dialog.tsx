@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FoodPicker, computePickedFood, useMacroPreview } from '@/components/nutrition/food-picker';
-import { FoodCreateForm } from '@/components/nutrition/food-create-form';
+import { FoodForm } from '@/components/nutrition/food-form';
 import { calculateMacros } from '@/lib/nutrition/macros';
 import type { FoodEntry, PickedFood } from '@/components/nutrition/food-picker';
 import type { IFood } from '@/lib/db/models/food.model';
@@ -252,8 +252,9 @@ export function FoodPickerDialog({
             <DialogHeader>
               <DialogTitle>Create Food</DialogTitle>
             </DialogHeader>
-            <FoodCreateForm
-              onCreated={handleCreated}
+            <FoodForm
+              mode="create"
+              onSaved={handleCreated}
               onCancel={handleCancelCreate}
             />
           </>
