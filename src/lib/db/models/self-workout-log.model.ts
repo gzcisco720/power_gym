@@ -34,6 +34,7 @@ const SelfWorkoutSetSchema = new Schema<ISelfWorkoutSet>(
     isSuperset: { type: Boolean, required: true, default: false },
     isBodyweight: { type: Boolean, required: true, default: false },
     setNumber: { type: Number, required: true },
+    // Nullable: freestyle (ad-hoc) sets have no prescribed range; only template-derived sets do.
     prescribedRepsMin: { type: Number, default: null },
     prescribedRepsMax: { type: Number, default: null },
     actualWeight: { type: Number, default: null },

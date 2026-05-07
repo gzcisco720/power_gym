@@ -11,7 +11,10 @@ describe('SelfWorkoutLogModel', () => {
     expect(paths.dayName.instance).toBe('String');
     expect(paths.rpe.instance).toBe('Number');
     expect(paths.note.instance).toBe('String');
-    expect(paths.sets).toBeDefined();
+    expect(paths.sets.instance).toBe('Array');
+    const setPaths = (paths.sets as { schema: { paths: Record<string, { instance: string }> } }).schema.paths;
+    expect(setPaths.exerciseId.instance).toBe('ObjectId');
+    expect(setPaths.setNumber.instance).toBe('Number');
   });
 
   it('declares the indexes used by repo queries', () => {
