@@ -25,20 +25,21 @@ interface Props {
 }
 
 const PROTOCOL_OPTIONS: { value: Protocol; label: string }[] = [
-  { value: 'other',  label: 'Other (manual entry)' },
-  { value: '3site',  label: '3-Site (Jackson-Pollock)' },
-  { value: '7site',  label: '7-Site (Jackson-Pollock)' },
-  { value: '9site',  label: '9-Site (Parrillo)' },
+  { value: '3site', label: '3-Site · Jackson-Pollock' },
+  { value: '7site', label: '7-Site · Jackson-Pollock' },
+  { value: '9site', label: '9-Site · Parrillo' },
+  { value: 'other', label: 'Other (manual %)' },
 ];
 
 export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, onSaved }: Props) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
 
+  const sex: 'male' | 'female' = defaultSex ?? 'male';
+  const age = defaultAge ?? 0;
+
   const [date, setDate] = useState('');
-  const [protocol, setProtocol] = useState<Protocol>('other');
-  const [sex, setSex] = useState<'male' | 'female'>(defaultSex ?? 'male');
-  const [age, setAge] = useState(defaultAge != null ? String(defaultAge) : '');
+  const [protocol, setProtocol] = useState<Protocol>('3site');
   const [weight, setWeight] = useState('');
   const [targetWeight, setTargetWeight] = useState('');
   const [targetBodyFatPct, setTargetBodyFatPct] = useState('');
@@ -46,9 +47,7 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, onSaved }:
 
   function resetAndOpen() {
     setDate(new Date().toISOString().split('T')[0]);
-    setProtocol('other');
-    setSex(defaultSex ?? 'male');
-    setAge(defaultAge != null ? String(defaultAge) : '');
+    setProtocol('3site');
     setWeight('');
     setTargetWeight('');
     setTargetBodyFatPct('');
@@ -77,10 +76,13 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, onSaved }:
       <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
         <DialogContent
           showCloseButton={false}
-          className="bg-[#0c0c0c] border-[#1e1e1e] max-w-lg p-0 gap-0 overflow-hidden"
+          className="bg-[#0c0c0c] border-[#1e1e1e] sm:max-w-2xl p-0 gap-0 overflow-hidden"
         >
           <DialogHeader className="px-5 pt-5 pb-4 border-b border-[#141414]">
-            <DialogTitle className="text-base font-bold">New Body Test</DialogTitle>
+            <div className="flex items-center justify-between gap-3">
+              <DialogTitle className="text-base font-bold">New Body Test</DialogTitle>
+              <ProfileChip age={defaultAge ?? null} sex={defaultSex ?? null} />
+            </div>
             <StepIndicator step={step} />
           </DialogHeader>
 
@@ -89,8 +91,6 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, onSaved }:
               <Step1Form
                 date={date} onDate={setDate}
                 protocol={protocol} onProtocol={setProtocol}
-                sex={sex} onSex={setSex}
-                age={age} onAge={setAge}
                 weight={weight} onWeight={setWeight}
                 targetWeight={targetWeight} onTargetWeight={setTargetWeight}
                 targetBodyFatPct={targetBodyFatPct} onTargetBodyFatPct={setTargetBodyFatPct}
@@ -105,7 +105,7 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, onSaved }:
                 memberId={memberId}
                 protocol={protocol}
                 sex={sex}
-                age={parseInt(age) || 0}
+                age={age}
                 weight={parseFloat(weight)}
                 date={date}
                 targetWeight={targetWeight ? parseFloat(targetWeight) : null}
@@ -137,11 +137,20 @@ function StepIndicator({ step }: { step: 1 | 2 }) {
   );
 }
 
+function ProfileChip({ age, sex }: { age: number | null; sex: 'male' | 'female' | null }) {
+  if (age == null && sex == null) return null;
+  return (
+    <span className="text-[11px] text-foreground/65 shrink-0">
+      {age != null ? `Age ${age}` : 'Age —'}
+      <span className="mx-1.5 text-foreground/30">·</span>
+      <span className="capitalize">{sex ?? '—'}</span>
+    </span>
+  );
+}
+
 interface Step1Props {
   date: string; onDate: (v: string) => void;
   protocol: Protocol; onProtocol: (v: Protocol) => void;
-  sex: 'male' | 'female'; onSex: (v: 'male' | 'female') => void;
-  age: string; onAge: (v: string) => void;
   weight: string; onWeight: (v: string) => void;
   targetWeight: string; onTargetWeight: (v: string) => void;
   targetBodyFatPct: string; onTargetBodyFatPct: (v: string) => void;
@@ -152,13 +161,13 @@ interface Step1Props {
 }
 
 function Step1Form({
-  date, onDate, protocol, onProtocol, sex, onSex, age, onAge, weight, onWeight,
+  date, onDate, protocol, onProtocol, weight, onWeight,
   targetWeight, onTargetWeight, targetBodyFatPct, onTargetBodyFatPct,
   goalsOpen, onGoalsOpen, canAdvance, onCancel, onNext,
 }: Step1Props) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <div className="space-y-1.5">
           <label htmlFor="nbt-date" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             Test Date
@@ -186,33 +195,6 @@ function Step1Form({
             ))}
           </select>
         </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-3">
-        <div className="space-y-1.5">
-          <label htmlFor="nbt-age" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">Age</label>
-          <Input
-            id="nbt-age"
-            type="number"
-            value={age}
-            onChange={(e) => onAge(e.target.value)}
-            placeholder="years"
-            className="bg-[#0a0a0a] border-[#1e1e1e]"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">Sex</p>
-          <div className="flex gap-3 pt-1.5">
-            <label className="flex items-center gap-1.5 text-sm cursor-pointer text-foreground/65">
-              <input type="radio" name="nbt-sex" value="male" checked={sex === 'male'} onChange={() => onSex('male')} className="accent-white" aria-label="Male" />
-              Male
-            </label>
-            <label className="flex items-center gap-1.5 text-sm cursor-pointer text-foreground/65">
-              <input type="radio" name="nbt-sex" value="female" checked={sex === 'female'} onChange={() => onSex('female')} className="accent-white" aria-label="Female" />
-              Female
-            </label>
-          </div>
-        </div>
         <div className="space-y-1.5">
           <label htmlFor="nbt-weight" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">Weight (kg)</label>
           <Input
@@ -231,7 +213,7 @@ function Step1Form({
         type="button"
         onClick={() => onGoalsOpen(!goalsOpen)}
         aria-expanded={goalsOpen}
-        className="flex w-full items-center gap-1.5 border-t border-[#141414] pt-3 text-[11px] text-foreground/40 hover:text-foreground/65 transition-colors"
+        className="flex w-full items-center gap-1.5 border-t border-[#141414] pt-3 text-[11px] text-foreground/40 hover:text-foreground/65 transition-colors outline-none focus-visible:text-foreground/65"
       >
         <span>{goalsOpen ? '▾' : '▸'}</span>
         Goals <span className="text-foreground/30">(optional)</span>

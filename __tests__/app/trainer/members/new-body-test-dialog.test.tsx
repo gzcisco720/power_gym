@@ -24,25 +24,26 @@ describe('NewBodyTestDialog — Step 1', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
-  it('shows Test Date, Protocol, Age, Weight fields in Step 1', () => {
+  it('shows Test Date, Protocol, Weight fields in Step 1', () => {
     render(<NewBodyTestDialog memberId="m1" onSaved={jest.fn()} />);
     openDialog();
     expect(screen.getByLabelText(/test date/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/protocol/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/age/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^weight/i)).toBeInTheDocument();
   });
 
-  it('pre-fills age from defaultAge prop', () => {
-    render(<NewBodyTestDialog memberId="m1" onSaved={jest.fn()} defaultAge={30} />);
+  it('displays read-only age and sex from profile in the header', () => {
+    render(<NewBodyTestDialog memberId="m1" onSaved={jest.fn()} defaultAge={30} defaultSex="female" />);
     openDialog();
-    expect(screen.getByLabelText(/age/i)).toHaveValue(30);
+    expect(screen.getByText(/age 30/i)).toBeInTheDocument();
+    expect(screen.getByText(/female/i)).toBeInTheDocument();
   });
 
-  it('pre-selects female from defaultSex prop', () => {
-    render(<NewBodyTestDialog memberId="m1" onSaved={jest.fn()} defaultSex="female" />);
+  it('does not render Age input or Sex radio (now read-only from profile)', () => {
+    render(<NewBodyTestDialog memberId="m1" onSaved={jest.fn()} defaultAge={30} defaultSex="female" />);
     openDialog();
-    expect(screen.getByRole('radio', { name: /female/i })).toBeChecked();
+    expect(screen.queryByRole('spinbutton', { name: /age/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio', { name: /female/i })).not.toBeInTheDocument();
   });
 
   it('Next button is disabled when weight is empty', () => {
@@ -149,6 +150,7 @@ describe('NewBodyTestDialog — Submit', () => {
     const onSaved = jest.fn();
     render(<NewBodyTestDialog memberId="m1" onSaved={onSaved} defaultAge={25} />);
     openDialog();
+    fireEvent.change(screen.getByLabelText(/protocol/i), { target: { value: 'other' } });
     fireEvent.change(screen.getByLabelText(/^weight/i), { target: { value: '75' } });
     fireEvent.click(screen.getByRole('button', { name: /next/i }));
     fireEvent.change(screen.getByLabelText(/^body fat/i), { target: { value: '15' } });
@@ -167,6 +169,7 @@ describe('NewBodyTestDialog — Submit', () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, json: async () => ({ error: 'Bad input' }) });
     render(<NewBodyTestDialog memberId="m1" onSaved={jest.fn()} defaultAge={25} />);
     openDialog();
+    fireEvent.change(screen.getByLabelText(/protocol/i), { target: { value: 'other' } });
     fireEvent.change(screen.getByLabelText(/^weight/i), { target: { value: '75' } });
     fireEvent.click(screen.getByRole('button', { name: /next/i }));
     fireEvent.change(screen.getByLabelText(/^body fat/i), { target: { value: '15' } });
