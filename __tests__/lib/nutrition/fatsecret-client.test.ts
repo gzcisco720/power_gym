@@ -117,6 +117,41 @@ describe('fatsecretSearch', () => {
     expect(out[0].servings).toHaveLength(1);
     expect(out[0].servings[0].servingId).toBe('g');
   });
+
+  it('parses v1 (OAuth1) response shape: foods.food[]', async () => {
+    const v1Provider = {
+      ...mockProvider,
+      version: 'v1' as const,
+      searchBaseUrl: 'https://platform.fatsecret.com/rest/server.api',
+      searchExtraParams: { method: 'foods.search' },
+      applyAuth: jest.fn().mockImplementation(async (url: URL) => ({ url, headers: {} })),
+    };
+    (getFatSecretAuthProvider as jest.Mock).mockReturnValue(v1Provider);
+
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        foods: {
+          food: [{
+            food_id: '99',
+            food_name: 'Banana',
+            food_type: 'Generic',
+            servings: { serving: [{
+              serving_id: 'b1',
+              serving_description: '1 medium',
+              metric_serving_amount: '118',
+              metric_serving_unit: 'g',
+              calories: '105', protein: '1.3', carbohydrate: '27', fat: '0.4',
+            }] },
+          }],
+        },
+      }),
+    });
+    const out = await fatsecretSearch('banana');
+    expect(out).toHaveLength(1);
+    expect(out[0].foodId).toBe('99');
+    expect(out[0].name).toBe('Banana');
+  });
 });
 
 describe('fatsecretGetFood', () => {
