@@ -1,57 +1,59 @@
-import { getFatSecretToken, __resetTokenCache } from '@/lib/nutrition/fatsecret-auth';
+import { getFatSecretAuthProvider, __resetProviderCache } from '@/lib/nutrition/fatsecret-auth';
+import { OAuth2AuthProvider } from '@/lib/nutrition/fatsecret-auth-oauth2';
+import { OAuth1AuthProvider } from '@/lib/nutrition/fatsecret-auth-oauth1';
 
-describe('getFatSecretToken', () => {
+describe('getFatSecretAuthProvider', () => {
   beforeEach(() => {
-    __resetTokenCache();
-    global.fetch = jest.fn();
+    __resetProviderCache();
     process.env.FATSECRET_CLIENT_ID = 'cid';
     process.env.FATSECRET_CLIENT_SECRET = 'csec';
+    delete process.env.FATSECRET_CLIENT_AUTH_METHOD;
   });
 
-  it('fetches a token on first call', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ access_token: 'tok', expires_in: 3600 }),
-    });
-    const t = await getFatSecretToken();
-    expect(t).toBe('tok');
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-  });
-
-  it('reuses cached token within expiry window', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ access_token: 'tok', expires_in: 3600 }),
-    });
-    await getFatSecretToken();
-    await getFatSecretToken();
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-  });
-
-  it('throws when env vars missing', async () => {
+  afterEach(() => {
+    __resetProviderCache();
     delete process.env.FATSECRET_CLIENT_ID;
-    await expect(getFatSecretToken()).rejects.toThrow(/FATSECRET_CLIENT_ID/);
+    delete process.env.FATSECRET_CLIENT_SECRET;
+    delete process.env.FATSECRET_CLIENT_AUTH_METHOD;
   });
 
-  it('throws on upstream error', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 401, text: async () => '' });
-    await expect(getFatSecretToken()).rejects.toThrow(/FatSecret token request failed/);
+  it('throws when FATSECRET_CLIENT_ID is missing', () => {
+    delete process.env.FATSECRET_CLIENT_ID;
+    expect(() => getFatSecretAuthProvider()).toThrow(/FATSECRET_CLIENT_ID/);
   });
 
-  it('rejects all concurrent callers when token fetch fails, without leaving stale inflight', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 500, text: async () => '' });
-    const [a, b] = await Promise.allSettled([getFatSecretToken(), getFatSecretToken()]);
-    expect(a.status).toBe('rejected');
-    expect(b.status).toBe('rejected');
-    expect(global.fetch).toHaveBeenCalledTimes(1); // both callers shared the same inflight
+  it('throws when FATSECRET_CLIENT_SECRET is missing', () => {
+    delete process.env.FATSECRET_CLIENT_SECRET;
+    expect(() => getFatSecretAuthProvider()).toThrow(/FATSECRET_CLIENT_SECRET/);
+  });
 
-    // After rejection, a fresh call should retry (not be stuck on the rejected inflight)
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ access_token: 'fresh', expires_in: 3600 }),
-    });
-    const t = await getFatSecretToken();
-    expect(t).toBe('fresh');
-    expect(global.fetch).toHaveBeenCalledTimes(2);
+  it('returns OAuth2AuthProvider by default (no env var set)', () => {
+    const p = getFatSecretAuthProvider();
+    expect(p).toBeInstanceOf(OAuth2AuthProvider);
+  });
+
+  it('returns OAuth2AuthProvider when FATSECRET_CLIENT_AUTH_METHOD=oauth2', () => {
+    process.env.FATSECRET_CLIENT_AUTH_METHOD = 'oauth2';
+    const p = getFatSecretAuthProvider();
+    expect(p).toBeInstanceOf(OAuth2AuthProvider);
+  });
+
+  it('returns OAuth1AuthProvider when FATSECRET_CLIENT_AUTH_METHOD=oauth1', () => {
+    process.env.FATSECRET_CLIENT_AUTH_METHOD = 'oauth1';
+    const p = getFatSecretAuthProvider();
+    expect(p).toBeInstanceOf(OAuth1AuthProvider);
+  });
+
+  it('returns the same singleton instance on repeated calls', () => {
+    const a = getFatSecretAuthProvider();
+    const b = getFatSecretAuthProvider();
+    expect(a).toBe(b);
+  });
+
+  it('creates a fresh instance after __resetProviderCache', () => {
+    const a = getFatSecretAuthProvider();
+    __resetProviderCache();
+    const b = getFatSecretAuthProvider();
+    expect(a).not.toBe(b);
   });
 });
