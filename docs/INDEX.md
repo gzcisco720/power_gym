@@ -26,6 +26,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | ----- | ---- | ------ |
 | Auth system | [auth-design.md](2026-04-20/plans/auth-design.md) | Approved |
 | Body Composition Testing | [body-test-design.md](2026-04-23/plans/body-test-design.md) | Approved |
+| Body Test UI Redesign | [body-test-ui-redesign.md](2026-05-07/plans/body-test-ui-redesign.md) | Approved |
 | E2E Test Suite | [e2e-design.md](2026-04-25/plans/e2e-design.md) | Approved |
 | Mobile Responsive Design | [mobile-responsive-design.md](2026-04-26/plans/mobile-responsive-design.md) | Approved |
 | Calendar & Session Scheduling | [calendar-design.md](2026-04-27/plans/calendar-design.md) | Approved |
