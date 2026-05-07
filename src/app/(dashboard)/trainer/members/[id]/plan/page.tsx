@@ -7,11 +7,18 @@ import { MongoPersonalBestRepository } from '@/lib/repositories/personal-best.re
 import { summarizeSession, type RawSessionInput } from '@/lib/training/session-summary';
 import { TrainerMemberPlanClient } from './_components/trainer-member-plan-client';
 
-export default async function TrainerMemberPlanPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function TrainerMemberPlanPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ activeSession?: string; activeDayName?: string }>;
+}) {
   const session = await auth();
   if (!session?.user) return null;
 
   const { id: memberId } = await params;
+  const sp = await searchParams;
 
   await connectDB();
   const [templates, activePlan, sessions, pbs] = await Promise.all([
@@ -24,6 +31,10 @@ export default async function TrainerMemberPlanPage({ params }: { params: Promis
   const rawSessions = JSON.parse(JSON.stringify(sessions)) as RawSessionInput[];
   const sessionSummaries = rawSessions.map(summarizeSession);
 
+  const conflict = sp.activeSession
+    ? { sessionId: sp.activeSession, dayName: sp.activeDayName ?? '' }
+    : null;
+
   return (
     <div>
       <TrainerMemberPlanClient
@@ -32,6 +43,7 @@ export default async function TrainerMemberPlanPage({ params }: { params: Promis
         activePlan={JSON.parse(JSON.stringify(activePlan))}
         sessions={sessionSummaries}
         pbs={JSON.parse(JSON.stringify(pbs))}
+        conflict={conflict}
       />
     </div>
   );

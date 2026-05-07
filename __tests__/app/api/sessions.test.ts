@@ -2,7 +2,7 @@
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 jest.mock('@/lib/auth/auth', () => ({ auth: jest.fn() }));
 
-const mockSessionRepo = { create: jest.fn(), findByMember: jest.fn() };
+const mockSessionRepo = { create: jest.fn(), findByMember: jest.fn(), findActive: jest.fn() };
 jest.mock('@/lib/repositories/workout-session.repository', () => ({
   MongoWorkoutSessionRepository: jest.fn(() => mockSessionRepo),
 }));
@@ -101,6 +101,65 @@ describe('POST /api/sessions', () => {
       body: JSON.stringify({ memberPlanId: 'mp1', dayNumber: 1 }),
     }));
     expect(res.status).toBe(404);
+  });
+
+  it('returns existing active session (200) when same dayNumber', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    mockMemberPlanRepo.findActive.mockResolvedValue({
+      _id: 'mp1',
+      memberId: { toString: () => 'm1' },
+      days: [{ dayNumber: 1, name: 'Day A', exercises: [] }],
+    });
+    const existing = { _id: 'sExisting', dayNumber: 1, dayName: 'Day A', completedAt: null };
+    mockSessionRepo.findActive.mockResolvedValue(existing);
+
+    const { POST } = await import('@/app/api/sessions/route');
+    const res = await POST(new Request('http://localhost/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memberPlanId: 'mp1', dayNumber: 1 }),
+    }));
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data._id).toBe('sExisting');
+    expect(mockSessionRepo.create).not.toHaveBeenCalled();
+  });
+
+  it('returns 409 with conflict info when active session has different dayNumber', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    mockMemberPlanRepo.findActive.mockResolvedValue({
+      _id: 'mp1',
+      memberId: { toString: () => 'm1' },
+      days: [
+        { dayNumber: 1, name: 'Day A', exercises: [] },
+        { dayNumber: 2, name: 'Day B', exercises: [] },
+      ],
+    });
+    const existing = {
+      _id: { toString: () => 'sExisting' },
+      dayNumber: 1,
+      dayName: 'Day A',
+      completedAt: null,
+    };
+    mockSessionRepo.findActive.mockResolvedValue(existing);
+
+    const { POST } = await import('@/app/api/sessions/route');
+    const res = await POST(new Request('http://localhost/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memberPlanId: 'mp1', dayNumber: 2 }),
+    }));
+    const data = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(data.error).toBe('ACTIVE_SESSION_CONFLICT');
+    expect(data.activeSession).toMatchObject({
+      _id: 'sExisting',
+      dayName: 'Day A',
+      dayNumber: 1,
+    });
+    expect(mockSessionRepo.create).not.toHaveBeenCalled();
   });
 });
 

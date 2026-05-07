@@ -7,6 +7,7 @@ jest.mock('@/lib/db/models/workout-session.model', () => ({
   WorkoutSessionModel: Object.assign(jest.fn(), {
     findById: jest.fn(),
     find: jest.fn(),
+    findOne: jest.fn(),
     findByIdAndUpdate: jest.fn(),
     countDocuments: jest.fn(),
   }),
@@ -58,6 +59,20 @@ describe('MongoWorkoutSessionRepository', () => {
       await repo.findByMember(id);
       expect(mockModel.find).toHaveBeenCalledWith({
         memberId: expect.any(mongoose.Types.ObjectId),
+      });
+      expect(sortMock).toHaveBeenCalledWith({ startedAt: -1 });
+    });
+  });
+
+  describe('findActive', () => {
+    it('queries for non-completed session sorted by latest startedAt', async () => {
+      const sortMock = jest.fn().mockResolvedValue(null);
+      mockModel.findOne.mockReturnValue({ sort: sortMock } as never);
+      const id = new mongoose.Types.ObjectId().toString();
+      await repo.findActive(id);
+      expect(mockModel.findOne).toHaveBeenCalledWith({
+        memberId: expect.any(mongoose.Types.ObjectId),
+        completedAt: null,
       });
       expect(sortMock).toHaveBeenCalledWith({ startedAt: -1 });
     });

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { SectionHeader } from '@/components/shared/section-header';
@@ -26,6 +27,11 @@ interface PB {
   estimatedOneRM: number;
 }
 
+interface ActiveConflict {
+  sessionId: string;
+  dayName: string;
+}
+
 interface Props {
   memberId: string;
   memberName?: string;
@@ -33,14 +39,24 @@ interface Props {
   activePlan: ActivePlan | null;
   sessions: SessionSummary[];
   pbs: PB[];
+  conflict?: ActiveConflict | null;
 }
 
-export function TrainerMemberPlanClient({ memberId, templates, activePlan, sessions, pbs }: Props) {
+export function TrainerMemberPlanClient({
+  memberId,
+  templates,
+  activePlan,
+  sessions,
+  pbs,
+  conflict,
+}: Props) {
   const router = useRouter();
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [assigning, setAssigning] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number>(activePlan?.days[0]?.dayNumber ?? 1);
   const [peekSession, setPeekSession] = useState<SessionSummary | null>(null);
+
+  const [conflictBanner, setConflictBanner] = useState<ActiveConflict | null>(conflict ?? null);
 
   async function assignPlan(): Promise<boolean> {
     if (!selectedTemplate) return false;
@@ -70,6 +86,36 @@ export function TrainerMemberPlanClient({ memberId, templates, activePlan, sessi
 
   return (
     <div className="space-y-8 py-6">
+      {conflictBanner && (
+        <section className="px-4 sm:px-8">
+          <div className="flex items-center gap-3 rounded-xl bg-amber-500/10 ring-1 ring-amber-500/30 px-4 py-3">
+            <TriangleAlert className="size-4 shrink-0 text-amber-400" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-amber-100">
+                You already have an active {conflictBanner.dayName} session
+              </p>
+              <p className="mt-0.5 text-xs text-foreground/65">
+                Finish or discard it before starting a new day.
+              </p>
+            </div>
+            <a
+              href={`/trainer/members/${memberId}/log/${conflictBanner.sessionId}`}
+              className="shrink-0 inline-flex items-center rounded-md bg-amber-500/20 px-3 py-1.5 text-xs font-semibold text-amber-100 ring-1 ring-amber-500/40 hover:bg-amber-500/30 transition-colors"
+            >
+              Open
+            </a>
+            <button
+              type="button"
+              onClick={() => setConflictBanner(null)}
+              aria-label="Dismiss"
+              className="shrink-0 rounded-md p-1 text-foreground/65 hover:text-foreground hover:bg-muted/50 transition-colors text-xs"
+            >
+              ✕
+            </button>
+          </div>
+        </section>
+      )}
+
       <section className="px-4 sm:px-8">
         <SectionHeader title="Current Plan" />
         {activePlan ? (

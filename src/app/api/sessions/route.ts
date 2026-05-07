@@ -24,6 +24,25 @@ export async function POST(req: Request): Promise<Response> {
   const day = plan.days.find((d) => d.dayNumber === body.dayNumber);
   if (!day) return Response.json({ error: 'Day not found' }, { status: 404 });
 
+  const sessionRepo = new MongoWorkoutSessionRepository();
+  const existingActive = await sessionRepo.findActive(targetMemberId);
+  if (existingActive) {
+    if (existingActive.dayNumber === body.dayNumber) {
+      return Response.json(existingActive, { status: 200 });
+    }
+    return Response.json(
+      {
+        error: 'ACTIVE_SESSION_CONFLICT',
+        activeSession: {
+          _id: existingActive._id.toString(),
+          dayName: existingActive.dayName,
+          dayNumber: existingActive.dayNumber,
+        },
+      },
+      { status: 409 },
+    );
+  }
+
   const sets = day.exercises.flatMap((ex) =>
     Array.from({ length: ex.sets }, (_, i) => ({
       exerciseId: ex.exerciseId,
@@ -41,7 +60,6 @@ export async function POST(req: Request): Promise<Response> {
     })),
   );
 
-  const sessionRepo = new MongoWorkoutSessionRepository();
   const workoutSession = await sessionRepo.create({
     memberId: targetMemberId,
     memberPlanId: body.memberPlanId,

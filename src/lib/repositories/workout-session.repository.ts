@@ -27,6 +27,7 @@ export interface IWorkoutSessionRepository {
   create(data: CreateSessionData): Promise<IWorkoutSession>;
   findById(id: string): Promise<IWorkoutSession | null>;
   findByMember(memberId: string): Promise<IWorkoutSession[]>;
+  findActive(memberId: string): Promise<IWorkoutSession | null>;
   findByMonth(memberId: string, year: number, month: number): Promise<IWorkoutSession[]>;
   updateSet(id: string, setIndex: number, data: UpdateSetData): Promise<IWorkoutSession | null>;
   addExtraSet(id: string, extraSet: ISessionSet): Promise<IWorkoutSession | null>;
@@ -63,6 +64,13 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
   async findByMember(memberId: string): Promise<IWorkoutSession[]> {
     return WorkoutSessionModel.find({
       memberId: new mongoose.Types.ObjectId(memberId),
+    }).sort({ startedAt: -1 });
+  }
+
+  async findActive(memberId: string): Promise<IWorkoutSession | null> {
+    return WorkoutSessionModel.findOne({
+      memberId: new mongoose.Types.ObjectId(memberId),
+      completedAt: null,
     }).sort({ startedAt: -1 });
   }
 

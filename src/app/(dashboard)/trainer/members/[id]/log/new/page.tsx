@@ -42,5 +42,18 @@ export default async function TrainerLogNewPage({
     redirect(`/trainer/members/${memberId}/log/${data._id}`);
   }
 
+  if (res.status === 409) {
+    const data = (await res.json()) as {
+      activeSession?: { _id: string; dayName: string; dayNumber: number };
+    };
+    if (data.activeSession) {
+      const params = new URLSearchParams({
+        activeSession: data.activeSession._id,
+        activeDayName: data.activeSession.dayName,
+      });
+      redirect(`/trainer/members/${memberId}/plan?${params.toString()}`);
+    }
+  }
+
   redirect(`/trainer/members/${memberId}/plan`);
 }
