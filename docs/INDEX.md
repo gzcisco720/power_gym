@@ -9,6 +9,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Topic | File | Status |
 | ----- | ---- | ------ |
 | FatSecret OAuth 1.0 Support | [fatsecret-oauth1-implementation-plan.md](2026-05-07/plans/fatsecret-oauth1-implementation-plan.md) | In Progress |
+| Owner/Trainer Self-Tracking | [self-tracking-implementation-plan.md](2026-05-08/plans/self-tracking-implementation-plan.md) | Not Started |
 
 ## Active Documents
 
@@ -34,6 +35,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Per-Trainer Hub (Owner 视角) | [per-trainer-hub-design.md](2026-04-28/plans/per-trainer-hub-design.md) | Approved |
 | Progress Charts & Analytics | [progress-design.md](2026-04-28/plans/progress-design.md) | Approved |
 | Exercise Thumbnail Hover Preview | [exercise-thumbnail-hover-design.md](2026-05-07/plans/exercise-thumbnail-hover-design.md) | Complete |
+| Owner/Trainer Self-Tracking | [self-tracking-design.md](2026-05-08/plans/self-tracking-design.md) | Draft |
 
 ---
 
