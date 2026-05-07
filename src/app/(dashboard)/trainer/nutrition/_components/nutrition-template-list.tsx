@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Apple } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -65,6 +65,7 @@ function MacroStat({ value, suffix, label, color }: { value: number; suffix?: st
 
 export function NutritionTemplateList({ templates, onDelete, basePath = '/trainer/nutrition' }: Props) {
   const shouldReduce = useReducedMotion();
+  const foodsPath = basePath.startsWith('/owner/') ? '/owner/foods' : '/trainer/foods';
 
   return (
     <div>
@@ -72,13 +73,22 @@ export function NutritionTemplateList({ templates, onDelete, basePath = '/traine
         title="Nutrition Templates"
         subtitle={`${templates.length} template${templates.length !== 1 ? 's' : ''}`}
         actions={
-          <Link
-            href={`${basePath}/new`}
-            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-transparent bg-white px-2.5 text-sm font-semibold text-black hover:bg-white/90 transition-all"
-          >
-            <Plus className="h-4 w-4" />
-            New Template
-          </Link>
+          <>
+            <Link
+              href={foodsPath}
+              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-2.5 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/20 hover:text-emerald-200 hover:border-emerald-500/60 transition-all"
+            >
+              <Apple className="h-4 w-4" />
+              Foods
+            </Link>
+            <Link
+              href={`${basePath}/new`}
+              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-transparent bg-white px-2.5 text-sm font-semibold text-black hover:bg-white/90 transition-all"
+            >
+              <Plus className="h-4 w-4" />
+              New Template
+            </Link>
+          </>
         }
       />
 

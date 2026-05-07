@@ -46,10 +46,7 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
     },
     {
       group: 'HEALTH',
-      items: [
-        { href: '/trainer/nutrition', label: 'Nutrition Templates' },
-        { href: '/trainer/foods', label: 'Foods' },
-      ],
+      items: [{ href: '/trainer/nutrition', label: 'Nutrition Templates' }],
     },
     {
       group: 'ACCOUNT',
@@ -77,7 +74,6 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
       items: [
         { href: '/owner/my-body-tests', label: 'Body Tests' },
         { href: '/owner/nutrition-templates', label: 'Nutrition Templates' },
-        { href: '/owner/foods', label: 'Foods' },
       ],
     },
     {
