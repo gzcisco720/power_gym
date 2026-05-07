@@ -27,6 +27,7 @@ export interface FatSecretFood {
   name: string;
   brand: string | null;
   foodType: 'Brand' | 'Generic';
+  imageUrl?: string;
   defaultServing: FatSecretServing;
   servings: FatSecretServing[];
 }
@@ -36,7 +37,7 @@ interface CacheEntry<T> {
   data: T;
 }
 
-const searchCache = new Map<string, CacheEntry<FatSecretFood[]>>();
+const searchCache = new Map<string, CacheEntry<FatSecretSearchResult>>();
 
 function num(v: string | number | undefined): number | undefined {
   if (typeof v === 'string') {
@@ -99,12 +100,18 @@ function mapServing(s: RawServing): FatSecretServing | null {
   return out;
 }
 
+interface RawFoodImage {
+  image_url?: string;
+  image_type?: string;
+}
+
 interface RawFood {
   food_id?: string;
   food_name?: string;
   brand_name?: string;
   food_type?: string;
   food_description?: string;
+  food_images?: { food_image?: RawFoodImage | RawFoodImage[] };
   servings?: { serving?: RawServing | RawServing[] };
 }
 
@@ -137,31 +144,51 @@ function mapFood(f: RawFood): FatSecretFood | null {
     if (fallback) servings = [fallback];
   }
   if (servings.length === 0) return null;
+  const images = ensureArray(f.food_images?.food_image);
+  const imageUrl =
+    images.find((img) => img.image_type === 'Large')?.image_url ??
+    images.find((img) => img.image_type === 'Small')?.image_url ??
+    images[0]?.image_url;
   return {
     foodId, name,
     brand: f.brand_name?.trim() || null,
     foodType: f.food_type === 'Brand' ? 'Brand' : 'Generic',
+    imageUrl,
     defaultServing: servings[0],
     servings,
   };
 }
 
+export interface FatSecretSearchResult {
+  results: FatSecretFood[];
+  totalResults: number;
+  pageNumber: number;
+}
+
 // OAuth 2.0 v5 response shape
 interface SearchResponseV2 {
-  foods_search?: { results?: { food?: RawFood | RawFood[] } };
+  foods_search?: {
+    total_results?: string | number;
+    page_number?: string | number;
+    results?: { food?: RawFood | RawFood[] };
+  };
 }
 
 // OAuth 1.0 server.api response shape
 interface SearchResponseV1 {
-  foods?: { food?: RawFood | RawFood[] };
+  foods?: {
+    total_results?: string | number;
+    page_number?: string | number;
+    food?: RawFood | RawFood[];
+  };
 }
 
 interface GetFoodResponse {
   food?: RawFood | null;
 }
 
-export async function fatsecretSearch(query: string, pageSize = 20): Promise<FatSecretFood[]> {
-  const key = `${query.toLowerCase()}::${pageSize}`;
+export async function fatsecretSearch(query: string, pageSize = 20, pageNumber = 0): Promise<FatSecretSearchResult> {
+  const key = `${query.toLowerCase()}::${pageSize}::${pageNumber}`;
   const hit = searchCache.get(key);
   if (hit && hit.expires > Date.now()) {
     searchCache.delete(key);
@@ -174,6 +201,8 @@ export async function fatsecretSearch(query: string, pageSize = 20): Promise<Fat
   for (const [k, v] of Object.entries(provider.searchExtraParams)) url.searchParams.set(k, v);
   url.searchParams.set('search_expression', query);
   url.searchParams.set('max_results', String(pageSize));
+  url.searchParams.set('page_number', String(pageNumber));
+  url.searchParams.set('include_food_images', 'true');
   url.searchParams.set('format', 'json');
 
   const { url: signedUrl, headers } = await provider.applyAuth(url);
@@ -181,11 +210,15 @@ export async function fatsecretSearch(query: string, pageSize = 20): Promise<Fat
   if (!res.ok) throw new Error(`FatSecret search failed: ${res.status}`);
 
   const json = await res.json();
+  const v1Body = (json as SearchResponseV1).foods;
+  const v2Body = (json as SearchResponseV2).foods_search;
   const raw = provider.version === 'v1'
-    ? ensureArray((json as SearchResponseV1).foods?.food)
-    : ensureArray((json as SearchResponseV2).foods_search?.results?.food);
+    ? ensureArray(v1Body?.food)
+    : ensureArray(v2Body?.results?.food);
+  const totalResults = Number(provider.version === 'v1' ? v1Body?.total_results : v2Body?.total_results) || 0;
 
-  const data = raw.map(mapFood).filter((x): x is FatSecretFood => x !== null);
+  const results = raw.map(mapFood).filter((x): x is FatSecretFood => x !== null);
+  const data: FatSecretSearchResult = { results, totalResults: totalResults || results.length, pageNumber };
 
   if (searchCache.size >= CACHE_MAX) {
     const oldest = searchCache.keys().next().value;
@@ -200,6 +233,7 @@ export async function fatsecretGetFood(foodId: string): Promise<FatSecretFood> {
   const url = new URL(provider.foodBaseUrl);
   for (const [k, v] of Object.entries(provider.foodExtraParams)) url.searchParams.set(k, v);
   url.searchParams.set('food_id', foodId);
+  url.searchParams.set('include_food_images', 'true');
   url.searchParams.set('format', 'json');
 
   const { url: signedUrl, headers } = await provider.applyAuth(url);

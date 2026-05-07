@@ -34,6 +34,8 @@ describe('fatsecretSearch', () => {
       ok: true,
       json: async () => ({
         foods_search: {
+          total_results: '1',
+          page_number: '0',
           results: {
             food: [{
               food_id: '1',
@@ -53,18 +55,18 @@ describe('fatsecretSearch', () => {
         },
       }),
     });
-    const out = await fatsecretSearch('orange');
-    expect(out).toHaveLength(1);
-    expect(out[0].foodId).toBe('1');
-    expect(out[0].name).toBe('Orange');
-    expect(out[0].defaultServing.calories).toBe(62);
-    expect(out[0].defaultServing.fiber).toBe(3.1);
+    const { results } = await fatsecretSearch('orange');
+    expect(results).toHaveLength(1);
+    expect(results[0].foodId).toBe('1');
+    expect(results[0].name).toBe('Orange');
+    expect(results[0].defaultServing.calories).toBe(62);
+    expect(results[0].defaultServing.fiber).toBe(3.1);
   });
 
-  it('caches by query+pageSize', async () => {
+  it('caches by query+pageSize+pageNumber', async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
-      json: async () => ({ foods_search: { results: { food: [] } } }),
+      json: async () => ({ foods_search: { total_results: '0', results: { food: [] } } }),
     });
     await fatsecretSearch('apple');
     await fatsecretSearch('apple');
@@ -75,23 +77,23 @@ describe('fatsecretSearch', () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        foods_search: { results: { food: {
+        foods_search: { total_results: '1', results: { food: {
           food_id: '2', food_name: 'Pear', food_type: 'Generic',
           servings: { serving: { serving_id: 's2', serving_description: '1 g', metric_serving_amount: '1', metric_serving_unit: 'g', calories: '1', protein: '0', carbohydrate: '0', fat: '0' } },
         } } },
       }),
     });
-    const out = await fatsecretSearch('pear');
-    expect(out).toHaveLength(1);
+    const { results } = await fatsecretSearch('pear');
+    expect(results).toHaveLength(1);
   });
 
-  it('returns empty array on no results', async () => {
+  it('returns empty results on no results', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ foods_search: { results: {} } }),
+      json: async () => ({ foods_search: { total_results: '0', results: {} } }),
     });
-    const out = await fatsecretSearch('zzzz');
-    expect(out).toEqual([]);
+    const { results } = await fatsecretSearch('zzzz');
+    expect(results).toEqual([]);
   });
 
   it('throws on upstream error', async () => {
@@ -103,7 +105,7 @@ describe('fatsecretSearch', () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        foods_search: { results: { food: [{
+        foods_search: { total_results: '1', results: { food: [{
           food_id: '3', food_name: 'Milk', food_type: 'Generic',
           servings: { serving: [
             { serving_id: 'cup', serving_description: '1 cup', metric_serving_amount: '240', metric_serving_unit: 'ml', calories: '150', protein: '8', carbohydrate: '12', fat: '8' },
@@ -112,10 +114,10 @@ describe('fatsecretSearch', () => {
         }] } },
       }),
     });
-    const out = await fatsecretSearch('milk');
-    expect(out).toHaveLength(1);
-    expect(out[0].servings).toHaveLength(1);
-    expect(out[0].servings[0].servingId).toBe('g');
+    const { results } = await fatsecretSearch('milk');
+    expect(results).toHaveLength(1);
+    expect(results[0].servings).toHaveLength(1);
+    expect(results[0].servings[0].servingId).toBe('g');
   });
 
   it('parses v1 (OAuth1) response shape: foods.food[]', async () => {
@@ -132,6 +134,7 @@ describe('fatsecretSearch', () => {
       ok: true,
       json: async () => ({
         foods: {
+          total_results: '1',
           food: [{
             food_id: '99',
             food_name: 'Banana',
@@ -147,10 +150,10 @@ describe('fatsecretSearch', () => {
         },
       }),
     });
-    const out = await fatsecretSearch('banana');
-    expect(out).toHaveLength(1);
-    expect(out[0].foodId).toBe('99');
-    expect(out[0].name).toBe('Banana');
+    const { results } = await fatsecretSearch('banana');
+    expect(results).toHaveLength(1);
+    expect(results[0].foodId).toBe('99');
+    expect(results[0].name).toBe('Banana');
   });
 });
 

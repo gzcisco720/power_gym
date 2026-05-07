@@ -1,5 +1,6 @@
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { Loader2Icon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -8,12 +9,13 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FoodPicker, computePickedFood, useMacroPreview } from '@/components/nutrition/food-picker';
+import { FoodPicker, computePickedFood } from '@/components/nutrition/food-picker';
 import { FoodForm } from '@/components/nutrition/food-form';
 import { calculateMacros } from '@/lib/nutrition/macros';
-import type { FoodEntry, PickedFood } from '@/components/nutrition/food-picker';
+import { cn } from '@/lib/utils';
+import type { FoodEntry, FoodServing, PickedFood } from '@/components/nutrition/food-picker';
 import type { IFood } from '@/lib/db/models/food.model';
+import type { FatSecretFood } from '@/lib/nutrition/fatsecret-client';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -34,7 +36,6 @@ type DialogView = 'list' | 'detail' | 'create';
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Convert an IFood document returned by POST /api/foods into a FoodEntry. */
 function ifoodToEntry(food: IFood): FoodEntry {
   return {
     source: 'myfood',
@@ -69,8 +70,44 @@ function ifoodToEntry(food: IFood): FoodEntry {
   };
 }
 
+function fatSecretFoodToServings(food: FatSecretFood): FoodServing[] {
+  return food.servings.map((s) => ({
+    id: s.servingId,
+    label: s.description,
+    grams: s.grams,
+    macros: {
+      kcal: s.calories,
+      protein: s.protein,
+      carbs: s.carbs,
+      fat: s.fat,
+      fiber: s.fiber,
+      sugar: s.sugar,
+      saturated: s.saturated,
+      polyunsaturated: s.polyunsaturated,
+      monounsaturated: s.monounsaturated,
+      cholesterol: s.cholesterol,
+      sodium: s.sodium,
+      potassium: s.potassium,
+      transFat: s.transFat,
+    },
+  }));
+}
+
 // ---------------------------------------------------------------------------
-// Detail view — shown inside the Dialog when a food row is clicked
+// Nutrient row in the details panel
+// ---------------------------------------------------------------------------
+
+function NutrientRow({ label, value, indent }: { label: string; value: string; indent?: boolean }) {
+  return (
+    <div className={cn('flex justify-between px-3 py-1.5', indent && 'pl-6')}>
+      <span className="text-foreground/65 text-sm">{label}</span>
+      <span className="tabular-nums text-sm font-medium">{value}</span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Detail view
 // ---------------------------------------------------------------------------
 
 interface DetailViewProps {
@@ -80,85 +117,208 @@ interface DetailViewProps {
 }
 
 function DetailView({ entry, onBack, onAdd }: DetailViewProps) {
+  const [servings, setServings] = useState<FoodServing[]>(entry.servings);
   const [servingId, setServingId] = useState(entry.defaultServingId);
-  const [qty, setQty] = useState(1);
+  const [qty, setQty] = useState('1');
+  const [loading, setLoading] = useState(entry.source === 'fatsecret' && !!entry.foodId);
+  const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
+  const [imgFailed, setImgFailed] = useState(false);
 
-  const preview = useMacroPreview(entry, servingId, qty);
-  const displayName = entry.brand ? `${entry.brand} ${entry.name}` : entry.name;
+  useEffect(() => {
+    if (entry.source !== 'fatsecret' || !entry.foodId) return;
+    let cancelled = false;
+    fetch(`/api/food/${entry.foodId}`)
+      .then(async (res) => {
+        if (!res.ok || cancelled) return;
+        const { food } = (await res.json()) as { food: FatSecretFood };
+        if (cancelled || !food) return;
+        setServings(fatSecretFoodToServings(food));
+        setServingId(food.defaultServing.servingId);
+        if (food.imageUrl) setImageUrl(food.imageUrl);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [entry.foodId, entry.source]);
+
+  const qtyNum = parseFloat(qty) || 0;
+  const currentServing = servings.find((s) => s.id === servingId) ?? servings[0];
+
+  const scaled =
+    currentServing && qtyNum > 0
+      ? {
+          kcal: currentServing.macros.kcal * qtyNum,
+          protein: currentServing.macros.protein * qtyNum,
+          carbs: currentServing.macros.carbs * qtyNum,
+          fat: currentServing.macros.fat * qtyNum,
+          fiber: currentServing.macros.fiber !== undefined ? currentServing.macros.fiber * qtyNum : undefined,
+          sugar: currentServing.macros.sugar !== undefined ? currentServing.macros.sugar * qtyNum : undefined,
+          saturated: currentServing.macros.saturated !== undefined ? currentServing.macros.saturated * qtyNum : undefined,
+          transFat: currentServing.macros.transFat !== undefined ? currentServing.macros.transFat * qtyNum : undefined,
+          polyunsaturated: currentServing.macros.polyunsaturated !== undefined ? currentServing.macros.polyunsaturated * qtyNum : undefined,
+          monounsaturated: currentServing.macros.monounsaturated !== undefined ? currentServing.macros.monounsaturated * qtyNum : undefined,
+          cholesterol: currentServing.macros.cholesterol !== undefined ? currentServing.macros.cholesterol * qtyNum : undefined,
+          sodium: currentServing.macros.sodium !== undefined ? currentServing.macros.sodium * qtyNum : undefined,
+          potassium: currentServing.macros.potassium !== undefined ? currentServing.macros.potassium * qtyNum : undefined,
+        }
+      : null;
+
+  const hasDetails =
+    currentServing &&
+    (currentServing.macros.fiber !== undefined ||
+      currentServing.macros.sugar !== undefined ||
+      currentServing.macros.saturated !== undefined ||
+      currentServing.macros.transFat !== undefined ||
+      currentServing.macros.cholesterol !== undefined ||
+      currentServing.macros.sodium !== undefined ||
+      currentServing.macros.potassium !== undefined);
 
   function handleAdd(): void {
-    const picked = computePickedFood(entry, servingId, qty);
+    if (!currentServing || qtyNum <= 0) return;
+    const snapshot: FoodEntry = { ...entry, servings, defaultServingId: servings[0]?.id ?? '' };
+    const picked = computePickedFood(snapshot, servingId, qtyNum);
     onAdd(picked);
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={onBack} className="px-2">
-          ← Back
-        </Button>
-        <span className="font-semibold text-sm flex-1 truncate">{displayName}</span>
+      {/* Header: food name on left, image on right */}
+      <div className="flex items-start gap-3 justify-between">
+        <div className="flex-1 min-w-0">
+          <Button variant="ghost" size="sm" onClick={onBack} className="px-2 -ml-2 mb-0.5">
+            ← Back
+          </Button>
+          {entry.brand && (
+            <p className="text-xs text-foreground/65 leading-none mb-0.5">{entry.brand}</p>
+          )}
+          <h2 className="font-semibold text-base leading-snug">{entry.name}</h2>
+        </div>
+        {imageUrl && !imgFailed && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={imageUrl}
+            alt={entry.name}
+            className="size-20 rounded-xl object-cover shrink-0 ring-1 ring-foreground/10"
+            onError={() => setImgFailed(true)}
+          />
+        )}
       </div>
 
-      <div className="space-y-3">
-        {/* Serving picker */}
-        <div className="space-y-1">
-          <label className="text-xs text-foreground/65 font-medium">Serving</label>
-          <Select value={servingId} onValueChange={(v) => { if (v !== null) setServingId(v); }}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {entry.servings.map((s) => (
-                <SelectItem key={s.id} value={s.id}>
-                  {s.label}
-                </SelectItem>
+      {loading ? (
+        <div className="flex items-center justify-center py-10">
+          <Loader2Icon className="size-5 animate-spin text-foreground/65" />
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {/* Serving chips */}
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium text-foreground/65">Serving</p>
+            <div className="flex flex-wrap gap-1.5">
+              {servings.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setServingId(s.id)}
+                  className={cn(
+                    'rounded-full border px-3 py-1 text-xs transition-colors',
+                    s.id === servingId
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border bg-muted text-foreground/65 hover:border-foreground/30 hover:text-foreground',
+                  )}
+                >
+                  {s.label} · {s.grams}g
+                </button>
               ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Quantity input */}
-        <div className="space-y-1">
-          <label className="text-xs text-foreground/65 font-medium">Quantity</label>
-          <Input
-            type="number"
-            min={0.1}
-            step={0.1}
-            value={qty}
-            onChange={(e) => setQty(Number(e.target.value) || 0)}
-            aria-label="Quantity"
-          />
-        </div>
-
-        {/* Live macro preview */}
-        {preview && (
-          <div className="rounded-lg bg-muted/50 p-3 text-sm text-foreground/65">
-            <div className="grid grid-cols-4 gap-2 text-center">
-              <div>
-                <div className="font-semibold text-foreground tabular-nums">{preview.kcal.toFixed(0)}</div>
-                <div className="text-xs">kcal</div>
-              </div>
-              <div>
-                <div className="font-semibold text-foreground tabular-nums">{preview.protein.toFixed(1)}g</div>
-                <div className="text-xs">protein</div>
-              </div>
-              <div>
-                <div className="font-semibold text-foreground tabular-nums">{preview.carbs.toFixed(1)}g</div>
-                <div className="text-xs">carbs</div>
-              </div>
-              <div>
-                <div className="font-semibold text-foreground tabular-nums">{preview.fat.toFixed(1)}g</div>
-                <div className="text-xs">fat</div>
-              </div>
             </div>
           </div>
-        )}
 
-        <Button className="w-full" onClick={handleAdd} disabled={!preview || qty <= 0}>
-          + Add to meal
-        </Button>
-      </div>
+          {/* Quantity */}
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-foreground/65">Quantity</label>
+            <Input
+              type="text"
+              inputMode="decimal"
+              pattern="[0-9]*\.?[0-9]*"
+              value={qty}
+              onChange={(e) => setQty(e.target.value)}
+              aria-label="Quantity"
+            />
+          </div>
+
+          {/* Hero macro block */}
+          {scaled && (
+            <div className="rounded-xl bg-muted/40 px-4 py-5 text-center space-y-3">
+              {/* Big calorie number */}
+              <div>
+                <div className="text-5xl font-bold tabular-nums leading-none">{scaled.kcal.toFixed(0)}</div>
+                <div className="text-xs text-foreground/65 mt-1.5">Calories</div>
+              </div>
+              {/* Macro pills */}
+              <div className="flex items-center justify-center gap-2">
+                <span className="inline-flex items-baseline gap-0.5 rounded-lg bg-emerald-500/15 px-3 py-1.5 text-sm font-semibold tabular-nums text-emerald-300">
+                  {scaled.protein.toFixed(1)}
+                  <span className="text-[11px] font-normal opacity-80">g P</span>
+                </span>
+                <span className="inline-flex items-baseline gap-0.5 rounded-lg bg-amber-500/15 px-3 py-1.5 text-sm font-semibold tabular-nums text-amber-300">
+                  {scaled.carbs.toFixed(1)}
+                  <span className="text-[11px] font-normal opacity-80">g C</span>
+                </span>
+                <span className="inline-flex items-baseline gap-0.5 rounded-lg bg-pink-500/15 px-3 py-1.5 text-sm font-semibold tabular-nums text-pink-300">
+                  {scaled.fat.toFixed(1)}
+                  <span className="text-[11px] font-normal opacity-80">g F</span>
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Nutrition details panel */}
+          {scaled && hasDetails && (
+            <div className="rounded-xl border overflow-hidden">
+              <div className="px-3 py-2 bg-muted/30 border-b">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
+                  Nutrition Details
+                </p>
+              </div>
+              <div className="divide-y">
+                {scaled.fiber !== undefined && (
+                  <NutrientRow label="Dietary Fiber" value={`${scaled.fiber.toFixed(1)}g`} />
+                )}
+                {scaled.sugar !== undefined && (
+                  <NutrientRow label="Total Sugars" value={`${scaled.sugar.toFixed(1)}g`} indent />
+                )}
+                {scaled.saturated !== undefined && (
+                  <NutrientRow label="Saturated Fat" value={`${scaled.saturated.toFixed(1)}g`} indent />
+                )}
+                {scaled.transFat !== undefined && (
+                  <NutrientRow label="Trans Fat" value={`${scaled.transFat.toFixed(1)}g`} indent />
+                )}
+                {scaled.polyunsaturated !== undefined && (
+                  <NutrientRow label="Polyunsaturated Fat" value={`${scaled.polyunsaturated.toFixed(1)}g`} indent />
+                )}
+                {scaled.monounsaturated !== undefined && (
+                  <NutrientRow label="Monounsaturated Fat" value={`${scaled.monounsaturated.toFixed(1)}g`} indent />
+                )}
+                {scaled.cholesterol !== undefined && (
+                  <NutrientRow label="Cholesterol" value={`${scaled.cholesterol.toFixed(0)}mg`} />
+                )}
+                {scaled.sodium !== undefined && (
+                  <NutrientRow label="Sodium" value={`${scaled.sodium.toFixed(0)}mg`} />
+                )}
+                {scaled.potassium !== undefined && (
+                  <NutrientRow label="Potassium" value={`${scaled.potassium.toFixed(0)}mg`} />
+                )}
+              </div>
+            </div>
+          )}
+
+          <Button className="w-full" onClick={handleAdd} disabled={!scaled || qtyNum <= 0}>
+            + Add to meal
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -180,7 +340,6 @@ export function FoodPickerDialog({
   const handleOpenChange = useCallback(
     (isOpen: boolean) => {
       if (!isOpen) {
-        // Reset internal state when dialog closes
         setView('list');
         setSelectedEntry(null);
       }
@@ -203,7 +362,6 @@ export function FoodPickerDialog({
     (picked: PickedFood) => {
       onSelect(picked);
       onOpenChange(false);
-      // Reset state after close
       setView('list');
       setSelectedEntry(null);
     },

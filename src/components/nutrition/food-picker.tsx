@@ -57,6 +57,8 @@ export interface FoodServing {
 /** Unified food shape emitted by FoodPicker to callers (e.g. FoodPickerDialog). */
 export interface FoodEntry {
   source: 'fatsecret' | 'recent' | 'myfood';
+  /** FatSecret food ID — present when source === 'fatsecret', used to fetch full serving list */
+  foodId?: string;
   name: string;
   brand: string | null;
   servings: FoodServing[];
@@ -145,11 +147,11 @@ function FoodRow({ name, brand, servingLabel, kcal, protein, carbs, fat, onClick
   return (
     <div
       role="row"
-      className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-3 items-start px-2 py-2 cursor-pointer hover:bg-muted border-b last:border-b-0 text-sm"
+      className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 items-start px-2 py-2 cursor-pointer hover:bg-muted border-b last:border-b-0 text-sm"
       onClick={onClick}
     >
       {/* Title cell: name + serving label */}
-      <div>
+      <div className="min-w-0">
         <div className="font-medium leading-tight truncate">{displayName}</div>
         <div className="text-xs text-foreground/65">{servingLabel}</div>
       </div>
@@ -165,12 +167,12 @@ function FoodRow({ name, brand, servingLabel, kcal, protein, carbs, fat, onClick
 /** Column header row for the food list table */
 function FoodTableHeader() {
   return (
-    <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-3 px-2 py-1 text-xs font-medium text-foreground/65 border-b">
+    <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 px-2 py-1 text-xs font-medium text-foreground/65 border-b">
       <div>Title</div>
-      <div className="text-right">Kcal</div>
-      <div className="text-right">Protein</div>
-      <div className="text-right">Carbs</div>
-      <div className="text-right">Fat</div>
+      <div className="text-right">kcal</div>
+      <div className="text-right">P</div>
+      <div className="text-right">C</div>
+      <div className="text-right">F</div>
     </div>
   );
 }
@@ -179,33 +181,48 @@ function FoodTableHeader() {
 // AllTab — FatSecret search triggered by button / Enter
 // ---------------------------------------------------------------------------
 
+const PAGE_SIZE = 20;
+
 function AllTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void }) {
   const [q, setQ] = useState('');
   const [results, setResults] = useState<FatSecretFood[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
-  async function runSearch(): Promise<void> {
+  async function runSearch(newPage = 0): Promise<void> {
     const query = q.trim();
-    if (!query || loading) return;
-    setLoading(true);
+    if (!query) return;
+    if (newPage === 0) setLoading(true);
+    else setLoadingMore(true);
     try {
-      const res = await fetch(`/api/food-search?q=${encodeURIComponent(query)}`);
+      const url = `/api/food-search?q=${encodeURIComponent(query)}&page_size=${PAGE_SIZE}&page_number=${newPage}`;
+      const res = await fetch(url);
       if (!res.ok) {
-        setResults([]);
+        if (newPage === 0) setResults([]);
         return;
       }
-      const data = (await res.json()) as { results: FatSecretFood[] };
-      setResults(data.results);
+      const data = (await res.json()) as { results: FatSecretFood[]; total: number; page: number };
+      if (newPage === 0) {
+        setResults(data.results);
+      } else {
+        setResults((prev) => [...prev, ...data.results]);
+      }
+      setTotal(data.total);
+      setPage(newPage);
     } finally {
       setHasSearched(true);
       setLoading(false);
+      setLoadingMore(false);
     }
   }
 
   function handleRowClick(food: FatSecretFood): void {
     const entry: FoodEntry = {
       source: 'fatsecret',
+      foodId: food.foodId,
       name: food.name,
       brand: food.brand,
       servings: food.servings.map((s: FatSecretServing) => ({
@@ -239,7 +256,7 @@ function AllTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void }) 
         className="flex gap-2"
         onSubmit={(e) => {
           e.preventDefault();
-          void runSearch();
+          void runSearch(0);
         }}
       >
         <Input
@@ -269,6 +286,21 @@ function AllTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void }) 
           ))}
           {results.length === 0 && hasSearched && !loading && (
             <div className="p-3 text-center text-sm text-muted-foreground">No results</div>
+          )}
+          {results.length > 0 && results.length < total && (
+            <div className="px-3 py-2 border-t text-center">
+              {loadingMore ? (
+                <Loader2Icon className="size-4 animate-spin inline text-foreground/65" />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void runSearch(page + 1)}
+                  className="text-xs text-foreground/65 hover:text-foreground"
+                >
+                  Load more · {results.length} of {total}
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
