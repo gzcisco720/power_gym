@@ -24,7 +24,7 @@ describe('AppShell', () => {
         <div>content</div>
       </AppShell>
     );
-    expect(screen.getByText('Plan Templates')).toBeInTheDocument();
+    expect(screen.getByText('Training Templates')).toBeInTheDocument();
     expect(screen.getByText('Nutrition Templates')).toBeInTheDocument();
     expect(screen.queryByText('My Plan')).not.toBeInTheDocument();
   });

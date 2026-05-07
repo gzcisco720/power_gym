@@ -107,8 +107,8 @@ describe('FoodPickerDialog', () => {
   // ---- List → Detail transition -------------------------------------------
 
   it('swaps to detail view when a food row is clicked', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue(
-      new Response(JSON.stringify({ results: [makeFatSecretFood()] }), { status: 200 }),
+    (global.fetch as jest.Mock).mockImplementation(() =>
+      Promise.resolve(new Response(JSON.stringify({ results: [makeFatSecretFood()], food: makeFatSecretFood() }), { status: 200 })),
     );
 
     renderDialog();
@@ -128,8 +128,8 @@ describe('FoodPickerDialog', () => {
   // ---- Detail → List (back button) ----------------------------------------
 
   it('returns to list view when Back button is clicked in detail view', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue(
-      new Response(JSON.stringify({ results: [makeFatSecretFood()] }), { status: 200 }),
+    (global.fetch as jest.Mock).mockImplementation(() =>
+      Promise.resolve(new Response(JSON.stringify({ results: [makeFatSecretFood()], food: makeFatSecretFood() }), { status: 200 })),
     );
 
     renderDialog();
@@ -152,8 +152,8 @@ describe('FoodPickerDialog', () => {
     const onSelect = jest.fn<void, [PickedFood]>();
     const onOpenChange = jest.fn();
 
-    (global.fetch as jest.Mock).mockResolvedValue(
-      new Response(JSON.stringify({ results: [makeFatSecretFood()] }), { status: 200 }),
+    (global.fetch as jest.Mock).mockImplementation(() =>
+      Promise.resolve(new Response(JSON.stringify({ results: [makeFatSecretFood()], food: makeFatSecretFood() }), { status: 200 })),
     );
 
     render(
@@ -264,8 +264,8 @@ describe('FoodPickerDialog', () => {
   // ---- Macro preview in detail view ----------------------------------------
 
   it('shows macro preview in detail view', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue(
-      new Response(JSON.stringify({ results: [makeFatSecretFood()] }), { status: 200 }),
+    (global.fetch as jest.Mock).mockImplementation(() =>
+      Promise.resolve(new Response(JSON.stringify({ results: [makeFatSecretFood()], food: makeFatSecretFood() }), { status: 200 })),
     );
 
     renderDialog();
@@ -275,10 +275,10 @@ describe('FoodPickerDialog', () => {
     fireEvent.click(screen.getByText('Chicken Breast'));
 
     await waitFor(() => {
-      expect(screen.getByText('kcal')).toBeInTheDocument();
-      expect(screen.getByText('protein')).toBeInTheDocument();
-      expect(screen.getByText('carbs')).toBeInTheDocument();
-      expect(screen.getByText('fat')).toBeInTheDocument();
+      expect(screen.getByText('Calories')).toBeInTheDocument();
+      expect(screen.getByText('g P')).toBeInTheDocument();
+      expect(screen.getByText('g C')).toBeInTheDocument();
+      expect(screen.getByText('g F')).toBeInTheDocument();
     });
   });
 });
