@@ -1,7 +1,7 @@
 'use client';
 
 import { Dumbbell } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -11,23 +11,33 @@ interface Props {
   className?: string;
 }
 
+function computePopupStyle(el: HTMLDivElement): React.CSSProperties {
+  const rect = el.getBoundingClientRect();
+  const popupWidth = 148;
+  const fitsRight = rect.right + popupWidth <= window.innerWidth;
+  return {
+    position: 'fixed',
+    zIndex: 50,
+    top: rect.top + rect.height / 2,
+    transform: 'translateY(-50%)',
+    ...(fitsRight ? { left: rect.right + 8 } : { left: rect.left - 148 }),
+  };
+}
+
 export function ExerciseThumbnail({ imageUrl, name, size = 40, className }: Props) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const [popupStyle, setPopupStyle] = useState<React.CSSProperties | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  useEffect(() => () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, []);
+
   function handleMouseEnter() {
+    if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       if (!wrapperRef.current) return;
-      const rect = wrapperRef.current.getBoundingClientRect();
-      const popupWidth = 160;
-      const fitsRight = rect.right + popupWidth <= window.innerWidth;
-      setPopupStyle({
-        position: 'fixed',
-        top: rect.top + rect.height / 2,
-        transform: 'translateY(-50%)',
-        ...(fitsRight ? { left: rect.right + 8 } : { left: rect.left - 160 - 8 }),
-      });
+      setPopupStyle(computePopupStyle(wrapperRef.current));
     }, 150);
   }
 
@@ -55,8 +65,8 @@ export function ExerciseThumbnail({ imageUrl, name, size = 40, className }: Prop
           className="rounded-md object-cover w-full h-full"
         />
         {popupStyle !== null && (
-          <div data-testid="hover-popup" style={popupStyle} className="z-50">
-            <div className="w-[140px] rounded-xl bg-[#1c1c1c] border border-foreground/10 p-2 shadow-2xl">
+          <div data-testid="hover-popup" style={popupStyle}>
+            <div className="w-[140px] rounded-xl bg-card border border-foreground/10 p-2 shadow-2xl">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imageUrl}
@@ -75,12 +85,12 @@ export function ExerciseThumbnail({ imageUrl, name, size = 40, className }: Prop
     <div
       data-testid="thumbnail-placeholder"
       className={cn(
-        'flex shrink-0 items-center justify-center rounded-md bg-[#161616]',
+        'flex shrink-0 items-center justify-center rounded-md bg-muted',
         className,
       )}
       style={{ width: size, height: size }}
     >
-      <Dumbbell className="text-[#444]" style={{ width: size * 0.45, height: size * 0.45 }} />
+      <Dumbbell className="text-foreground/40" style={{ width: size * 0.45, height: size * 0.45 }} />
     </div>
   );
 }
