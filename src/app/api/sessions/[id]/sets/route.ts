@@ -1,24 +1,15 @@
-import { connectDB } from '@/lib/db/connect';
-import { auth } from '@/lib/auth/auth';
+import { authorizeWorkoutSessionWrite } from '@/lib/auth/workout-session-access';
 import { MongoWorkoutSessionRepository } from '@/lib/repositories/workout-session.repository';
 import mongoose from 'mongoose';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function POST(req: Request, { params }: RouteContext): Promise<Response> {
-  const session = await auth();
-  if (!session?.user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
-  await connectDB();
   const { id } = await params;
+  const access = await authorizeWorkoutSessionWrite(id);
+  if (!access.ok) return access.response;
 
-  const repo = new MongoWorkoutSessionRepository();
-  const workoutSession = await repo.findById(id);
-  if (!workoutSession) return Response.json({ error: 'Not found' }, { status: 404 });
-
-  if (workoutSession.memberId.toString() !== session.user.id) {
-    return Response.json({ error: 'Forbidden' }, { status: 403 });
-  }
+  const { workoutSession } = access;
   if (workoutSession.completedAt) {
     return Response.json({ error: 'Session already completed' }, { status: 409 });
   }
@@ -76,6 +67,7 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
     };
   }
 
+  const repo = new MongoWorkoutSessionRepository();
   const updated = await repo.addExtraSet(id, extraSet);
   return Response.json(updated, { status: 201 });
 }

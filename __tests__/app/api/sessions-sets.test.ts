@@ -16,6 +16,11 @@ jest.mock('@/lib/repositories/personal-best.repository', () => ({
   MongoPersonalBestRepository: jest.fn(() => mockPBRepo),
 }));
 
+const mockUserRepo = { findById: jest.fn() };
+jest.mock('@/lib/repositories/user.repository', () => ({
+  MongoUserRepository: jest.fn(() => mockUserRepo),
+}));
+
 import { auth } from '@/lib/auth/auth';
 const mockAuth = jest.mocked(auth);
 
@@ -119,6 +124,39 @@ describe('PATCH /api/sessions/[id]/sets/[setIndex]', () => {
       weight: 100,
       reps: 8,
     }));
+  });
+
+  it('records PB under session.memberId when trainer logs on behalf', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
+    mockUserRepo.findById.mockResolvedValue({ trainerId: { toString: () => 't1' } });
+    const workoutSession = {
+      _id: 's1',
+      memberId: { toString: () => 'm5' },
+      completedAt: null,
+      sets: [{
+        exerciseId: { toString: () => 'e1' },
+        exerciseName: 'Squat',
+        setNumber: 1,
+        isBodyweight: false,
+      }],
+    };
+    mockSessionRepo.findById.mockResolvedValue(workoutSession);
+    mockSessionRepo.updateSet.mockResolvedValue(workoutSession);
+    mockPBRepo.upsertIfBetter.mockResolvedValue(undefined);
+
+    const { PATCH } = await import('@/app/api/sessions/[id]/sets/[setIndex]/route');
+    await PATCH(
+      new Request('http://localhost/', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ actualWeight: 120, actualReps: 5 }),
+      }),
+      makePatchParams('s1', '0'),
+    );
+
+    expect(mockPBRepo.upsertIfBetter).toHaveBeenCalledWith(
+      expect.objectContaining({ memberId: 'm5', exerciseId: 'e1' }),
+    );
   });
 
   it('does not upsert PB for bodyweight exercise with null weight', async () => {

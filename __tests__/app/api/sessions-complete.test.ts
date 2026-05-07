@@ -7,6 +7,11 @@ jest.mock('@/lib/repositories/workout-session.repository', () => ({
   MongoWorkoutSessionRepository: jest.fn(() => mockSessionRepo),
 }));
 
+const mockUserRepo = { findById: jest.fn() };
+jest.mock('@/lib/repositories/user.repository', () => ({
+  MongoUserRepository: jest.fn(() => mockUserRepo),
+}));
+
 import { auth } from '@/lib/auth/auth';
 const mockAuth = jest.mocked(auth);
 
@@ -47,6 +52,37 @@ describe('POST /api/sessions/[id]/complete', () => {
     expect(mockSessionRepo.complete).toHaveBeenCalledWith('s1', expect.objectContaining({}));
     expect(data._id).toBe(completed._id);
     expect(data.completedAt).toBeDefined();
+  });
+
+  it('allows owner to complete any session', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'o1', role: 'owner' } } as never);
+    mockSessionRepo.findById.mockResolvedValue({ _id: 's1', memberId: { toString: () => 'm9' }, completedAt: null });
+    mockSessionRepo.complete.mockResolvedValue({ _id: 's1', completedAt: new Date() });
+
+    const { POST } = await import('@/app/api/sessions/[id]/complete/route');
+    const res = await POST(new Request('http://localhost/', { method: 'POST' }), makeParams('s1'));
+    expect(res.status).toBe(200);
+  });
+
+  it('allows trainer to complete sessions of assigned member', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
+    mockSessionRepo.findById.mockResolvedValue({ _id: 's1', memberId: { toString: () => 'm5' }, completedAt: null });
+    mockUserRepo.findById.mockResolvedValue({ trainerId: { toString: () => 't1' } });
+    mockSessionRepo.complete.mockResolvedValue({ _id: 's1', completedAt: new Date() });
+
+    const { POST } = await import('@/app/api/sessions/[id]/complete/route');
+    const res = await POST(new Request('http://localhost/', { method: 'POST' }), makeParams('s1'));
+    expect(res.status).toBe(200);
+  });
+
+  it('forbids trainer from completing sessions of unassigned member', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
+    mockSessionRepo.findById.mockResolvedValue({ _id: 's1', memberId: { toString: () => 'm5' }, completedAt: null });
+    mockUserRepo.findById.mockResolvedValue({ trainerId: { toString: () => 't2' } });
+
+    const { POST } = await import('@/app/api/sessions/[id]/complete/route');
+    const res = await POST(new Request('http://localhost/', { method: 'POST' }), makeParams('s1'));
+    expect(res.status).toBe(403);
   });
 
   it('passes rpe and memberNote to repo.complete', async () => {

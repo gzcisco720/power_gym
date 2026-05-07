@@ -1,23 +1,14 @@
-import { connectDB } from '@/lib/db/connect';
-import { auth } from '@/lib/auth/auth';
+import { authorizeWorkoutSessionWrite } from '@/lib/auth/workout-session-access';
 import { MongoWorkoutSessionRepository } from '@/lib/repositories/workout-session.repository';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function POST(req: Request, { params }: RouteContext): Promise<Response> {
-  const session = await auth();
-  if (!session?.user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
-  await connectDB();
   const { id } = await params;
-  const repo = new MongoWorkoutSessionRepository();
-  const workoutSession = await repo.findById(id);
+  const access = await authorizeWorkoutSessionWrite(id);
+  if (!access.ok) return access.response;
 
-  if (!workoutSession) return Response.json({ error: 'Not found' }, { status: 404 });
-  if (workoutSession.memberId.toString() !== session.user.id) {
-    return Response.json({ error: 'Forbidden' }, { status: 403 });
-  }
-  if (workoutSession.completedAt) {
+  if (access.workoutSession.completedAt) {
     return Response.json({ error: 'Already completed' }, { status: 409 });
   }
 
@@ -28,6 +19,7 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
     // empty body is fine
   }
 
+  const repo = new MongoWorkoutSessionRepository();
   const completed = await repo.complete(id, { rpe: body.rpe, memberNote: body.memberNote });
   return Response.json(completed);
 }
