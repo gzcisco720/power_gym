@@ -1,13 +1,32 @@
 import { fatsecretSearch, fatsecretGetFood, __resetSearchCache } from '@/lib/nutrition/fatsecret-client';
+import { getFatSecretAuthProvider } from '@/lib/nutrition/fatsecret-auth';
 
 jest.mock('@/lib/nutrition/fatsecret-auth', () => ({
-  getFatSecretToken: jest.fn().mockResolvedValue('tok'),
+  getFatSecretAuthProvider: jest.fn(),
 }));
+
+const mockProvider = {
+  version: 'v2' as const,
+  searchBaseUrl: 'https://platform.fatsecret.com/rest/foods/search/v5',
+  foodBaseUrl: 'https://platform.fatsecret.com/rest/food/v5',
+  searchExtraParams: {} as Record<string, string>,
+  foodExtraParams: {} as Record<string, string>,
+  applyAuth: jest.fn().mockImplementation(async (url: URL) => ({
+    url,
+    headers: { Authorization: 'Bearer tok' },
+  })),
+};
 
 describe('fatsecretSearch', () => {
   beforeEach(() => {
     __resetSearchCache();
     global.fetch = jest.fn();
+    (getFatSecretAuthProvider as jest.Mock).mockReturnValue(mockProvider);
+    (mockProvider.applyAuth as jest.Mock).mockClear();
+    (mockProvider.applyAuth as jest.Mock).mockImplementation(async (url: URL) => ({
+      url,
+      headers: { Authorization: 'Bearer tok' },
+    }));
   });
 
   it('returns normalised results', async () => {
@@ -101,7 +120,15 @@ describe('fatsecretSearch', () => {
 });
 
 describe('fatsecretGetFood', () => {
-  beforeEach(() => { global.fetch = jest.fn(); });
+  beforeEach(() => {
+    global.fetch = jest.fn();
+    (getFatSecretAuthProvider as jest.Mock).mockReturnValue(mockProvider);
+    (mockProvider.applyAuth as jest.Mock).mockClear();
+    (mockProvider.applyAuth as jest.Mock).mockImplementation(async (url: URL) => ({
+      url,
+      headers: { Authorization: 'Bearer tok' },
+    }));
+  });
 
   it('returns multi-serving food detail', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
