@@ -20,7 +20,7 @@ function computePopupStyle(el: HTMLDivElement): React.CSSProperties {
     zIndex: 50,
     top: rect.top + rect.height / 2,
     transform: 'translateY(-50%)',
-    ...(fitsRight ? { left: rect.right + 8 } : { left: rect.left - 148 }),
+    ...(fitsRight ? { left: rect.right + 8 } : { left: rect.left - 156 }),
   };
 }
 
@@ -90,7 +90,7 @@ export function ExerciseThumbnail({ imageUrl, name, size = 40, className }: Prop
       )}
       style={{ width: size, height: size }}
     >
-      <Dumbbell className="text-foreground/40" style={{ width: size * 0.45, height: size * 0.45 }} />
+      <Dumbbell className="text-foreground/65" style={{ width: size * 0.45, height: size * 0.45 }} />
     </div>
   );
 }
