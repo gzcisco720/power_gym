@@ -32,6 +32,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Member Hub (Tab 导航) | [member-hub-design.md](2026-04-28/plans/member-hub-design.md) | Approved |
 | Per-Trainer Hub (Owner 视角) | [per-trainer-hub-design.md](2026-04-28/plans/per-trainer-hub-design.md) | Approved |
 | Progress Charts & Analytics | [progress-design.md](2026-04-28/plans/progress-design.md) | Approved |
+| Exercise Thumbnail Hover Preview | [exercise-thumbnail-hover-design.md](2026-05-07/plans/exercise-thumbnail-hover-design.md) | Complete |
 
 ---
 
