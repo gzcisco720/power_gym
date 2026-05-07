@@ -3,31 +3,44 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { SectionHeader } from '@/components/shared/section-header';
-import { PageHeader } from '@/components/shared/page-header';
+import { SessionPeekSheet } from './session-peek-sheet';
+import type { SessionSummary } from '@/lib/training/session-summary';
 
-interface Template { _id: string; name: string; }
-interface ActivePlan { _id: string; name: string; days: { dayNumber: number; name: string; exercises: object[] }[]; assignedAt: string; }
-interface Session { _id: string; dayName: string; startedAt: string; completedAt: string | null; }
-interface PB { exerciseName: string; bestWeight: number; bestReps: number; estimatedOneRM: number; }
+interface Template {
+  _id: string;
+  name: string;
+}
+interface ActivePlan {
+  _id: string;
+  name: string;
+  days: { dayNumber: number; name: string; exercises: object[] }[];
+  assignedAt: string;
+}
+interface PB {
+  exerciseName: string;
+  bestWeight: number;
+  bestReps: number;
+  estimatedOneRM: number;
+}
 
 interface Props {
   memberId: string;
   memberName?: string;
   templates: Template[];
   activePlan: ActivePlan | null;
-  sessions: Session[];
+  sessions: SessionSummary[];
   pbs: PB[];
 }
 
-export function TrainerMemberPlanClient({ memberId, memberName, templates, activePlan, sessions, pbs }: Props) {
+export function TrainerMemberPlanClient({ memberId, templates, activePlan, sessions, pbs }: Props) {
   const router = useRouter();
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [assigning, setAssigning] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number>(activePlan?.days[0]?.dayNumber ?? 1);
+  const [peekSession, setPeekSession] = useState<SessionSummary | null>(null);
 
   async function assignPlan() {
     if (!selectedTemplate) return;
@@ -53,120 +66,205 @@ export function TrainerMemberPlanClient({ memberId, memberName, templates, activ
   }
 
   return (
-    <div className="space-y-8">
-      <PageHeader title={memberName ? `${memberName}'s Training Plan` : 'Training Plan'} />
-
+    <div className="space-y-8 py-6">
       <section className="px-4 sm:px-8">
         <SectionHeader title="Current Plan" />
         {activePlan ? (
-          <div className="mt-3 space-y-3">
-            <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl p-4">
-              <p className="text-[14px] font-semibold text-white">{activePlan.name}</p>
-              <div className="mt-2 flex items-center gap-2">
-                <Badge className="bg-[#1a1a1a] text-[#888] border-0 text-[10px]">
-                  {activePlan.days.length} {activePlan.days.length !== 1 ? 'days' : 'day'}
-                </Badge>
-                <span className="text-[11px] text-[#777]">
+          <div className="mt-3 rounded-xl bg-card ring-1 ring-foreground/10 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">{activePlan.name}</p>
+                <p className="mt-1 text-xs text-foreground/65">
+                  {activePlan.days.length} {activePlan.days.length === 1 ? 'day' : 'days'}
+                  <span className="mx-1.5 text-foreground/40">·</span>
+                  {sessions.length} {sessions.length === 1 ? 'session' : 'sessions'} logged
+                  <span className="mx-1.5 text-foreground/40">·</span>
                   Assigned {new Date(activePlan.assignedAt).toLocaleDateString('en-US')}
-                </span>
+                </p>
               </div>
-            </Card>
-            <div className="flex items-center gap-3">
-              <select
-                value={selectedDay}
-                onChange={(e) => setSelectedDay(Number(e.target.value))}
-                className="flex-1 rounded-md border border-[#1e1e1e] bg-[#0c0c0c] px-3 py-2 text-sm text-white focus:outline-none"
-              >
-                {activePlan.days.map((d) => (
-                  <option key={d.dayNumber} value={d.dayNumber}>
-                    Day {d.dayNumber} — {d.name}
-                  </option>
-                ))}
-              </select>
-              <a
-                href={`/trainer/members/${memberId}/log/new?day=${selectedDay}`}
-                className="shrink-0 rounded-md bg-[#1a3a1a] border border-[#2a4a2a] px-4 py-2 text-[12px] font-semibold text-[#6ee7b7] hover:bg-[#1f4a1f] transition-colors"
-              >
-                Log Workout
-              </a>
+
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <select
+                  value={selectedDay}
+                  onChange={(e) => setSelectedDay(Number(e.target.value))}
+                  aria-label="Select day to log"
+                  className="rounded-md bg-muted border border-border/60 px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                >
+                  {activePlan.days.map((d) => (
+                    <option key={d.dayNumber} value={d.dayNumber}>
+                      Day {d.dayNumber} — {d.name}
+                    </option>
+                  ))}
+                </select>
+                <a
+                  href={`/trainer/members/${memberId}/log/new?day=${selectedDay}`}
+                  className="inline-flex items-center rounded-md bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-400 ring-1 ring-emerald-500/30 hover:bg-emerald-500/25 transition-colors"
+                >
+                  Log Workout
+                </a>
+                <ChangePlanDialog
+                  templates={templates}
+                  assigning={assigning}
+                  selectedTemplate={selectedTemplate}
+                  onSelect={setSelectedTemplate}
+                  onAssign={assignPlan}
+                />
+              </div>
             </div>
           </div>
         ) : (
-          <p className="text-[13px] text-[#888] mt-3">No plan assigned</p>
+          <div className="mt-3 flex flex-col gap-3 rounded-xl bg-card ring-1 ring-foreground/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-foreground/65">No plan assigned</p>
+            <ChangePlanDialog
+              templates={templates}
+              assigning={assigning}
+              selectedTemplate={selectedTemplate}
+              onSelect={setSelectedTemplate}
+              onAssign={assignPlan}
+              triggerLabel="Assign Plan"
+            />
+          </div>
         )}
-      </section>
-
-      <section className="px-4 sm:px-8">
-        <SectionHeader title="Assign Plan" />
-        <div className="flex gap-3 items-center mt-3">
-          <select
-            value={selectedTemplate}
-            onChange={(e) => setSelectedTemplate(e.target.value)}
-            className="flex-1 rounded-md border border-[#1e1e1e] bg-[#0c0c0c] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white"
-          >
-            <option value="" disabled>Select a plan template</option>
-            {templates.map((t) => (
-              <option key={t._id} value={t._id}>{t.name}</option>
-            ))}
-          </select>
-          <Button
-            onClick={assignPlan}
-            disabled={!selectedTemplate || assigning}
-            className="bg-white text-black hover:bg-white/90 font-semibold disabled:opacity-50"
-          >
-            {assigning ? 'Assigning...' : 'Assign'}
-          </Button>
-        </div>
       </section>
 
       {pbs.length > 0 && (
         <section className="px-4 sm:px-8">
           <SectionHeader title="Personal Bests" />
-          <Card className="bg-[#0c0c0c] border-[#141414] rounded-xl overflow-hidden mt-3">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[#141414]">
-                  <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]">Exercise</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]">Best Weight</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]">Sets × Reps</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666]">Est. 1RM</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pbs.map((pb) => (
-                  <tr key={pb.exerciseName} className="border-b border-[#0f0f0f] last:border-0">
-                    <td className="px-4 py-3 text-[13px] text-white">{pb.exerciseName}</td>
-                    <td className="px-4 py-3 text-[13px] text-[#888]">{pb.bestWeight} kg</td>
-                    <td className="px-4 py-3 text-[13px] text-[#888]">{pb.bestReps}</td>
-                    <td className="px-4 py-3 text-[13px] text-[#888]">{pb.estimatedOneRM.toFixed(1)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </Card>
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {pbs.map((pb) => (
+              <div
+                key={pb.exerciseName}
+                className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-3"
+              >
+                <p className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold">
+                  {pb.exerciseName}
+                </p>
+                <p className="mt-1 text-2xl font-semibold text-foreground tabular-nums">
+                  {pb.bestWeight}
+                  <span className="ml-1 text-sm font-medium text-foreground/65">kg</span>
+                </p>
+                <p className="mt-0.5 text-xs text-foreground/65">
+                  {pb.bestReps} reps
+                  <span className="mx-1.5 text-foreground/40">·</span>
+                  est. 1RM {pb.estimatedOneRM.toFixed(1)} kg
+                </p>
+              </div>
+            ))}
+          </div>
         </section>
       )}
 
       {sessions.length > 0 && (
         <section className="px-4 sm:px-8">
           <SectionHeader title="Session History" />
-          <div className="space-y-2 mt-3">
-            {sessions.map((s) => (
-              <Card key={s._id} className="bg-[#0c0c0c] border-[#141414] rounded-xl p-3 flex items-center justify-between">
-                <span className="text-[13px] font-semibold text-white">{s.dayName}</span>
-                <div className="flex items-center gap-2">
-                  {!s.completedAt && (
-                    <Badge className="bg-yellow-900/30 text-yellow-500 border-0 text-[10px]">Active</Badge>
-                  )}
-                  <span className="text-[11px] text-[#777]">
-                    {new Date(s.startedAt).toLocaleDateString('en-US')}
-                  </span>
-                </div>
-              </Card>
-            ))}
-          </div>
+          <ul className="mt-3 space-y-1.5">
+            {sessions.map((s) => {
+              const isActive = s.completedAt === null;
+              const date = new Date(s.startedAt).toLocaleDateString('en-US');
+              return (
+                <li key={s._id}>
+                  <button
+                    type="button"
+                    onClick={() => setPeekSession(s)}
+                    className="w-full rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 hover:ring-foreground/25 transition-colors flex items-center text-left cursor-pointer"
+                  >
+                    <div className="min-w-0 flex items-center gap-2">
+                      <span className="text-sm font-semibold text-foreground">{s.dayName}</span>
+                      <span className="text-xs text-foreground/65">·</span>
+                      <span className="text-xs text-foreground/65">{date}</span>
+                      {isActive && (
+                        <span className="inline-flex items-center rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-400 ring-1 ring-amber-500/30 shrink-0">
+                          Active
+                        </span>
+                      )}
+                    </div>
+                    <div className="ml-auto flex items-center gap-3 shrink-0 text-xs text-foreground/65 tabular-nums">
+                      <span>{s.exerciseCount} ex</span>
+                      <span className="text-foreground/40">·</span>
+                      <span>{s.setCount} sets</span>
+                      {s.totalVolume > 0 && (
+                        <>
+                          <span className="text-foreground/40">·</span>
+                          <span>{(s.totalVolume / 1000).toFixed(1)} t</span>
+                        </>
+                      )}
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+
+          <SessionPeekSheet
+            memberId={memberId}
+            session={peekSession}
+            open={peekSession !== null}
+            onOpenChange={(open) => {
+              if (!open) setPeekSession(null);
+            }}
+          />
         </section>
       )}
     </div>
+  );
+}
+
+function ChangePlanDialog({
+  templates,
+  assigning,
+  selectedTemplate,
+  onSelect,
+  onAssign,
+  triggerLabel = 'Change Plan',
+}: {
+  templates: Template[];
+  assigning: boolean;
+  selectedTemplate: string;
+  onSelect: (id: string) => void;
+  onAssign: () => void;
+  triggerLabel?: string;
+}) {
+  return (
+    <Dialog>
+      <DialogTrigger
+        render={
+          <Button variant="outline" size="sm" className="text-xs font-medium">
+            {triggerLabel}
+          </Button>
+        }
+      />
+      <DialogContent className="sm:max-w-md">
+        <DialogTitle>Assign Plan</DialogTitle>
+        <p className="text-xs text-foreground/65 -mt-1">
+          Replaces the current active plan. Session history is kept.
+        </p>
+        <div className="space-y-3 mt-2">
+          <select
+            value={selectedTemplate}
+            onChange={(e) => onSelect(e.target.value)}
+            aria-label="Select plan template"
+            className="w-full rounded-md bg-muted border border-border/60 px-3 py-2 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+          >
+            <option value="" disabled>
+              Select a plan template
+            </option>
+            {templates.map((t) => (
+              <option key={t._id} value={t._id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+          <div className="flex justify-end gap-2 pt-1">
+            <Button
+              onClick={onAssign}
+              disabled={!selectedTemplate || assigning}
+              className="text-xs font-semibold"
+            >
+              {assigning ? 'Assigning…' : 'Assign'}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

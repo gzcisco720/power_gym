@@ -4,6 +4,7 @@ import { MongoPlanTemplateRepository } from '@/lib/repositories/plan-template.re
 import { MongoMemberPlanRepository } from '@/lib/repositories/member-plan.repository';
 import { MongoWorkoutSessionRepository } from '@/lib/repositories/workout-session.repository';
 import { MongoPersonalBestRepository } from '@/lib/repositories/personal-best.repository';
+import { summarizeSession, type RawSessionInput } from '@/lib/training/session-summary';
 import { TrainerMemberPlanClient } from './_components/trainer-member-plan-client';
 
 export default async function TrainerMemberPlanPage({ params }: { params: Promise<{ id: string }> }) {
@@ -20,13 +21,16 @@ export default async function TrainerMemberPlanPage({ params }: { params: Promis
     new MongoPersonalBestRepository().findByMember(memberId),
   ]);
 
+  const rawSessions = JSON.parse(JSON.stringify(sessions)) as RawSessionInput[];
+  const sessionSummaries = rawSessions.map(summarizeSession);
+
   return (
     <div>
       <TrainerMemberPlanClient
         memberId={memberId}
         templates={JSON.parse(JSON.stringify(templates))}
         activePlan={JSON.parse(JSON.stringify(activePlan))}
-        sessions={JSON.parse(JSON.stringify(sessions))}
+        sessions={sessionSummaries}
         pbs={JSON.parse(JSON.stringify(pbs))}
       />
     </div>

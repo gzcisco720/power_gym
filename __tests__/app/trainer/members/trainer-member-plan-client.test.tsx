@@ -14,14 +14,20 @@ const mockProps = {
   pbs: [],
 };
 
+async function openAssignDialogAndPick(value: string) {
+  fireEvent.click(screen.getByRole('button', { name: /assign plan/i }));
+  await waitFor(() => expect(screen.getByRole('combobox')).toBeInTheDocument());
+  fireEvent.change(screen.getByRole('combobox'), { target: { value } });
+  fireEvent.click(screen.getByRole('button', { name: /^Assign$/ }));
+}
+
 describe('TrainerMemberPlanClient', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('calls toast.success when plan is assigned successfully', async () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({}) });
     render(<TrainerMemberPlanClient {...mockProps} />);
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 't1' } });
-    fireEvent.click(screen.getByRole('button', { name: /assign/i }));
+    await openAssignDialogAndPick('t1');
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Plan assigned'));
   });
 
@@ -31,16 +37,14 @@ describe('TrainerMemberPlanClient', () => {
       json: async () => ({ error: 'Plan not found' }),
     });
     render(<TrainerMemberPlanClient {...mockProps} />);
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 't1' } });
-    fireEvent.click(screen.getByRole('button', { name: /assign/i }));
+    await openAssignDialogAndPick('t1');
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Plan not found'));
   });
 
   it('calls toast.error with fallback when server returns no message', async () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: false, json: async () => ({}) });
     render(<TrainerMemberPlanClient {...mockProps} />);
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 't1' } });
-    fireEvent.click(screen.getByRole('button', { name: /assign/i }));
+    await openAssignDialogAndPick('t1');
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Failed to assign plan'));
   });
 });

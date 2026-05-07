@@ -47,7 +47,7 @@ describe('TrainerMemberPlanClient', () => {
     expect(screen.getByText(/No plan assigned/i)).toBeInTheDocument();
   });
 
-  it('shows template select and assign button', () => {
+  it('shows assign-plan trigger button when no active plan', () => {
     render(
       <TrainerMemberPlanClient
         memberId="m1"
@@ -57,11 +57,10 @@ describe('TrainerMemberPlanClient', () => {
         pbs={[]}
       />,
     );
-    expect(screen.getByRole('combobox')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Assign$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /assign plan/i })).toBeInTheDocument();
   });
 
-  it('calls assign API when button clicked', async () => {
+  it('calls assign API when picking template inside the dialog', async () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({}) });
 
     render(
@@ -74,8 +73,10 @@ describe('TrainerMemberPlanClient', () => {
       />,
     );
 
+    fireEvent.click(screen.getByRole('button', { name: /assign plan/i }));
+    await waitFor(() => expect(screen.getByRole('combobox')).toBeInTheDocument());
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'tpl1' } });
-    fireEvent.click(screen.getByRole('button', { name: /^Assign$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^Assign$/ }));
 
     await waitFor(() =>
       expect(global.fetch).toHaveBeenCalledWith(
