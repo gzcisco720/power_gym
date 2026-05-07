@@ -86,7 +86,7 @@ export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule }: Prop
             <div className="grid grid-cols-7 gap-2">
               {DAY_VALUES.map((d) => (
                 <div key={d}>
-                  <div className="text-xs text-muted-foreground">{DAY_LABELS[d]}</div>
+                  <div className="text-xs text-foreground/65">{DAY_LABELS[d]}</div>
                   <Select
                     value={weekly[d]}
                     onValueChange={(v) => setWeekly((w) => ({ ...w, [d]: v ?? NONE }))}

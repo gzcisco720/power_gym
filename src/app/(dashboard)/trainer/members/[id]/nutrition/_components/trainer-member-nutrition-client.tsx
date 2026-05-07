@@ -87,7 +87,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, basePathPref
               {active.dayTypes.map((d) => (
                 <li key={d.name} className="py-1.5 flex justify-between">
                   <span>{d.name}</span>
-                  <span className="text-muted-foreground">{d.meals.length} meals</span>
+                  <span className="text-foreground/65">{d.meals.length} meals</span>
                 </li>
               ))}
             </ul>
@@ -101,7 +101,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, basePathPref
             {history.map((p) => (
               <li key={String(p._id)} className="py-1.5 flex justify-between">
                 <span>{p.name}</span>
-                <span className="text-muted-foreground">
+                <span className="text-foreground/65">
                   {new Date(p.assignedAt).toISOString().slice(0, 10)} · {p.dayTypes.length} day types · {p.isActive ? 'Active' : 'Inactive'}
                 </span>
               </li>

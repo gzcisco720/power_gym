@@ -151,13 +151,13 @@ function FoodRow({ name, brand, servingLabel, kcal, protein, carbs, fat, onClick
       {/* Title cell: name + serving label */}
       <div>
         <div className="font-medium leading-tight truncate">{displayName}</div>
-        <div className="text-xs text-muted-foreground">{servingLabel}</div>
+        <div className="text-xs text-foreground/65">{servingLabel}</div>
       </div>
       {/* Macro cells — right-aligned, tabular-nums */}
-      <div className="text-right tabular-nums text-muted-foreground">{kcal.toFixed(0)}</div>
-      <div className="text-right tabular-nums text-muted-foreground">{protein.toFixed(1)}g</div>
-      <div className="text-right tabular-nums text-muted-foreground">{carbs.toFixed(1)}g</div>
-      <div className="text-right tabular-nums text-muted-foreground">{fat.toFixed(1)}g</div>
+      <div className="text-right tabular-nums text-foreground/65">{kcal.toFixed(0)}</div>
+      <div className="text-right tabular-nums text-foreground/65">{protein.toFixed(1)}g</div>
+      <div className="text-right tabular-nums text-foreground/65">{carbs.toFixed(1)}g</div>
+      <div className="text-right tabular-nums text-foreground/65">{fat.toFixed(1)}g</div>
     </div>
   );
 }
@@ -165,7 +165,7 @@ function FoodRow({ name, brand, servingLabel, kcal, protein, carbs, fat, onClick
 /** Column header row for the food list table */
 function FoodTableHeader() {
   return (
-    <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-3 px-2 py-1 text-xs font-medium text-muted-foreground border-b">
+    <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-3 px-2 py-1 text-xs font-medium text-foreground/65 border-b">
       <div>Title</div>
       <div className="text-right">Kcal</div>
       <div className="text-right">Protein</div>

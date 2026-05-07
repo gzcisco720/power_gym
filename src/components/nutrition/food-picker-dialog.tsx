@@ -103,7 +103,7 @@ function DetailView({ entry, onBack, onAdd }: DetailViewProps) {
       <div className="space-y-3">
         {/* Serving picker */}
         <div className="space-y-1">
-          <label className="text-xs text-muted-foreground font-medium">Serving</label>
+          <label className="text-xs text-foreground/65 font-medium">Serving</label>
           <Select value={servingId} onValueChange={(v) => { if (v !== null) setServingId(v); }}>
             <SelectTrigger>
               <SelectValue />
@@ -120,7 +120,7 @@ function DetailView({ entry, onBack, onAdd }: DetailViewProps) {
 
         {/* Quantity input */}
         <div className="space-y-1">
-          <label className="text-xs text-muted-foreground font-medium">Quantity</label>
+          <label className="text-xs text-foreground/65 font-medium">Quantity</label>
           <Input
             type="number"
             min={0.1}
@@ -133,7 +133,7 @@ function DetailView({ entry, onBack, onAdd }: DetailViewProps) {
 
         {/* Live macro preview */}
         {preview && (
-          <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
+          <div className="rounded-lg bg-muted/50 p-3 text-sm text-foreground/65">
             <div className="grid grid-cols-4 gap-2 text-center">
               <div>
                 <div className="font-semibold text-foreground tabular-nums">{preview.kcal.toFixed(0)}</div>
