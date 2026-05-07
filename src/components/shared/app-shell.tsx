@@ -41,12 +41,11 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
       ],
     },
     {
-      group: 'TRAINING',
-      items: [{ href: '/trainer/plans', label: 'Plan Templates' }],
-    },
-    {
-      group: 'HEALTH',
-      items: [{ href: '/trainer/nutrition', label: 'Nutrition Templates' }],
+      group: 'TEMPLATES',
+      items: [
+        { href: '/trainer/plans', label: 'Plan Templates' },
+        { href: '/trainer/nutrition', label: 'Nutrition Templates' },
+      ],
     },
     {
       group: 'ACCOUNT',
@@ -55,26 +54,34 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
   ],
   owner: [
     {
-      group: 'ADMIN',
+      group: 'OVERVIEW',
+      items: [{ href: '/owner', label: 'Dashboard', exact: true }],
+    },
+    {
+      group: 'PEOPLE',
       items: [
-        { href: '/owner', label: 'Dashboard', exact: true },
         { href: '/owner/trainers', label: 'Trainers' },
         { href: '/owner/members', label: 'Members' },
         { href: '/owner/invites', label: 'Invites' },
+      ],
+    },
+    {
+      group: 'GYM',
+      items: [
         { href: '/owner/calendar', label: 'Calendar' },
         { href: '/owner/equipment', label: 'Equipment' },
       ],
     },
     {
-      group: 'TRAINING',
-      items: [{ href: '/owner/plans', label: 'Plan Templates' }],
-    },
-    {
-      group: 'HEALTH',
+      group: 'TEMPLATES',
       items: [
-        { href: '/owner/my-body-tests', label: 'Body Tests' },
+        { href: '/owner/plans', label: 'Plan Templates' },
         { href: '/owner/nutrition-templates', label: 'Nutrition Templates' },
       ],
+    },
+    {
+      group: 'PERSONAL',
+      items: [{ href: '/owner/my-body-tests', label: 'Body Tests' }],
     },
     {
       group: 'ACCOUNT',
