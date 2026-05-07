@@ -491,21 +491,21 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
         </button>
 
         {/* Sticky save bar */}
-        <div className="sticky bottom-0 -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 bg-background/95 backdrop-blur-sm border-t border-border/60 flex gap-2 z-10">
+        <div className="sticky bottom-0 -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 bg-background/95 backdrop-blur-sm border-t border-border/60 flex flex-col gap-2 z-10">
+          <Button type="submit" className="w-full" disabled={saving || !isDirty}>
+            {saving ? 'Saving…' : 'Save Plan'}
+          </Button>
           {onCancel && (
             <Button
               type="button"
               variant="outline"
               onClick={onCancel}
               disabled={saving}
-              className="flex-1 sm:flex-none sm:min-w-32"
+              className="w-full border-border/70 text-foreground/80 hover:bg-muted hover:text-foreground hover:border-border"
             >
               Cancel
             </Button>
           )}
-          <Button type="submit" className="flex-1" disabled={saving || !isDirty}>
-            {saving ? 'Saving…' : 'Save Plan'}
-          </Button>
         </div>
       </form>
 

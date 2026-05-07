@@ -28,7 +28,10 @@ export function OwnerNewNutritionTemplateClient() {
     <div>
       <PageHeader title="New Nutrition Plan" />
       <div className="px-4 sm:px-8 py-7">
-        <NutritionTemplateForm onSubmit={handleSubmit} />
+        <NutritionTemplateForm
+          onSubmit={handleSubmit}
+          onCancel={() => router.push('/owner/nutrition-templates')}
+        />
       </div>
     </div>
   );
