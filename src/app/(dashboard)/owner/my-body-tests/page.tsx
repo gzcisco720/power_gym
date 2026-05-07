@@ -23,13 +23,11 @@ export default async function OwnerMyBodyTestsPage() {
     : null;
 
   return (
-    <div className="container mx-auto py-8 max-w-2xl">
-      <BodyTestClient
-        memberId={session.user.id}
-        initialTests={plain}
-        defaultSex={defaultSex}
-        defaultAge={defaultAge}
-      />
-    </div>
+    <BodyTestClient
+      memberId={session.user.id}
+      initialTests={plain}
+      defaultSex={defaultSex}
+      defaultAge={defaultAge}
+    />
   );
 }

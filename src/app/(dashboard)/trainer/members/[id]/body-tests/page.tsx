@@ -32,13 +32,11 @@ export default async function TrainerMemberBodyTestsPage({
       : null;
 
   return (
-    <div className="container mx-auto py-8 max-w-2xl">
-<BodyTestClient
-        memberId={memberId}
-        initialTests={plain}
-        defaultSex={defaultSex}
-        defaultAge={defaultAge}
-      />
-    </div>
+    <BodyTestClient
+      memberId={memberId}
+      initialTests={plain}
+      defaultSex={defaultSex}
+      defaultAge={defaultAge}
+    />
   );
 }
