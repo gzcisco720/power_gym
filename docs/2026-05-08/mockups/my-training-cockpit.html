@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Training — Cockpit Mock</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          background: '#0a0a0a',
+          card: '#0c0c0c',
+          surface: '#080808',
+          ring: '#1e1e1e',
+        },
+      },
+    },
+  };
+</script>
+<style>
+  body { background: #0a0a0a; color: white; font-family: -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif; }
+  .ring-line { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08); }
+  .ring-line-strong { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18); }
+  .text-65 { color: rgba(255,255,255,0.65); }
+  .text-50 { color: rgba(255,255,255,0.50); }
+  .text-40 { color: rgba(255,255,255,0.40); }
+  .text-30 { color: rgba(255,255,255,0.30); }
+  .text-22 { color: rgba(255,255,255,0.22); }
+  .label-eyebrow { font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; font-weight: 700; }
+  .label-section { font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; font-weight: 600; color: rgba(255,255,255,0.65); }
+  .num { font-variant-numeric: tabular-nums; }
+  .heat-on { background: rgba(16,185,129,0.65); }
+  .heat-light { background: rgba(16,185,129,0.30); }
+  .heat-off { background: rgba(255,255,255,0.05); }
+  .heat-empty { background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.10); }
+  .pr-pill { background: rgba(245,158,11,0.10); color: rgb(252,211,77); border: 1px solid rgba(245,158,11,0.30); }
+  .btn-primary { background: white; color: black; }
+  .btn-primary:hover { background: rgba(255,255,255,0.92); }
+  .btn-ghost { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.14); }
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.28); }
+  .row-hover:hover { background: rgba(255,255,255,0.025); }
+  /* state toggling */
+  body.state-full .when-light, body.state-full .when-empty,
+  body.state-light .when-full, body.state-light .when-empty,
+  body.state-empty .when-full, body.state-empty .when-light { display: none !important; }
+  /* state toggle bar */
+  .state-tab { padding: 4px 10px; font-size: 11px; letter-spacing: 0.6px; text-transform: uppercase; font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+  .state-tab.active { background: white; color: black; }
+  .state-tab:not(.active) { color: rgba(255,255,255,0.55); }
+  .state-tab:not(.active):hover { color: white; }
+</style>
+</head>
+<body class="state-full">
+
+<!-- TOP TOGGLE BAR (mockup-only) -->
+<div class="sticky top-0 z-10 bg-black/90 backdrop-blur border-b border-white/5">
+  <div class="max-w-5xl mx-auto px-6 sm:px-8 py-3 flex items-center justify-between">
+    <span class="text-[11px] tracking-wider uppercase text-30 num">Mockup · 2026-05-08</span>
+    <div class="flex gap-1.5 ring-line rounded-md p-1">
+      <button class="state-tab active" data-state="state-full">Full data</button>
+      <button class="state-tab" data-state="state-light">Light data</button>
+      <button class="state-tab" data-state="state-empty">Empty (first run)</button>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-5xl mx-auto px-6 sm:px-8 py-6">
+
+  <!-- HEADER ROW -->
+  <div class="flex items-end justify-between mb-5">
+    <div>
+      <h1 class="text-2xl font-bold leading-tight">My Training</h1>
+      <p class="text-65 text-xs mt-1 num when-full">
+        4-day streak <span class="text-30">·</span> last session 2d ago <span class="text-30">·</span> 12 sessions in May
+      </p>
+      <p class="text-65 text-xs mt-1 num when-light">
+        2 sessions logged <span class="text-30">·</span> last session 5d ago
+      </p>
+      <p class="text-65 text-xs mt-1 when-empty">
+        Track your own sessions here — kept separate from your members'.
+      </p>
+    </div>
+    <button class="btn-ghost rounded-md px-3 py-1.5 text-xs flex items-center gap-1.5">
+      <span class="text-65">May</span>
+      <span class="text-22">·</span>
+      <span>Calendar</span>
+    </button>
+  </div>
+
+  <!-- HEATMAP / GETTING-STARTED STRIP -->
+
+  <!-- FULL: heatmap with stats -->
+  <div class="rounded-xl bg-card ring-line p-3 mb-5 flex items-center justify-between when-full">
+    <div class="flex items-center gap-3">
+      <span class="label-eyebrow text-30">Last 14 days</span>
+      <div class="flex gap-[3px]">
+        <div class="w-3 h-3 rounded-[3px] heat-off"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-on"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-on"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-off"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-on"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-light"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-off"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-on"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-on"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-on"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-light"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-on"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-off"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-on"></div>
+      </div>
+    </div>
+    <div class="flex items-center gap-4 text-[11px] num text-65">
+      <span><span class="text-white font-semibold">9</span> sessions</span>
+      <span><span class="text-white font-semibold">412</span> sets</span>
+      <span><span class="text-white font-semibold">7.4</span> avg RPE</span>
+      <span class="text-amber-300/90"><span class="font-semibold">3</span> PRs</span>
+    </div>
+  </div>
+
+  <!-- LIGHT: heatmap mostly empty + encouragement -->
+  <div class="rounded-xl bg-card ring-line p-3 mb-5 flex items-center justify-between when-light">
+    <div class="flex items-center gap-3">
+      <span class="label-eyebrow text-30">Last 14 days</span>
+      <div class="flex gap-[3px]">
+        <div class="w-3 h-3 rounded-[3px] heat-off"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-off"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-off"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-on"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-off"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-off"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-off"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-off"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-light"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-off"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-off"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-off"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-off"></div>
+        <div class="w-3 h-3 rounded-[3px] heat-off"></div>
+      </div>
+    </div>
+    <div class="text-[11px] num text-65">
+      <span class="text-white font-semibold">2</span> sessions <span class="text-30">·</span>
+      <span>Build a streak — log today.</span>
+    </div>
+  </div>
+
+  <!-- EMPTY: get-started strip -->
+  <div class="rounded-xl bg-card ring-line p-3 mb-5 when-empty">
+    <div class="flex items-center justify-between">
+      <span class="label-eyebrow text-emerald-300">Get started</span>
+      <span class="text-[11px] num text-30">3 quick steps · ~30s</span>
+    </div>
+    <div class="mt-2 flex items-center gap-2 text-[12px]">
+      <div class="flex items-center gap-1.5 text-65">
+        <span class="w-4 h-4 rounded-full ring-line text-[9px] num font-bold flex items-center justify-center">1</span>
+        Pick a path
+      </div>
+      <span class="text-22">›</span>
+      <div class="flex items-center gap-1.5 text-65">
+        <span class="w-4 h-4 rounded-full ring-line text-[9px] num font-bold flex items-center justify-center">2</span>
+        Log sets
+      </div>
+      <span class="text-22">›</span>
+      <div class="flex items-center gap-1.5 text-65">
+        <span class="w-4 h-4 rounded-full ring-line text-[9px] num font-bold flex items-center justify-center">3</span>
+        Mark complete
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO COCKPIT (TWO PATHS) -->
+  <div class="grid grid-cols-2 gap-4 mb-6">
+
+    <!-- ============ LEFT: FROM TEMPLATE ============ -->
+
+    <!-- FULL state -->
+    <div class="when-full rounded-xl bg-card ring-line p-4 flex flex-col">
+      <div class="flex items-center justify-between mb-3">
+        <span class="label-eyebrow text-emerald-300">Next in rotation</span>
+        <span class="label-eyebrow text-30">From template</span>
+      </div>
+      <div class="mb-1">
+        <div class="text-[11px] text-50 num">Push · Pull · Legs</div>
+        <h2 class="text-xl font-bold leading-tight mt-0.5">Day 3 — Push</h2>
+      </div>
+      <div class="text-xs text-65 mb-3 num">
+        Continue from Day 2 · last touched <span class="text-white">Tue</span>
+      </div>
+      <div class="rounded-lg ring-line p-2.5 space-y-1.5 mb-3 bg-[#080808]">
+        <div class="flex items-center justify-between text-[12px] num">
+          <span class="text-white">Bench Press</span>
+          <span class="text-50">4×6-8</span>
+          <span class="text-65 w-16 text-right">last 92.5kg</span>
+        </div>
+        <div class="flex items-center justify-between text-[12px] num">
+          <span class="text-white">Overhead Press</span>
+          <span class="text-50">3×8</span>
+          <span class="text-65 w-16 text-right">last 60kg</span>
+        </div>
+        <div class="flex items-center justify-between text-[12px] num">
+          <span class="text-white">Incline DB Press</span>
+          <span class="text-50">3×10</span>
+          <span class="text-65 w-16 text-right">last 30kg</span>
+        </div>
+        <div class="flex items-center justify-between text-[12px] num">
+          <span class="text-white">Tricep Pushdown</span>
+          <span class="text-50">3×12</span>
+          <span class="text-65 w-16 text-right">last 32.5kg</span>
+        </div>
+        <div class="flex items-center justify-between text-[12px] num">
+          <span class="text-50 italic">+ 2 more</span>
+          <span></span>
+          <span class="text-30">~55 min</span>
+        </div>
+      </div>
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <div class="flex gap-[3px]">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400/40 ring-1 ring-emerald-400/40"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-white/10"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-white/10"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-white/10"></span>
+          </div>
+          <span class="text-[11px] text-65 num">Day <span class="text-white font-semibold">3</span> of 6</span>
+        </div>
+      </div>
+      <div class="mt-auto flex gap-2">
+        <button class="btn-primary rounded-md px-3 py-2 text-sm font-semibold flex-1">Start Day 3 →</button>
+        <button class="btn-ghost rounded-md px-3 py-2 text-xs">Pick another day</button>
+      </div>
+    </div>
+
+    <!-- LIGHT state — has used a template once before -->
+    <div class="when-light rounded-xl bg-card ring-line p-4 flex flex-col">
+      <div class="flex items-center justify-between mb-3">
+        <span class="label-eyebrow text-emerald-300">Repeat or rotate</span>
+        <span class="label-eyebrow text-30">From template</span>
+      </div>
+      <div class="mb-1">
+        <div class="text-[11px] text-50 num">Push · Pull · Legs</div>
+        <h2 class="text-xl font-bold leading-tight mt-0.5">Day 1 — Push</h2>
+      </div>
+      <div class="text-xs text-65 mb-3 num">You ran this once · 5 days ago</div>
+      <div class="rounded-lg ring-line p-2.5 space-y-1.5 mb-3 bg-[#080808]">
+        <div class="flex items-center justify-between text-[12px] num">
+          <span class="text-white">Bench Press</span>
+          <span class="text-50">4×6-8</span>
+          <span class="text-65 w-16 text-right">last 90kg</span>
+        </div>
+        <div class="flex items-center justify-between text-[12px] num">
+          <span class="text-white">Overhead Press</span>
+          <span class="text-50">3×8</span>
+          <span class="text-65 w-16 text-right">last 57.5kg</span>
+        </div>
+        <div class="flex items-center justify-between text-[12px] num">
+          <span class="text-50 italic">+ 4 more</span>
+          <span></span>
+          <span class="text-30">~50 min</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 mb-3">
+        <div class="flex gap-[3px]">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-white/10"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-white/10"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-white/10"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-white/10"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-white/10"></span>
+        </div>
+        <span class="text-[11px] text-65 num">Day <span class="text-white font-semibold">1</span> of 6 · just getting going</span>
+      </div>
+      <div class="mt-auto flex gap-2">
+        <button class="btn-primary rounded-md px-3 py-2 text-sm font-semibold flex-1">Start Day 2 →</button>
+        <button class="btn-ghost rounded-md px-3 py-2 text-xs">Other day</button>
+      </div>
+    </div>
+
+    <!-- EMPTY state — never used a template -->
+    <div class="when-empty rounded-xl bg-card ring-line p-4 flex flex-col">
+      <div class="flex items-center justify-between mb-3">
+        <span class="label-eyebrow text-emerald-300">Follow a plan</span>
+        <span class="label-eyebrow text-30">From template</span>
+      </div>
+      <div class="mb-3">
+        <h2 class="text-xl font-bold leading-tight">Pick a template</h2>
+        <p class="text-xs text-65 mt-1 leading-snug">
+          Walk through prescribed exercises, sets, and reps. Best when you want structure or are starting a cycle.
+        </p>
+      </div>
+      <!-- preset / suggested templates -->
+      <div class="rounded-lg ring-line p-2.5 space-y-1.5 mb-3 bg-[#080808]">
+        <div class="flex items-center justify-between text-[12px] cursor-pointer hover:bg-white/[0.025] rounded px-1 py-0.5 -mx-1 transition-colors">
+          <div>
+            <div class="text-white">Push · Pull · Legs</div>
+            <div class="text-[10px] text-50 num">6 days · 3 day-groups · classic split</div>
+          </div>
+          <span class="text-30 text-sm">→</span>
+        </div>
+        <div class="flex items-center justify-between text-[12px] cursor-pointer hover:bg-white/[0.025] rounded px-1 py-0.5 -mx-1 transition-colors">
+          <div>
+            <div class="text-white">Upper / Lower</div>
+            <div class="text-[10px] text-50 num">4 days · 2 day-groups · time-friendly</div>
+          </div>
+          <span class="text-30 text-sm">→</span>
+        </div>
+        <div class="flex items-center justify-between text-[12px] cursor-pointer hover:bg-white/[0.025] rounded px-1 py-0.5 -mx-1 transition-colors">
+          <div>
+            <div class="text-white">Full Body</div>
+            <div class="text-[10px] text-50 num">3 days · single rotation · beginner-friendly</div>
+          </div>
+          <span class="text-30 text-sm">→</span>
+        </div>
+      </div>
+      <div class="text-[11px] text-50 mb-3">
+        Or import one you've already built for a member.
+      </div>
+      <div class="mt-auto flex gap-2">
+        <button class="btn-primary rounded-md px-3 py-2 text-sm font-semibold flex-1">Browse templates →</button>
+        <button class="btn-ghost rounded-md px-3 py-2 text-xs">+ Create</button>
+      </div>
+    </div>
+
+    <!-- ============ RIGHT: FREESTYLE ============ -->
+
+    <!-- FULL state -->
+    <div class="when-full rounded-xl bg-card ring-line p-4 flex flex-col">
+      <div class="flex items-center justify-between mb-3">
+        <span class="label-eyebrow text-sky-300">Log on the fly</span>
+        <span class="label-eyebrow text-30">Freestyle</span>
+      </div>
+      <div class="mb-1">
+        <div class="text-[11px] text-50">No template, no plan</div>
+        <h2 class="text-xl font-bold leading-tight mt-0.5">Blank session</h2>
+      </div>
+      <div class="text-xs text-65 mb-3">Pick exercises as you go. Save it as a template later if you want.</div>
+      <div class="rounded-lg ring-line p-2.5 mb-3 bg-[#080808]">
+        <div class="flex items-center justify-between mb-2">
+          <span class="label-eyebrow text-30">Your last freestyle</span>
+          <span class="text-[11px] text-65 num">Tue · 45 min · RPE 7</span>
+        </div>
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between text-[12px] num">
+            <span class="text-white">Squat</span>
+            <span class="text-65">100 kg × 6</span>
+            <span class="pr-pill rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wider">PR</span>
+          </div>
+          <div class="flex items-center justify-between text-[12px] num">
+            <span class="text-white">Bench</span>
+            <span class="text-65">95 kg × 5</span>
+            <span class="text-22 text-[9px]">·</span>
+          </div>
+          <div class="flex items-center justify-between text-[12px] num">
+            <span class="text-white">Pull-ups</span>
+            <span class="text-65">BW × 8</span>
+            <span class="text-22 text-[9px]">·</span>
+          </div>
+          <div class="flex items-center justify-between text-[12px] num text-50 italic">
+            <span>+ 4 more sets</span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+      <div class="text-[11px] text-50 mb-3 num">Recent freestyle frequency: <span class="text-white">2 / week</span></div>
+      <div class="mt-auto flex gap-2">
+        <button class="btn-primary rounded-md px-3 py-2 text-sm font-semibold flex-1">Start blank →</button>
+        <button class="btn-ghost rounded-md px-3 py-2 text-xs">Repeat last</button>
+      </div>
+    </div>
+
+    <!-- LIGHT state — 1 freestyle in history, no PR -->
+    <div class="when-light rounded-xl bg-card ring-line p-4 flex flex-col">
+      <div class="flex items-center justify-between mb-3">
+        <span class="label-eyebrow text-sky-300">Log on the fly</span>
+        <span class="label-eyebrow text-30">Freestyle</span>
+      </div>
+      <div class="mb-1">
+        <div class="text-[11px] text-50">No template, no plan</div>
+        <h2 class="text-xl font-bold leading-tight mt-0.5">Blank session</h2>
+      </div>
+      <div class="text-xs text-65 mb-3">Pick exercises as you go. Save it as a template later if you want.</div>
+      <div class="rounded-lg ring-line p-2.5 mb-3 bg-[#080808]">
+        <div class="flex items-center justify-between mb-2">
+          <span class="label-eyebrow text-30">Your last freestyle</span>
+          <span class="text-[11px] text-65 num">Sat · 32 min · RPE 6</span>
+        </div>
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between text-[12px] num">
+            <span class="text-white">Bench</span>
+            <span class="text-65">85 kg × 5</span>
+            <span class="text-22 text-[9px]">·</span>
+          </div>
+          <div class="flex items-center justify-between text-[12px] num">
+            <span class="text-white">Row</span>
+            <span class="text-65">70 kg × 8</span>
+            <span class="text-22 text-[9px]">·</span>
+          </div>
+          <div class="flex items-center justify-between text-[12px] num text-50 italic">
+            <span>+ 1 more</span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-auto flex gap-2">
+        <button class="btn-primary rounded-md px-3 py-2 text-sm font-semibold flex-1">Start blank →</button>
+        <button class="btn-ghost rounded-md px-3 py-2 text-xs">Repeat last</button>
+      </div>
+    </div>
+
+    <!-- EMPTY state — never logged any session -->
+    <div class="when-empty rounded-xl bg-card ring-line p-4 flex flex-col">
+      <div class="flex items-center justify-between mb-3">
+        <span class="label-eyebrow text-sky-300">No plan, no pressure</span>
+        <span class="label-eyebrow text-30">Freestyle</span>
+      </div>
+      <div class="mb-3">
+        <h2 class="text-xl font-bold leading-tight">Blank session</h2>
+        <p class="text-xs text-65 mt-1 leading-snug">
+          Best when you don't know exactly what you'll do, or you just want to log what happens.
+        </p>
+      </div>
+      <!-- "what you can do" instead of "your last freestyle" -->
+      <div class="rounded-lg ring-line p-2.5 mb-3 bg-[#080808] space-y-1.5">
+        <div class="flex items-center gap-2 text-[12px]">
+          <span class="w-1 h-1 rounded-full bg-sky-400/70"></span>
+          <span class="text-white">Pick exercises on the fly</span>
+        </div>
+        <div class="flex items-center gap-2 text-[12px]">
+          <span class="w-1 h-1 rounded-full bg-sky-400/70"></span>
+          <span class="text-white">Save as a template afterward</span>
+        </div>
+        <div class="flex items-center gap-2 text-[12px]">
+          <span class="w-1 h-1 rounded-full bg-sky-400/70"></span>
+          <span class="text-white">RPE + note when you're done</span>
+        </div>
+      </div>
+      <div class="mt-auto">
+        <button class="btn-primary rounded-md px-3 py-2 text-sm font-semibold w-full">Start blank →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT SESSIONS / FOOTER -->
+
+  <!-- FULL -->
+  <div class="when-full">
+    <div class="flex items-center justify-between mb-2">
+      <span class="label-section">Recent sessions</span>
+      <a href="#" class="text-[11px] text-65 hover:text-white">View all →</a>
+    </div>
+    <div class="rounded-xl bg-card ring-line divide-y divide-[rgba(255,255,255,0.04)]">
+      <div class="row-hover flex items-center px-4 py-2.5 num text-[12px] cursor-pointer">
+        <div class="w-12 text-65">Tue</div>
+        <div class="flex-1 text-white">PPL · Day 2 · Pull</div>
+        <div class="w-16 text-right text-65">8 sets</div>
+        <div class="w-16 text-right text-65">52 min</div>
+        <div class="w-12 text-right text-emerald-300">RPE 8</div>
+        <div class="w-10 text-right"><span class="pr-pill rounded px-1 py-0.5 text-[9px] font-bold tracking-wider">PR</span></div>
+      </div>
+      <div class="row-hover flex items-center px-4 py-2.5 num text-[12px] cursor-pointer">
+        <div class="w-12 text-65">Sun</div>
+        <div class="flex-1 text-white">Freestyle</div>
+        <div class="w-16 text-right text-65">5 sets</div>
+        <div class="w-16 text-right text-65">35 min</div>
+        <div class="w-12 text-right text-65">RPE 6</div>
+        <div class="w-10"></div>
+      </div>
+      <div class="row-hover flex items-center px-4 py-2.5 num text-[12px] cursor-pointer">
+        <div class="w-12 text-65">Sat</div>
+        <div class="flex-1 text-white">PPL · Day 1 · Push</div>
+        <div class="w-16 text-right text-65">10 sets</div>
+        <div class="w-16 text-right text-65">58 min</div>
+        <div class="w-12 text-right text-amber-300">RPE 8.5</div>
+        <div class="w-10 text-right"><span class="pr-pill rounded px-1 py-0.5 text-[9px] font-bold tracking-wider">PR</span></div>
+      </div>
+      <div class="row-hover flex items-center px-4 py-2.5 num text-[12px] cursor-pointer">
+        <div class="w-12 text-65">Thu</div>
+        <div class="flex-1 text-white">PPL · Day 3 · Push</div>
+        <div class="w-16 text-right text-65">9 sets</div>
+        <div class="w-16 text-right text-65">48 min</div>
+        <div class="w-12 text-right text-65">RPE 7</div>
+        <div class="w-10"></div>
+      </div>
+      <div class="row-hover flex items-center px-4 py-2.5 num text-[12px] cursor-pointer">
+        <div class="w-12 text-65">Wed</div>
+        <div class="flex-1 text-white">Freestyle · Cardio + core</div>
+        <div class="w-16 text-right text-65">3 sets</div>
+        <div class="w-16 text-right text-65">28 min</div>
+        <div class="w-12 text-right text-65">RPE 5</div>
+        <div class="w-10"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHT -->
+  <div class="when-light">
+    <div class="flex items-center justify-between mb-2">
+      <span class="label-section">Recent sessions</span>
+      <span class="text-[11px] text-30 num">2 logged</span>
+    </div>
+    <div class="rounded-xl bg-card ring-line divide-y divide-[rgba(255,255,255,0.04)]">
+      <div class="row-hover flex items-center px-4 py-2.5 num text-[12px] cursor-pointer">
+        <div class="w-12 text-65">Sat</div>
+        <div class="flex-1 text-white">Freestyle</div>
+        <div class="w-16 text-right text-65">3 sets</div>
+        <div class="w-16 text-right text-65">32 min</div>
+        <div class="w-12 text-right text-65">RPE 6</div>
+        <div class="w-10"></div>
+      </div>
+      <div class="row-hover flex items-center px-4 py-2.5 num text-[12px] cursor-pointer">
+        <div class="w-12 text-65">Wed</div>
+        <div class="flex-1 text-white">PPL · Day 1 · Push</div>
+        <div class="w-16 text-right text-65">7 sets</div>
+        <div class="w-16 text-right text-65">42 min</div>
+        <div class="w-12 text-right text-65">RPE 7</div>
+        <div class="w-10"></div>
+      </div>
+      <!-- placeholder hint row -->
+      <div class="flex items-center px-4 py-2.5 text-[11px] text-40 italic">
+        Newer sessions will land here as you log them.
+      </div>
+    </div>
+  </div>
+
+  <!-- EMPTY -->
+  <div class="when-empty">
+    <div class="rounded-xl bg-card ring-line p-5 flex items-center gap-4">
+      <div class="rounded-lg ring-line bg-[#080808] p-3 text-[10px] num text-30 leading-snug min-w-[140px]">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-22">Tue</span>
+          <span class="text-22">RPE 7</span>
+        </div>
+        <div class="text-50">PPL · Day 2 · Pull</div>
+        <div class="text-22 mt-0.5">8 sets · 52 min</div>
+      </div>
+      <div class="flex-1">
+        <p class="label-eyebrow text-30 mb-1">Coming soon</p>
+        <p class="text-xs text-65 leading-snug">
+          Once you finish your first session, you'll see a recap row here. Each row shows date, what you trained, set count, duration, and RPE.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <p class="text-[10px] text-30 mt-5 num">
+    Mockup · static data · 2026-05-08 brainstorm · Cockpit (Idea A) · 3-state cascade
+  </p>
+</div>
+
+<script>
+  document.querySelectorAll('.state-tab').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.state-tab').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.body.classList.remove('state-full', 'state-light', 'state-empty');
+      document.body.classList.add(btn.dataset.state);
+    });
+  });
+</script>
+</body>
+</html>
