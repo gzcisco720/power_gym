@@ -36,6 +36,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Exercise Thumbnail Hover Preview | [exercise-thumbnail-hover-design.md](2026-05-07/plans/exercise-thumbnail-hover-design.md) | Complete |
 | Owner/Trainer Self-Tracking | [self-tracking-design.md](2026-05-08/plans/self-tracking-design.md) | Approved |
 | Self-Tracking Calendar Popover Refactor | [my-nutrition-refactor-design.md](2026-05-08/plans/my-nutrition-refactor-design.md) | Approved |
+| Day Complete Confirm + Future Date Lockdown | [day-complete-confirm-design.md](2026-05-08/plans/day-complete-confirm-design.md) | Approved |
 
 ---
 
