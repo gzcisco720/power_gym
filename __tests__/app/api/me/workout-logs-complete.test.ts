@@ -3,6 +3,9 @@ jest.mock('@/lib/auth/self-tracking-access', () => ({ requireSelfTrackingRole: j
 jest.mock('@/lib/repositories/self-workout-log.repository', () => ({
   MongoSelfWorkoutLogRepository: jest.fn(),
 }));
+jest.mock('@/lib/repositories/self-personal-best.repository', () => ({
+  MongoSelfPersonalBestRepository: jest.fn(),
+}));
 jest.mock('@/lib/repositories/plan-template.repository', () => ({
   MongoPlanTemplateRepository: jest.fn(),
 }));
@@ -10,21 +13,29 @@ jest.mock('@/lib/repositories/plan-template.repository', () => ({
 import { POST } from '@/app/api/me/workout-logs/[id]/complete/route';
 import { requireSelfTrackingRole } from '@/lib/auth/self-tracking-access';
 import { MongoSelfWorkoutLogRepository } from '@/lib/repositories/self-workout-log.repository';
+import { MongoSelfPersonalBestRepository } from '@/lib/repositories/self-personal-best.repository';
 import { MongoPlanTemplateRepository } from '@/lib/repositories/plan-template.repository';
 
 const mockGuard = jest.mocked(requireSelfTrackingRole);
 const mockRepo = jest.mocked(MongoSelfWorkoutLogRepository);
+const mockPbRepo = jest.mocked(MongoSelfPersonalBestRepository);
 const mockTplRepo = jest.mocked(MongoPlanTemplateRepository);
 
 const USER = '507f1f77bcf86cd799439011';
 const LOG_ID = '507f1f77bcf86cd799439020';
 
 describe('POST /api/me/workout-logs/[id]/complete', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    const upsertIfBetter = jest.fn().mockResolvedValue(true);
+    mockPbRepo.mockImplementation(
+      () => ({ upsertIfBetter } as unknown as MongoSelfPersonalBestRepository),
+    );
+  });
 
   it('completes the log with rpe + note', async () => {
     mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
-    const logObj = { _id: LOG_ID, completedAt: new Date() };
+    const logObj = { _id: LOG_ID, completedAt: new Date(), sets: [] };
     const complete = jest.fn().mockResolvedValue({ ...logObj, toObject: () => logObj });
     mockRepo.mockImplementation(() => ({ complete } as unknown as MongoSelfWorkoutLogRepository));
     const res = await POST(
@@ -48,7 +59,9 @@ describe('POST /api/me/workout-logs/[id]/complete', () => {
 
   it('accepts empty body and uses null defaults', async () => {
     mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
-    const complete = jest.fn().mockResolvedValue({ _id: LOG_ID, toObject: () => ({ _id: LOG_ID }) });
+    const complete = jest
+      .fn()
+      .mockResolvedValue({ _id: LOG_ID, sets: [], toObject: () => ({ _id: LOG_ID }) });
     mockRepo.mockImplementation(() => ({ complete } as unknown as MongoSelfWorkoutLogRepository));
     await POST(
       new Request('http://x', { method: 'POST', body: '{}' }),
@@ -59,7 +72,9 @@ describe('POST /api/me/workout-logs/[id]/complete', () => {
 
   it('handles truly empty body without crashing', async () => {
     mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
-    const complete = jest.fn().mockResolvedValue({ _id: LOG_ID, toObject: () => ({ _id: LOG_ID }) });
+    const complete = jest
+      .fn()
+      .mockResolvedValue({ _id: LOG_ID, sets: [], toObject: () => ({ _id: LOG_ID }) });
     mockRepo.mockImplementation(() => ({ complete } as unknown as MongoSelfWorkoutLogRepository));
     // Truly empty body (no JSON at all). Mock req.json() throws like Next.js would.
     const req = new Request('http://x', { method: 'POST' });
