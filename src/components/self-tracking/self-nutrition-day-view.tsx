@@ -1,9 +1,12 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { SaveAsTemplateCheckbox } from './save-as-template-checkbox';
+import { DayCompleteBar } from './day-complete-bar';
+import { NutritionCalendarPopover } from './nutrition-calendar-popover';
 import { MacroSummaryCard } from '@/components/nutrition/macro-summary-card';
 import { MealSection } from '@/components/nutrition/meal-section';
 import { FoodPickerDialog } from '@/components/nutrition/food-picker-dialog';
@@ -36,6 +39,7 @@ interface SelfNutritionLog {
 interface Props {
   initialDate: string;
   readOnly?: boolean;
+  onDateChange?: (date: string) => void;
 }
 
 function aggregate(meals: ISelfMeal[]): MacroSnapshot {
@@ -77,10 +81,19 @@ function pickedFoodToItem(picked: PickedFood): ISelfMealItem {
   return item;
 }
 
-export function SelfNutritionDayView({ initialDate, readOnly = false }: Props) {
-  const [date, setDate] = useState(initialDate);
+export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChange }: Props) {
+  // initialDate is intentionally used only as the initial value for date state.
+  // Stage 4 will supply a new `key` prop on the parent to force remount when URL date changes.
+  const [date, setDateInternal] = useState(initialDate);
+
   const [log, setLog] = useState<SelfNutritionLog | null>(null);
   const [pickerForMeal, setPickerForMeal] = useState<number | null>(null);
+  const [submittingComplete, setSubmittingComplete] = useState(false);
+
+  function setDate(next: string): void {
+    setDateInternal(next);
+    onDateChange?.(next);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -112,6 +125,11 @@ export function SelfNutritionDayView({ initialDate, readOnly = false }: Props) {
     [log],
   );
 
+  const totalItems = useMemo(
+    () => (log ? log.meals.reduce((s, m) => s + m.items.length, 0) : 0),
+    [log],
+  );
+
   async function persist(next: SelfNutritionLog): Promise<void> {
     setLog(next);
     if (readOnly) return;
@@ -128,10 +146,18 @@ export function SelfNutritionDayView({ initialDate, readOnly = false }: Props) {
     });
   }
 
+  async function markDayComplete(): Promise<void> {
+    if (!log) return;
+    setSubmittingComplete(true);
+    const next: SelfNutritionLog = { ...log, dayCompleted: true };
+    await persist(next);
+    setSubmittingComplete(false);
+  }
+
   if (!log) return <div className="p-4 text-foreground/65 text-sm">Loading…</div>;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-2">
       <div className="flex items-center justify-between">
         <Button
           variant="ghost"
@@ -141,7 +167,20 @@ export function SelfNutritionDayView({ initialDate, readOnly = false }: Props) {
         >
           ← {shiftDate(date, -1)}
         </Button>
-        <span className="text-sm font-semibold">{date}</span>
+        <NutritionCalendarPopover
+          onSelect={(d) => setDate(d)}
+          selectedDate={date}
+          trigger={
+            <button
+              className="inline-flex items-center gap-1 text-sm font-semibold hover:underline"
+              disabled={readOnly}
+              aria-label={`Open calendar (${date})`}
+            >
+              {date}
+              <ChevronDown className="h-3 w-3 text-foreground/65" />
+            </button>
+          }
+        />
         <Button
           variant="ghost"
           size="sm"
@@ -228,6 +267,16 @@ export function SelfNutritionDayView({ initialDate, readOnly = false }: Props) {
               toast.error('Failed to save template');
             }
           }}
+        />
+      )}
+
+      {!readOnly && (
+        <DayCompleteBar
+          dayCompleted={log.dayCompleted}
+          kcal={Math.round(macros.kcal)}
+          totalItems={totalItems}
+          onMarkComplete={markDayComplete}
+          submitting={submittingComplete}
         />
       )}
     </div>
