@@ -10,6 +10,7 @@ import { SelfNutritionDayView } from './self-nutrition-day-view';
 interface RawLog {
   date: string;
   dayLabel: string;
+  dayCompleted: boolean;
   meals: { items: { kcal: number }[] }[];
 }
 
@@ -38,7 +39,7 @@ export function MyNutritionCalendarClient({ backHref, mainHref }: Props) {
             date: l.date,
             dayLabel: l.dayLabel,
             kcal: l.meals.flatMap((m) => m.items).reduce((s, it) => s + it.kcal, 0),
-            dayCompleted: false,
+            dayCompleted: l.dayCompleted,
           })),
         );
       });
