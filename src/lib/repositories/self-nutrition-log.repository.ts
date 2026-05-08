@@ -43,16 +43,16 @@ export class MongoSelfNutritionLogRepository implements ISelfNutritionLogReposit
       },
       { new: true, upsert: true, setDefaultsOnInsert: true },
     );
-    if (!result) throw new Error('Upsert failed');
-    return result;
+    // upsert:true + new:true guarantees a document; null can only mean a write error which throws above.
+    return result!;
   }
 
   async findByUserMonth(userId: string, year: number, month: number): Promise<ISelfNutritionLog[]> {
     const startStr = `${year}-${pad2(month)}-01`;
-    const nextMonth = month === 12 ? `${year + 1}-01-01` : `${year}-${pad2(month + 1)}-01`;
+    const endExclusive = month === 12 ? `${year + 1}-01-01` : `${year}-${pad2(month + 1)}-01`;
     return SelfNutritionLogModel.find({
       userId: oid(userId),
-      date: { $gte: startStr, $lt: nextMonth },
+      date: { $gte: startStr, $lt: endExclusive },
     }).sort({ date: 1 });
   }
 

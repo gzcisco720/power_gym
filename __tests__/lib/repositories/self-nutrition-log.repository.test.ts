@@ -20,6 +20,7 @@ const mockModel = jest.mocked(SelfNutritionLogModel) as unknown as {
 };
 
 const USER_A = '507f1f77bcf86cd799439011';
+const USER_B = '507f1f77bcf86cd799439099';
 const TPL_ID = '507f1f77bcf86cd799439040';
 
 describe('MongoSelfNutritionLogRepository', () => {
@@ -38,6 +39,21 @@ describe('MongoSelfNutritionLogRepository', () => {
       date: '2026-05-08',
     });
     expect(result).toEqual({ _id: 'log1' });
+  });
+
+  it('findByDate scopes by userId so user B query does not read user A data', async () => {
+    mockModel.findOne.mockResolvedValue({ _id: 'log-of-A' });
+    await repo.findByDate(USER_B, '2026-05-08');
+    expect(mockModel.findOne).toHaveBeenCalledWith({
+      userId: new mongoose.Types.ObjectId(USER_B),
+      date: '2026-05-08',
+    });
+  });
+
+  it('findByDate returns null when no log exists', async () => {
+    mockModel.findOne.mockResolvedValue(null);
+    const result = await repo.findByDate(USER_A, '2026-05-08');
+    expect(result).toBeNull();
   });
 
   it('upsertByDate uses findOneAndUpdate with upsert and concrete userId', async () => {
