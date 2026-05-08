@@ -9,7 +9,6 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Topic | File | Status |
 | ----- | ---- | ------ |
 | FatSecret OAuth 1.0 Support | [fatsecret-oauth1-implementation-plan.md](2026-05-07/plans/fatsecret-oauth1-implementation-plan.md) | In Progress |
-| My Training Cockpit Landing | [my-training-cockpit-implementation-plan.md](2026-05-08/plans/my-training-cockpit-implementation-plan.md) | Not Started |
 
 ## Active Documents
 
@@ -38,7 +37,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Owner/Trainer Self-Tracking | [self-tracking-design.md](2026-05-08/plans/self-tracking-design.md) | Approved |
 | Self-Tracking Calendar Popover Refactor | [my-nutrition-refactor-design.md](2026-05-08/plans/my-nutrition-refactor-design.md) | Approved |
 | Day Complete Confirm + Future Date Lockdown | [day-complete-confirm-design.md](2026-05-08/plans/day-complete-confirm-design.md) | Approved |
-| My Training Cockpit Landing | [my-training-cockpit-design.md](2026-05-08/plans/my-training-cockpit-design.md) | Draft |
+| My Training Cockpit Landing | [my-training-cockpit-design.md](2026-05-08/plans/my-training-cockpit-design.md) | Approved |
 
 ---
 
