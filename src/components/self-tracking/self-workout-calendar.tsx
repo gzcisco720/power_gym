@@ -22,7 +22,7 @@ interface Props {
 function getMonthDays(year: number, month: number) {
   const firstDay = new Date(year, month - 1, 1).getDay();
   const daysInMonth = new Date(year, month, 0).getDate();
-  const startOffset = (firstDay + 6) % 7; // Monday = 0
+  const startOffset = (firstDay + 6) % 7;
   return { startOffset, daysInMonth };
 }
 
@@ -55,23 +55,17 @@ export function SelfWorkoutCalendar({ logs, onSelect, selectedId, onMonthChange 
 
   const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const isCurrentMonth = now.getFullYear() === year && now.getMonth() + 1 === month;
+  const todayDay = now.getDate();
 
   return (
     <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4">
       <div className="flex items-center justify-between mb-4">
-        <button
-          onClick={() => shiftMonth(-1)}
-          className="text-foreground/65 hover:text-foreground transition-colors"
-          aria-label="Previous month"
-        >
+        <button onClick={() => shiftMonth(-1)} className="text-foreground/65 hover:text-foreground transition-colors" aria-label="Previous month">
           <ChevronLeft className="h-4 w-4" />
         </button>
         <span className="text-[13px] font-semibold">{monthName}</span>
-        <button
-          onClick={() => shiftMonth(1)}
-          className="text-foreground/65 hover:text-foreground transition-colors"
-          aria-label="Next month"
-        >
+        <button onClick={() => shiftMonth(1)} className="text-foreground/65 hover:text-foreground transition-colors" aria-label="Next month">
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
@@ -86,24 +80,33 @@ export function SelfWorkoutCalendar({ logs, onSelect, selectedId, onMonthChange 
         {Array.from({ length: startOffset }).map((_, i) => <div key={`e-${i}`} />)}
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
           const log = logsByDay.get(day);
-          const isToday =
-            now.getDate() === day && now.getMonth() + 1 === month && now.getFullYear() === year;
+          const isToday = isCurrentMonth && day === todayDay;
           const isSelected = log && log._id === selectedId;
+          const ariaLabel = log
+            ? `Day ${day}, ${log.dayName}`
+            : `Day ${day}`;
+
           return (
             <div key={day} className="flex justify-center">
               <button
                 onClick={() => log && onSelect(log)}
                 disabled={!log}
-                aria-label={`Day ${day}${log ? ` — ${log.dayName}` : ''}`}
+                aria-label={ariaLabel}
                 className={cn(
-                  'w-8 h-8 rounded-full text-[11px] flex items-center justify-center transition-colors',
-                  log && isSelected && 'bg-foreground text-background font-bold',
-                  log && !isSelected && 'bg-foreground/10 text-foreground font-semibold hover:bg-foreground/20',
-                  !log && isToday && 'ring-1 ring-foreground/25 text-foreground/65',
-                  !log && !isToday && 'text-foreground/40',
+                  'w-9 h-11 rounded-md text-[11px] flex flex-col items-center justify-center gap-1 transition-colors',
+                  isSelected && 'bg-foreground text-background font-bold',
+                  !isSelected && log && 'text-foreground hover:bg-foreground/10',
+                  !log && 'text-foreground/40',
+                  isToday && !isSelected && 'ring-1 ring-foreground/25',
                 )}
               >
-                {day}
+                <span className="leading-none">{day}</span>
+                {log && (
+                  <span className={cn(
+                    'h-1 w-1 rounded-full',
+                    isSelected ? 'bg-background/80' : 'bg-emerald-500',
+                  )} />
+                )}
               </button>
             </div>
           );
