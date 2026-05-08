@@ -10,7 +10,7 @@ import { test, expect } from '@playwright/test';
 //   5. Session page loads with heading "Push"
 //   6. Trainer clicks Finish → CompleteWorkoutDialog opens
 //   7. Checks "Save as template", fills in template name
-//   8. Clicks "Finish workout" → saves template + redirects to calendar
+//   8. Clicks "Finish workout" → saves template + redirects to my-training
 //   9. Verifies the new template exists via GET /api/plan-templates
 
 test.use({ storageState: 'e2e/.auth/trainer.json' });
@@ -86,9 +86,9 @@ test.describe('trainer template workout + saveAsTemplate', () => {
     // --- Step 7: submit ---
     await page.getByRole('button', { name: /^finish workout$/i }).click();
 
-    // --- Step 8: redirected to calendar ---
-    await page.waitForURL(/\/trainer\/my-training\/calendar/);
-    await expect(page.getByRole('heading', { name: /training calendar/i })).toBeVisible();
+    // --- Step 8: redirected to my-training ---
+    await page.waitForURL(/\/trainer\/my-training$/);
+    await expect(page.getByRole('heading', { name: /my training/i })).toBeVisible();
 
     // --- Step 9: verify the saved template exists ---
     const listRes = await request.get('/api/plan-templates');
