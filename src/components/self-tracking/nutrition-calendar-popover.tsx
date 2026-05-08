@@ -14,7 +14,7 @@ interface RawLog {
   date: string;
   dayLabel: string;
   dayCompleted: boolean;
-  meals: { items: { kcal: number }[] }[];
+  meals: { completed: boolean; items: { kcal: number }[] }[];
 }
 
 interface Props {
@@ -70,7 +70,10 @@ function NutritionCalendarBody({ onSelect, selectedDate }: BodyProps) {
             date: l.date,
             dayLabel: l.dayLabel,
             dayCompleted: l.dayCompleted,
-            kcal: l.meals.flatMap((m) => m.items).reduce((s, it) => s + it.kcal, 0),
+            kcal: l.meals
+              .filter((m) => m.completed)
+              .flatMap((m) => m.items)
+              .reduce((s, it) => s + it.kcal, 0),
           })),
         );
       });

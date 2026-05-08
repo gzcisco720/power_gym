@@ -15,7 +15,8 @@ export default async function TrainerMyNutritionPage({ searchParams }: PageProps
   if (!session?.user || session.user.role !== 'trainer') redirect('/login');
 
   const { date: rawDate } = await searchParams;
-  const date = rawDate && DATE_RE.test(rawDate) ? rawDate : new Date().toISOString().slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10);
+  const date = rawDate && DATE_RE.test(rawDate) && rawDate <= today ? rawDate : today;
 
   return (
     <div className="flex flex-col min-h-screen">

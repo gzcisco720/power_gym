@@ -69,15 +69,21 @@ test.describe('owner nutrition day + saveAsTemplate', () => {
     if (found) createdNutritionTemplateId = found._id;
   });
 
-  test('owner can Mark day complete and the button transitions to disabled', async ({ page }) => {
+  test('owner can Mark day complete via confirm dialog and the button transitions to disabled', async ({ page }) => {
     await page.goto('/owner/my-nutrition');
 
-    // Click Mark day complete
+    // Click Mark day complete — opens confirm dialog
     const markBtn = page.getByRole('button', { name: /^mark day complete$/i });
     await expect(markBtn).toBeVisible();
     await markBtn.click();
 
-    // After PUT, button should swap to disabled "Day completed ✓"
+    // Dialog should appear with title
+    await expect(page.getByRole('heading', { name: /mark today as complete/i })).toBeVisible();
+
+    // Seeded state has 0 meals marked complete → state C: only "Mark all & submit" + Cancel
+    await page.getByRole('button', { name: /mark all & submit/i }).click();
+
+    // After PUT, the bar's button should swap to disabled "Day completed ✓"
     await expect(page.getByRole('button', { name: /^day completed/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /^day completed/i })).toBeDisabled();
   });

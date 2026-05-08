@@ -27,4 +27,23 @@ describe('SelfNutritionCalendar', () => {
     });
     expect(btn).toBeInTheDocument();
   });
+
+  it('disables future-date cells even when an entry exists for that future date', () => {
+    // Tomorrow — almost always still in the same calendar month
+    const future = new Date();
+    future.setUTCDate(future.getUTCDate() + 1);
+    const futureDate = future.toISOString().slice(0, 10);
+    const sample = [{ date: futureDate, kcal: 1500, dayLabel: 'Freestyle', dayCompleted: false }];
+    const onSelect = jest.fn();
+    render(<SelfNutritionCalendar entries={sample} onSelect={onSelect} />);
+
+    const futureDay = future.getUTCDate();
+    // Future cells should render with the simple `Day {N}` label (no kcal/status info), and be disabled.
+    const candidates = [
+      ...screen.queryAllByRole('button', { name: new RegExp(`^Day ${futureDay}$`, 'i') }),
+      ...screen.queryAllByRole('button', { name: new RegExp(`Day ${futureDay},`, 'i') }),
+    ];
+    expect(candidates.length).toBeGreaterThan(0);
+    candidates.forEach((btn) => expect(btn).toBeDisabled());
+  });
 });
