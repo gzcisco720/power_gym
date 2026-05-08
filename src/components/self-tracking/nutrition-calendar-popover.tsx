@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type ReactElement, type ReactNode } from 'react';
+import { useEffect, useState, type ReactElement } from 'react';
 import {
   Popover,
   PopoverTrigger,
@@ -18,7 +18,7 @@ interface RawLog {
 }
 
 interface Props {
-  trigger: ReactNode;
+  trigger: ReactElement;
   onSelect: (date: string) => void;
   selectedDate?: string;
 }
@@ -28,7 +28,7 @@ export function NutritionCalendarPopover({ trigger, onSelect, selectedDate }: Pr
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger render={trigger as ReactElement} />
+      <PopoverTrigger render={trigger} />
       {open && (
         <PopoverPortal>
           <PopoverPositioner align="end">
