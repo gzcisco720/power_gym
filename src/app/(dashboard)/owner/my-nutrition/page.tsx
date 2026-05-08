@@ -2,7 +2,6 @@ import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/shared/page-header';
 import { SelfNutritionDayViewWithRouter } from './_components/day-view-with-router';
-import { NutritionCalendarHeaderTrigger } from '@/components/self-tracking/nutrition-calendar-header-trigger';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -20,10 +19,7 @@ export default async function OwnerMyNutritionPage({ searchParams }: PageProps) 
 
   return (
     <div className="flex flex-col min-h-screen">
-      <PageHeader
-        title="My Nutrition"
-        actions={<NutritionCalendarHeaderTrigger basePath="/owner/my-nutrition" />}
-      />
+      <PageHeader title="My Nutrition" />
       <div className="px-4 sm:px-8 py-6 max-w-2xl mx-auto w-full">
         <SelfNutritionDayViewWithRouter initialDate={date} basePath="/owner/my-nutrition" />
       </div>
