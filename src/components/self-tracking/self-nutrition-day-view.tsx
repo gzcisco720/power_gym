@@ -182,6 +182,9 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
   const today = todayUTC();
   const nextDate = shiftDate(date, 1);
   const canGoNext = nextDate <= today;
+  // Lock meal-level edits once the day is sealed; the user can still navigate dates
+  // and save the day as a template, but cannot add/remove items or toggle meal flags.
+  const isLocked = readOnly || log.dayCompleted;
 
   return (
     <div className="space-y-4 pb-2">
@@ -225,7 +228,7 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
           <MealSection
             key={i}
             meal={m as unknown as IDailyLogMeal}
-            locked={readOnly}
+            locked={isLocked}
             onAddFood={() => setPickerForMeal(i)}
             onToggleComplete={() => {
               const next: SelfNutritionLog = {

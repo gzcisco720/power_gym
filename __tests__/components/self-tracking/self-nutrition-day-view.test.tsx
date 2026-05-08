@@ -92,4 +92,35 @@ describe('SelfNutritionDayView', () => {
     expect(nextBtns.length).toBeGreaterThan(0);
     expect(nextBtns[0]).toBeDisabled();
   });
+
+  it('locks meal section actions when dayCompleted is true', async () => {
+    global.fetch = jest.fn().mockImplementation((_url: string, init?: { method?: string }) => {
+      if (init?.method === 'PUT') {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({
+          date: '2026-05-08',
+          sourceTemplateId: null,
+          sourceTemplateDayTypeName: null,
+          dayLabel: 'Freestyle',
+          meals: [
+            { name: 'Breakfast', order: 0, completed: true, items: [{ foodName: 'Egg', quantityG: 100, kcal: 150, protein: 12, carbs: 1, fat: 10 }] },
+          ],
+          dayCompleted: true,
+        }),
+      });
+    });
+    render(<SelfNutritionDayView initialDate="2026-05-08" />);
+    await waitFor(() => screen.getByRole('button', { name: /day completed/i }));
+    // Add Food button is rendered but disabled
+    const addBtn = screen.getByRole('button', { name: /add food/i });
+    expect(addBtn).toBeDisabled();
+    // Per-meal complete toggle is also disabled
+    const mealCompleteBtns = screen.getAllByRole('button').filter((b) => /^completed$|^complete$/i.test(b.textContent ?? ''));
+    if (mealCompleteBtns.length > 0) {
+      mealCompleteBtns.forEach((btn) => expect(btn).toBeDisabled());
+    }
+  });
 });
