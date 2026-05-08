@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { SaveAsTemplateCheckbox } from './save-as-template-checkbox';
 import { DayCompleteBar } from './day-complete-bar';
+import { DayCompleteConfirmDialog } from './day-complete-confirm-dialog';
 import { NutritionCalendarPopover } from './nutrition-calendar-popover';
 import { MacroSummaryCard } from '@/components/nutrition/macro-summary-card';
 import { MealSection } from '@/components/nutrition/meal-section';
@@ -59,10 +60,20 @@ function aggregate(meals: ISelfMeal[]): MacroSnapshot {
   return totals;
 }
 
+function sealedKcal(meals: ISelfMeal[]): number {
+  return meals
+    .filter((m) => m.completed)
+    .reduce((s, m) => s + m.items.reduce((sk, it) => sk + it.kcal, 0), 0);
+}
+
 function shiftDate(iso: string, days: number): string {
   const d = new Date(`${iso}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
+}
+
+function todayUTC(): string {
+  return new Date().toISOString().slice(0, 10);
 }
 
 function pickedFoodToItem(picked: PickedFood): ISelfMealItem {
@@ -89,6 +100,7 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
   const [log, setLog] = useState<SelfNutritionLog | null>(null);
   const [pickerForMeal, setPickerForMeal] = useState<number | null>(null);
   const [submittingComplete, setSubmittingComplete] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   function setDate(next: string): void {
     setDateInternal(next);
@@ -130,6 +142,13 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
     [log],
   );
 
+  const completedMeals = useMemo(
+    () => (log ? log.meals.filter((m) => m.completed).length : 0),
+    [log],
+  );
+
+  const sealedTotal = useMemo(() => (log ? sealedKcal(log.meals) : 0), [log]);
+
   async function persist(next: SelfNutritionLog): Promise<void> {
     setLog(next);
     if (readOnly) return;
@@ -146,15 +165,23 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
     });
   }
 
-  async function markDayComplete(): Promise<void> {
+  async function markDayComplete(opts: { markAll: boolean }): Promise<void> {
     if (!log) return;
     setSubmittingComplete(true);
-    const next: SelfNutritionLog = { ...log, dayCompleted: true };
+    const nextMeals = opts.markAll
+      ? log.meals.map((m) => ({ ...m, completed: true }))
+      : log.meals;
+    const next: SelfNutritionLog = { ...log, meals: nextMeals, dayCompleted: true };
     await persist(next);
     setSubmittingComplete(false);
+    setConfirmOpen(false);
   }
 
   if (!log) return <div className="p-4 text-foreground/65 text-sm">Loading…</div>;
+
+  const today = todayUTC();
+  const nextDate = shiftDate(date, 1);
+  const canGoNext = nextDate <= today;
 
   return (
     <div className="space-y-4 pb-2">
@@ -184,10 +211,10 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setDate(shiftDate(date, 1))}
-          disabled={readOnly}
+          onClick={() => setDate(nextDate)}
+          disabled={readOnly || !canGoNext}
         >
-          {shiftDate(date, 1)} →
+          {nextDate} →
         </Button>
       </div>
 
@@ -273,12 +300,23 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
       {!readOnly && (
         <DayCompleteBar
           dayCompleted={log.dayCompleted}
-          kcal={Math.round(macros.kcal)}
+          kcal={log.dayCompleted ? Math.round(sealedTotal) : Math.round(macros.kcal)}
           totalItems={totalItems}
-          onMarkComplete={markDayComplete}
+          onRequestComplete={() => setConfirmOpen(true)}
           submitting={submittingComplete}
         />
       )}
+
+      <DayCompleteConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        totalMeals={log.meals.length}
+        completedMeals={completedMeals}
+        sealedKcal={Math.round(sealedTotal)}
+        totalKcal={Math.round(macros.kcal)}
+        onConfirm={markDayComplete}
+        submitting={submittingComplete}
+      />
     </div>
   );
 }
