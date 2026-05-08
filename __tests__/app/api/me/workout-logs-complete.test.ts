@@ -50,4 +50,17 @@ describe('POST /api/me/workout-logs/[id]/complete', () => {
     );
     expect(complete).toHaveBeenCalledWith(LOG_ID, USER, null, null);
   });
+
+  it('handles truly empty body without crashing', async () => {
+    mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
+    const complete = jest.fn().mockResolvedValue({ _id: LOG_ID });
+    mockRepo.mockImplementation(() => ({ complete } as unknown as MongoSelfWorkoutLogRepository));
+    // Truly empty body (no JSON at all). Mock req.json() throws like Next.js would.
+    const req = new Request('http://x', { method: 'POST' });
+    // Override req.json to simulate "Body has already been read or empty" failure
+    Object.defineProperty(req, 'json', { value: () => Promise.reject(new SyntaxError('Unexpected end of JSON input')) });
+    const res = await POST(req, { params: Promise.resolve({ id: LOG_ID }) });
+    expect(res.status).toBe(200);
+    expect(complete).toHaveBeenCalledWith(LOG_ID, USER, null, null);
+  });
 });
