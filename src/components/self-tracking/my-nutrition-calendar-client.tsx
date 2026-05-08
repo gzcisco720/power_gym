@@ -38,6 +38,7 @@ export function MyNutritionCalendarClient({ backHref, mainHref }: Props) {
             date: l.date,
             dayLabel: l.dayLabel,
             kcal: l.meals.flatMap((m) => m.items).reduce((s, it) => s + it.kcal, 0),
+            dayCompleted: false,
           })),
         );
       });
