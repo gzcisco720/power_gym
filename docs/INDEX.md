@@ -9,6 +9,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Topic | File | Status |
 | ----- | ---- | ------ |
 | FatSecret OAuth 1.0 Support | [fatsecret-oauth1-implementation-plan.md](2026-05-07/plans/fatsecret-oauth1-implementation-plan.md) | In Progress |
+| Calendar Popover Refactor | [calendar-popover-refactor-implementation-plan.md](2026-05-08/plans/calendar-popover-refactor-implementation-plan.md) | Not Started |
 
 ## Active Documents
 
