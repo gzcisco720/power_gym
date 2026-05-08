@@ -1,10 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-// Verifies the "From Template" workout flow plus "Save as template" on finish.
+// Verifies the template workout flow via the new cockpit landing, plus the
+// "Save as template" finish-dialog option.
 //
 // What this test covers end-to-end:
-//   1. Trainer navigates to /trainer/my-training
-//   2. Clicks "From Template" → TemplateDayPickerDialog opens
+//   1. Seed a completed template-derived log so the cockpit renders Light state
+//      (the Template card with a "Pick another day" button).
+//   2. Trainer navigates to /trainer/my-training and clicks "Pick another day"
+//      → TemplateDayPickerDialog opens.
 //   3. Picks the seeded "E2E Test Plan" template → picks "Day 1 — Push"
 //   4. POST /api/me/workout-logs → redirect to /session/[id]
 //   5. Session page loads with heading "Push"
@@ -20,14 +23,50 @@ const SAVED_TEMPLATE_NAME = `My Push Template ${Date.now()}`;
 
 test.describe('trainer template workout + saveAsTemplate', () => {
   let savedTemplateId: string | null = null;
+  let seededLogId: string | null = null;
 
   test.beforeEach(async ({ request }) => {
-    // If a previous test left an active log, delete it so the entry card shows
-    // "From Template / Freestyle" rather than "Continue".
+    // Clean up any active log left by a previous test.
     const activeRes = await request.get('/api/me/workout-logs/active');
     const active = (await activeRes.json()) as { _id?: string } | null;
     if (active && active._id) {
       await request.delete(`/api/me/workout-logs/${active._id}`);
+    }
+
+    // Seed a completed template-derived log so the cockpit renders Light state
+    // with the Template card visible. Without this, the trainer would see the
+    // Empty cockpit which only offers preset shortcuts (no "Pick another day").
+    const tplListRes = await request.get('/api/plan-templates');
+    const tplList = (await tplListRes.json()) as Array<{
+      _id: string;
+      name: string;
+      days: Array<{ dayNumber: number; name: string }>;
+    }>;
+    const tpl = tplList.find((t) => t.name === 'E2E Test Plan');
+    if (!tpl) throw new Error('Seed template "E2E Test Plan" not found');
+
+    const createRes = await request.post('/api/me/workout-logs', {
+      data: {
+        dayName: tpl.days[0].name,
+        sourceTemplateId: tpl._id,
+        sourceTemplateDayNumber: tpl.days[0].dayNumber,
+        plannedSets: [],
+      },
+    });
+    const created = (await createRes.json()) as { _id: string };
+    seededLogId = created._id;
+    // Immediately complete it so it counts as a past session and the cockpit
+    // detects "hasUsedTemplate" → Light state.
+    await request.post(`/api/me/workout-logs/${created._id}/complete`, {
+      data: { rpe: null, note: null },
+    });
+  });
+
+  test.afterEach(async ({ request }) => {
+    // Remove the seeded prior log so subsequent runs / tests start clean.
+    if (seededLogId) {
+      await request.delete(`/api/me/workout-logs/${seededLogId}`);
+      seededLogId = null;
     }
   });
 
@@ -49,10 +88,12 @@ test.describe('trainer template workout + saveAsTemplate', () => {
 
     await page.goto('/trainer/my-training');
 
-    // --- Step 1: open the template picker ---
-    const fromTemplateBtn = page.getByRole('button', { name: /^from template$/i });
-    await expect(fromTemplateBtn).toBeVisible();
-    await fromTemplateBtn.click();
+    // --- Step 1: open the template picker via the cockpit's Light state ---
+    // The Template card exposes a "Pick another day" button when the trainer
+    // has prior template-derived logs (seeded above).
+    const pickAnotherBtn = page.getByRole('button', { name: /pick another day/i });
+    await expect(pickAnotherBtn).toBeVisible();
+    await pickAnotherBtn.click();
 
     // --- Step 2: pick the seeded plan template ---
     // The dialog renders one ghost Button per template; the seed creates "E2E Test Plan".
