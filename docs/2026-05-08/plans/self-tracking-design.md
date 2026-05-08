@@ -1,6 +1,6 @@
 # Owner / Trainer Self-Tracking 设计
 
-**状态**：Draft
+**状态**：Approved
 **作者**：Eric
 **日期**：2026-05-08
 
