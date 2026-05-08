@@ -12,7 +12,14 @@ function openDialog() {
   fireEvent.click(screen.getByRole('button', { name: /new test/i }));
 }
 
-describe('NewBodyTestDialog — Step 1', () => {
+function openWith(protocol: string, weight = '75', age = 25) {
+  render(<NewBodyTestDialog memberId="m1" onSaved={jest.fn()} defaultAge={age} />);
+  openDialog();
+  fireEvent.change(screen.getByLabelText(/protocol/i), { target: { value: protocol } });
+  fireEvent.change(screen.getByLabelText(/^weight/i), { target: { value: weight } });
+}
+
+describe('NewBodyTestDialog — basic shell', () => {
   it('renders a trigger button labeled "New Test"', () => {
     render(<NewBodyTestDialog memberId="m1" onSaved={jest.fn()} />);
     expect(screen.getByRole('button', { name: /new test/i })).toBeInTheDocument();
@@ -24,7 +31,7 @@ describe('NewBodyTestDialog — Step 1', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
-  it('shows Test Date, Protocol, Weight fields in Step 1', () => {
+  it('shows Test Date, Protocol, Weight fields', () => {
     render(<NewBodyTestDialog memberId="m1" onSaved={jest.fn()} />);
     openDialog();
     expect(screen.getByLabelText(/test date/i)).toBeInTheDocument();
@@ -46,27 +53,6 @@ describe('NewBodyTestDialog — Step 1', () => {
     expect(screen.queryByRole('radio', { name: /female/i })).not.toBeInTheDocument();
   });
 
-  it('Next button is disabled when weight is empty', () => {
-    render(<NewBodyTestDialog memberId="m1" onSaved={jest.fn()} />);
-    openDialog();
-    expect(screen.getByRole('button', { name: /next/i })).toBeDisabled();
-  });
-
-  it('Next button is enabled after weight is filled', () => {
-    render(<NewBodyTestDialog memberId="m1" onSaved={jest.fn()} />);
-    openDialog();
-    fireEvent.change(screen.getByLabelText(/^weight/i), { target: { value: '75' } });
-    expect(screen.getByRole('button', { name: /next/i })).not.toBeDisabled();
-  });
-
-  it('advances to Step 2 when Next is clicked with weight filled', () => {
-    render(<NewBodyTestDialog memberId="m1" onSaved={jest.fn()} defaultAge={25} />);
-    openDialog();
-    fireEvent.change(screen.getByLabelText(/^weight/i), { target: { value: '75' } });
-    fireEvent.click(screen.getByRole('button', { name: /next/i }));
-    expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument();
-  });
-
   it('Goals section is collapsed by default', () => {
     render(<NewBodyTestDialog memberId="m1" onSaved={jest.fn()} />);
     openDialog();
@@ -81,54 +67,50 @@ describe('NewBodyTestDialog — Step 1', () => {
   });
 });
 
-function goToStep2(protocol = 'other') {
-  render(<NewBodyTestDialog memberId="m1" onSaved={jest.fn()} defaultAge={25} />);
-  openDialog();
-  fireEvent.change(screen.getByLabelText(/protocol/i), { target: { value: protocol } });
-  fireEvent.change(screen.getByLabelText(/^weight/i), { target: { value: '75' } });
-  fireEvent.click(screen.getByRole('button', { name: /next/i }));
-}
-
-describe('NewBodyTestDialog — Step 2', () => {
+describe('NewBodyTestDialog — measurement inputs', () => {
   it('shows Body Fat % input for "other" protocol', () => {
-    goToStep2('other');
+    openWith('other');
     expect(screen.getByLabelText(/^body fat/i)).toBeInTheDocument();
   });
 
   it('shows 3 site inputs for 3-site protocol', () => {
-    goToStep2('3site');
+    openWith('3site');
     expect(screen.getByLabelText(/chest/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/abdominal/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/thigh/i)).toBeInTheDocument();
   });
 
   it('shows 7 site inputs for 7-site protocol', () => {
-    goToStep2('7site');
+    openWith('7site');
     expect(screen.getByLabelText(/midaxillary/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/subscapular/i)).toBeInTheDocument();
   });
 
   it('shows 9 site inputs for 9-site protocol', () => {
-    goToStep2('9site');
+    openWith('9site');
     expect(screen.getByLabelText(/bicep/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/lumbar/i)).toBeInTheDocument();
   });
+});
 
-  it('Save button is disabled when fields are empty', () => {
-    goToStep2('other');
+describe('NewBodyTestDialog — Save button gating', () => {
+  it('Save is disabled when weight is empty', () => {
+    render(<NewBodyTestDialog memberId="m1" onSaved={jest.fn()} defaultAge={25} />);
+    openDialog();
+    fireEvent.change(screen.getByLabelText(/protocol/i), { target: { value: 'other' } });
+    fireEvent.change(screen.getByLabelText(/^body fat/i), { target: { value: '15' } });
     expect(screen.getByRole('button', { name: /^save$/i })).toBeDisabled();
   });
 
-  it('Save button is enabled after Body Fat % is entered', () => {
-    goToStep2('other');
-    fireEvent.change(screen.getByLabelText(/^body fat/i), { target: { value: '15' } });
-    expect(screen.getByRole('button', { name: /^save$/i })).not.toBeDisabled();
+  it('Save is disabled when measurement fields are empty', () => {
+    openWith('other');
+    expect(screen.getByRole('button', { name: /^save$/i })).toBeDisabled();
   });
 
-  it('Back button returns to Step 1', () => {
-    goToStep2('other');
-    fireEvent.click(screen.getByRole('button', { name: /back/i }));
-    expect(screen.getByLabelText(/test date/i)).toBeInTheDocument();
+  it('Save is enabled after weight + Body Fat % are entered', () => {
+    openWith('other');
+    fireEvent.change(screen.getByLabelText(/^body fat/i), { target: { value: '15' } });
+    expect(screen.getByRole('button', { name: /^save$/i })).not.toBeDisabled();
   });
 });
 
@@ -152,7 +134,6 @@ describe('NewBodyTestDialog — Submit', () => {
     openDialog();
     fireEvent.change(screen.getByLabelText(/protocol/i), { target: { value: 'other' } });
     fireEvent.change(screen.getByLabelText(/^weight/i), { target: { value: '75' } });
-    fireEvent.click(screen.getByRole('button', { name: /next/i }));
     fireEvent.change(screen.getByLabelText(/^body fat/i), { target: { value: '15' } });
     fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
     await waitFor(() => {
@@ -171,9 +152,74 @@ describe('NewBodyTestDialog — Submit', () => {
     openDialog();
     fireEvent.change(screen.getByLabelText(/protocol/i), { target: { value: 'other' } });
     fireEvent.change(screen.getByLabelText(/^weight/i), { target: { value: '75' } });
-    fireEvent.click(screen.getByRole('button', { name: /next/i }));
     fireEvent.change(screen.getByLabelText(/^body fat/i), { target: { value: '15' } });
     fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Bad input'));
+  });
+});
+
+describe('NewBodyTestDialog — Vs Last Test comparison', () => {
+  const previousTest = {
+    _id: 'prev1',
+    date: '2026-04-01T00:00:00.000Z',
+    protocol: 'other' as const,
+    weight: 80,
+    bodyFatPct: 18,
+    leanMassKg: 65.6,
+    fatMassKg: 14.4,
+    targetWeight: null,
+    targetBodyFatPct: null,
+  };
+
+  it('renders the comparison block with placeholders when previousTest is absent', () => {
+    render(<NewBodyTestDialog memberId="m1" onSaved={jest.fn()} defaultAge={25} />);
+    openDialog();
+    expect(screen.getByText(/vs last test/i)).toBeInTheDocument();
+    expect(screen.queryByText(/recomp|cut|bulk|regression|maintain/i)).not.toBeInTheDocument();
+  });
+
+  it('renders the comparison block when previousTest is provided', () => {
+    render(
+      <NewBodyTestDialog
+        memberId="m1"
+        onSaved={jest.fn()}
+        defaultAge={25}
+        previousTest={previousTest}
+      />,
+    );
+    openDialog();
+    expect(screen.getByText(/vs last test/i)).toBeInTheDocument();
+  });
+
+  it('shows a verdict badge once measurements yield deltas', () => {
+    render(
+      <NewBodyTestDialog
+        memberId="m1"
+        onSaved={jest.fn()}
+        defaultAge={25}
+        previousTest={previousTest}
+      />,
+    );
+    openDialog();
+    fireEvent.change(screen.getByLabelText(/protocol/i), { target: { value: 'other' } });
+    fireEvent.change(screen.getByLabelText(/^weight/i), { target: { value: '75' } });
+    fireEvent.change(screen.getByLabelText(/^body fat/i), { target: { value: '15' } });
+    expect(
+      screen.getByText(/recomp|cut|bulk|regression|maintain/i),
+    ).toBeInTheDocument();
+  });
+
+  it('warns when the protocol differs from the previous test', () => {
+    render(
+      <NewBodyTestDialog
+        memberId="m1"
+        onSaved={jest.fn()}
+        defaultAge={25}
+        previousTest={previousTest}
+      />,
+    );
+    openDialog();
+    fireEvent.change(screen.getByLabelText(/protocol/i), { target: { value: '3site' } });
+    expect(screen.getByText(/method changed/i)).toBeInTheDocument();
   });
 });

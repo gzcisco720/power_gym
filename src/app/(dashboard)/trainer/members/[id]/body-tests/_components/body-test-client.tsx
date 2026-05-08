@@ -94,6 +94,7 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
       memberId={memberId}
       defaultSex={defaultSex}
       defaultAge={defaultAge}
+      previousTest={tests[0] ?? null}
       onSaved={handleSaved}
     />
   );

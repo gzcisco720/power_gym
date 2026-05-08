@@ -21,6 +21,7 @@ interface Props {
   memberId: string;
   defaultSex?: 'male' | 'female' | null;
   defaultAge?: number | null;
+  previousTest?: BodyTestRecord | null;
   onSaved: (test: BodyTestRecord) => void;
 }
 
@@ -31,9 +32,8 @@ const PROTOCOL_OPTIONS: { value: Protocol; label: string }[] = [
   { value: 'other', label: 'Other (manual %)' },
 ];
 
-export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, onSaved }: Props) {
+export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, previousTest, onSaved }: Props) {
   const [open, setOpen] = useState(false);
-  const [step, setStep] = useState<1 | 2>(1);
 
   const sex: 'male' | 'female' = defaultSex ?? 'male';
   const age = defaultAge ?? 0;
@@ -44,6 +44,9 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, onSaved }:
   const [targetWeight, setTargetWeight] = useState('');
   const [targetBodyFatPct, setTargetBodyFatPct] = useState('');
   const [goalsOpen, setGoalsOpen] = useState(false);
+  const [sites, setSites] = useState<Record<string, string>>({});
+  const [bfPctInput, setBfPctInput] = useState('');
+  const [saving, setSaving] = useState(false);
 
   function resetAndOpen() {
     setDate(new Date().toISOString().split('T')[0]);
@@ -52,16 +55,64 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, onSaved }:
     setTargetWeight('');
     setTargetBodyFatPct('');
     setGoalsOpen(false);
-    setStep(1);
+    setSites({});
+    setBfPctInput('');
     setOpen(true);
   }
 
   function handleClose() {
     setOpen(false);
-    setStep(1);
   }
 
-  const canAdvance = weight.trim() !== '' && !isNaN(parseFloat(weight));
+  const weightNum = parseFloat(weight);
+  const weightValid = weight.trim() !== '' && !isNaN(weightNum);
+  const reqSites = getRequiredSites(protocol, sex);
+  const bfInput = buildBFInput(protocol, sex, age, sites, bfPctInput);
+  const preview = bfInput !== null && weightValid ? (() => {
+    const bf = calculateBodyFat(bfInput);
+    const { fatMassKg, leanMassKg } = calculateComposition(weightNum, bf);
+    return { bf, fatMassKg, leanMassKg };
+  })() : null;
+  const comparison = computeComparison(preview, weightNum, date, protocol, previousTest ?? null);
+
+  const canSave = bfInput !== null && weightValid;
+
+  async function handleSave() {
+    if (!canSave) return;
+    setSaving(true);
+    try {
+      const payload: Record<string, number | string | null> = {
+        protocol,
+        sex,
+        age,
+        weight: weightNum,
+        date: new Date(date).toISOString(),
+        targetWeight: targetWeight ? parseFloat(targetWeight) : null,
+        targetBodyFatPct: targetBodyFatPct ? parseFloat(targetBodyFatPct) : null,
+      };
+      if (protocol === 'other') {
+        payload.bodyFatPct = parseFloat(bfPctInput);
+      } else {
+        reqSites.forEach((s) => { payload[s] = parseFloat(sites[s] ?? '0'); });
+      }
+      const res = await fetch(`/api/members/${memberId}/body-tests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        toast.error(data.error ?? 'Failed to save');
+        return;
+      }
+      const created = (await res.json()) as BodyTestRecord;
+      toast.success('Body test saved');
+      onSaved(created);
+      handleClose();
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <>
@@ -76,64 +127,150 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, onSaved }:
       <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
         <DialogContent
           showCloseButton={false}
-          className="bg-[#0c0c0c] border-[#1e1e1e] sm:max-w-2xl p-0 gap-0 overflow-hidden"
+          className="bg-[#0c0c0c] border-[#1e1e1e] sm:max-w-2xl p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]"
         >
-          <DialogHeader className="px-5 pt-5 pb-4 border-b border-[#141414]">
+          <DialogHeader className="px-5 pt-5 pb-4 border-b border-[#141414] shrink-0">
             <div className="flex items-center justify-between gap-3">
               <DialogTitle className="text-base font-bold">New Body Test</DialogTitle>
               <ProfileChip age={defaultAge ?? null} sex={defaultSex ?? null} />
             </div>
-            <StepIndicator step={step} />
           </DialogHeader>
 
-          <div className="px-5 py-4">
-            {step === 1 && (
-              <Step1Form
-                date={date} onDate={setDate}
-                protocol={protocol} onProtocol={setProtocol}
-                weight={weight} onWeight={setWeight}
-                targetWeight={targetWeight} onTargetWeight={setTargetWeight}
-                targetBodyFatPct={targetBodyFatPct} onTargetBodyFatPct={setTargetBodyFatPct}
-                goalsOpen={goalsOpen} onGoalsOpen={setGoalsOpen}
-                canAdvance={canAdvance}
-                onCancel={handleClose}
-                onNext={() => setStep(2)}
-              />
+          <div className="px-5 py-4 space-y-4 overflow-y-auto flex-1">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <label htmlFor="nbt-date" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
+                  Test Date
+                </label>
+                <Input
+                  id="nbt-date"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="bg-[#0a0a0a] border-[#1e1e1e]"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="nbt-protocol" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
+                  Protocol
+                </label>
+                <select
+                  id="nbt-protocol"
+                  value={protocol}
+                  onChange={(e) => setProtocol(e.target.value as Protocol)}
+                  className="w-full rounded-md border border-[#1e1e1e] bg-[#0a0a0a] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30"
+                >
+                  {PROTOCOL_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="nbt-weight" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">Weight (kg)</label>
+                <Input
+                  id="nbt-weight"
+                  type="text"
+                  inputMode="decimal"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  placeholder="kg"
+                  className="bg-[#0a0a0a] border-[#1e1e1e]"
+                />
+              </div>
+            </div>
+
+            <div className="border-t border-[#141414] pt-3 space-y-3">
+              <button
+                type="button"
+                onClick={() => setGoalsOpen(!goalsOpen)}
+                aria-expanded={goalsOpen}
+                className="flex items-center gap-1.5 text-[11px] text-foreground/40 hover:text-foreground/65 transition-colors outline-none focus-visible:text-foreground/65"
+              >
+                <span>{goalsOpen ? '▾' : '▸'}</span>
+                Goals <span className="text-foreground/30">(optional)</span>
+              </button>
+              {goalsOpen && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label htmlFor="nbt-tw" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">Target Weight (kg)</label>
+                    <Input id="nbt-tw" type="text" inputMode="decimal" value={targetWeight} onChange={(e) => setTargetWeight(e.target.value)} placeholder="kg" className="bg-[#0a0a0a] border-[#1e1e1e]" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label htmlFor="nbt-tbf" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">Target Body Fat (%)</label>
+                    <Input id="nbt-tbf" type="text" inputMode="decimal" value={targetBodyFatPct} onChange={(e) => setTargetBodyFatPct(e.target.value)} placeholder="%" className="bg-[#0a0a0a] border-[#1e1e1e]" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {protocol === 'other' ? (
+              <div className="space-y-1.5 border-t border-[#141414] pt-4">
+                <label htmlFor="nbt-bf" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">Body Fat (%)</label>
+                <Input
+                  id="nbt-bf"
+                  type="text"
+                  inputMode="decimal"
+                  value={bfPctInput}
+                  onChange={(e) => setBfPctInput(e.target.value)}
+                  placeholder="e.g. 14.5"
+                  className="bg-[#0a0a0a] border-[#1e1e1e]"
+                  aria-label="Body Fat"
+                />
+              </div>
+            ) : (
+              <div className="border-t border-[#141414] pt-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65 mb-3">
+                  {PROTO_TITLES[protocol]}
+                </p>
+                <div className="rounded-lg bg-[#080808] border border-[#141414] p-3">
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {reqSites.map((s) => (
+                      <div key={s} className="space-y-1">
+                        <label htmlFor={`nbt-${s}`} className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/50">
+                          {SITE_LABELS[s]}
+                        </label>
+                        <Input
+                          id={`nbt-${s}`}
+                          type="text"
+                          inputMode="decimal"
+                          value={sites[s] ?? ''}
+                          onChange={(e) => setSites((prev) => ({ ...prev, [s]: e.target.value }))}
+                          placeholder="mm"
+                          className="bg-[#0a0a0a] border-[#1e1e1e] text-sm"
+                          aria-label={SITE_LABELS[s]}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             )}
-            {step === 2 && (
-              <Step2Form
-                memberId={memberId}
-                protocol={protocol}
-                sex={sex}
-                age={age}
-                weight={parseFloat(weight)}
-                date={date}
-                targetWeight={targetWeight ? parseFloat(targetWeight) : null}
-                targetBodyFatPct={targetBodyFatPct ? parseFloat(targetBodyFatPct) : null}
-                onBack={() => setStep(1)}
-                onSaved={(test) => { onSaved(test); handleClose(); }}
-              />
-            )}
+
+            <div className="rounded-lg bg-[#080808] border border-[#141414] p-3 min-h-[76px] flex flex-col justify-center">
+              <p className="text-[9px] font-semibold uppercase tracking-[1.5px] text-foreground/30 mb-2">Calculated Result</p>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <ResultCell label="Body Fat"  value={preview ? `${preview.bf.toFixed(1)}%`             : null} color="text-rose-400" />
+                <ResultCell label="Lean Mass" value={preview ? `${preview.leanMassKg.toFixed(1)} kg`   : null} color="text-sky-400" />
+                <ResultCell label="Fat Mass"  value={preview ? `${preview.fatMassKg.toFixed(1)} kg`    : null} color="text-amber-400" />
+              </div>
+            </div>
+
+            <ComparisonBlock comparison={comparison} />
+          </div>
+
+          <div className="px-5 py-3 border-t border-[#141414] flex justify-end gap-2 shrink-0">
+            <Button variant="ghost" onClick={handleClose} className="text-foreground/65 border border-[#222]">Cancel</Button>
+            <Button
+              onClick={handleSave}
+              disabled={!canSave || saving}
+              className="bg-white text-black hover:bg-white/90 disabled:opacity-40"
+            >
+              {saving ? 'Saving...' : 'Save'}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
     </>
-  );
-}
-
-function StepIndicator({ step }: { step: 1 | 2 }) {
-  return (
-    <div className="flex items-center gap-2 mt-3">
-      <div className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shrink-0 ${step === 1 ? 'bg-white text-black' : 'bg-[#1e1e1e] text-foreground/40'}`}>
-        {step > 1 ? '✓' : '1'}
-      </div>
-      <span className={`text-[9px] uppercase tracking-wider ${step === 1 ? 'text-foreground/65' : 'text-foreground/30'}`}>Basic Info</span>
-      <div className="flex-1 h-px bg-[#1e1e1e]" />
-      <div className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shrink-0 ${step === 2 ? 'bg-white text-black' : 'bg-[#080808] text-foreground/30 border border-[#1e1e1e]'}`}>
-        2
-      </div>
-      <span className={`text-[9px] uppercase tracking-wider ${step === 2 ? 'text-foreground/65' : 'text-foreground/30'}`}>Measurements</span>
-    </div>
   );
 }
 
@@ -145,99 +282,6 @@ function ProfileChip({ age, sex }: { age: number | null; sex: 'male' | 'female' 
       <span className="mx-1.5 text-foreground/30">·</span>
       <span className="capitalize">{sex ?? '—'}</span>
     </span>
-  );
-}
-
-interface Step1Props {
-  date: string; onDate: (v: string) => void;
-  protocol: Protocol; onProtocol: (v: Protocol) => void;
-  weight: string; onWeight: (v: string) => void;
-  targetWeight: string; onTargetWeight: (v: string) => void;
-  targetBodyFatPct: string; onTargetBodyFatPct: (v: string) => void;
-  goalsOpen: boolean; onGoalsOpen: (v: boolean) => void;
-  canAdvance: boolean;
-  onCancel: () => void;
-  onNext: () => void;
-}
-
-function Step1Form({
-  date, onDate, protocol, onProtocol, weight, onWeight,
-  targetWeight, onTargetWeight, targetBodyFatPct, onTargetBodyFatPct,
-  goalsOpen, onGoalsOpen, canAdvance, onCancel, onNext,
-}: Step1Props) {
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
-        <div className="space-y-1.5">
-          <label htmlFor="nbt-date" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
-            Test Date
-          </label>
-          <Input
-            id="nbt-date"
-            type="date"
-            value={date}
-            onChange={(e) => onDate(e.target.value)}
-            className="bg-[#0a0a0a] border-[#1e1e1e]"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <label htmlFor="nbt-protocol" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
-            Protocol
-          </label>
-          <select
-            id="nbt-protocol"
-            value={protocol}
-            onChange={(e) => onProtocol(e.target.value as Protocol)}
-            className="w-full rounded-md border border-[#1e1e1e] bg-[#0a0a0a] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30"
-          >
-            {PROTOCOL_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-1.5">
-          <label htmlFor="nbt-weight" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">Weight (kg)</label>
-          <Input
-            id="nbt-weight"
-            type="text"
-            inputMode="decimal"
-            value={weight}
-            onChange={(e) => onWeight(e.target.value)}
-            placeholder="kg"
-            className="bg-[#0a0a0a] border-[#1e1e1e]"
-          />
-        </div>
-      </div>
-
-      <button
-        type="button"
-        onClick={() => onGoalsOpen(!goalsOpen)}
-        aria-expanded={goalsOpen}
-        className="flex w-full items-center gap-1.5 border-t border-[#141414] pt-3 text-[11px] text-foreground/40 hover:text-foreground/65 transition-colors outline-none focus-visible:text-foreground/65"
-      >
-        <span>{goalsOpen ? '▾' : '▸'}</span>
-        Goals <span className="text-foreground/30">(optional)</span>
-      </button>
-      {goalsOpen && (
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label htmlFor="nbt-tw" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">Target Weight (kg)</label>
-            <Input id="nbt-tw" type="text" inputMode="decimal" value={targetWeight} onChange={(e) => onTargetWeight(e.target.value)} placeholder="kg" className="bg-[#0a0a0a] border-[#1e1e1e]" />
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="nbt-tbf" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">Target Body Fat (%)</label>
-            <Input id="nbt-tbf" type="text" inputMode="decimal" value={targetBodyFatPct} onChange={(e) => onTargetBodyFatPct(e.target.value)} placeholder="%" className="bg-[#0a0a0a] border-[#1e1e1e]" />
-          </div>
-        </div>
-      )}
-
-      <div className="flex justify-end gap-2 pt-1">
-        <Button variant="ghost" onClick={onCancel} className="text-foreground/65 border border-[#222]">Cancel</Button>
-        <Button onClick={onNext} disabled={!canAdvance} className="bg-white text-black hover:bg-white/90 disabled:opacity-40">
-          Next →
-        </Button>
-      </div>
-    </div>
   );
 }
 
@@ -299,138 +343,201 @@ function buildBFInput(
   return null;
 }
 
-interface Step2Props {
-  memberId: string;
-  protocol: Protocol;
-  sex: 'male' | 'female';
-  age: number;
-  weight: number;
-  date: string;
-  targetWeight: number | null;
-  targetBodyFatPct: number | null;
-  onBack: () => void;
-  onSaved: (test: BodyTestRecord) => void;
-}
-
-function Step2Form({ memberId, protocol, sex, age, weight, date, targetWeight, targetBodyFatPct, onBack, onSaved }: Step2Props) {
-  const [sites, setSites] = useState<Record<string, string>>({});
-  const [bfPctInput, setBfPctInput] = useState('');
-  const [saving, setSaving] = useState(false);
-
-  const reqSites = getRequiredSites(protocol, sex);
-  const bfInput = buildBFInput(protocol, sex, age, sites, bfPctInput);
-  const preview = bfInput !== null ? (() => {
-    const bf = calculateBodyFat(bfInput);
-    const { fatMassKg, leanMassKg } = calculateComposition(weight, bf);
-    return { bf, fatMassKg, leanMassKg };
-  })() : null;
-
-  async function handleSave() {
-    if (!bfInput) return;
-    setSaving(true);
-    try {
-      const payload: Record<string, number | string | null> = {
-        protocol, sex, age, weight,
-        date: new Date(date).toISOString(),
-        targetWeight,
-        targetBodyFatPct,
-      };
-      if (protocol === 'other') {
-        payload.bodyFatPct = parseFloat(bfPctInput);
-      } else {
-        reqSites.forEach((s) => { payload[s] = parseFloat(sites[s] ?? '0'); });
-      }
-      const res = await fetch(`/api/members/${memberId}/body-tests`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const data = (await res.json()) as { error?: string };
-        toast.error(data.error ?? 'Failed to save');
-        return;
-      }
-      const created = (await res.json()) as BodyTestRecord;
-      toast.success('Body test saved');
-      onSaved(created);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <div className="space-y-4">
-      {protocol === 'other' ? (
-        <div className="space-y-1.5">
-          <label htmlFor="nbt-bf" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">Body Fat (%)</label>
-          <Input
-            id="nbt-bf"
-            type="text"
-            inputMode="decimal"
-            value={bfPctInput}
-            onChange={(e) => setBfPctInput(e.target.value)}
-            placeholder="e.g. 14.5"
-            className="bg-[#0a0a0a] border-[#1e1e1e]"
-            aria-label="Body Fat"
-          />
-        </div>
-      ) : (
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65 mb-3">
-            {PROTO_TITLES[protocol]}
-          </p>
-          <div className="rounded-lg bg-[#080808] border border-[#141414] p-3">
-            <div className="grid grid-cols-3 gap-2.5">
-              {reqSites.map((s) => (
-                <div key={s} className="space-y-1">
-                  <label htmlFor={`nbt-${s}`} className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/50">
-                    {SITE_LABELS[s]}
-                  </label>
-                  <Input
-                    id={`nbt-${s}`}
-                    type="text"
-                    inputMode="decimal"
-                    value={sites[s] ?? ''}
-                    onChange={(e) => setSites((prev) => ({ ...prev, [s]: e.target.value }))}
-                    placeholder="mm"
-                    className="bg-[#0a0a0a] border-[#1e1e1e] text-sm"
-                    aria-label={SITE_LABELS[s]}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="rounded-lg bg-[#080808] border border-[#141414] p-3 min-h-[76px] flex flex-col justify-center">
-        <p className="text-[9px] font-semibold uppercase tracking-[1.5px] text-foreground/30 mb-2">Calculated Result</p>
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <ResultCell label="Body Fat"  value={preview ? `${preview.bf.toFixed(1)}%`             : null} color="text-rose-400" />
-          <ResultCell label="Lean Mass" value={preview ? `${preview.leanMassKg.toFixed(1)} kg`   : null} color="text-sky-400" />
-          <ResultCell label="Fat Mass"  value={preview ? `${preview.fatMassKg.toFixed(1)} kg`    : null} color="text-amber-400" />
-        </div>
-      </div>
-
-      <div className="flex justify-between pt-1">
-        <Button variant="ghost" onClick={onBack} className="text-foreground/65 border border-[#222]">← Back</Button>
-        <Button
-          onClick={handleSave}
-          disabled={bfInput === null || saving}
-          className="bg-white text-black hover:bg-white/90 disabled:opacity-40"
-        >
-          {saving ? 'Saving...' : 'Save'}
-        </Button>
-      </div>
-    </div>
-  );
-}
-
 function ResultCell({ label, value, color }: { label: string; value: string | null; color: string }) {
   return (
     <div>
       <div className={`text-lg font-bold leading-none ${value ? color : 'text-[#2a2a2a]'}`}>
         {value ?? '—'}
+      </div>
+      <div className="mt-1 text-[9px] uppercase tracking-wider text-foreground/30">{label}</div>
+    </div>
+  );
+}
+
+type VerdictTone = 'emerald' | 'sky' | 'amber' | 'rose' | 'neutral';
+interface Verdict {
+  label: string;
+  tone: VerdictTone;
+}
+interface Comparison {
+  prevDate: string | null;
+  daysBetween: number | null;
+  protocolWarning: string | null;
+  deltaFat: number | null;
+  deltaLean: number | null;
+  deltaBfPct: number | null;
+  deltaWeight: number | null;
+  verdict: Verdict | null;
+}
+
+const PROTOCOL_SHORT: Record<Protocol, string> = {
+  '3site': '3-site',
+  '7site': '7-site',
+  '9site': '9-site',
+  other: 'manual',
+};
+
+const EMPTY_COMPARISON: Comparison = {
+  prevDate: null,
+  daysBetween: null,
+  protocolWarning: null,
+  deltaFat: null,
+  deltaLean: null,
+  deltaBfPct: null,
+  deltaWeight: null,
+  verdict: null,
+};
+
+// 0.3 kg = typical day-to-day water/glycogen noise floor for lean mass
+function computeVerdict(deltaFat: number, deltaLean: number): Verdict {
+  const T = 0.3;
+  const fatDown = deltaFat < -T;
+  const fatUp = deltaFat > T;
+  const leanUp = deltaLean > T;
+  const leanDown = deltaLean < -T;
+
+  if (fatDown && leanUp) return { label: 'Recomp', tone: 'emerald' };
+  if (fatDown) return { label: 'Cut', tone: 'sky' };
+  if (leanUp) return { label: 'Bulk', tone: 'amber' };
+  if (fatUp || leanDown) return { label: 'Regression', tone: 'rose' };
+  return { label: 'Maintain', tone: 'neutral' };
+}
+
+function computeComparison(
+  preview: { bf: number; fatMassKg: number; leanMassKg: number } | null,
+  weight: number,
+  date: string,
+  protocol: Protocol,
+  prev: BodyTestRecord | null,
+): Comparison {
+  if (!prev) return EMPTY_COMPARISON;
+
+  const days = Math.round(
+    (new Date(date).getTime() - new Date(prev.date).getTime()) / 86400000,
+  );
+  const protocolWarning =
+    prev.protocol !== protocol
+      ? `Method changed: prev ${PROTOCOL_SHORT[prev.protocol]}, now ${PROTOCOL_SHORT[protocol]} — deltas may reflect formula differences`
+      : null;
+  const deltaWeight = Number.isFinite(weight) ? weight - prev.weight : null;
+
+  if (!preview) {
+    return {
+      prevDate: prev.date,
+      daysBetween: days,
+      protocolWarning,
+      deltaFat: null,
+      deltaLean: null,
+      deltaBfPct: null,
+      deltaWeight,
+      verdict: null,
+    };
+  }
+
+  const deltaFat = preview.fatMassKg - prev.fatMassKg;
+  const deltaLean = preview.leanMassKg - prev.leanMassKg;
+  return {
+    prevDate: prev.date,
+    daysBetween: days,
+    protocolWarning,
+    deltaFat,
+    deltaLean,
+    deltaBfPct: preview.bf - prev.bodyFatPct,
+    deltaWeight,
+    verdict: computeVerdict(deltaFat, deltaLean),
+  };
+}
+
+function ComparisonBlock({ comparison }: { comparison: Comparison }) {
+  const c = comparison;
+  const dateStr = c.prevDate
+    ? new Date(c.prevDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    : null;
+  const daysText =
+    c.daysBetween === null ? null : c.daysBetween === 0 ? 'same day' : `${Math.abs(c.daysBetween)}d apart`;
+
+  return (
+    <div className="rounded-lg bg-[#080808] border border-[#141414] p-3 space-y-2">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="text-[9px] font-semibold uppercase tracking-[1.5px] text-foreground/30">
+            Vs Last Test
+          </p>
+          <p className="mt-0.5 text-[10px] text-foreground/65">
+            {dateStr ? (
+              <>
+                {dateStr} <span className="text-foreground/40">· {daysText}</span>
+              </>
+            ) : (
+              <span className="text-[#2a2a2a]">—</span>
+            )}
+          </p>
+        </div>
+        {c.verdict && <VerdictBadge verdict={c.verdict} />}
+      </div>
+      {c.protocolWarning && (
+        <p className="text-[10px] leading-snug text-amber-400/80">⚠ {c.protocolWarning}</p>
+      )}
+      <div className="grid grid-cols-4 gap-2 text-center">
+        <DeltaCell label="Fat Δ"    value={c.deltaFat}    unit="kg" goodIs="negative" />
+        <DeltaCell label="Lean Δ"   value={c.deltaLean}   unit="kg" goodIs="positive" />
+        <DeltaCell label="BF Δ"     value={c.deltaBfPct}  unit="pp" goodIs="negative" />
+        <DeltaCell label="Weight Δ" value={c.deltaWeight} unit="kg" goodIs="neutral" />
+      </div>
+    </div>
+  );
+}
+
+function VerdictBadge({ verdict }: { verdict: Verdict }) {
+  const tones: Record<VerdictTone, string> = {
+    emerald: 'bg-emerald-500/10 text-emerald-300 ring-emerald-500/20',
+    sky: 'bg-sky-500/10 text-sky-300 ring-sky-500/20',
+    amber: 'bg-amber-500/10 text-amber-300 ring-amber-500/20',
+    rose: 'bg-rose-500/10 text-rose-300 ring-rose-500/20',
+    neutral: 'bg-[#1a1a1a] text-foreground/65 ring-[#222]',
+  };
+  return (
+    <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ring-1 ${tones[verdict.tone]}`}>
+      {verdict.label}{verdict.tone === 'emerald' ? ' ⭐' : ''}
+    </span>
+  );
+}
+
+function DeltaCell({
+  label,
+  value,
+  unit,
+  goodIs,
+}: {
+  label: string;
+  value: number | null;
+  unit: string;
+  goodIs: 'negative' | 'positive' | 'neutral';
+}) {
+  if (value === null) {
+    return (
+      <div>
+        <div className="text-sm font-bold leading-none text-[#2a2a2a]">—</div>
+        <div className="mt-1 text-[9px] uppercase tracking-wider text-foreground/30">{label}</div>
+      </div>
+    );
+  }
+
+  const isFlat = Math.abs(value) < 0.05;
+  const sign = value > 0 ? '+' : '';
+  const formatted = `${sign}${value.toFixed(1)}`;
+
+  let color = 'text-foreground/65';
+  if (!isFlat && goodIs !== 'neutral') {
+    const isGood = (goodIs === 'negative' && value < 0) || (goodIs === 'positive' && value > 0);
+    color = isGood ? 'text-emerald-400' : 'text-rose-400';
+  }
+
+  return (
+    <div>
+      <div className={`text-sm font-bold leading-none ${color}`}>
+        {formatted}
+        <span className="ml-0.5 text-[9px] opacity-60">{unit}</span>
       </div>
       <div className="mt-1 text-[9px] uppercase tracking-wider text-foreground/30">{label}</div>
     </div>
