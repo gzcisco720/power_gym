@@ -27,6 +27,7 @@ function getMonthDays(year: number, month: number) {
 
 export function SelfNutritionCalendar({ entries, onSelect, selectedDate, onMonthChange }: Props) {
   const now = new Date();
+  const todayISO = now.toISOString().slice(0, 10);
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
   const { startOffset, daysInMonth } = getMonthDays(year, month);
@@ -85,29 +86,31 @@ export function SelfNutritionCalendar({ entries, onSelect, selectedDate, onMonth
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
           const entry = entriesByDay.get(day);
           const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-          const isSelected = entry && dateStr === selectedDate;
+          const isFuture = dateStr > todayISO;
+          const canSelect = entry !== undefined && !isFuture;
+          const isSelected = canSelect && dateStr === selectedDate;
           const isToday = isCurrentMonth && day === todayDay;
           const status = entry ? (entry.dayCompleted ? 'completed' : 'in progress') : null;
-          const ariaLabel = entry
+          const ariaLabel = entry && !isFuture
             ? `Day ${day}, ${entry.kcal} kcal, ${status}`
             : `Day ${day}`;
 
           return (
             <div key={day} className="flex justify-center">
               <button
-                onClick={() => entry && onSelect(entry)}
-                disabled={!entry}
+                onClick={() => canSelect && onSelect(entry)}
+                disabled={!canSelect}
                 aria-label={ariaLabel}
                 className={cn(
                   'w-9 h-11 rounded-md text-[11px] flex flex-col items-center justify-center gap-0.5 transition-colors',
                   isSelected && 'bg-foreground text-background font-bold',
-                  !isSelected && entry && 'text-foreground hover:bg-foreground/10',
-                  !entry && 'text-foreground/40',
+                  !isSelected && canSelect && 'text-foreground hover:bg-foreground/10',
+                  !canSelect && 'text-foreground/40',
                   isToday && !isSelected && 'ring-1 ring-foreground/25',
                 )}
               >
                 <span className="leading-none">{day}</span>
-                {entry && (
+                {entry && !isFuture && (
                   <span className={cn(
                     'text-[9px] tabular-nums leading-none',
                     isSelected ? 'text-background/80' :
@@ -116,7 +119,7 @@ export function SelfNutritionCalendar({ entries, onSelect, selectedDate, onMonth
                     {entry.kcal}
                   </span>
                 )}
-                {entry && (
+                {entry && !isFuture && (
                   <span className={cn(
                     'h-1 w-1 rounded-full',
                     isSelected ? 'bg-background/80' :
