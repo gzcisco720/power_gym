@@ -23,7 +23,11 @@ describe('GET /api/food-search', () => {
 
   it('allows trainers to search', async () => {
     (auth as jest.Mock).mockResolvedValue({ user: { id: 'u', role: 'trainer' } });
-    (client.fatsecretSearch as jest.Mock).mockResolvedValue([{ foodId: '1', name: 'X', brand: null, foodType: 'Generic', defaultServing: { servingId: 's', description: '100 g', grams: 100, calories: 1, protein: 0, carbs: 0, fat: 0 }, servings: [] }]);
+    (client.fatsecretSearch as jest.Mock).mockResolvedValue({
+      results: [{ foodId: '1', name: 'X', brand: null, foodType: 'Generic', defaultServing: { servingId: 's', description: '100 g', grams: 100, calories: 1, protein: 0, carbs: 0, fat: 0 }, servings: [] }],
+      totalResults: 1,
+      pageNumber: 0,
+    });
     const res = await GET(new Request('http://x/api/food-search?q=x'));
     const json = await res.json();
     expect(res.status).toBe(200);
@@ -38,11 +42,11 @@ describe('GET /api/food-search', () => {
 
   it('clamps page_size to [1,50]', async () => {
     (auth as jest.Mock).mockResolvedValue({ user: { id: 'u', role: 'member' } });
-    (client.fatsecretSearch as jest.Mock).mockResolvedValue([]);
+    (client.fatsecretSearch as jest.Mock).mockResolvedValue({ results: [], totalResults: 0, pageNumber: 0 });
     await GET(new Request('http://x/api/food-search?q=x&page_size=999'));
-    expect(client.fatsecretSearch).toHaveBeenCalledWith('x', 50);
+    expect(client.fatsecretSearch).toHaveBeenCalledWith('x', 50, 0);
     await GET(new Request('http://x/api/food-search?q=x&page_size=0'));
-    expect(client.fatsecretSearch).toHaveBeenCalledWith('x', 1);
+    expect(client.fatsecretSearch).toHaveBeenCalledWith('x', 1, 0);
   });
 
   it('returns 502 on upstream failure', async () => {

@@ -48,6 +48,13 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
       ],
     },
     {
+      group: 'PERSONAL',
+      items: [
+        { href: '/trainer/my-training', label: 'My Training' },
+        { href: '/trainer/my-nutrition', label: 'My Nutrition' },
+      ],
+    },
+    {
       group: 'ACCOUNT',
       items: [{ href: '/trainer/settings', label: 'Settings' }],
     },
@@ -81,7 +88,11 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
     },
     {
       group: 'PERSONAL',
-      items: [{ href: '/owner/my-body-tests', label: 'Body Tests' }],
+      items: [
+        { href: '/owner/my-training', label: 'My Training' },
+        { href: '/owner/my-nutrition', label: 'My Nutrition' },
+        { href: '/owner/my-body-tests', label: 'Body Tests' },
+      ],
     },
     {
       group: 'ACCOUNT',

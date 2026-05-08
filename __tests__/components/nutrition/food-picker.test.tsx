@@ -212,10 +212,10 @@ describe('FoodPicker', () => {
     fireEvent.click(screen.getByRole('button', { name: /^search$/i }));
 
     await waitFor(() => expect(screen.getByText('Chicken Breast')).toBeInTheDocument());
-    expect(screen.getByText('Kcal')).toBeInTheDocument();
-    expect(screen.getByText('Protein')).toBeInTheDocument();
-    expect(screen.getByText('Carbs')).toBeInTheDocument();
-    expect(screen.getByText('Fat')).toBeInTheDocument();
+    expect(screen.getByText('kcal')).toBeInTheDocument();
+    expect(screen.getByText('P')).toBeInTheDocument();
+    expect(screen.getByText('C')).toBeInTheDocument();
+    expect(screen.getByText('F')).toBeInTheDocument();
   });
 
   // ---- Recent tab ----------------------------------------------------------

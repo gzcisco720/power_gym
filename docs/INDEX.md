@@ -34,6 +34,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Per-Trainer Hub (Owner 视角) | [per-trainer-hub-design.md](2026-04-28/plans/per-trainer-hub-design.md) | Approved |
 | Progress Charts & Analytics | [progress-design.md](2026-04-28/plans/progress-design.md) | Approved |
 | Exercise Thumbnail Hover Preview | [exercise-thumbnail-hover-design.md](2026-05-07/plans/exercise-thumbnail-hover-design.md) | Complete |
+| Owner/Trainer Self-Tracking | [self-tracking-design.md](2026-05-08/plans/self-tracking-design.md) | Approved |
 
 ---
 
