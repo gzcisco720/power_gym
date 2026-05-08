@@ -1,4 +1,3 @@
-// __tests__/components/self-tracking/nutrition-calendar-popover.test.tsx
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { NutritionCalendarPopover } from '@/components/self-tracking/nutrition-calendar-popover';
 
@@ -9,12 +8,22 @@ describe('NutritionCalendarPopover', () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve([
-        { date: today, dayLabel: 'Freestyle', dayCompleted: false, meals: [{ items: [{ kcal: 1500 }] }] },
+        {
+          date: today,
+          dayLabel: 'Freestyle',
+          dayCompleted: false,
+          meals: [
+            // sealed (1500): meal completed
+            { completed: true, items: [{ kcal: 1500 }] },
+            // not sealed (200): meal not completed
+            { completed: false, items: [{ kcal: 200 }] },
+          ],
+        },
       ]),
     });
   });
 
-  it('opens popover when trigger is clicked and fires onSelect with a date string', async () => {
+  it('shows sealed-only kcal in calendar marker (excludes incomplete-meal items)', async () => {
     const onSelect = jest.fn();
     render(
       <NutritionCalendarPopover
@@ -25,6 +34,7 @@ describe('NutritionCalendarPopover', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open' }));
 
     const dayNum = new Date().getDate();
+    // 1500 kcal expected (sealed only), not 1700 (all)
     const dayBtn = await waitFor(() =>
       screen.getByRole('button', {
         name: new RegExp(`Day ${dayNum}, 1500 kcal, in progress`, 'i'),
