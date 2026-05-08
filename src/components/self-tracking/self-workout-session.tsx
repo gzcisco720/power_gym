@@ -73,7 +73,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
         open={completeOpen}
         onOpenChange={setCompleteOpen}
         logId={logId}
-        onCompleted={() => router.push(`${basePath}/calendar`)}
+        onCompleted={() => router.push(basePath)}
       />
     </div>
   );

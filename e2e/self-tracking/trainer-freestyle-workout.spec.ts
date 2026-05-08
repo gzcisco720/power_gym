@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test';
 //   2. Clicks "Freestyle" → POST /api/me/workout-logs → redirect to /session/[id]
 //   3. Session page loads with dayName heading "Freestyle"
 //   4. Trainer clicks Finish → dialog opens → submits without rpe/note/saveAsTemplate
-//   5. onCompleted navigates to /trainer/my-training/calendar
+//   5. onCompleted navigates back to /trainer/my-training (start card)
 
 test.use({ storageState: 'e2e/.auth/trainer.json' });
 
@@ -24,7 +24,7 @@ test.describe('trainer freestyle workout', () => {
     }
   });
 
-  test('creates a freestyle log, lands on session page, finishes, lands on calendar', async ({
+  test('creates a freestyle log, lands on session page, finishes, returns to my-training', async ({
     page,
   }) => {
     // Suppress alert dialogs so the test can proceed past placeholder buttons
@@ -55,10 +55,10 @@ test.describe('trainer freestyle workout', () => {
     // Submit the dialog without filling in rpe / note / saveAsTemplate.
     await page.getByRole('button', { name: /^finish workout$/i }).click();
 
-    // After completion, onCompleted navigates to the calendar.
-    await page.waitForURL(/\/trainer\/my-training\/calendar/);
+    // After completion, onCompleted navigates back to the My Training start card.
+    await page.waitForURL(/\/trainer\/my-training$/);
 
-    // Calendar page loaded — PageHeader renders <h1>Training Calendar</h1>.
-    await expect(page.getByRole('heading', { name: /training calendar/i })).toBeVisible();
+    // Returned to the My Training start-card page.
+    await expect(page.getByRole('heading', { name: /^my training$/i })).toBeVisible();
   });
 });
