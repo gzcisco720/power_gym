@@ -1,3 +1,4 @@
+// src/components/self-tracking/self-nutrition-calendar.tsx
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -8,6 +9,7 @@ export interface NutritionDayEntry {
   date: string; // 'YYYY-MM-DD'
   kcal: number;
   dayLabel: string;
+  dayCompleted: boolean;
 }
 
 interface Props {
@@ -49,6 +51,8 @@ export function SelfNutritionCalendar({ entries, onSelect, selectedDate, onMonth
 
   const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const todayDay = now.getDate();
+  const isCurrentMonth = now.getFullYear() === year && now.getMonth() + 1 === month;
 
   return (
     <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4">
@@ -82,20 +86,43 @@ export function SelfNutritionCalendar({ entries, onSelect, selectedDate, onMonth
           const entry = entriesByDay.get(day);
           const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const isSelected = entry && dateStr === selectedDate;
+          const isToday = isCurrentMonth && day === todayDay;
+          const status = entry ? (entry.dayCompleted ? 'completed' : 'in progress') : null;
+          const ariaLabel = entry
+            ? `Day ${day}, ${entry.kcal} kcal, ${status}`
+            : `Day ${day}`;
+
           return (
             <div key={day} className="flex justify-center">
               <button
                 onClick={() => entry && onSelect(entry)}
                 disabled={!entry}
-                aria-label={`Day ${day}`}
+                aria-label={ariaLabel}
                 className={cn(
-                  'w-8 h-8 rounded-full text-[11px] flex items-center justify-center transition-colors',
-                  entry && isSelected && 'bg-foreground text-background font-bold',
-                  entry && !isSelected && 'bg-foreground/10 text-foreground font-semibold hover:bg-foreground/20',
+                  'w-9 h-11 rounded-md text-[11px] flex flex-col items-center justify-center gap-0.5 transition-colors',
+                  isSelected && 'bg-foreground text-background font-bold',
+                  !isSelected && entry && 'text-foreground hover:bg-foreground/10',
                   !entry && 'text-foreground/40',
+                  isToday && !isSelected && 'ring-1 ring-foreground/25',
                 )}
               >
-                {day}
+                <span className="leading-none">{day}</span>
+                {entry && (
+                  <span className={cn(
+                    'text-[9px] tabular-nums leading-none',
+                    isSelected ? 'text-background/80' :
+                      entry.dayCompleted ? 'text-emerald-300' : 'text-emerald-300/70',
+                  )}>
+                    {entry.kcal}
+                  </span>
+                )}
+                {entry && (
+                  <span className={cn(
+                    'h-1 w-1 rounded-full',
+                    isSelected ? 'bg-background/80' :
+                      entry.dayCompleted ? 'bg-emerald-500' : 'bg-emerald-500/40',
+                  )} />
+                )}
               </button>
             </div>
           );

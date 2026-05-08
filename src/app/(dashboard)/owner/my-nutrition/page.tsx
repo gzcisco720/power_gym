@@ -1,28 +1,30 @@
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
 import { PageHeader } from '@/components/shared/page-header';
-import { SelfNutritionDayView } from '@/components/self-tracking/self-nutrition-day-view';
+import { SelfNutritionDayViewWithRouter } from './_components/day-view-with-router';
+import { NutritionCalendarHeaderTrigger } from '@/components/self-tracking/nutrition-calendar-header-trigger';
 
-export default async function OwnerMyNutritionPage() {
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+interface PageProps {
+  searchParams: Promise<{ date?: string }>;
+}
+
+export default async function OwnerMyNutritionPage({ searchParams }: PageProps) {
   const session = await auth();
   if (!session?.user || session.user.role !== 'owner') redirect('/login');
-  const today = new Date().toISOString().slice(0, 10);
+
+  const { date: rawDate } = await searchParams;
+  const date = rawDate && DATE_RE.test(rawDate) ? rawDate : new Date().toISOString().slice(0, 10);
+
   return (
     <div className="flex flex-col min-h-screen">
       <PageHeader
         title="My Nutrition"
-        actions={
-          <Link
-            href="/owner/my-nutrition/calendar"
-            className="text-[11px] text-foreground/65 hover:text-foreground transition-colors"
-          >
-            View Calendar →
-          </Link>
-        }
+        actions={<NutritionCalendarHeaderTrigger basePath="/owner/my-nutrition" />}
       />
       <div className="px-4 sm:px-8 py-6 max-w-2xl mx-auto w-full">
-        <SelfNutritionDayView initialDate={today} />
+        <SelfNutritionDayViewWithRouter initialDate={date} basePath="/owner/my-nutrition" />
       </div>
     </div>
   );
