@@ -24,7 +24,7 @@ export default async function TrainerMyNutritionPage({ searchParams }: PageProps
         actions={<NutritionCalendarHeaderTrigger basePath="/trainer/my-nutrition" />}
       />
       <div className="px-4 sm:px-8 py-6 max-w-2xl mx-auto w-full">
-        <SelfNutritionDayViewWithRouter initialDate={date} />
+        <SelfNutritionDayViewWithRouter initialDate={date} basePath="/trainer/my-nutrition" />
       </div>
     </div>
   );

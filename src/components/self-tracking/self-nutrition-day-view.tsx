@@ -83,7 +83,7 @@ function pickedFoodToItem(picked: PickedFood): ISelfMealItem {
 
 export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChange }: Props) {
   // initialDate is intentionally used only as the initial value for date state.
-  // Stage 4 will supply a new `key` prop on the parent to force remount when URL date changes.
+  // The parent supplies a `key` prop to force remount when URL date changes.
   const [date, setDateInternal] = useState(initialDate);
 
   const [log, setLog] = useState<SelfNutritionLog | null>(null);

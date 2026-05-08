@@ -6,15 +6,16 @@ import { SelfNutritionDayView } from '@/components/self-tracking/self-nutrition-
 
 interface Props {
   initialDate: string;
+  basePath: '/owner/my-nutrition' | '/trainer/my-nutrition';
 }
 
-export function SelfNutritionDayViewWithRouter({ initialDate }: Props) {
+export function SelfNutritionDayViewWithRouter({ initialDate, basePath }: Props) {
   const router = useRouter();
   const onDateChange = useCallback(
     (d: string) => {
-      router.push(`/trainer/my-nutrition?date=${d}`, { scroll: false });
+      router.push(`${basePath}?date=${d}`, { scroll: false });
     },
-    [router],
+    [router, basePath],
   );
   return (
     <SelfNutritionDayView
