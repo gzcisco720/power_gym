@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import type { ISelfWorkoutLog, ISelfWorkoutSet } from '@/lib/db/models/self-workout-log.model';
+import { CompleteWorkoutDialog } from './complete-workout-dialog';
 
 interface Props {
   logId: string;
@@ -11,8 +13,10 @@ interface Props {
 }
 
 export function SelfWorkoutSession({ logId, basePath }: Props) {
+  const router = useRouter();
   const [log, setLog] = useState<ISelfWorkoutLog | null>(null);
   const [loading, setLoading] = useState(true);
+  const [completeOpen, setCompleteOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,11 +51,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
           </Link>
           <h1 className="text-lg font-semibold">{log.dayName}</h1>
         </div>
-        {/* TODO: replace with CompleteWorkoutDialog open trigger in Task 7.4 */}
-        <Button
-          onClick={() => alert('Complete dialog coming in Task 7.4')}
-          variant="default"
-        >
+        <Button onClick={() => setCompleteOpen(true)} variant="default">
           Finish
         </Button>
       </div>
@@ -68,6 +68,13 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
           + Add Exercise
         </Button>
       )}
+
+      <CompleteWorkoutDialog
+        open={completeOpen}
+        onOpenChange={setCompleteOpen}
+        logId={logId}
+        onCompleted={() => router.push(`${basePath}/calendar`)}
+      />
     </div>
   );
 }
