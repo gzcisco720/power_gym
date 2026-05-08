@@ -2,6 +2,7 @@
 import { connectDB } from '@/lib/db/connect';
 import { requireSelfTrackingRole } from '@/lib/auth/self-tracking-access';
 import { MongoSelfWorkoutLogRepository } from '@/lib/repositories/self-workout-log.repository';
+import { MongoSelfPersonalBestRepository } from '@/lib/repositories/self-personal-best.repository';
 import { MongoPlanTemplateRepository } from '@/lib/repositories/plan-template.repository';
 import { setsToPlanDays } from '@/lib/self-tracking/template-snapshot';
 
@@ -40,6 +41,30 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
   const repo = new MongoSelfWorkoutLogRepository();
   const log = await repo.complete(id, guard.userId, body.rpe ?? null, body.note ?? null);
   if (!log) return Response.json({ error: 'Not found' }, { status: 404 });
+
+  const pbRepo = new MongoSelfPersonalBestRepository();
+  const heaviestPerExercise = new Map<string, { weight: number; reps: number; exerciseName: string }>();
+  for (const s of log.sets) {
+    if (s.actualWeight == null || s.actualReps == null) continue;
+    const key = s.exerciseId.toString();
+    const cur = heaviestPerExercise.get(key);
+    const candidate = { weight: s.actualWeight, reps: s.actualReps, exerciseName: s.exerciseName };
+    if (!cur || candidate.weight * (1 + candidate.reps / 30) > cur.weight * (1 + cur.reps / 30)) {
+      heaviestPerExercise.set(key, candidate);
+    }
+  }
+  await Promise.all(
+    Array.from(heaviestPerExercise.entries()).map(([exerciseId, set]) =>
+      pbRepo.upsertIfBetter({
+        userId: guard.userId,
+        exerciseId,
+        exerciseName: set.exerciseName,
+        weight: set.weight,
+        reps: set.reps,
+        logId: id,
+      }),
+    ),
+  );
 
   let createdTemplateId: string | undefined;
   if (body.saveAsTemplate) {

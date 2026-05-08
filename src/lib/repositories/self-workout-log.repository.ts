@@ -21,6 +21,8 @@ export interface ISelfWorkoutLogRepository {
   findById(id: string, userId: string): Promise<ISelfWorkoutLog | null>;
   findActive(userId: string): Promise<ISelfWorkoutLog | null>;
   findByUserMonth(userId: string, year: number, month: number): Promise<ISelfWorkoutLog[]>;
+  findRecent(userId: string, limit: number): Promise<ISelfWorkoutLog[]>;
+  findLastByTemplate(userId: string): Promise<ISelfWorkoutLog | null>;
   appendSet(id: string, userId: string, set: ISelfWorkoutSet): Promise<ISelfWorkoutLog | null>;
   updateSet(id: string, userId: string, setIndex: number, patch: UpdateSelfSetData): Promise<ISelfWorkoutLog | null>;
   complete(id: string, userId: string, rpe: number | null, note: string | null): Promise<ISelfWorkoutLog | null>;
@@ -60,6 +62,23 @@ export class MongoSelfWorkoutLogRepository implements ISelfWorkoutLogRepository 
       userId: oid(userId),
       completedAt: { $gte: start, $lt: end },
     }).sort({ completedAt: 1 });
+  }
+
+  async findRecent(userId: string, limit: number): Promise<ISelfWorkoutLog[]> {
+    return SelfWorkoutLogModel.find({
+      userId: oid(userId),
+      completedAt: { $ne: null },
+    })
+      .sort({ completedAt: -1 })
+      .limit(limit);
+  }
+
+  async findLastByTemplate(userId: string): Promise<ISelfWorkoutLog | null> {
+    return SelfWorkoutLogModel.findOne({
+      userId: oid(userId),
+      sourceTemplateId: { $ne: null },
+      completedAt: { $ne: null },
+    }).sort({ completedAt: -1 });
   }
 
   async appendSet(id: string, userId: string, set: ISelfWorkoutSet): Promise<ISelfWorkoutLog | null> {

@@ -1,22 +1,21 @@
 import { test, expect } from '@playwright/test';
 
-// Verifies the freestyle workout flow up to where the Add Exercise picker would
-// be needed. The picker integration is deferred (Task 7.3); once it ships,
-// extend this spec to actually log a set.
+// Verifies the freestyle workout flow via the new cockpit landing.
 //
 // What this test covers end-to-end:
-//   1. Trainer navigates to /trainer/my-training
-//   2. Clicks "Freestyle" → POST /api/me/workout-logs → redirect to /session/[id]
+//   1. Trainer navigates to /trainer/my-training (cockpit landing)
+//   2. Clicks "Start blank" on the Freestyle card → POST /api/me/workout-logs
+//      → redirect to /session/[id]
 //   3. Session page loads with dayName heading "Freestyle"
 //   4. Trainer clicks Finish → dialog opens → submits without rpe/note/saveAsTemplate
-//   5. onCompleted navigates back to /trainer/my-training (start card)
+//   5. onCompleted navigates back to /trainer/my-training (cockpit)
 
 test.use({ storageState: 'e2e/.auth/trainer.json' });
 
 test.describe('trainer freestyle workout', () => {
   test.beforeEach(async ({ request }) => {
-    // If a previous test left an active log, delete it so the entry card shows
-    // "From Template / Freestyle" rather than "Continue".
+    // If a previous test left an active log, delete it so the cockpit shows
+    // its empty/light state rather than "Continue".
     const activeRes = await request.get('/api/me/workout-logs/active');
     const active = (await activeRes.json()) as { _id?: string } | null;
     if (active && active._id) {
@@ -35,8 +34,9 @@ test.describe('trainer freestyle workout', () => {
 
     await page.goto('/trainer/my-training');
 
-    // Wait for the entry card; "Freestyle" button is visible in the idle state.
-    const freestyleBtn = page.getByRole('button', { name: /^freestyle$/i });
+    // The cockpit's Freestyle card exposes a "Start blank →" button in every
+    // state (empty/light/full). Click it to start a freestyle session.
+    const freestyleBtn = page.getByRole('button', { name: /start blank/i });
     await expect(freestyleBtn).toBeVisible();
     await freestyleBtn.click();
 
