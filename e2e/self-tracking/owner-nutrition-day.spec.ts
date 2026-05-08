@@ -68,4 +68,17 @@ test.describe('owner nutrition day + saveAsTemplate', () => {
     expect(found).toBeDefined();
     if (found) createdNutritionTemplateId = found._id;
   });
+
+  test('owner can Mark day complete and the button transitions to disabled', async ({ page }) => {
+    await page.goto('/owner/my-nutrition');
+
+    // Click Mark day complete
+    const markBtn = page.getByRole('button', { name: /^mark day complete$/i });
+    await expect(markBtn).toBeVisible();
+    await markBtn.click();
+
+    // After PUT, button should swap to disabled "Day completed ✓"
+    await expect(page.getByRole('button', { name: /^day completed/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^day completed/i })).toBeDisabled();
+  });
 });
