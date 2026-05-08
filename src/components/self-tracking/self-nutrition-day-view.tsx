@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { SaveAsTemplateCheckbox } from './save-as-template-checkbox';
 import { MacroSummaryCard } from '@/components/nutrition/macro-summary-card';
 import { MealSection } from '@/components/nutrition/meal-section';
 import { FoodPickerDialog } from '@/components/nutrition/food-picker-dialog';
@@ -200,6 +202,63 @@ export function SelfNutritionDayView({ initialDate, readOnly = false }: Props) {
           void persist(next);
         }}
       />
+
+      {!readOnly && (
+        <SaveDayAsTemplate
+          onSubmit={async ({ name, description }) => {
+            const res = await fetch(`/api/me/nutrition-logs/${date}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                sourceTemplateId: log.sourceTemplateId,
+                sourceTemplateDayTypeName: log.sourceTemplateDayTypeName,
+                dayLabel: log.dayLabel,
+                meals: log.meals,
+                dayCompleted: log.dayCompleted,
+                saveAsTemplate: {
+                  name: name.trim(),
+                  description: description.trim() || undefined,
+                },
+              }),
+            });
+            if (res.ok) {
+              const data = (await res.json()) as { createdTemplateId?: string };
+              if (data.createdTemplateId) toast.success('Saved as template');
+            } else {
+              toast.error('Failed to save template');
+            }
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+interface SaveDayAsTemplateProps {
+  onSubmit: (v: { name: string; description: string }) => Promise<void>;
+}
+
+function SaveDayAsTemplate({ onSubmit }: SaveDayAsTemplateProps) {
+  const [save, setSave] = useState<{ name: string; description: string } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const canSubmit = save !== null && save.name.trim() !== '';
+
+  return (
+    <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-3 space-y-3">
+      <SaveAsTemplateCheckbox value={save} onChange={setSave} />
+      <Button
+        size="sm"
+        disabled={!canSubmit || submitting}
+        onClick={async () => {
+          if (!save) return;
+          setSubmitting(true);
+          await onSubmit(save);
+          setSubmitting(false);
+          setSave(null);
+        }}
+      >
+        Save as template
+      </Button>
     </div>
   );
 }

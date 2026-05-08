@@ -28,4 +28,22 @@ describe('CompleteWorkoutDialog', () => {
       expect.objectContaining({ method: 'POST' }),
     );
   });
+
+  it('disables Finish workout when save-as-template is checked but name is empty', async () => {
+    render(
+      <CompleteWorkoutDialog
+        open={true}
+        onOpenChange={() => undefined}
+        logId="log1"
+        onCompleted={() => undefined}
+      />,
+    );
+    // Toggle the save-as-template checkbox on
+    fireEvent.click(screen.getByRole('checkbox'));
+    const submitBtn = screen.getByRole('button', { name: /finish workout/i });
+    expect(submitBtn).toBeDisabled();
+    // Fill the name to enable
+    fireEvent.change(screen.getByLabelText(/template name/i), { target: { value: 'My Push' } });
+    expect(submitBtn).not.toBeDisabled();
+  });
 });
