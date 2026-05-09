@@ -83,9 +83,9 @@ describe('SessionLogger', () => {
     expect(screen.getAllByText('Bench Press').length).toBeGreaterThan(0);
   });
 
-  it('shows prescribed reps range for each set', async () => {
+  it('shows prescribed reps range as a header pill', async () => {
     await act(async () => { render(<SessionLogger session={mockSession} />); });
-    expect(screen.getAllByText('8–10 reps').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/reps:\s*8\s*–\s*10/i)).toBeInTheDocument();
   });
 
   it('always shows "Complete Workout" button', async () => {
@@ -162,9 +162,9 @@ describe('SessionLogger', () => {
     await act(async () => { render(<SessionLogger session={bwSession} />); });
     // No kg placeholders for bodyweight exercises
     expect(screen.queryByPlaceholderText('kg')).not.toBeInTheDocument();
-    // BW label shown in the div placeholder
-    const bwDivs = document.querySelectorAll('.text-\\[10px\\].text-\\[\\#333\\]');
-    expect(bwDivs.length).toBeGreaterThan(0);
+    // BW labels appear inline (one per uncompleted set)
+    const bwLabels = screen.getAllByText('BW');
+    expect(bwLabels.length).toBeGreaterThan(0);
   });
 
   it('shows completed set as done with check icon and no inputs', async () => {
