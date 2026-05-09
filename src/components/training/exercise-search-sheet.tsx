@@ -1,8 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Search, X as XIcon, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ExerciseThumbnail } from './exercise-thumbnail';
@@ -23,7 +30,13 @@ interface Props {
   onCreated: (exercise: ExerciseOption) => void;
 }
 
-export function ExerciseSearchSheet({ open, onOpenChange, exercises, onSelect, onCreated }: Props) {
+export function ExerciseSearchSheet({
+  open,
+  onOpenChange,
+  exercises,
+  onSelect,
+  onCreated,
+}: Props) {
   const [query, setQuery] = useState('');
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
@@ -31,9 +44,33 @@ export function ExerciseSearchSheet({ open, onOpenChange, exercises, onSelect, o
   const [newMuscle, setNewMuscle] = useState('');
   const [newBW, setNewBW] = useState(false);
   const [saving, setSaving] = useState(false);
+  const searchRef = useRef<HTMLInputElement | null>(null);
 
-  const filtered = exercises.filter((e) =>
-    e.name.toLowerCase().includes(query.toLowerCase()),
+  // Auto-focus search input when dialog opens
+  useEffect(() => {
+    if (!open) return;
+    const t = setTimeout(() => searchRef.current?.focus(), 50);
+    return () => clearTimeout(t);
+  }, [open]);
+
+  function handleOpenChange(next: boolean) {
+    if (!next) {
+      setQuery('');
+      setCreating(false);
+      setNewName('');
+      setNewImageUrl('');
+      setNewMuscle('');
+      setNewBW(false);
+    }
+    onOpenChange(next);
+  }
+
+  const filtered = useMemo(
+    () =>
+      exercises.filter((e) =>
+        e.name.toLowerCase().includes(query.trim().toLowerCase()),
+      ),
+    [exercises, query],
   );
 
   async function createExercise() {
@@ -57,109 +94,153 @@ export function ExerciseSearchSheet({ open, onOpenChange, exercises, onSelect, o
       }
       const created = (await res.json()) as ExerciseOption;
       onCreated(created);
-      setNewName('');
-      setNewImageUrl('');
-      setNewMuscle('');
-      setNewBW(false);
-      setCreating(false);
       onSelect(created);
-      onOpenChange(false);
+      handleOpenChange(false);
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="bg-[#0f0f0f] border-t border-[#1e1e1e] rounded-t-xl px-4 pb-8 pt-4 h-[80vh] overflow-y-auto">
-        <SheetTitle className="text-[13px] font-semibold text-white mb-3">Select Exercise</SheetTitle>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-4 pt-4 pb-3">
+          <DialogTitle className="text-base">Select exercise</DialogTitle>
+          <DialogDescription className="sr-only">
+            Search the catalog or create a new exercise.
+          </DialogDescription>
+        </DialogHeader>
 
-        <Input
-          placeholder="Search exercises…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="mb-3 bg-[#141414] border-[#1e1e1e] text-white placeholder:text-[#555]"
-          autoFocus
-        />
-
-        <div className="space-y-1 mb-4">
-          {filtered.length === 0 && (
-            <p className="text-[12px] text-[#555] py-2">No exercises found.</p>
-          )}
-          {filtered.map((ex) => (
-            <button
-              key={ex._id}
-              onClick={() => { onSelect(ex); onOpenChange(false); }}
-              className="flex w-full items-center gap-3 rounded-lg px-2 py-2 hover:bg-[#1a1a1a] transition-colors text-left"
-            >
-              <ExerciseThumbnail imageUrl={ex.imageUrl} name={ex.name} size={36} />
-              <div>
-                <div className="text-[12px] font-medium text-white">{ex.name}</div>
-                {ex.muscleGroup && (
-                  <div className="text-[10px] text-[#555]">{ex.muscleGroup}</div>
-                )}
-              </div>
-            </button>
-          ))}
+        <div className="px-4 pb-3">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-foreground/50 pointer-events-none" />
+            <Input
+              ref={searchRef}
+              placeholder="Search exercises…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="h-9 pl-8 pr-8 text-sm"
+            />
+            {query && (
+              <button
+                type="button"
+                aria-label="Clear search"
+                onClick={() => setQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-5 w-5 rounded text-foreground/50 hover:text-foreground cursor-pointer"
+              >
+                <XIcon className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
         </div>
 
-        {!creating ? (
-          <Button
-            variant="ghost"
-            onClick={() => setCreating(true)}
-            className="w-full border border-[#1a1a1a] text-[#666] hover:border-[#333] hover:text-[#aaa] text-[11px]"
-          >
-            + Create new exercise
-          </Button>
-        ) : (
-          <div className="space-y-2 border border-[#1e1e1e] rounded-lg p-3">
-            <div className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#666] mb-2">New Exercise</div>
-            <Input
-              placeholder="Name (required)"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              className="bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#555] text-[12px]"
-            />
-            <Input
-              placeholder="Image URL (optional)"
-              value={newImageUrl}
-              onChange={(e) => setNewImageUrl(e.target.value)}
-              className="bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#555] text-[12px]"
-            />
-            <Input
-              placeholder="Muscle group (optional)"
-              value={newMuscle}
-              onChange={(e) => setNewMuscle(e.target.value)}
-              className="bg-[#0a0a0a] border-[#1e1e1e] text-white placeholder:text-[#555] text-[12px]"
-            />
-            <label className="flex items-center gap-2 text-[12px] text-[#888] cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={newBW}
-                onChange={(e) => setNewBW(e.target.checked)}
-                className="accent-white"
+        <div className="max-h-[50vh] overflow-y-auto px-2 pb-2">
+          {filtered.length === 0 ? (
+            <p className="px-2 py-6 text-center text-xs text-foreground/65">
+              No exercises found.
+            </p>
+          ) : (
+            <ul className="space-y-0.5">
+              {filtered.map((ex) => (
+                <li key={ex._id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelect(ex);
+                      handleOpenChange(false);
+                    }}
+                    className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left hover:bg-muted transition-colors cursor-pointer"
+                  >
+                    <ExerciseThumbnail
+                      imageUrl={ex.imageUrl}
+                      name={ex.name}
+                      size={32}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-foreground truncate">
+                        {ex.name}
+                      </div>
+                      {ex.muscleGroup && (
+                        <div className="text-[11px] text-foreground/65 truncate">
+                          {ex.muscleGroup}
+                        </div>
+                      )}
+                    </div>
+                    {ex.isBodyweight && (
+                      <span className="shrink-0 text-[10px] text-foreground/65 bg-muted rounded px-1.5 py-0.5">
+                        BW
+                      </span>
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="border-t border-foreground/10 p-3">
+          {!creating ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCreating(true)}
+              className="w-full text-xs"
+            >
+              <Plus className="h-3.5 w-3.5" /> Create new exercise
+            </Button>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
+                  New exercise
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setCreating(false)}
+                  className="text-xs text-foreground/65 hover:text-foreground transition-colors cursor-pointer"
+                >
+                  Back
+                </button>
+              </div>
+              <Input
+                placeholder="Name (required)"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className="h-8 text-sm"
               />
-              Bodyweight exercise
-            </label>
-            <div className="flex gap-2 pt-1">
+              <Input
+                placeholder="Image URL (optional)"
+                value={newImageUrl}
+                onChange={(e) => setNewImageUrl(e.target.value)}
+                className="h-8 text-sm"
+              />
+              <Input
+                placeholder="Muscle group (optional)"
+                value={newMuscle}
+                onChange={(e) => setNewMuscle(e.target.value)}
+                className="h-8 text-sm"
+              />
+              <label className="inline-flex items-center gap-2 text-xs text-foreground/65 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={newBW}
+                  onChange={(e) => setNewBW(e.target.checked)}
+                  className="accent-foreground"
+                />
+                Bodyweight exercise
+              </label>
               <Button
-                onClick={createExercise}
+                type="button"
+                onClick={() => void createExercise()}
                 disabled={saving || !newName.trim()}
-                className="flex-1 bg-white text-black hover:bg-white/90 text-[11px] font-semibold disabled:opacity-50"
+                className="w-full text-xs"
               >
-                {saving ? 'Creating…' : 'Create'}
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => setCreating(false)}
-                className="text-[#666] text-[11px]"
-              >
-                Cancel
+                {saving ? 'Creating…' : 'Create & Add'}
               </Button>
             </div>
-          </div>
-        )}
-      </SheetContent>
-    </Sheet>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

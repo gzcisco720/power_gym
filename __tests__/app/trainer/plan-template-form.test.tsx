@@ -19,14 +19,47 @@ describe('PlanTemplateForm', () => {
   it('calls onSubmit with plan data on save', async () => {
     const user = userEvent.setup();
     const onSubmit = jest.fn().mockResolvedValue(undefined);
-    render(<PlanTemplateForm onSubmit={onSubmit} />);
+    render(
+      <PlanTemplateForm
+        onSubmit={onSubmit}
+        initialData={{
+          name: 'Old Name',
+          description: null,
+          days: [
+            {
+              dayNumber: 1,
+              name: 'Day 1',
+              exercises: [
+                {
+                  groupId: 'ex-1',
+                  isSuperset: false,
+                  exerciseId: 'ex-1' as never,
+                  exerciseName: 'Squat',
+                  imageUrl: null,
+                  isBodyweight: false,
+                  sets: 3,
+                  repsMin: 8,
+                  repsMax: 12,
+                  restSeconds: 120,
+                },
+              ],
+            },
+          ],
+        }}
+      />,
+    );
 
-    await user.type(await screen.findByLabelText(/Plan Name/i), 'Push Pull Legs');
+    // Trigger dirtiness so the Save button enables under new contract.
+    const nameInput = await screen.findByLabelText(/Plan Name/i);
+    await user.clear(nameInput);
+    await user.type(nameInput, 'Push Pull Legs');
     fireEvent.click(await screen.findByRole('button', { name: /Save Plan/i }));
 
-    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'Push Pull Legs' }),
-    ));
+    await waitFor(() =>
+      expect(onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'Push Pull Legs' }),
+      ),
+    );
   });
 
   it('pre-fills fields when initialData provided', async () => {

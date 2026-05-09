@@ -13,7 +13,7 @@ interface Props {
 
 export function DayCompleteBar({ dayCompleted, kcal, totalItems, onRequestComplete, submitting }: Props) {
   return (
-    <div className="sticky bottom-0 -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 bg-background/95 backdrop-blur-sm border-t border-border/60 flex items-center justify-between gap-3">
+    <div className="sticky bottom-0 z-10 flex items-center justify-between gap-3 py-2 backdrop-blur-md bg-background/50">
       <span className="text-xs text-foreground/65">
         {dayCompleted ? (
           <>

@@ -472,8 +472,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
           + Add Day Type
         </button>
 
-        {/* Sticky save bar */}
-        <div className="sticky bottom-0 -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 bg-background/95 backdrop-blur-sm border-t border-border/60 flex flex-col gap-2 z-10">
+        <div className="sticky bottom-0 z-10 flex flex-col gap-2 py-2 backdrop-blur-md bg-background/50">
           <Button type="submit" className="w-full" disabled={saving || !isDirty}>
             {saving ? 'Saving…' : 'Save Plan'}
           </Button>
@@ -483,7 +482,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
               variant="outline"
               onClick={onCancel}
               disabled={saving}
-              className="w-full border-border/70 text-foreground/80 hover:bg-muted hover:text-foreground hover:border-border"
+              className="w-full border-foreground/20 hover:border-foreground/40 hover:bg-muted"
             >
               Cancel
             </Button>

@@ -260,9 +260,8 @@ export function FoodForm({
   const submitLabel = mode === 'edit' ? 'Save Changes' : 'Create Food';
   const submittingLabel = mode === 'edit' ? 'Saving…' : 'Creating…';
 
-  // Footer wraps action buttons. Sticky when hosted on a full page.
   const footerClass = stickyFooter
-    ? 'sticky bottom-0 -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 bg-background/95 backdrop-blur-sm border-t border-border/60 flex items-center justify-end gap-2 z-10'
+    ? 'sticky bottom-0 z-10 flex items-center justify-end gap-2 py-2 backdrop-blur-md bg-background/50'
     : 'flex items-center justify-end gap-2 pt-2';
 
   return (
@@ -454,10 +453,10 @@ export function FoodForm({
         <div className={footerClass}>
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             onClick={handleCancelClick}
             disabled={submitting}
-            className="text-foreground/65 hover:text-foreground"
+            className="border-foreground/20 hover:border-foreground/40 hover:bg-muted"
           >
             Cancel
           </Button>
