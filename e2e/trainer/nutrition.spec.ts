@@ -11,53 +11,36 @@ test.describe('Trainer: Nutrition Templates', () => {
   test('create new nutrition template via new form', async ({ page }) => {
     await page.goto('/trainer/nutrition/new');
 
-    // Fill template name using the new #tpl-name selector
+    // The form renders day types inline (no dialog flow).
     await page.fill('#tpl-name', 'Playwright Nutrition Plan');
+    await page.getByRole('button', { name: '+ Add Day Type' }).click();
+    await page.getByPlaceholder('Day type name').fill('Training Day');
 
-    // Open the day type dialog using the new "+ Day Type" button
-    await page.getByRole('button', { name: '+ Day Type' }).click();
-
-    // The dialog should now be open — fill the Name field inside it
-    await page.getByRole('dialog').getByLabel('Name').fill('Training Day');
-
-    // Fill target kcal inside the dialog
-    await page.getByRole('dialog').getByLabel('Target Kcal').fill('2200');
-
-    // Save the day type via the "Save Day Type" button inside the dialog
-    await page.getByRole('dialog').getByRole('button', { name: 'Save Day Type' }).click();
-
-    // Submit the template form
-    await page.getByRole('button', { name: 'Save Template' }).click();
+    await page.getByRole('button', { name: 'Save Plan' }).click();
     await page.waitForURL('/trainer/nutrition');
 
     await expect(page.getByText('Playwright Nutrition Plan')).toBeVisible();
   });
 
-  test('day type dialog opens with inline FoodPicker (no Sheet)', async ({ page }) => {
+  test('add food via inline day-type opens FoodPicker dialog', async ({ page }) => {
     await page.goto('/trainer/nutrition/new');
 
-    // Open the day type dialog
-    await page.getByRole('button', { name: '+ Day Type' }).click();
+    // Day types are inline cards; add one and a meal so + Add Food appears.
+    await page.getByRole('button', { name: '+ Add Day Type' }).click();
+    await page.getByPlaceholder('Day type name').fill('Training Day');
+    await page.getByRole('button', { name: '+ Add Meal' }).click();
+    await page.getByPlaceholder('Meal name').fill('Breakfast');
 
-    // Add a meal inside the day type so the + Food button appears
-    await page.getByRole('dialog').getByRole('button', { name: '+ Meal' }).click();
+    // + Add Food opens FoodPickerDialog (Dialog, not Sheet).
+    await page.getByRole('button', { name: '+ Add Food' }).click();
 
-    // Click the + Food button inside the meal — this opens a second Dialog with FoodPicker
-    await page.getByRole('dialog').getByRole('button', { name: '+ Food' }).click();
-
-    // The FoodPicker renders inside a Dialog (not a Sheet).
-    // With hideRecent=true, only "All" and "My Food" tabs are present.
+    // FoodPicker dialog with All / My Food tabs and search input
     await expect(page.getByRole('tab', { name: 'All' })).toBeVisible();
     await expect(page.getByRole('tab', { name: 'My Food' })).toBeVisible();
-
-    // The search input for the All tab should be visible
     await expect(page.getByPlaceholder('Search foods...')).toBeVisible();
-
-    // No Sheet role should be present — the picker is inline in a Dialog
-    await expect(page.getByRole('complementary')).not.toBeVisible();
   });
 
-  test('member nutrition page shows 3-tab layout', async ({ page }) => {
+  test('member nutrition page shows 3-section layout', async ({ page }) => {
     // Navigate to a member's nutrition page via the members list
     await page.goto('/trainer/members');
     await page.getByText('Test Member').click();
@@ -66,13 +49,13 @@ test.describe('Trainer: Nutrition Templates', () => {
     await page.getByRole('link', { name: 'Nutrition', exact: true }).click();
     await page.waitForURL(/\/trainer\/members\/.+\/nutrition/);
 
-    // Verify the 3-tab layout is present
-    await expect(page.getByRole('tab', { name: 'Current Plan' })).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'History' })).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'Schedule' })).toBeVisible();
+    // Sections: Current Plan (always), Schedule + History (when active plan + history exist)
+    await expect(page.getByRole('heading', { name: 'Current Plan' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Schedule' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'History' })).toBeVisible();
   });
 
-  test('member nutrition Current Plan tab shows seeded plan', async ({ page }) => {
+  test('member nutrition Current Plan section shows seeded plan', async ({ page }) => {
     await page.goto('/trainer/members');
     await page.getByText('Test Member').click();
     await page.waitForURL(/\/trainer\/members\/.+$/);
@@ -80,7 +63,7 @@ test.describe('Trainer: Nutrition Templates', () => {
     await page.getByRole('link', { name: 'Nutrition', exact: true }).click();
     await page.waitForURL(/\/trainer\/members\/.+\/nutrition/);
 
-    // Current Plan tab is active by default and shows the seeded plan
-    await expect(page.getByText('E2E Nutrition Template')).toBeVisible();
+    // Current Plan section shows the seeded active plan
+    await expect(page.getByText('E2E Nutrition Template').first()).toBeVisible();
   });
 });

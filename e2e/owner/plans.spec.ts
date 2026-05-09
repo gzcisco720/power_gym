@@ -28,7 +28,11 @@ test.describe('Owner: Plan Templates', () => {
     await page.getByRole('button', { name: '+ Add Day' }).click();
     await page.locator('input[placeholder="Day 1"]').fill('Chest Day');
 
-    await page.getByRole('button', { name: 'Save' }).click();
+    // Open exercise search dialog and pick Bench Press from seed
+    await page.getByRole('button', { name: '+ Add Exercise' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: /Bench Press/ }).click();
+
+    await page.getByRole('button', { name: 'Save Plan' }).click();
     await page.waitForURL('/owner/plans');
 
     await expect(page.getByText('Playwright Owner New Plan')).toBeVisible();

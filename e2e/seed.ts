@@ -17,6 +17,7 @@ import { CheckInConfigModel } from '../src/lib/db/models/check-in-config.model';
 import { CheckInModel } from '../src/lib/db/models/check-in.model';
 import { FoodModel } from '../src/lib/db/models/food.model';
 import { NutritionDailyLogModel } from '../src/lib/db/models/nutrition-daily-log.model';
+import { UserProfileModel } from '../src/lib/db/models/user-profile.model';
 
 export async function seed(): Promise<void> {
   const passwordHash = await bcrypt.hash('TestPass123!', 10);
@@ -70,6 +71,19 @@ export async function seed(): Promise<void> {
     passwordHash,
     role: 'member',
     trainerId: trainer._id,
+  });
+
+  // ── User Profiles ────────────────────────────────────────────────────────
+  // Member profile populates defaultAge / defaultSex in NewBodyTestDialog so
+  // body-test add tests can submit without an explicit age input.
+  const memberDob = new Date();
+  memberDob.setFullYear(memberDob.getFullYear() - 30);
+  await UserProfileModel.create({
+    userId: member._id,
+    sex: 'male',
+    dateOfBirth: memberDob,
+    height: 178,
+    phone: null,
   });
 
   // ── Exercise ─────────────────────────────────────────────────────────────
@@ -161,6 +175,7 @@ export async function seed(): Promise<void> {
   });
 
   // ── Edit-only Plan Template (used by trainer/plans edit test) ────────────
+  // Each day must have ≥1 exercise to satisfy form validation.
   await PlanTemplateModel.create({
     name: 'E2E Edit Plan',
     description: null,
@@ -169,7 +184,20 @@ export async function seed(): Promise<void> {
       {
         dayNumber: 1,
         name: 'Pull',
-        exercises: [],
+        exercises: [
+          {
+            groupId: new mongoose.Types.ObjectId().toString(),
+            isSuperset: false,
+            exerciseId: benchPress._id,
+            exerciseName: 'Bench Press',
+            imageUrl: null,
+            isBodyweight: false,
+            sets: 3,
+            repsMin: 8,
+            repsMax: 12,
+            restSeconds: 90,
+          },
+        ],
       },
     ],
   });
@@ -179,14 +207,52 @@ export async function seed(): Promise<void> {
     name: 'E2E Owner Plan',
     description: null,
     createdBy: owner._id,
-    days: [{ dayNumber: 1, name: 'Push', exercises: [] }],
+    days: [
+      {
+        dayNumber: 1,
+        name: 'Push',
+        exercises: [
+          {
+            groupId: new mongoose.Types.ObjectId().toString(),
+            isSuperset: false,
+            exerciseId: benchPress._id,
+            exerciseName: 'Bench Press',
+            imageUrl: null,
+            isBodyweight: false,
+            sets: 3,
+            repsMin: 8,
+            repsMax: 12,
+            restSeconds: 90,
+          },
+        ],
+      },
+    ],
   });
 
   await PlanTemplateModel.create({
     name: 'E2E Owner Edit Plan',
     description: null,
     createdBy: owner._id,
-    days: [{ dayNumber: 1, name: 'Pull', exercises: [] }],
+    days: [
+      {
+        dayNumber: 1,
+        name: 'Pull',
+        exercises: [
+          {
+            groupId: new mongoose.Types.ObjectId().toString(),
+            isSuperset: false,
+            exerciseId: benchPress._id,
+            exerciseName: 'Bench Press',
+            imageUrl: null,
+            isBodyweight: false,
+            sets: 3,
+            repsMin: 8,
+            repsMax: 12,
+            restSeconds: 90,
+          },
+        ],
+      },
+    ],
   });
 
   // ── Nutrition Template ────────────────────────────────────────────────────

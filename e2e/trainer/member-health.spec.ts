@@ -38,11 +38,13 @@ test.describe('Trainer: Member Health Tab', () => {
     await page.getByRole('link', { name: 'Health', exact: true }).click();
     await page.waitForURL(/\/trainer\/members\/.+\/health/);
 
+    // The action button only carries an aria-label (icon-only).
     const injuryRow = page.getByText('E2E Resolve Injury').locator('..').locator('..');
-    await injuryRow.getByRole('button', { name: 'Resolve' }).click();
+    await injuryRow.getByRole('button', { name: 'Mark resolved' }).click();
 
-    const resolvedHeading = page.getByRole('heading', { name: 'Resolved', exact: true });
-    const resolvedSection = resolvedHeading.locator('..');
-    await expect(resolvedSection.getByText('E2E Resolve Injury')).toBeVisible();
+    // After resolution, the row's button flips to "Reactivate" — confirms move to Resolved
+    await expect(
+      page.getByText('E2E Resolve Injury').locator('..').locator('..').getByRole('button', { name: 'Reactivate' }),
+    ).toBeVisible();
   });
 });

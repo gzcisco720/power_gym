@@ -69,7 +69,7 @@ test.describe('Member: Nutrition (Daily Diary)', () => {
       return;
     }
 
-    // MacroRing SVG carries aria-label="Macro progress"
-    await expect(page.getByLabel('Macro progress')).toBeVisible();
+    // MacroRing SVG inside MacroSummaryCard carries aria-label="Macro distribution"
+    await expect(page.getByLabel('Macro distribution').first()).toBeVisible();
   });
 });

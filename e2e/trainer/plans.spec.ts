@@ -28,7 +28,11 @@ test.describe('Trainer: Plan Templates', () => {
     await page.getByRole('button', { name: '+ Add Day' }).click();
     await page.locator('input[placeholder="Day 1"]').fill('Leg Day');
 
-    await page.getByRole('button', { name: 'Save' }).click();
+    // Open the exercise search dialog and pick Bench Press from seed
+    await page.getByRole('button', { name: '+ Add Exercise' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: /Bench Press/ }).click();
+
+    await page.getByRole('button', { name: 'Save Plan' }).click();
     await page.waitForURL('/trainer/plans');
 
     await expect(page.getByText('Playwright New Plan')).toBeVisible();

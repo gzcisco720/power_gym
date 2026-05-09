@@ -35,7 +35,8 @@ test.describe('Member: Training Plan', () => {
     await page.getByRole('link', { name: /log this workout/i }).first().click();
     await page.waitForURL(/\/member\/plan\/session\/[^/]+$/, { timeout: 15000 });
     await expect(page.getByText('Bench Press')).toBeVisible();
-    await expect(page.getByText('8–12 reps').first()).toBeVisible();
+    // ExerciseRow logging mode renders prescribed reps as a chip "Reps: 8–12"
+    await expect(page.getByText('Reps: 8–12').first()).toBeVisible();
   });
 
   test('complete session after logging all sets navigates to plan', async ({ page }) => {
@@ -43,11 +44,18 @@ test.describe('Member: Training Plan', () => {
     await page.getByRole('link', { name: /log this workout/i }).first().click();
     await page.waitForURL(/\/member\/plan\/session\/[^/]+$/, { timeout: 15000 });
 
-    for (const setNum of [1, 2, 3]) {
-      await page.fill(`[aria-label="Set ${setNum} weight"]`, '60');
-      await page.fill(`[aria-label="Set ${setNum} reps"]`, '10');
-      await page.getByRole('button', { name: `Complete set ${setNum}` }).click();
-      await expect(page.getByText('60 kg × 10 reps').first()).toBeVisible();
+    // POST /api/sessions reuses an existing active session for the day, so
+    // earlier tests may have completed some sets. Iterate over remaining
+    // "Complete set N" buttons instead of hard-coding [1, 2, 3].
+    const completeButtons = page.getByRole('button', { name: /^Complete set \d+$/ });
+    while ((await completeButtons.count()) > 0) {
+      const btn = completeButtons.first();
+      const label = (await btn.getAttribute('aria-label')) ?? '';
+      const setNum = Number(label.match(/Complete set (\d+)/)?.[1] ?? 0);
+      await page.getByLabel(`Set ${setNum} weight`).fill('60');
+      await page.getByLabel(`Set ${setNum} reps`).fill('10');
+      await btn.click();
+      await expect(page.getByLabel(`Set ${setNum} completed`)).toBeVisible();
     }
 
     await page.getByRole('button', { name: 'Complete Workout' }).click();

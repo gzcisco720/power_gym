@@ -38,7 +38,9 @@ test.describe('Trainer: Members', () => {
     await page.waitForURL(/\/trainer\/members\/.+$/);
     await page.getByRole('link', { name: 'Plan', exact: true }).click();
     await page.waitForURL(/\/trainer\/members\/.+\/plan/);
-    await expect(page.getByText('Assign Plan')).toBeVisible();
+    // Member has an active plan in seed; verify Current Plan section + plan name
+    await expect(page.getByRole('heading', { name: 'Current Plan' })).toBeVisible();
+    await expect(page.getByText('E2E Test Plan').first()).toBeVisible();
   });
 
   test('assign plan to member via hub', async ({ page }) => {
@@ -48,11 +50,14 @@ test.describe('Trainer: Members', () => {
     await page.getByRole('link', { name: 'Plan', exact: true }).click();
     await page.waitForURL(/\/trainer\/members\/.+\/plan/);
 
-    // Use the "Assign Plan" section's select (second select on the page)
-    await page.locator('section').filter({ hasText: 'Assign Plan' }).locator('select').selectOption({ label: 'E2E Test Plan' });
-    await page.getByRole('button', { name: 'Assign' }).click();
+    // With an active plan, the trigger reads "Change Plan"; opens the assign Dialog.
+    await page.getByRole('button', { name: 'Change Plan' }).click();
+    await expect(page.getByLabel('Select plan template')).toBeVisible();
 
-    await expect(page.getByRole('paragraph').filter({ hasText: 'E2E Test Plan' })).toBeVisible();
+    await page.getByLabel('Select plan template').selectOption({ label: 'E2E Test Plan' });
+    await page.getByRole('button', { name: 'Assign', exact: true }).click();
+
+    await expect(page.getByText('E2E Test Plan').first()).toBeVisible();
   });
 
   test('Progress tab navigates to progress page', async ({ page }) => {

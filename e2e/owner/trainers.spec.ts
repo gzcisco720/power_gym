@@ -44,7 +44,7 @@ test.describe('Owner: Trainers', () => {
     await page.waitForURL(/\/owner\/trainers\/.+$/);
     await expect(page.locator('div').filter({ hasText: /^Members$/ })).toBeVisible();
     await expect(page.getByText('Sessions This Month')).toBeVisible();
-    await expect(page.locator('div').filter({ hasText: /^Plan Templates$/ })).toBeVisible();
+    await expect(page.locator('div').filter({ hasText: /^Training Templates$/ })).toBeVisible();
   });
 
   test('members tab shows member with View and Reassign', async ({ page }) => {

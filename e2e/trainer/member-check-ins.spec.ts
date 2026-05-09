@@ -18,8 +18,9 @@ test.describe('Trainer: Member Check-Ins Tab', () => {
     await goToMemberHub(page);
     await page.getByRole('link', { name: 'Check-ins', exact: true }).click();
     await page.waitForURL(/\/trainer\/members\/.+\/check-ins$/);
-    await expect(page.getByText('Weekly Check-In Schedule')).toBeVisible();
-    await expect(page.getByText('Check-In History')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Weekly Reminder' })).toBeVisible();
+    // Section header is "Check-In History" (with optional count suffix)
+    await expect(page.getByRole('heading', { name: /Check-In History/ })).toBeVisible();
   });
 
   test('schedule form pre-fills with seeded config (Thursday, 07:00)', async ({ page }) => {
@@ -27,10 +28,8 @@ test.describe('Trainer: Member Check-Ins Tab', () => {
     await page.getByRole('link', { name: 'Check-ins', exact: true }).click();
     await page.waitForURL(/\/trainer\/members\/.+\/check-ins$/);
 
-    const daySelect = page.locator('select').first();
-    const hourSelect = page.locator('select').nth(1);
-    await expect(daySelect).toHaveValue('4');   // Thursday = 4
-    await expect(hourSelect).toHaveValue('7');  // 07:00
+    await expect(page.locator('#day-select')).toHaveValue('4');   // Thursday = 4
+    await expect(page.locator('#hour-select')).toHaveValue('7');  // 07:00
   });
 
   test('trainer can save a new schedule and sees confirmation', async ({ page }) => {
@@ -38,11 +37,12 @@ test.describe('Trainer: Member Check-Ins Tab', () => {
     await page.getByRole('link', { name: 'Check-ins', exact: true }).click();
     await page.waitForURL(/\/trainer\/members\/.+\/check-ins$/);
 
-    await page.locator('select').first().selectOption('1');   // Monday
-    await page.locator('select').nth(1).selectOption('9');    // 09:00
-    await page.getByRole('button', { name: 'Save Schedule' }).click();
+    await page.locator('#day-select').selectOption('1');   // Monday
+    await page.locator('#hour-select').selectOption('9');  // 09:00
+    // Schedule form's submit button is the only "Save" button in the section
+    await page.getByRole('button', { name: /^Save$/ }).click();
 
-    await expect(page.getByText('Schedule saved.')).toBeVisible();
+    await expect(page.getByText('Schedule saved')).toBeVisible();
   });
 
   test('seeded past check-in appears in history list', async ({ page }) => {

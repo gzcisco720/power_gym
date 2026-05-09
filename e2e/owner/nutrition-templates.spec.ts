@@ -14,8 +14,8 @@ test.describe('Owner: Nutrition Templates', () => {
     await card.getByRole('link', { name: 'Edit' }).click();
     await page.waitForURL(/\/owner\/nutrition-templates\/.*\/edit/);
 
-    await page.fill('#plan-name', 'E2E Owner Edit Nutrition Updated');
-    await page.getByRole('button', { name: /^save$/i }).click();
+    await page.fill('#tpl-name', 'E2E Owner Edit Nutrition Updated');
+    await page.getByRole('button', { name: 'Save Plan' }).click();
     await page.waitForURL('/owner/nutrition-templates');
 
     await expect(page.getByText('E2E Owner Edit Nutrition Updated')).toBeVisible();
@@ -24,12 +24,11 @@ test.describe('Owner: Nutrition Templates', () => {
   test('create new nutrition template and verify it appears', async ({ page }) => {
     await page.goto('/owner/nutrition-templates/new');
 
-    await page.fill('#plan-name', 'Playwright Owner Nutrition');
+    await page.fill('#tpl-name', 'Playwright Owner Nutrition');
     await page.getByRole('button', { name: '+ Add Day Type' }).click();
-    await page.locator('input[placeholder="e.g. Training Day"]').fill('Training Day');
-    await page.locator('input[type="number"]').first().fill('2200');
+    await page.getByPlaceholder('Day type name').fill('Training Day');
 
-    await page.getByRole('button', { name: 'Save' }).click();
+    await page.getByRole('button', { name: 'Save Plan' }).click();
     await page.waitForURL('/owner/nutrition-templates');
 
     await expect(page.getByText('Playwright Owner Nutrition')).toBeVisible();
