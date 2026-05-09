@@ -4,13 +4,6 @@ Central registry of all generated documents. Update this file whenever a new doc
 
 ---
 
-## Implementation Plans
-
-| Topic | File | Status |
-| ----- | ---- | ------ |
-| FatSecret OAuth 1.0 Support | [fatsecret-oauth1-implementation-plan.md](2026-05-07/plans/fatsecret-oauth1-implementation-plan.md) | In Progress |
-| Training Template Redesign | [training-template-redesign-implementation-plan.md](2026-05-09/plans/training-template-redesign-implementation-plan.md) | In Progress |
-
 ## Active Documents
 
 | Topic | File | Status |
@@ -26,6 +19,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Topic | File | Status |
 | ----- | ---- | ------ |
 | Auth system | [auth-design.md](2026-04-20/plans/auth-design.md) | Approved |
+| Nutrition Plans | [nutrition-design.md](2026-04-22/plans/nutrition-design.md) | Approved |
 | Body Composition Testing | [body-test-design.md](2026-04-23/plans/body-test-design.md) | Approved |
 | Body Test UI Redesign | [body-test-ui-redesign.md](2026-05-07/plans/body-test-ui-redesign.md) | Approved |
 | E2E Test Suite | [e2e-design.md](2026-04-25/plans/e2e-design.md) | Approved |
