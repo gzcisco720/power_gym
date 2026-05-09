@@ -283,7 +283,7 @@ export function SessionLogger({
         <div>
           <button
             onClick={() => router.push(backPath)}
-            className="text-xs text-foreground/65 hover:text-foreground mb-1 block transition-colors"
+            className="text-xs text-foreground/65 hover:text-foreground mb-1 block transition-colors cursor-pointer"
           >
             ← Back
           </button>
@@ -379,7 +379,7 @@ export function SessionLogger({
 
         <button
           onClick={() => setExerciseSheetOpen(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/15 py-4 text-xs text-foreground/65 hover:border-foreground/40 hover:text-foreground transition-colors"
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/15 py-4 text-xs text-foreground/65 hover:border-foreground/40 hover:text-foreground transition-colors cursor-pointer"
         >
           + Add Exercise
         </button>

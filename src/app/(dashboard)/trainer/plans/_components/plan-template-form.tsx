@@ -640,14 +640,14 @@ export function PlanTemplateForm({
           <button
             type="button"
             onClick={() => setSheetTarget({ kind: 'day', dayIdx })}
-            className="flex-1 rounded-lg border border-dashed border-foreground/15 py-2.5 text-xs text-foreground/65 hover:border-foreground/40 hover:text-foreground transition-colors"
+            className="flex-1 rounded-lg border border-dashed border-foreground/15 py-2.5 text-xs text-foreground/65 hover:border-foreground/40 hover:text-foreground transition-colors cursor-pointer"
           >
             + Add Exercise
           </button>
           <button
             type="button"
             onClick={() => startEmptySuperset(dayIdx)}
-            className="flex-1 rounded-lg border border-dashed border-foreground/15 py-2.5 text-xs text-foreground/65 hover:border-foreground/40 hover:text-foreground transition-colors"
+            className="flex-1 rounded-lg border border-dashed border-foreground/15 py-2.5 text-xs text-foreground/65 hover:border-foreground/40 hover:text-foreground transition-colors cursor-pointer"
           >
             + Add Superset
           </button>

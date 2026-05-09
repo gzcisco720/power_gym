@@ -95,14 +95,14 @@ export function SupersetBlock(props: Props) {
             <button
               type="button"
               onClick={onUngroup}
-              className="text-xs text-foreground/65 hover:text-foreground transition-colors"
+              className="text-xs text-foreground/65 hover:text-foreground transition-colors cursor-pointer"
             >
               Ungroup
             </button>
             <button
               type="button"
               onClick={() => setConfirmDelete(true)}
-              className="text-xs text-foreground/65 hover:text-destructive transition-colors"
+              className="text-xs text-foreground/65 hover:text-destructive transition-colors cursor-pointer"
             >
               Delete superset
             </button>
@@ -140,7 +140,7 @@ export function SupersetBlock(props: Props) {
         <button
           type="button"
           onClick={onAddToSuperset}
-          className="block w-full px-3 py-2 border-t border-foreground/10 text-xs text-foreground/65 hover:text-foreground transition-colors text-left"
+          className="block w-full px-3 py-2 border-t border-foreground/10 text-xs text-foreground/65 hover:text-foreground transition-colors text-left cursor-pointer"
         >
           + Add to Superset
         </button>

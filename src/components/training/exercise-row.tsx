@@ -148,7 +148,7 @@ export function ExerciseRow(props: Props) {
               aria-label="Move up"
               disabled={moveUpDisabled}
               onClick={onMoveUp}
-              className="size-7 inline-flex items-center justify-center text-foreground/65 hover:text-foreground rounded-md disabled:opacity-30 disabled:pointer-events-none"
+              className="size-7 inline-flex items-center justify-center text-foreground/65 hover:text-foreground rounded-md disabled:opacity-30 disabled:pointer-events-none cursor-pointer disabled:cursor-default"
             >
               <ChevronUp className="h-4 w-4" />
             </button>
@@ -157,7 +157,7 @@ export function ExerciseRow(props: Props) {
               aria-label="Move down"
               disabled={moveDownDisabled}
               onClick={onMoveDown}
-              className="size-7 inline-flex items-center justify-center text-foreground/65 hover:text-foreground rounded-md disabled:opacity-30 disabled:pointer-events-none"
+              className="size-7 inline-flex items-center justify-center text-foreground/65 hover:text-foreground rounded-md disabled:opacity-30 disabled:pointer-events-none cursor-pointer disabled:cursor-default"
             >
               <ChevronDown className="h-4 w-4" />
             </button>
@@ -165,7 +165,7 @@ export function ExerciseRow(props: Props) {
               type="button"
               aria-label="Remove exercise"
               onClick={onDelete}
-              className="size-7 inline-flex items-center justify-center text-foreground/65 hover:text-destructive rounded-md"
+              className="size-7 inline-flex items-center justify-center text-foreground/65 hover:text-destructive rounded-md cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
@@ -305,7 +305,7 @@ export function ExerciseRow(props: Props) {
                     <button
                       type="button"
                       onClick={() => onLogSet(s.globalIndex)}
-                      className="h-7 w-7 shrink-0 inline-flex items-center justify-center rounded-md ring-1 ring-foreground/25 text-foreground/65 hover:text-foreground hover:ring-foreground"
+                      className="h-7 w-7 shrink-0 inline-flex items-center justify-center rounded-md ring-1 ring-foreground/25 text-foreground/65 hover:text-foreground hover:ring-foreground cursor-pointer"
                       aria-label={`Complete set ${s.setNumber}`}
                     >
                       ✓
@@ -320,7 +320,7 @@ export function ExerciseRow(props: Props) {
         <button
           type="button"
           onClick={onAddSet}
-          className="mt-2 text-xs text-foreground/65 hover:text-foreground transition-colors"
+          className="mt-2 text-xs text-foreground/65 hover:text-foreground transition-colors cursor-pointer"
         >
           + Add Set
         </button>
