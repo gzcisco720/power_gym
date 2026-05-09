@@ -259,7 +259,10 @@ function EmptyCard({ basePath, templates }: EmptyProps) {
             {templates.map((t) => {
               const isSelected = t._id === selectedId;
               return (
-                <li key={t._id}>
+                <li
+                  key={t._id}
+                  className="overflow-hidden first:rounded-t-lg last:rounded-b-lg"
+                >
                   <button
                     type="button"
                     role="option"
