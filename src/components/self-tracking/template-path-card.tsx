@@ -256,19 +256,20 @@ function EmptyCard({ basePath, templates }: EmptyProps) {
       <div className="rounded-lg ring-1 ring-foreground/10 mb-3 bg-foreground/5 max-h-44 overflow-y-auto">
         {hasTemplates ? (
           <ul role="listbox" aria-label="Templates" className="divide-y divide-foreground/5">
-            {templates.map((t) => {
+            {templates.map((t, idx) => {
               const isSelected = t._id === selectedId;
+              const isFirst = idx === 0;
+              const isLast = idx === templates.length - 1;
               return (
-                <li
-                  key={t._id}
-                  className="overflow-hidden first:rounded-t-lg last:rounded-b-lg"
-                >
+                <li key={t._id}>
                   <button
                     type="button"
                     role="option"
                     aria-selected={isSelected}
                     onClick={() => setSelectedId(t._id)}
                     className={`w-full flex items-center justify-between text-[12px] px-2.5 py-2 transition-colors text-left ${
+                      isFirst ? 'rounded-t-lg' : ''
+                    } ${isLast ? 'rounded-b-lg' : ''} ${
                       isSelected
                         ? 'bg-emerald-500/10 ring-1 ring-emerald-500/40 ring-inset'
                         : 'hover:bg-foreground/10'
