@@ -100,3 +100,55 @@ describe('ExerciseRow (edit mode)', () => {
     expect(container.innerHTML).not.toMatch(/\[#[0-9a-fA-F]{3,8}\]/);
   });
 });
+
+describe('ExerciseRow (view mode)', () => {
+  it('renders summary pills with no inputs and no chevrons', () => {
+    render(
+      <ExerciseRow
+        mode="view"
+        row={{
+          exerciseId: 'a',
+          exerciseName: 'Squat',
+          imageUrl: null,
+          isBodyweight: false,
+          groupId: 'a',
+          isSuperset: false,
+          sets: 4,
+          repsMin: 6,
+          repsMax: 8,
+          restSeconds: 90,
+        }}
+        label="A"
+      />,
+    );
+    expect(screen.getByText('Squat')).toBeInTheDocument();
+    expect(screen.getByText(/sets:\s*4/i)).toBeInTheDocument();
+    expect(screen.getByText(/reps:\s*6\s*–\s*8/i)).toBeInTheDocument();
+    expect(screen.getByText(/rest:\s*90s/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/^sets$/i)).toBeNull();
+    expect(screen.queryByRole('button', { name: /move up/i })).toBeNull();
+  });
+
+  it('renders BW pill when bodyweight', () => {
+    render(
+      <ExerciseRow
+        mode="view"
+        row={{
+          exerciseId: 'a',
+          exerciseName: 'Pullup',
+          imageUrl: null,
+          isBodyweight: true,
+          groupId: 'a',
+          isSuperset: false,
+          sets: 3,
+          repsMin: 8,
+          repsMax: 12,
+          restSeconds: null,
+        }}
+        label="A"
+      />,
+    );
+    expect(screen.getByText('BW')).toBeInTheDocument();
+    expect(screen.queryByText(/rest/i)).toBeNull();
+  });
+});
