@@ -260,8 +260,9 @@ export function FoodForm({
   const submitLabel = mode === 'edit' ? 'Save Changes' : 'Create Food';
   const submittingLabel = mode === 'edit' ? 'Saving…' : 'Creating…';
 
-  // Footer wraps action buttons. Sticky when hosted on a full page.
-  const footerClass = 'flex items-center justify-end gap-2 pt-2';
+  const footerClass = stickyFooter
+    ? 'sticky bottom-0 z-10 flex items-center justify-end gap-2 py-2 backdrop-blur-md bg-background/50'
+    : 'flex items-center justify-end gap-2 pt-2';
 
   return (
     <>

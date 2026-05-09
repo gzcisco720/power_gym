@@ -710,7 +710,7 @@ export function PlanTemplateForm({
         <Fragment>{days[activeDay] && renderDay(days[activeDay], activeDay)}</Fragment>
       )}
 
-      <div className="flex flex-col gap-2 pt-2">
+      <div className="sticky bottom-0 z-10 flex flex-col gap-2 py-2 backdrop-blur-md bg-background/50">
         <Button type="submit" className="w-full" disabled={saving || (isEditMode && !isDirty)}>
           {saving ? 'Saving…' : 'Save Plan'}
         </Button>
