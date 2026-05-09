@@ -18,7 +18,7 @@ interface Props {
 
 export function DayTabs({ days, activeIndex, onChange, onAddDay, readOnly = false }: Props) {
   return (
-    <div className="sticky top-0 z-10 flex items-center gap-2 bg-background/95 backdrop-blur-sm border-b border-foreground/10">
+    <div className="sticky top-0 z-10 flex items-center gap-2 bg-background/95 backdrop-blur-sm border-b border-foreground/10 pr-1">
       <Tabs
         value={String(activeIndex)}
         onValueChange={(v) => onChange(Number(v))}
@@ -27,10 +27,14 @@ export function DayTabs({ days, activeIndex, onChange, onAddDay, readOnly = fals
         <TabsList
           variant="line"
           aria-label="Training days"
-          className="h-9 w-full justify-start overflow-x-auto"
+          className="h-10 w-full justify-start gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {days.map((d, idx) => (
-            <TabsTrigger key={d.dayNumber} value={String(idx)}>
+            <TabsTrigger
+              key={d.dayNumber}
+              value={String(idx)}
+              className="!flex-none px-2 text-sm"
+            >
               {d.name?.trim() || `Day ${d.dayNumber}`}
             </TabsTrigger>
           ))}
