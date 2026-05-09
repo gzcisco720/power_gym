@@ -2,7 +2,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { PRESET_PLANS } from '@/lib/training/preset-plans';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { TemplateDayPickerDialog } from '@/components/self-tracking/template-day-picker-dialog';
 import type { ISelfWorkoutSet } from '@/lib/db/models/self-workout-log.model';
 
@@ -29,9 +34,32 @@ interface FullProps extends DataPropsBase {
 interface LightProps extends DataPropsBase {
   state: 'light';
 }
+
+export interface UserTemplateExercise {
+  groupId: string;
+  isSuperset: boolean;
+  exerciseId: string;
+  exerciseName: string;
+  isBodyweight: boolean;
+  sets: number;
+  repsMin: number;
+  repsMax: number;
+}
+export interface UserTemplateDay {
+  dayNumber: number;
+  name: string;
+  exercises: UserTemplateExercise[];
+}
+export interface UserTemplate {
+  _id: string;
+  name: string;
+  days: UserTemplateDay[];
+}
+
 interface EmptyProps {
   state: 'empty';
   basePath: BasePath;
+  templates: UserTemplate[];
 }
 type Props = FullProps | LightProps | EmptyProps;
 
@@ -152,9 +180,67 @@ function DataCard(props: FullProps | LightProps) {
   );
 }
 
-function EmptyCard({ basePath }: EmptyProps) {
+function buildPlannedSets(day: UserTemplateDay): ISelfWorkoutSet[] {
+  return day.exercises.flatMap((ex) =>
+    Array.from({ length: ex.sets }, (_, i) => ({
+      // exerciseId must be an ObjectId on the server side; the cast is acceptable at the route boundary.
+      exerciseId: ex.exerciseId as unknown as ISelfWorkoutSet['exerciseId'],
+      exerciseName: ex.exerciseName,
+      groupId: ex.groupId,
+      isSuperset: ex.isSuperset,
+      isBodyweight: ex.isBodyweight,
+      setNumber: i + 1,
+      prescribedRepsMin: ex.repsMin,
+      prescribedRepsMax: ex.repsMax,
+      actualWeight: null,
+      actualReps: null,
+      completedAt: null,
+    })),
+  );
+}
+
+function EmptyCard({ basePath, templates }: EmptyProps) {
   const router = useRouter();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [starting, setStarting] = useState(false);
+
   const plansBase = basePath.replace('/my-training', '/plans');
+  const selected = templates.find((t) => t._id === selectedId) ?? null;
+  const hasTemplates = templates.length > 0;
+
+  async function startDay(day: UserTemplateDay) {
+    if (!selected) return;
+    setStarting(true);
+    try {
+      const res = await fetch('/api/me/workout-logs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dayName: day.name,
+          sourceTemplateId: selected._id,
+          sourceTemplateDayNumber: day.dayNumber,
+          plannedSets: buildPlannedSets(day),
+        }),
+      });
+      if (res.ok) {
+        const log = (await res.json()) as { _id: string };
+        router.push(`${basePath}/session/${log._id}`);
+      }
+    } finally {
+      setStarting(false);
+    }
+  }
+
+  function handleStart() {
+    if (!selected) return;
+    if (selected.days.length === 1) {
+      void startDay(selected.days[0]);
+    } else {
+      setPickerOpen(true);
+    }
+  }
+
   return (
     <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 flex flex-col">
       <div className="flex items-center justify-between mb-3">
@@ -167,33 +253,80 @@ function EmptyCard({ basePath }: EmptyProps) {
           Walk through prescribed exercises, sets, and reps. Best when you want structure or are starting a cycle.
         </p>
       </div>
-      <div className="rounded-lg ring-1 ring-foreground/10 p-2.5 space-y-1.5 mb-3 bg-foreground/5">
-        {Object.entries(PRESET_PLANS).map(([key, p]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => router.push(`${plansBase}/new?preset=${key}`)}
-            className="w-full flex items-center justify-between text-[12px] hover:bg-foreground/10 rounded px-1 py-0.5 -mx-1 transition-colors"
-          >
-            <div className="text-left">
-              <div>{p.name}</div>
-              <div className="text-[10px] text-foreground/65 tabular-nums">{p.summary}</div>
-            </div>
-            <span className="text-foreground/65 text-sm">→</span>
-          </button>
-        ))}
-      </div>
-      <div className="text-[11px] text-foreground/65 mb-3">
-        Or import one you&apos;ve already built for a member.
+      <div className="rounded-lg ring-1 ring-foreground/10 mb-3 bg-foreground/5 max-h-44 overflow-y-auto">
+        {hasTemplates ? (
+          <ul role="listbox" aria-label="Templates" className="divide-y divide-foreground/5">
+            {templates.map((t) => {
+              const isSelected = t._id === selectedId;
+              return (
+                <li key={t._id}>
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    onClick={() => setSelectedId(t._id)}
+                    className={`w-full flex items-center justify-between text-[12px] px-2.5 py-2 transition-colors text-left ${
+                      isSelected
+                        ? 'bg-emerald-500/10 ring-1 ring-emerald-500/40 ring-inset'
+                        : 'hover:bg-foreground/10'
+                    }`}
+                  >
+                    <div>
+                      <div>{t.name}</div>
+                      <div className="text-[10px] text-foreground/65 tabular-nums">
+                        {t.days.length} day{t.days.length === 1 ? '' : 's'}
+                      </div>
+                    </div>
+                    {isSelected && <span className="text-emerald-300 text-sm" aria-hidden="true">✓</span>}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="text-xs text-foreground/65 px-3 py-4 text-center">
+            No templates yet — create your first to start logging.
+          </p>
+        )}
       </div>
       <div className="mt-auto flex gap-2">
-        <Button className="flex-1" onClick={() => router.push(plansBase)}>
-          Browse templates →
+        <Button
+          className="flex-1"
+          disabled={!selected || starting}
+          onClick={handleStart}
+        >
+          {starting ? 'Starting…' : 'Start to log →'}
         </Button>
         <Button variant="outline" onClick={() => router.push(`${plansBase}/new`)}>
           + Create
         </Button>
       </div>
+
+      {selected && selected.days.length > 1 && (
+        <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Pick a day — {selected.name}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-1.5">
+              {selected.days.map((d) => (
+                <Button
+                  key={d.dayNumber}
+                  variant="ghost"
+                  className="w-full justify-start"
+                  disabled={starting}
+                  onClick={() => {
+                    setPickerOpen(false);
+                    void startDay(d);
+                  }}
+                >
+                  Day {d.dayNumber} — {d.name}
+                </Button>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

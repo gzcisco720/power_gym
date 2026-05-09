@@ -28,6 +28,39 @@ const sampleSet = {
   completedAt: null,
 } as unknown as import('@/lib/db/models/self-workout-log.model').ISelfWorkoutSet;
 
+const singleDayTemplate = {
+  _id: 'tplA',
+  name: 'My Strength A',
+  days: [
+    {
+      dayNumber: 1,
+      name: 'Upper',
+      exercises: [
+        {
+          groupId: 'g1',
+          isSuperset: false,
+          exerciseId: 'ex1',
+          exerciseName: 'Bench Press',
+          isBodyweight: false,
+          sets: 3,
+          repsMin: 6,
+          repsMax: 8,
+        },
+      ],
+    },
+  ],
+};
+
+const multiDayTemplate = {
+  _id: 'tplB',
+  name: 'My PPL',
+  days: [
+    { dayNumber: 1, name: 'Push', exercises: [] },
+    { dayNumber: 2, name: 'Pull', exercises: [] },
+    { dayNumber: 3, name: 'Legs', exercises: [] },
+  ],
+};
+
 describe('TemplatePathCard', () => {
   it('renders Full state with cycle-progress dots and Start button', () => {
     render(
@@ -70,13 +103,121 @@ describe('TemplatePathCard', () => {
     expect(screen.queryByText(/last 9/)).not.toBeInTheDocument();
   });
 
-  it('renders Empty state with preset list and Browse button', () => {
-    render(<TemplatePathCard state="empty" basePath="/trainer/my-training" />);
-    expect(screen.getByText(/pick a template/i)).toBeInTheDocument();
-    expect(screen.getByText('Push · Pull · Legs')).toBeInTheDocument();
-    expect(screen.getByText('Upper / Lower')).toBeInTheDocument();
-    expect(screen.getByText('Full Body')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /browse templates/i })).toBeInTheDocument();
+  describe('Empty state', () => {
+    it('shows "no templates yet" hint + disabled Start when user has 0 templates', () => {
+      render(
+        <TemplatePathCard
+          state="empty"
+          basePath="/trainer/my-training"
+          templates={[]}
+        />,
+      );
+      expect(screen.getByText(/pick a template/i)).toBeInTheDocument();
+      expect(screen.getByText(/no templates yet/i)).toBeInTheDocument();
+      const startBtn = screen.getByRole('button', { name: /start to log/i });
+      expect(startBtn).toBeDisabled();
+      expect(screen.getByRole('button', { name: /\+ create/i })).toBeInTheDocument();
+    });
+
+    it('Create button routes to plans/new', () => {
+      render(
+        <TemplatePathCard
+          state="empty"
+          basePath="/owner/my-training"
+          templates={[]}
+        />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: /\+ create/i }));
+      expect(pushMock).toHaveBeenCalledWith('/owner/plans/new');
+    });
+
+    it('renders user templates as a selectable list with Start disabled until selection', () => {
+      render(
+        <TemplatePathCard
+          state="empty"
+          basePath="/trainer/my-training"
+          templates={[singleDayTemplate, multiDayTemplate]}
+        />,
+      );
+      expect(screen.getByText('My Strength A')).toBeInTheDocument();
+      expect(screen.getByText('My PPL')).toBeInTheDocument();
+      const startBtn = screen.getByRole('button', { name: /start to log/i });
+      expect(startBtn).toBeDisabled();
+    });
+
+    it('selecting a template highlights it and enables Start', () => {
+      render(
+        <TemplatePathCard
+          state="empty"
+          basePath="/trainer/my-training"
+          templates={[singleDayTemplate, multiDayTemplate]}
+        />,
+      );
+      const row = screen.getByRole('option', { name: /my strength a/i });
+      expect(row).toHaveAttribute('aria-selected', 'false');
+      fireEvent.click(row);
+      expect(row).toHaveAttribute('aria-selected', 'true');
+      expect(screen.getByRole('button', { name: /start to log/i })).not.toBeDisabled();
+    });
+
+    it('Start to log on a single-day template posts to API and navigates without opening picker', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ _id: 'log42' }),
+      });
+      render(
+        <TemplatePathCard
+          state="empty"
+          basePath="/trainer/my-training"
+          templates={[singleDayTemplate]}
+        />,
+      );
+      fireEvent.click(screen.getByRole('option', { name: /my strength a/i }));
+      fireEvent.click(screen.getByRole('button', { name: /start to log/i }));
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith(
+          '/api/me/workout-logs',
+          expect.objectContaining({ method: 'POST' }),
+        );
+      });
+      const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+      expect(body.dayName).toBe('Upper');
+      expect(body.sourceTemplateId).toBe('tplA');
+      expect(body.sourceTemplateDayNumber).toBe(1);
+      expect(body.plannedSets).toHaveLength(3);
+      await waitFor(() =>
+        expect(pushMock).toHaveBeenCalledWith('/trainer/my-training/session/log42'),
+      );
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('Start to log on a multi-day template opens day picker; selecting a day fires API + navigate', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ _id: 'log99' }),
+      });
+      render(
+        <TemplatePathCard
+          state="empty"
+          basePath="/trainer/my-training"
+          templates={[multiDayTemplate]}
+        />,
+      );
+      fireEvent.click(screen.getByRole('option', { name: /my ppl/i }));
+      fireEvent.click(screen.getByRole('button', { name: /start to log/i }));
+      expect(await screen.findByRole('dialog')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /day 2 — pull/i }));
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledTimes(1);
+      });
+      const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+      expect(body.dayName).toBe('Pull');
+      expect(body.sourceTemplateId).toBe('tplB');
+      expect(body.sourceTemplateDayNumber).toBe(2);
+      await waitFor(() =>
+        expect(pushMock).toHaveBeenCalledWith('/trainer/my-training/session/log99'),
+      );
+    });
   });
 
   it('"Start Day N" posts to /api/me/workout-logs and routes to the session', async () => {

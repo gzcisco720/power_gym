@@ -6,7 +6,7 @@ import { MongoSelfPersonalBestRepository } from '@/lib/repositories/self-persona
 import { MongoPlanTemplateRepository } from '@/lib/repositories/plan-template.repository';
 import { detectLandingState } from '@/lib/self-tracking/landing-state';
 import { ActivityStrip } from './activity-strip';
-import { TemplatePathCard } from './template-path-card';
+import { TemplatePathCard, type UserTemplate } from './template-path-card';
 import { FreestylePathCard } from './freestyle-path-card';
 import { RecentSessionsList, type SessionRow } from './recent-sessions-list';
 import { PageHeader } from '@/components/shared/page-header';
@@ -27,12 +27,13 @@ export async function MyTrainingLanding({ basePath }: { basePath: BasePath }) {
   const templateRepo = new MongoPlanTemplateRepository();
 
   const now = new Date();
-  const [, monthLogs, recent, lastByTemplate, pbs] = await Promise.all([
+  const [, monthLogs, recent, lastByTemplate, pbs, userTemplates] = await Promise.all([
     logRepo.findActive(userId),
     logRepo.findByUserMonth(userId, now.getFullYear(), now.getMonth() + 1),
     logRepo.findRecent(userId, 10),
     logRepo.findLastByTemplate(userId),
     pbRepo.findByUser(userId),
+    templateRepo.findByCreator(userId),
   ]);
 
   const completedSessionCount = recent.length;
@@ -103,9 +104,13 @@ export async function MyTrainingLanding({ basePath }: { basePath: BasePath }) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           {state === 'empty' ? (
-            <TemplatePathCard state="empty" basePath={basePath} />
+            <TemplatePathCard
+              state="empty"
+              basePath={basePath}
+              templates={toUserTemplates(userTemplates)}
+            />
           ) : (
-            await renderTemplateCard(state, lastByTemplate, templateRepo, basePath)
+            await renderTemplateCard(state, lastByTemplate, templateRepo, basePath, userTemplates)
           )}
           {state === 'empty' ? (
             <FreestylePathCard state="empty" basePath={basePath} />
@@ -124,6 +129,27 @@ export async function MyTrainingLanding({ basePath }: { basePath: BasePath }) {
   );
 }
 
+function toUserTemplates(templates: IPlanTemplate[]): UserTemplate[] {
+  return templates.map((t) => ({
+    _id: t._id.toString(),
+    name: t.name,
+    days: t.days.map((d) => ({
+      dayNumber: d.dayNumber,
+      name: d.name,
+      exercises: d.exercises.map((ex) => ({
+        groupId: ex.groupId,
+        isSuperset: ex.isSuperset,
+        exerciseId: ex.exerciseId.toString(),
+        exerciseName: ex.exerciseName,
+        isBodyweight: ex.isBodyweight,
+        sets: ex.sets,
+        repsMin: ex.repsMin,
+        repsMax: ex.repsMax,
+      })),
+    })),
+  }));
+}
+
 function avgRpe(logs: ISelfWorkoutLog[]): number {
   const withRpe = logs.filter((l) => l.rpe != null);
   if (withRpe.length === 0) return 0;
@@ -136,12 +162,18 @@ async function renderTemplateCard(
   lastByTemplate: ISelfWorkoutLog | null,
   templateRepo: MongoPlanTemplateRepository,
   basePath: BasePath,
+  userTemplates: IPlanTemplate[],
 ) {
-  if (!lastByTemplate || !lastByTemplate.sourceTemplateId) {
-    return <TemplatePathCard state="empty" basePath={basePath} />;
-  }
+  const emptyFallback = (
+    <TemplatePathCard
+      state="empty"
+      basePath={basePath}
+      templates={toUserTemplates(userTemplates)}
+    />
+  );
+  if (!lastByTemplate || !lastByTemplate.sourceTemplateId) return emptyFallback;
   const tpl: IPlanTemplate | null = await templateRepo.findById(lastByTemplate.sourceTemplateId.toString());
-  if (!tpl) return <TemplatePathCard state="empty" basePath={basePath} />;
+  if (!tpl) return emptyFallback;
 
   const lastDayNumber = lastByTemplate.sourceTemplateDayNumber ?? 1;
   const nextDayNumber = (lastDayNumber % tpl.days.length) + 1;

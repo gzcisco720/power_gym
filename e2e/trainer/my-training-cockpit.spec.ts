@@ -40,7 +40,7 @@ test.describe('My Training cockpit', () => {
     }
   });
 
-  test('Empty state — clicking PPL preset routes to /trainer/plans/new?preset=ppl', async ({
+  test('Empty state with no templates — Start to log is disabled and hint is shown', async ({
     page,
   }) => {
     await page.goto('/trainer/my-training');
@@ -48,13 +48,11 @@ test.describe('My Training cockpit', () => {
     // Empty-state ActivityStrip shows the "Get started" eyebrow.
     await expect(page.getByText(/get started/i)).toBeVisible();
 
-    // EmptyCard renders one button per preset; PPL's accessible name is the
-    // preset name "Push · Pull · Legs" plus the summary.
-    await page.getByRole('button', { name: /push · pull · legs/i }).click();
-
-    await expect(page).toHaveURL(/\/trainer\/plans\/new\?preset=ppl/);
-    // The plan-template form should prefill the name from the preset.
-    await expect(page.locator('#plan-name')).toHaveValue('Push · Pull · Legs');
+    // When the trainer has no plan templates, the EmptyCard shows the empty hint
+    // and the Start-to-log button is disabled until a template is selected.
+    // (The seeded trainer in e2e has at least one template, so this path is
+    // exercised by the unit tests; here we just verify the new copy renders.)
+    await expect(page.getByText(/pick a template/i)).toBeVisible();
   });
 
   test('Freestyle path — Start blank creates a log and routes to the session', async ({
@@ -77,9 +75,9 @@ test.describe('My Training cockpit', () => {
     }
   });
 
-  test('Empty state — Browse templates routes to /trainer/plans', async ({ page }) => {
+  test('Empty state — Create button routes to /trainer/plans/new', async ({ page }) => {
     await page.goto('/trainer/my-training');
-    await page.getByRole('button', { name: /browse templates/i }).click();
-    await expect(page).toHaveURL(/\/trainer\/plans$/);
+    await page.getByRole('button', { name: /\+ create/i }).click();
+    await expect(page).toHaveURL(/\/trainer\/plans\/new$/);
   });
 });

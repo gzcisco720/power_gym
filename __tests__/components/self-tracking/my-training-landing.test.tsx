@@ -11,6 +11,7 @@ const findRecent = jest.fn();
 const findLastByTemplate = jest.fn();
 const findByUser = jest.fn();
 const findById = jest.fn();
+const findByCreator = jest.fn();
 
 jest.mock('@/lib/repositories/self-workout-log.repository', () => ({
   MongoSelfWorkoutLogRepository: jest.fn().mockImplementation(() => ({
@@ -21,7 +22,7 @@ jest.mock('@/lib/repositories/self-personal-best.repository', () => ({
   MongoSelfPersonalBestRepository: jest.fn().mockImplementation(() => ({ findByUser })),
 }));
 jest.mock('@/lib/repositories/plan-template.repository', () => ({
-  MongoPlanTemplateRepository: jest.fn().mockImplementation(() => ({ findById })),
+  MongoPlanTemplateRepository: jest.fn().mockImplementation(() => ({ findById, findByCreator })),
 }));
 
 beforeEach(() => {
@@ -32,6 +33,7 @@ beforeEach(() => {
   findLastByTemplate.mockResolvedValue(null);
   findByUser.mockResolvedValue([]);
   findById.mockResolvedValue(null);
+  findByCreator.mockResolvedValue([]);
 });
 
 describe('MyTrainingLanding', () => {
@@ -42,6 +44,37 @@ describe('MyTrainingLanding', () => {
     expect(screen.getByText(/pick a template/i)).toBeInTheDocument();
     expect(screen.getByText(/blank session/i)).toBeInTheDocument();
     expect(screen.getByText(/coming soon/i)).toBeInTheDocument();
+  });
+
+  it('Empty state lists the user\'s plan templates', async () => {
+    findByCreator.mockResolvedValue([
+      {
+        _id: { toString: () => 'tpl-1' },
+        name: 'My Strength A',
+        days: [
+          {
+            dayNumber: 1,
+            name: 'Upper',
+            exercises: [
+              {
+                groupId: 'g1',
+                isSuperset: false,
+                exerciseId: { toString: () => 'ex1' },
+                exerciseName: 'Bench Press',
+                isBodyweight: false,
+                sets: 3,
+                repsMin: 6,
+                repsMax: 8,
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+    const ui = await MyTrainingLanding({ basePath: '/trainer/my-training' });
+    render(ui);
+    expect(screen.getByText('My Strength A')).toBeInTheDocument();
+    expect(screen.queryByText(/no templates yet/i)).not.toBeInTheDocument();
   });
 
   it('renders Light state when user has 2 freestyle sessions and no template usage', async () => {
