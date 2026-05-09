@@ -1,7 +1,7 @@
 'use client';
 
 import { Plus } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface DaySummary {
   dayNumber: number;
@@ -18,39 +18,30 @@ interface Props {
 
 export function DayTabs({ days, activeIndex, onChange, onAddDay, readOnly = false }: Props) {
   return (
-    <div
-      role="tablist"
-      aria-label="Training days"
-      className="sticky top-0 z-10 flex items-center gap-4 overflow-x-auto bg-background/95 backdrop-blur-sm border-b border-foreground/10 px-1 -mx-1"
-    >
-      {days.map((d, idx) => {
-        const active = idx === activeIndex;
-        const showName = d.name && d.name !== `Day ${d.dayNumber}`;
-        return (
-          <button
-            key={d.dayNumber}
-            role="tab"
-            type="button"
-            aria-selected={active}
-            onClick={() => onChange(idx)}
-            className={cn(
-              'whitespace-nowrap py-2.5 text-sm transition-colors border-b-2 -mb-px',
-              active
-                ? 'text-foreground border-foreground font-semibold'
-                : 'text-foreground/65 border-transparent hover:text-foreground',
-            )}
-          >
-            Day {d.dayNumber}
-            {showName ? ` ${d.name}` : ''}
-          </button>
-        );
-      })}
+    <div className="sticky top-0 z-10 flex items-center gap-2 bg-background/95 backdrop-blur-sm border-b border-foreground/10">
+      <Tabs
+        value={String(activeIndex)}
+        onValueChange={(v) => onChange(Number(v))}
+        className="flex-1 min-w-0"
+      >
+        <TabsList
+          variant="line"
+          aria-label="Training days"
+          className="h-9 w-full justify-start overflow-x-auto"
+        >
+          {days.map((d, idx) => (
+            <TabsTrigger key={d.dayNumber} value={String(idx)}>
+              {d.name?.trim() || `Day ${d.dayNumber}`}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
       {!readOnly && (
         <button
           type="button"
           aria-label="Add day"
           onClick={onAddDay}
-          className="ml-auto inline-flex items-center gap-1 py-2 text-xs text-foreground/65 hover:text-foreground transition-colors shrink-0"
+          className="inline-flex items-center gap-1 py-1.5 px-2 text-xs text-foreground/65 hover:text-foreground transition-colors shrink-0"
         >
           <Plus className="h-3.5 w-3.5" /> Add Day
         </button>
