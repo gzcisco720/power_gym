@@ -8,6 +8,10 @@ let mongo: MongoMemoryServer;
 beforeAll(async () => {
   mongo = await MongoMemoryServer.create();
   await mongoose.connect(mongo.getUri());
+  // Ensure the (userId, exerciseId) unique index exists before the first
+  // insert — without this, mongoose's lazy index creation races with the test
+  // and the duplicate-key path is silently skipped under high-load runs.
+  await SelfPersonalBestModel.syncIndexes();
 });
 
 afterAll(async () => {

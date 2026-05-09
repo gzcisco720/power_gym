@@ -1,7 +1,10 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { NutritionCalendarPopover } from '@/components/self-tracking/nutrition-calendar-popover';
 
-const today = new Date().toISOString().slice(0, 10);
+// Use the runner's local date — `toISOString().slice(0,10)` returns UTC,
+// which can fall on a different calendar day than `getDate()` near midnight.
+const _now = new Date();
+const today = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
 
 describe('NutritionCalendarPopover', () => {
   beforeEach(() => {

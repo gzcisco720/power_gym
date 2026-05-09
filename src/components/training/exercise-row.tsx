@@ -221,6 +221,8 @@ export function ExerciseRow(props: Props) {
     const completedCount = loggingSets.length;
     const repsLabel =
       row.repsMin === row.repsMax ? `${row.repsMin}` : `${row.repsMin}–${row.repsMax}`;
+    // Freestyle sets carry no prescribed reps range — both bounds land at 0.
+    const hasPrescribedReps = row.repsMin > 0 || row.repsMax > 0;
 
     return (
       <div className="px-3 py-3" data-testid="exercise-row">
@@ -233,9 +235,11 @@ export function ExerciseRow(props: Props) {
               <span className="text-[10px] text-foreground/65 bg-muted rounded px-1.5 py-0.5">
                 Sets: {completedCount}
               </span>
-              <span className="text-[10px] text-foreground/65 bg-muted rounded px-1.5 py-0.5">
-                Reps: {repsLabel}
-              </span>
+              {hasPrescribedReps && (
+                <span className="text-[10px] text-foreground/65 bg-muted rounded px-1.5 py-0.5">
+                  Reps: {repsLabel}
+                </span>
+              )}
             </div>
           </div>
           <label className="inline-flex items-center gap-1.5 text-xs text-foreground/65 cursor-pointer select-none shrink-0">
@@ -331,6 +335,7 @@ export function ExerciseRow(props: Props) {
   // mode === 'view'
   const repsLabel =
     row.repsMin === row.repsMax ? `${row.repsMin}` : `${row.repsMin}–${row.repsMax}`;
+  const hasPrescribedRepsView = row.repsMin > 0 || row.repsMax > 0;
   return (
     <div
       data-testid="exercise-row"
@@ -349,9 +354,11 @@ export function ExerciseRow(props: Props) {
             <span className="text-[10px] text-foreground/65 bg-muted rounded px-1.5 py-0.5">
               Sets: {row.sets}
             </span>
-            <span className="text-[10px] text-foreground/65 bg-muted rounded px-1.5 py-0.5">
-              Reps: {repsLabel}
-            </span>
+            {hasPrescribedRepsView && (
+              <span className="text-[10px] text-foreground/65 bg-muted rounded px-1.5 py-0.5">
+                Reps: {repsLabel}
+              </span>
+            )}
             {row.restSeconds !== null && (
               <span className="text-[10px] text-foreground/65 bg-muted rounded px-1.5 py-0.5">
                 Rest: {row.restSeconds}s

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   ExerciseRow,
@@ -10,6 +11,10 @@ import {
   type LoggingSetInput,
 } from '@/components/training/exercise-row';
 import { SupersetBlock } from '@/components/training/superset-block';
+import {
+  ExerciseSearchSheet,
+  type ExerciseOption,
+} from '@/components/training/exercise-search-sheet';
 import { labelExercises } from '@/lib/training/label-exercises';
 import type { ISelfWorkoutLog, ISelfWorkoutSet } from '@/lib/db/models/self-workout-log.model';
 import { CompleteWorkoutDialog } from './complete-workout-dialog';
@@ -97,13 +102,31 @@ function toLoggingSets(exSets: SetWithIndex[]): LoggingSetInput[] {
   }));
 }
 
+function useElapsedTimer(startedAtIso: string | null) {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!startedAtIso) return;
+    const start = new Date(startedAtIso).getTime();
+    const tick = () => setElapsed(Math.floor((Date.now() - start) / 1000));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [startedAtIso]);
+  if (!startedAtIso) return '00:00';
+  const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
+  const ss = String(elapsed % 60).padStart(2, '0');
+  return `${mm}:${ss}`;
+}
+
 export function SelfWorkoutSession({ logId, basePath }: Props) {
   const router = useRouter();
   const [log, setLog] = useState<ISelfWorkoutLog | null>(null);
   const [loading, setLoading] = useState(true);
   const [completeOpen, setCompleteOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [inputs, setInputs] = useState<{ weight: string; reps: string }[]>([]);
   const [bwOverrides, setBwOverrides] = useState<Record<string, boolean>>({});
+  const [availableExercises, setAvailableExercises] = useState<ExerciseOption[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -129,6 +152,27 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
       cancelled = true;
     };
   }, [logId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/exercises')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: ExerciseOption[]) => {
+        if (!cancelled) setAvailableExercises(data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const isFreestyle = log?.sourceTemplateId == null;
+  const startedAtIso = log
+    ? log.startedAt instanceof Date
+      ? log.startedAt.toISOString()
+      : (log.startedAt as unknown as string)
+    : null;
+  const elapsed = useElapsedTimer(startedAtIso);
 
   function syncLog(next: ISelfWorkoutLog) {
     setLog(next);
@@ -187,29 +231,72 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     if (res.ok) syncLog((await res.json()) as ISelfWorkoutLog);
   }
 
+  async function addExercise(option: ExerciseOption) {
+    if (!log) return;
+    const newSet = {
+      exerciseId: option._id,
+      exerciseName: option.name,
+      groupId:
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `g-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      isSuperset: false,
+      isBodyweight: option.isBodyweight,
+      setNumber: 1,
+      prescribedRepsMin: null,
+      prescribedRepsMax: null,
+      actualWeight: null,
+      actualReps: null,
+      completedAt: null,
+    };
+    const res = await fetch(`/api/me/workout-logs/${logId}/sets`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newSet),
+    });
+    if (!res.ok) {
+      toast.error('Failed to add exercise');
+      return;
+    }
+    const next = (await res.json()) as ISelfWorkoutLog;
+    syncLog(next);
+    setBwOverrides((prev) => ({ ...prev, [option._id]: option.isBodyweight }));
+  }
+
   const groups = useMemo(() => (log ? buildGroups(log) : []), [log]);
 
   if (loading) return <div className="p-6 text-foreground/65 text-sm">Loading…</div>;
   if (!log) return <div className="p-6 text-foreground/65 text-sm">Workout not found.</div>;
 
   return (
-    <div className="px-4 sm:px-8 py-6 max-w-2xl mx-auto w-full space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+    <div className="flex flex-col min-h-screen">
+      <div className="flex items-center justify-between px-4 sm:px-8 py-5 border-b border-foreground/10">
+        <div>
           <Link
             href={basePath}
-            className="text-foreground/65 text-sm hover:text-foreground transition-colors"
+            className="text-xs text-foreground/65 hover:text-foreground mb-1 block transition-colors"
           >
             ← Back
           </Link>
-          <h1 className="text-lg font-semibold">{log.dayName}</h1>
+          <h1 className="text-base font-bold text-foreground">{log.dayName}</h1>
+          {isFreestyle && (
+            <div className="text-[10px] uppercase tracking-[1.6px] font-bold text-sky-300 mt-0.5">
+              Freestyle
+            </div>
+          )}
         </div>
-        <Button onClick={() => setCompleteOpen(true)} variant="default">
-          Finish
-        </Button>
+        <div className="text-sm font-mono font-semibold text-foreground/65 bg-muted rounded-md px-2 py-1">
+          {elapsed}
+        </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="flex-1 px-4 sm:px-8 py-5 pb-32 max-w-2xl mx-auto w-full space-y-3">
+        {groups.length === 0 && isFreestyle && (
+          <p className="text-xs text-foreground/65 text-center pt-4">
+            Pick exercises as you go. Log sets, then finish when you&apos;re done.
+          </p>
+        )}
+
         {groups.map((group, gi) => {
           if (group.type === 'standalone') {
             return (
@@ -255,17 +342,36 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
             />
           );
         })}
+
+        {isFreestyle && (
+          <button
+            type="button"
+            onClick={() => setPickerOpen(true)}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/15 py-4 text-xs text-foreground/65 hover:border-foreground/40 hover:text-foreground transition-colors cursor-pointer"
+          >
+            + Add Exercise
+          </button>
+        )}
       </div>
 
-      {log.sourceTemplateId === null && (
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => alert('Add Exercise picker coming later')}
-        >
-          + Add Exercise
-        </Button>
-      )}
+      <div className="sticky bottom-0 z-10 border-t border-foreground/10 backdrop-blur-md bg-background/50 px-4 sm:px-8 py-3">
+        <div className="max-w-2xl mx-auto w-full flex items-center justify-between gap-3">
+          <span className="text-xs text-foreground/65 tabular-nums">
+            {log.sets.length === 0
+              ? 'No sets yet'
+              : `${log.sets.filter((s) => s.completedAt != null).length} / ${log.sets.length} sets logged`}
+          </span>
+          <Button onClick={() => setCompleteOpen(true)}>Finish</Button>
+        </div>
+      </div>
+
+      <ExerciseSearchSheet
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        exercises={availableExercises}
+        onSelect={(ex) => void addExercise(ex)}
+        onCreated={(ex) => setAvailableExercises((prev) => [...prev, ex])}
+      />
 
       <CompleteWorkoutDialog
         open={completeOpen}
