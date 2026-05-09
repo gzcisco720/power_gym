@@ -11,4 +11,10 @@ describe('ExerciseBadge', () => {
     render(<ExerciseBadge label="D1" />);
     expect(screen.getByText('D1')).toBeInTheDocument();
   });
+
+  it('uses theme tokens (no hardcoded hex)', () => {
+    const { container } = render(<ExerciseBadge label="A" />);
+    const span = container.querySelector('span');
+    expect(span?.className ?? '').not.toMatch(/\[#[0-9a-fA-F]{3,8}\]/);
+  });
 });
