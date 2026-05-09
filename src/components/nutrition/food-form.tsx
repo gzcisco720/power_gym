@@ -262,7 +262,7 @@ export function FoodForm({
 
   // Footer wraps action buttons. Sticky when hosted on a full page.
   const footerClass = stickyFooter
-    ? 'sticky bottom-0 -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 bg-background/95 backdrop-blur-sm border-t border-border/60 flex items-center justify-end gap-2 z-10'
+    ? 'sticky bottom-0 pt-8 pb-3 bg-gradient-to-t from-background from-60% to-transparent flex items-center justify-end gap-2 z-10 pointer-events-none [&>*]:pointer-events-auto'
     : 'flex items-center justify-end gap-2 pt-2';
 
   return (

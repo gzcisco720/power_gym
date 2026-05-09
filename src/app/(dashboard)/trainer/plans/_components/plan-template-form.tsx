@@ -710,14 +710,14 @@ export function PlanTemplateForm({
         <Fragment>{days[activeDay] && renderDay(days[activeDay], activeDay)}</Fragment>
       )}
 
-      <div className="sticky bottom-0 -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 bg-background/95 backdrop-blur-sm border-t border-foreground/10 flex flex-col gap-2 z-10">
+      <div className="sticky bottom-0 pt-8 pb-3 bg-gradient-to-t from-background from-60% to-transparent flex flex-col gap-2 z-10 pointer-events-none [&>*]:pointer-events-auto">
         <Button type="submit" className="w-full" disabled={saving || (isEditMode && !isDirty)}>
           {saving ? 'Saving…' : 'Save Plan'}
         </Button>
         {onCancel && (
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             onClick={handleCancel}
             disabled={saving}
             className="w-full"
