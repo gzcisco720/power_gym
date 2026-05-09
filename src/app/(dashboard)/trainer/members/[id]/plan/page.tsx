@@ -21,11 +21,13 @@ export default async function TrainerMemberPlanPage({
   const sp = await searchParams;
 
   await connectDB();
-  const [templates, activePlan, sessions, pbs] = await Promise.all([
+  const sessionRepo = new MongoWorkoutSessionRepository();
+  const [templates, activePlan, sessions, pbs, activeSession] = await Promise.all([
     new MongoPlanTemplateRepository().findByCreator(session.user.id),
     new MongoMemberPlanRepository().findActive(memberId),
-    new MongoWorkoutSessionRepository().findByMember(memberId),
+    sessionRepo.findByMember(memberId),
     new MongoPersonalBestRepository().findByMember(memberId),
+    sessionRepo.findActive(memberId),
   ]);
 
   const rawSessions = JSON.parse(JSON.stringify(sessions)) as RawSessionInput[];
@@ -33,6 +35,15 @@ export default async function TrainerMemberPlanPage({
 
   const conflict = sp.activeSession
     ? { sessionId: sp.activeSession, dayName: sp.activeDayName ?? '' }
+    : null;
+
+  const activePrompt = activeSession
+    ? {
+        sessionId: activeSession._id.toString(),
+        dayName: activeSession.dayName,
+        startedAtIso: activeSession.startedAt.toISOString(),
+        lastActivityAtIso: activeSession.lastActivityAt.toISOString(),
+      }
     : null;
 
   return (
@@ -44,6 +55,7 @@ export default async function TrainerMemberPlanPage({
         sessions={sessionSummaries}
         pbs={JSON.parse(JSON.stringify(pbs))}
         conflict={conflict}
+        activePrompt={activePrompt}
       />
     </div>
   );

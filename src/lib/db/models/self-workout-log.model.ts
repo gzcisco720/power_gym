@@ -18,6 +18,11 @@ export interface ISelfWorkoutLog extends Document {
   userId: mongoose.Types.ObjectId;
   startedAt: Date;
   completedAt: Date | null;
+  // Bumped on every set patch / append / completion. Drives stale detection
+  // (cron auto-seal) and accurate duration for sealed/abandoned sessions.
+  lastActivityAt: Date;
+  // True when the cron job sealed this log because the user never came back.
+  autoSealed: boolean;
   sourceTemplateId: mongoose.Types.ObjectId | null;
   sourceTemplateDayNumber: number | null;
   dayName: string;
@@ -49,6 +54,8 @@ const SelfWorkoutLogSchema = new Schema<ISelfWorkoutLog>(
     userId: { type: Schema.Types.ObjectId, required: true },
     startedAt: { type: Date, required: true },
     completedAt: { type: Date, default: null },
+    lastActivityAt: { type: Date, required: true },
+    autoSealed: { type: Boolean, required: true, default: false },
     sourceTemplateId: { type: Schema.Types.ObjectId, default: null },
     sourceTemplateDayNumber: { type: Number, default: null },
     dayName: { type: String, required: true },
@@ -61,6 +68,9 @@ const SelfWorkoutLogSchema = new Schema<ISelfWorkoutLog>(
 
 SelfWorkoutLogSchema.index({ userId: 1, startedAt: -1 });
 SelfWorkoutLogSchema.index({ userId: 1, completedAt: 1 });
+// Cron findStaleActive scans by `completedAt: null AND lastActivityAt < cutoff`
+// across all users; index speeds it up.
+SelfWorkoutLogSchema.index({ completedAt: 1, lastActivityAt: 1 });
 
 export const SelfWorkoutLogModel: Model<ISelfWorkoutLog> =
   mongoose.models.SelfWorkoutLog ??

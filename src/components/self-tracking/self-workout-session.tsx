@@ -16,6 +16,7 @@ import {
   type ExerciseOption,
 } from '@/components/training/exercise-search-sheet';
 import { labelExercises } from '@/lib/training/label-exercises';
+import { useDirtyInputGuard } from '@/lib/training/dirty-input-guard';
 import type { ISelfWorkoutLog, ISelfWorkoutSet } from '@/lib/db/models/self-workout-log.model';
 import { CompleteWorkoutDialog } from './complete-workout-dialog';
 
@@ -264,6 +265,8 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
   }
 
   const groups = useMemo(() => (log ? buildGroups(log) : []), [log]);
+
+  useDirtyInputGuard(inputs, log?.sets ?? []);
 
   if (loading) return <div className="p-6 text-foreground/65 text-sm">Loading…</div>;
   if (!log) return <div className="p-6 text-foreground/65 text-sm">Workout not found.</div>;

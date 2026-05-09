@@ -7,6 +7,7 @@ import { TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { SectionHeader } from '@/components/shared/section-header';
+import { ActiveSessionPrompt } from '@/components/shared/active-session-prompt';
 import { SessionPeekSheet } from './session-peek-sheet';
 import type { SessionSummary } from '@/lib/training/session-summary';
 
@@ -32,6 +33,13 @@ interface ActiveConflict {
   dayName: string;
 }
 
+interface ActivePromptInfo {
+  sessionId: string;
+  dayName: string;
+  startedAtIso: string;
+  lastActivityAtIso: string;
+}
+
 interface Props {
   memberId: string;
   memberName?: string;
@@ -40,6 +48,7 @@ interface Props {
   sessions: SessionSummary[];
   pbs: PB[];
   conflict?: ActiveConflict | null;
+  activePrompt?: ActivePromptInfo | null;
 }
 
 export function TrainerMemberPlanClient({
@@ -49,6 +58,7 @@ export function TrainerMemberPlanClient({
   sessions,
   pbs,
   conflict,
+  activePrompt,
 }: Props) {
   const router = useRouter();
   const [selectedTemplate, setSelectedTemplate] = useState('');
@@ -86,6 +96,18 @@ export function TrainerMemberPlanClient({
 
   return (
     <div className="space-y-8 py-6">
+      {activePrompt && (
+        <section className="px-4 sm:px-8">
+          <ActiveSessionPrompt
+            dayName={activePrompt.dayName}
+            startedAtIso={activePrompt.startedAtIso}
+            lastActivityAtIso={activePrompt.lastActivityAtIso}
+            continueHref={`/trainer/members/${memberId}/log/${activePrompt.sessionId}`}
+            sealEndpoint={`/api/sessions/${activePrompt.sessionId}/seal`}
+            deleteEndpoint={`/api/sessions/${activePrompt.sessionId}`}
+          />
+        </section>
+      )}
       {conflictBanner && (
         <section className="px-4 sm:px-8">
           <div className="flex items-center gap-3 rounded-xl bg-amber-500/10 ring-1 ring-amber-500/30 px-4 py-3">

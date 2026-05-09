@@ -29,6 +29,26 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   const repo = new MongoSelfWorkoutLogRepository();
+
+  // Refuse to spawn a second active log. The cockpit's ActiveSessionPrompt
+  // is responsible for surfacing the existing one to the user (resume,
+  // discard, or seal it before starting fresh).
+  const existingActive = await repo.findActive(guard.userId);
+  if (existingActive) {
+    return Response.json(
+      {
+        error: 'ACTIVE_SESSION_CONFLICT',
+        activeSession: {
+          _id: existingActive._id.toString(),
+          dayName: existingActive.dayName,
+          startedAt: existingActive.startedAt,
+          lastActivityAt: existingActive.lastActivityAt,
+        },
+      },
+      { status: 409 },
+    );
+  }
+
   const log = await repo.create({
     userId: guard.userId,
     startedAt: new Date(),

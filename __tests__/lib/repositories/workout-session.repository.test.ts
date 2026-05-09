@@ -9,6 +9,7 @@ jest.mock('@/lib/db/models/workout-session.model', () => ({
     find: jest.fn(),
     findOne: jest.fn(),
     findByIdAndUpdate: jest.fn(),
+    findByIdAndDelete: jest.fn(),
     countDocuments: jest.fn(),
   }),
 }));
@@ -79,28 +80,23 @@ describe('MongoWorkoutSessionRepository', () => {
   });
 
   describe('updateSet', () => {
-    it('calls findByIdAndUpdate with positional set update', async () => {
+    it('calls findByIdAndUpdate with positional set update + bumps lastActivityAt', async () => {
       const updated = { _id: 's1' };
       mockModel.findByIdAndUpdate.mockResolvedValue(updated as never);
 
       await repo.updateSet('s1', 2, { actualWeight: 100, actualReps: 8 });
 
-      expect(mockModel.findByIdAndUpdate).toHaveBeenCalledWith(
-        's1',
-        {
-          $set: {
-            'sets.2.actualWeight': 100,
-            'sets.2.actualReps': 8,
-            'sets.2.completedAt': expect.any(Date),
-          },
-        },
-        { new: true },
-      );
+      const call = mockModel.findByIdAndUpdate.mock.calls[0];
+      expect(call[0]).toBe('s1');
+      expect(call[1].$set['sets.2.actualWeight']).toBe(100);
+      expect(call[1].$set['sets.2.actualReps']).toBe(8);
+      expect(call[1].$set['sets.2.completedAt']).toBeInstanceOf(Date);
+      expect(call[1].$set.lastActivityAt).toBeInstanceOf(Date);
     });
   });
 
   describe('addExtraSet', () => {
-    it('calls findByIdAndUpdate with $push', async () => {
+    it('calls findByIdAndUpdate with $push + bumps lastActivityAt', async () => {
       const updated = { _id: 's1' };
       mockModel.findByIdAndUpdate.mockResolvedValue(updated as never);
 
@@ -121,25 +117,92 @@ describe('MongoWorkoutSessionRepository', () => {
 
       await repo.addExtraSet('s1', extraSet);
 
-      expect(mockModel.findByIdAndUpdate).toHaveBeenCalledWith(
-        's1',
-        { $push: { sets: extraSet } },
-        { new: true },
-      );
+      const call = mockModel.findByIdAndUpdate.mock.calls[0];
+      expect(call[1].$push).toEqual({ sets: extraSet });
+      expect(call[1].$set.lastActivityAt).toBeInstanceOf(Date);
     });
   });
 
   describe('complete', () => {
-    it('sets completedAt on the session', async () => {
+    it('sets completedAt + lastActivityAt on the session', async () => {
       mockModel.findByIdAndUpdate.mockResolvedValue({ _id: 's1', completedAt: new Date() } as never);
 
       await repo.complete('s1');
 
-      expect(mockModel.findByIdAndUpdate).toHaveBeenCalledWith(
-        's1',
-        { $set: { completedAt: expect.any(Date), rpe: null, memberNote: null } },
-        { new: true },
-      );
+      const call = mockModel.findByIdAndUpdate.mock.calls[0];
+      expect(call[0]).toBe('s1');
+      expect(call[1].$set.completedAt).toBeInstanceOf(Date);
+      expect(call[1].$set.lastActivityAt).toBeInstanceOf(Date);
+      expect(call[1].$set.rpe).toBeNull();
+      expect(call[1].$set.memberNote).toBeNull();
+    });
+  });
+
+  describe('findStaleActive', () => {
+    it('queries non-completed sessions with lastActivityAt < cutoff', async () => {
+      mockModel.find.mockResolvedValue([{ _id: 's1' }] as never);
+      const before = Date.now();
+      await repo.findStaleActive(24);
+      const arg = mockModel.find.mock.calls[0][0] as { completedAt: null; lastActivityAt: { $lt: Date } };
+      expect(arg.completedAt).toBeNull();
+      expect(before - arg.lastActivityAt.$lt.getTime()).toBeGreaterThanOrEqual(24 * 3600_000 - 5000);
+    });
+  });
+
+  describe('seal', () => {
+    it('backdates completedAt to lastActivityAt without flagging autoSealed', async () => {
+      const lastAct = new Date('2026-05-09T18:00:00Z');
+      const saveSpy = jest.fn().mockResolvedValue({ _id: 's1' });
+      mockModel.findById.mockResolvedValue({
+        _id: 's1',
+        completedAt: null,
+        lastActivityAt: lastAct,
+        autoSealed: false,
+        save: saveSpy,
+      } as never);
+      await repo.seal('s1');
+      const obj = saveSpy.mock.instances[0] as { completedAt: Date; autoSealed: boolean };
+      expect(obj.completedAt).toEqual(lastAct);
+      expect(obj.autoSealed).toBe(false);
+    });
+  });
+
+  describe('autoSeal', () => {
+    it('sets completedAt = lastActivityAt and autoSealed=true', async () => {
+      const lastAct = new Date('2026-05-09T18:00:00Z');
+      const saveSpy = jest.fn().mockResolvedValue({ _id: 's1' });
+      mockModel.findById.mockResolvedValue({
+        _id: 's1',
+        completedAt: null,
+        lastActivityAt: lastAct,
+        autoSealed: false,
+        save: saveSpy,
+      } as never);
+      await repo.autoSeal('s1');
+      const obj = saveSpy.mock.instances[0] as { completedAt: Date; autoSealed: boolean };
+      expect(obj.completedAt).toEqual(lastAct);
+      expect(obj.autoSealed).toBe(true);
+    });
+
+    it('skips already-completed sessions', async () => {
+      const saveSpy = jest.fn();
+      mockModel.findById.mockResolvedValue({
+        _id: 's1',
+        completedAt: new Date(),
+        save: saveSpy,
+      } as never);
+      await repo.autoSeal('s1');
+      expect(saveSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('delete', () => {
+    it('calls findByIdAndDelete', async () => {
+      const mock = (WorkoutSessionModel as unknown as { findByIdAndDelete: jest.Mock }).findByIdAndDelete;
+      mock.mockResolvedValue({ _id: 's1' });
+      const ok = await repo.delete('s1');
+      expect(mock).toHaveBeenCalledWith('s1');
+      expect(ok).toBe(true);
     });
   });
 
@@ -218,17 +281,18 @@ describe('MongoWorkoutSessionRepository', () => {
   });
 
   describe('complete with rpe and memberNote', () => {
-    it('sets completedAt, rpe, and memberNote', async () => {
+    it('sets completedAt, lastActivityAt, rpe, and memberNote', async () => {
       const updated = { _id: 's1', completedAt: new Date(), rpe: 7, memberNote: 'Great session' };
       mockModel.findByIdAndUpdate.mockResolvedValue(updated as never);
 
       const result = await repo.complete('s1', { rpe: 7, memberNote: 'Great session' });
 
-      expect(mockModel.findByIdAndUpdate).toHaveBeenCalledWith(
-        's1',
-        { $set: { completedAt: expect.any(Date), rpe: 7, memberNote: 'Great session' } },
-        { new: true },
-      );
+      const call = mockModel.findByIdAndUpdate.mock.calls[0];
+      expect(call[0]).toBe('s1');
+      expect(call[1].$set.completedAt).toBeInstanceOf(Date);
+      expect(call[1].$set.lastActivityAt).toBeInstanceOf(Date);
+      expect(call[1].$set.rpe).toBe(7);
+      expect(call[1].$set.memberNote).toBe('Great session');
       expect(result).toEqual(updated);
     });
   });

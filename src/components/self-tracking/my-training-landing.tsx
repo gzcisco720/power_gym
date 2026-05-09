@@ -10,6 +10,7 @@ import { TemplatePathCard, type UserTemplate } from './template-path-card';
 import { FreestylePathCard } from './freestyle-path-card';
 import { RecentSessionsList, type SessionRow } from './recent-sessions-list';
 import { PageHeader } from '@/components/shared/page-header';
+import { ActiveSessionPrompt } from '@/components/shared/active-session-prompt';
 import { WorkoutCalendarHeaderTrigger } from './workout-calendar-header-trigger';
 import type { ISelfWorkoutLog, ISelfWorkoutSet } from '@/lib/db/models/self-workout-log.model';
 import type { IPlanTemplate } from '@/lib/db/models/plan-template.model';
@@ -27,7 +28,7 @@ export async function MyTrainingLanding({ basePath }: { basePath: BasePath }) {
   const templateRepo = new MongoPlanTemplateRepository();
 
   const now = new Date();
-  const [, monthLogs, recent, lastByTemplate, pbs, userTemplates] = await Promise.all([
+  const [activeLog, monthLogs, recent, lastByTemplate, pbs, userTemplates] = await Promise.all([
     logRepo.findActive(userId),
     logRepo.findByUserMonth(userId, now.getFullYear(), now.getMonth() + 1),
     logRepo.findRecent(userId, 10),
@@ -52,12 +53,14 @@ export async function MyTrainingLanding({ basePath }: { basePath: BasePath }) {
     );
   }
 
-  // Recent rows (top 5)
+  // Recent rows (top 5). Duration uses lastActivityAt instead of `now -
+  // startedAt` so abandoned/sealed sessions report a meaningful number.
   const pbLogIds = new Set(pbs.map((pb) => pb.logId.toString()));
   const sessionRows: SessionRow[] = recent.slice(0, 5).map((r) => {
     const startedMs = r.startedAt.getTime();
-    const endedMs = (r.completedAt ?? new Date()).getTime();
-    const durationMin = Math.max(1, Math.round((endedMs - startedMs) / 60000));
+    const endedMs = (r.lastActivityAt ?? r.completedAt ?? new Date()).getTime();
+    const hasNoSets = r.sets.length === 0;
+    const durationMin = hasNoSets ? 0 : Math.max(1, Math.round((endedMs - startedMs) / 60000));
     return {
       id: r._id.toString(),
       dateLabel: r.completedAt
@@ -68,6 +71,8 @@ export async function MyTrainingLanding({ basePath }: { basePath: BasePath }) {
       durationMin,
       rpe: r.rpe,
       hasPR: pbLogIds.has(r._id.toString()),
+      autoSealed: r.autoSealed,
+      isEmpty: hasNoSets,
     };
   });
 
@@ -94,6 +99,18 @@ export async function MyTrainingLanding({ basePath }: { basePath: BasePath }) {
         actions={<WorkoutCalendarHeaderTrigger basePath={basePath} />}
       />
       <div className="px-4 sm:px-8 py-6 max-w-5xl mx-auto w-full">
+        {activeLog && (
+          <div className="mb-4">
+            <ActiveSessionPrompt
+              dayName={activeLog.dayName}
+              startedAtIso={activeLog.startedAt.toISOString()}
+              lastActivityAtIso={activeLog.lastActivityAt.toISOString()}
+              continueHref={`${basePath}/session/${activeLog._id.toString()}`}
+              sealEndpoint={`/api/me/workout-logs/${activeLog._id.toString()}/seal`}
+              deleteEndpoint={`/api/me/workout-logs/${activeLog._id.toString()}`}
+            />
+          </div>
+        )}
         {state === 'full' && (
           <ActivityStrip state="full" last14Days={last14Days} monthStats={monthStats} />
         )}

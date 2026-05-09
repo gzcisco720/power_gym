@@ -10,6 +10,10 @@ export interface SessionRow {
   durationMin: number;
   rpe: number | null;
   hasPR: boolean;
+  // Cron sealed this session (idle ≥ 24h with no manual completion).
+  autoSealed: boolean;
+  // No sets were ever logged — the session was started and abandoned.
+  isEmpty: boolean;
 }
 interface DataProps {
   state: 'full' | 'light';
@@ -65,14 +69,26 @@ export function RecentSessionsList(props: Props) {
           <Link
             key={s.id}
             href={`${props.basePath}/session/${s.id}`}
-            className="flex items-center px-4 py-2.5 tabular-nums text-[12px] hover:bg-foreground/5"
+            className="flex items-center gap-2 px-4 py-2.5 tabular-nums text-[12px] hover:bg-foreground/5"
           >
-            <div className="w-12 text-foreground/65">{s.dateLabel}</div>
-            <div className="flex-1">{s.dayName}</div>
-            <div className="w-16 text-right text-foreground/65">{s.setCount} sets</div>
-            <div className="w-16 text-right text-foreground/65">{s.durationMin} min</div>
-            <div className="w-12 text-right text-foreground/65">{s.rpe != null ? `RPE ${s.rpe}` : '—'}</div>
-            <div className="w-10 text-right">
+            <div className="w-12 text-foreground/65 shrink-0">{s.dateLabel}</div>
+            <div className="flex-1 flex items-center gap-1.5 min-w-0">
+              <span className="truncate">{s.dayName}</span>
+              {s.isEmpty && (
+                <span className="rounded px-1 py-0.5 text-[9px] font-semibold tracking-wider bg-foreground/10 text-foreground/65">
+                  EMPTY
+                </span>
+              )}
+              {s.autoSealed && (
+                <span className="rounded px-1 py-0.5 text-[9px] font-semibold tracking-wider bg-foreground/10 text-foreground/65">
+                  AUTO-SAVED
+                </span>
+              )}
+            </div>
+            <div className="w-16 text-right text-foreground/65 shrink-0">{s.setCount} sets</div>
+            <div className="w-16 text-right text-foreground/65 shrink-0">{s.durationMin} min</div>
+            <div className="w-12 text-right text-foreground/65 shrink-0">{s.rpe != null ? `RPE ${s.rpe}` : '—'}</div>
+            <div className="w-10 text-right shrink-0">
               {s.hasPR && (
                 <span className="rounded px-1 py-0.5 text-[9px] font-bold tracking-wider bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/30">
                   PR

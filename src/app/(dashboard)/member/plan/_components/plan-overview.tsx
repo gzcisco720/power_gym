@@ -5,6 +5,7 @@ import { CalendarDays } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ExerciseThumbnail } from '@/components/training/exercise-thumbnail';
 import { ExerciseBadge } from '@/components/training/exercise-badge';
+import { ActiveSessionPrompt } from '@/components/shared/active-session-prompt';
 import { labelExercises } from '@/lib/training/label-exercises';
 import { cn } from '@/lib/utils';
 
@@ -33,17 +34,41 @@ interface Plan {
   days: PlanDay[];
 }
 
+interface ActivePromptInfo {
+  sessionId: string;
+  dayName: string;
+  startedAtIso: string;
+  lastActivityAtIso: string;
+}
+
 interface Props {
   plan: Plan | null;
   sessionBasePath?: string;
+  activePrompt?: ActivePromptInfo | null;
 }
 
-export function PlanOverview({ plan, sessionBasePath = '/member/plan' }: Props) {
+export function PlanOverview({
+  plan,
+  sessionBasePath = '/member/plan',
+  activePrompt,
+}: Props) {
   const [activeDay, setActiveDay] = useState<number>(plan?.days[0]?.dayNumber ?? 1);
 
   if (!plan) {
     return (
       <div className="px-4 sm:px-8 py-28">
+        {activePrompt && (
+          <div className="mb-6 max-w-2xl mx-auto">
+            <ActiveSessionPrompt
+              dayName={activePrompt.dayName}
+              startedAtIso={activePrompt.startedAtIso}
+              lastActivityAtIso={activePrompt.lastActivityAtIso}
+              continueHref={`${sessionBasePath}/session/${activePrompt.sessionId}`}
+              sealEndpoint={`/api/sessions/${activePrompt.sessionId}/seal`}
+              deleteEndpoint={`/api/sessions/${activePrompt.sessionId}`}
+            />
+          </div>
+        )}
         <EmptyState
           heading="No plan assigned"
           description="Your trainer hasn't assigned a training plan yet. Check back soon."
@@ -77,6 +102,18 @@ export function PlanOverview({ plan, sessionBasePath = '/member/plan' }: Props) 
 
   return (
     <div className="flex flex-col h-full">
+      {activePrompt && (
+        <div className="px-4 sm:px-8 pt-4">
+          <ActiveSessionPrompt
+            dayName={activePrompt.dayName}
+            startedAtIso={activePrompt.startedAtIso}
+            lastActivityAtIso={activePrompt.lastActivityAtIso}
+            continueHref={`${sessionBasePath}/session/${activePrompt.sessionId}`}
+            sealEndpoint={`/api/sessions/${activePrompt.sessionId}/seal`}
+            deleteEndpoint={`/api/sessions/${activePrompt.sessionId}`}
+          />
+        </div>
+      )}
       <div className="px-4 sm:px-8 pt-6 pb-3 border-b border-[#0f0f0f]">
         <div className="flex items-center justify-between">
           <div>

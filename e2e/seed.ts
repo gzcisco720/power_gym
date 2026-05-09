@@ -144,6 +144,8 @@ export async function seed(): Promise<void> {
     dayName: 'Push',
     startedAt: now,
     completedAt: now,
+    lastActivityAt: now,
+    autoSealed: false,
     sets: [
       {
         exerciseId: benchPress._id,

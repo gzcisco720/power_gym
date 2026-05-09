@@ -32,7 +32,10 @@ describe('/api/me/workout-logs', () => {
     it('creates a freestyle log when no sourceTemplateId given', async () => {
       mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
       const create = jest.fn().mockResolvedValue({ _id: 'log1' });
-      mockSelfRepo.mockImplementation(() => ({ create } as unknown as MongoSelfWorkoutLogRepository));
+      const findActive = jest.fn().mockResolvedValue(null);
+      mockSelfRepo.mockImplementation(
+        () => ({ create, findActive } as unknown as MongoSelfWorkoutLogRepository),
+      );
       const res = await POST(
         new Request('http://x', {
           method: 'POST',
@@ -51,6 +54,32 @@ describe('/api/me/workout-logs', () => {
       );
     });
 
+    it('returns 409 ACTIVE_SESSION_CONFLICT when an active log already exists', async () => {
+      mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
+      const findActive = jest.fn().mockResolvedValue({
+        _id: { toString: () => 'log-active' },
+        dayName: 'Push',
+        startedAt: new Date('2026-05-09T10:00:00Z'),
+        lastActivityAt: new Date('2026-05-09T11:00:00Z'),
+      });
+      const create = jest.fn();
+      mockSelfRepo.mockImplementation(
+        () => ({ findActive, create } as unknown as MongoSelfWorkoutLogRepository),
+      );
+      const res = await POST(
+        new Request('http://x', {
+          method: 'POST',
+          body: JSON.stringify({ dayName: 'Pull', plannedSets: [] }),
+        }),
+      );
+      expect(res.status).toBe(409);
+      const body = (await res.json()) as { error: string; activeSession: { _id: string; dayName: string } };
+      expect(body.error).toBe('ACTIVE_SESSION_CONFLICT');
+      expect(body.activeSession._id).toBe('log-active');
+      expect(body.activeSession.dayName).toBe('Push');
+      expect(create).not.toHaveBeenCalled();
+    });
+
     it('returns 400 when dayName missing', async () => {
       mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
       const res = await POST(
@@ -63,6 +92,11 @@ describe('/api/me/workout-logs', () => {
       mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
       const findById = jest.fn().mockResolvedValue(null);
       mockTplRepo.mockImplementation(() => ({ findById } as unknown as MongoPlanTemplateRepository));
+      // Active-session check happens after the template check; provide a stub.
+      const findActive = jest.fn().mockResolvedValue(null);
+      mockSelfRepo.mockImplementation(
+        () => ({ findActive } as unknown as MongoSelfWorkoutLogRepository),
+      );
       const res = await POST(
         new Request('http://x', {
           method: 'POST',

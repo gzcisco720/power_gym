@@ -22,6 +22,11 @@ export interface IWorkoutSession extends Document {
   dayName: string;
   startedAt: Date;
   completedAt: Date | null;
+  // Bumped on every set patch / extra-set / completion. Drives stale detection
+  // (cron auto-seal) and accurate duration for sealed/abandoned sessions.
+  lastActivityAt: Date;
+  // True when the cron job sealed this session because nobody came back.
+  autoSealed: boolean;
   sets: ISessionSet[];
   loggedBy: mongoose.Types.ObjectId | null;
   rpe: number | null;
@@ -54,6 +59,8 @@ const WorkoutSessionSchema = new Schema<IWorkoutSession>(
     dayName: { type: String, required: true },
     startedAt: { type: Date, required: true },
     completedAt: { type: Date, default: null },
+    lastActivityAt: { type: Date, required: true },
+    autoSealed: { type: Boolean, required: true, default: false },
     sets: [SessionSetSchema],
     loggedBy: { type: Schema.Types.ObjectId, default: null },
     rpe: { type: Number, default: null },
@@ -65,6 +72,8 @@ const WorkoutSessionSchema = new Schema<IWorkoutSession>(
 WorkoutSessionSchema.index({ memberId: 1, startedAt: -1 });
 WorkoutSessionSchema.index({ memberId: 1, completedAt: 1 });
 WorkoutSessionSchema.index({ memberId: 1, completedAt: 1, 'sets.exerciseId': 1 });
+// Cron findStaleActive scans `completedAt: null AND lastActivityAt < cutoff`.
+WorkoutSessionSchema.index({ completedAt: 1, lastActivityAt: 1 });
 
 export const WorkoutSessionModel: Model<IWorkoutSession> =
   mongoose.models.WorkoutSession ??

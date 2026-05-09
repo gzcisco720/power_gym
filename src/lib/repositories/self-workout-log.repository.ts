@@ -23,9 +23,12 @@ export interface ISelfWorkoutLogRepository {
   findByUserMonth(userId: string, year: number, month: number): Promise<ISelfWorkoutLog[]>;
   findRecent(userId: string, limit: number): Promise<ISelfWorkoutLog[]>;
   findLastByTemplate(userId: string): Promise<ISelfWorkoutLog | null>;
+  findStaleActive(olderThanHours: number): Promise<ISelfWorkoutLog[]>;
   appendSet(id: string, userId: string, set: ISelfWorkoutSet): Promise<ISelfWorkoutLog | null>;
   updateSet(id: string, userId: string, setIndex: number, patch: UpdateSelfSetData): Promise<ISelfWorkoutLog | null>;
   complete(id: string, userId: string, rpe: number | null, note: string | null): Promise<ISelfWorkoutLog | null>;
+  seal(id: string, userId: string): Promise<ISelfWorkoutLog | null>;
+  autoSeal(id: string): Promise<ISelfWorkoutLog | null>;
   delete(id: string, userId: string): Promise<boolean>;
 }
 
@@ -37,6 +40,8 @@ export class MongoSelfWorkoutLogRepository implements ISelfWorkoutLogRepository 
       userId: oid(data.userId),
       startedAt: data.startedAt,
       completedAt: null,
+      lastActivityAt: data.startedAt,
+      autoSealed: false,
       sourceTemplateId: data.sourceTemplateId ? oid(data.sourceTemplateId) : null,
       sourceTemplateDayNumber: data.sourceTemplateDayNumber,
       dayName: data.dayName,
@@ -81,10 +86,18 @@ export class MongoSelfWorkoutLogRepository implements ISelfWorkoutLogRepository 
     }).sort({ completedAt: -1 });
   }
 
+  async findStaleActive(olderThanHours: number): Promise<ISelfWorkoutLog[]> {
+    const cutoff = new Date(Date.now() - olderThanHours * 3600_000);
+    return SelfWorkoutLogModel.find({
+      completedAt: null,
+      lastActivityAt: { $lt: cutoff },
+    });
+  }
+
   async appendSet(id: string, userId: string, set: ISelfWorkoutSet): Promise<ISelfWorkoutLog | null> {
     return SelfWorkoutLogModel.findOneAndUpdate(
       { _id: oid(id), userId: oid(userId) },
-      { $push: { sets: set } },
+      { $push: { sets: set }, $set: { lastActivityAt: new Date() } },
       { new: true },
     );
   }
@@ -95,13 +108,15 @@ export class MongoSelfWorkoutLogRepository implements ISelfWorkoutLogRepository 
     setIndex: number,
     patch: UpdateSelfSetData,
   ): Promise<ISelfWorkoutLog | null> {
+    const now = new Date();
     return SelfWorkoutLogModel.findOneAndUpdate(
       { _id: oid(id), userId: oid(userId) },
       {
         $set: {
           [`sets.${setIndex}.actualWeight`]: patch.actualWeight,
           [`sets.${setIndex}.actualReps`]: patch.actualReps,
-          [`sets.${setIndex}.completedAt`]: new Date(),
+          [`sets.${setIndex}.completedAt`]: now,
+          lastActivityAt: now,
         },
       },
       { new: true },
@@ -114,11 +129,31 @@ export class MongoSelfWorkoutLogRepository implements ISelfWorkoutLogRepository 
     rpe: number | null,
     note: string | null,
   ): Promise<ISelfWorkoutLog | null> {
+    const now = new Date();
     return SelfWorkoutLogModel.findOneAndUpdate(
       { _id: oid(id), userId: oid(userId) },
-      { $set: { completedAt: new Date(), rpe, note } },
+      { $set: { completedAt: now, lastActivityAt: now, rpe, note } },
       { new: true },
     );
+  }
+
+  // User-initiated cross-day save: backdate completedAt to lastActivityAt so
+  // the session shows the right duration in history. autoSealed stays false.
+  async seal(id: string, userId: string): Promise<ISelfWorkoutLog | null> {
+    const log = await SelfWorkoutLogModel.findOne({ _id: oid(id), userId: oid(userId) });
+    if (!log || log.completedAt) return log;
+    log.completedAt = log.lastActivityAt;
+    return log.save();
+  }
+
+  // Cron-initiated seal for sessions idle ≥ N hours. No userId scope —
+  // cron iterates findStaleActive results and seals each by id.
+  async autoSeal(id: string): Promise<ISelfWorkoutLog | null> {
+    const log = await SelfWorkoutLogModel.findById(id);
+    if (!log || log.completedAt) return log;
+    log.completedAt = log.lastActivityAt;
+    log.autoSealed = true;
+    return log.save();
   }
 
   async delete(id: string, userId: string): Promise<boolean> {

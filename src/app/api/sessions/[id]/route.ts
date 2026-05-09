@@ -1,5 +1,6 @@
 import { connectDB } from '@/lib/db/connect';
 import { auth } from '@/lib/auth/auth';
+import { authorizeWorkoutSessionWrite } from '@/lib/auth/workout-session-access';
 import { MongoWorkoutSessionRepository } from '@/lib/repositories/workout-session.repository';
 import type { UserRole } from '@/types/auth';
 
@@ -22,4 +23,13 @@ export async function GET(_req: Request, { params }: RouteContext): Promise<Resp
   }
 
   return Response.json(workoutSession);
+}
+
+export async function DELETE(_req: Request, { params }: RouteContext): Promise<Response> {
+  const { id } = await params;
+  const access = await authorizeWorkoutSessionWrite(id);
+  if (!access.ok) return access.response;
+  const repo = new MongoWorkoutSessionRepository();
+  await repo.delete(id);
+  return new Response(null, { status: 204 });
 }

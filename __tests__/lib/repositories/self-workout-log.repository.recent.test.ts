@@ -28,11 +28,14 @@ async function seedLog(opts: {
   dayName?: string;
   completed?: boolean;
 }) {
+  const startedAt = new Date(Date.now() - opts.daysAgo * 86400000 - 3600000);
   const completedAt = opts.completed === false ? null : new Date(Date.now() - opts.daysAgo * 86400000);
   return SelfWorkoutLogModel.create({
     userId: new mongoose.Types.ObjectId(userId),
-    startedAt: new Date(Date.now() - opts.daysAgo * 86400000 - 3600000),
+    startedAt,
     completedAt,
+    lastActivityAt: completedAt ?? startedAt,
+    autoSealed: false,
     sourceTemplateId: opts.templateId ? new mongoose.Types.ObjectId(opts.templateId) : null,
     sourceTemplateDayNumber: opts.templateId ? 2 : null,
     dayName: opts.dayName ?? 'Push',

@@ -29,9 +29,13 @@ export interface IWorkoutSessionRepository {
   findByMember(memberId: string): Promise<IWorkoutSession[]>;
   findActive(memberId: string): Promise<IWorkoutSession | null>;
   findByMonth(memberId: string, year: number, month: number): Promise<IWorkoutSession[]>;
+  findStaleActive(olderThanHours: number): Promise<IWorkoutSession[]>;
   updateSet(id: string, setIndex: number, data: UpdateSetData): Promise<IWorkoutSession | null>;
   addExtraSet(id: string, extraSet: ISessionSet): Promise<IWorkoutSession | null>;
   complete(id: string, data?: CompleteSessionData): Promise<IWorkoutSession | null>;
+  seal(id: string): Promise<IWorkoutSession | null>;
+  autoSeal(id: string): Promise<IWorkoutSession | null>;
+  delete(id: string): Promise<boolean>;
   countByMemberIdsSince(memberIds: string[], since: Date): Promise<number>;
   findCompletedDates(memberId: string, since: Date): Promise<Date[]>;
   findTrainedExercises(memberId: string): Promise<{ exerciseId: string; exerciseName: string }[]>;
@@ -51,6 +55,8 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
       dayName: data.dayName,
       startedAt: data.startedAt,
       completedAt: null,
+      lastActivityAt: data.startedAt,
+      autoSealed: false,
       sets: data.sets,
       loggedBy: data.loggedBy ? new mongoose.Types.ObjectId(data.loggedBy) : null,
     });
@@ -75,13 +81,15 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
   }
 
   async updateSet(id: string, setIndex: number, data: UpdateSetData): Promise<IWorkoutSession | null> {
+    const now = new Date();
     return WorkoutSessionModel.findByIdAndUpdate(
       id,
       {
         $set: {
           [`sets.${setIndex}.actualWeight`]: data.actualWeight,
           [`sets.${setIndex}.actualReps`]: data.actualReps,
-          [`sets.${setIndex}.completedAt`]: new Date(),
+          [`sets.${setIndex}.completedAt`]: now,
+          lastActivityAt: now,
         },
       },
       { new: true },
@@ -91,23 +99,55 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
   async addExtraSet(id: string, extraSet: ISessionSet): Promise<IWorkoutSession | null> {
     return WorkoutSessionModel.findByIdAndUpdate(
       id,
-      { $push: { sets: extraSet } },
+      { $push: { sets: extraSet }, $set: { lastActivityAt: new Date() } },
       { new: true },
     );
   }
 
   async complete(id: string, data?: CompleteSessionData): Promise<IWorkoutSession | null> {
+    const now = new Date();
     return WorkoutSessionModel.findByIdAndUpdate(
       id,
       {
         $set: {
-          completedAt: new Date(),
+          completedAt: now,
+          lastActivityAt: now,
           rpe: data?.rpe ?? null,
           memberNote: data?.memberNote ?? null,
         },
       },
       { new: true },
     );
+  }
+
+  async findStaleActive(olderThanHours: number): Promise<IWorkoutSession[]> {
+    const cutoff = new Date(Date.now() - olderThanHours * 3600_000);
+    return WorkoutSessionModel.find({
+      completedAt: null,
+      lastActivityAt: { $lt: cutoff },
+    });
+  }
+
+  // User-initiated cross-day save: backdate completedAt to lastActivityAt.
+  async seal(id: string): Promise<IWorkoutSession | null> {
+    const sess = await WorkoutSessionModel.findById(id);
+    if (!sess || sess.completedAt) return sess;
+    sess.completedAt = sess.lastActivityAt;
+    return sess.save();
+  }
+
+  // Cron-initiated seal for sessions idle ≥ N hours.
+  async autoSeal(id: string): Promise<IWorkoutSession | null> {
+    const sess = await WorkoutSessionModel.findById(id);
+    if (!sess || sess.completedAt) return sess;
+    sess.completedAt = sess.lastActivityAt;
+    sess.autoSealed = true;
+    return sess.save();
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const result = await WorkoutSessionModel.findByIdAndDelete(id);
+    return result !== null;
   }
 
   async findByMonth(memberId: string, year: number, month: number): Promise<IWorkoutSession[]> {

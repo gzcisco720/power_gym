@@ -10,6 +10,7 @@ import { ExerciseSearchSheet, type ExerciseOption } from '@/components/training/
 import { WorkoutCompleteModal } from '@/components/training/workout-complete-modal';
 import { ExerciseNotePanel } from '@/components/training/exercise-note-panel';
 import { labelExercises } from '@/lib/training/label-exercises';
+import { useDirtyInputGuard } from '@/lib/training/dirty-input-guard';
 
 interface SessionSet {
   exerciseId: string;
@@ -264,6 +265,8 @@ export function SessionLogger({
   }
 
   const groups = buildExerciseGroups(session.sets);
+
+  useDirtyInputGuard(inputs, session.sets);
 
   function toLoggingSets(exSets: (SessionSet & { globalIndex: number })[]) {
     return exSets.map((s) => ({
