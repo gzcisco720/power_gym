@@ -18,11 +18,11 @@ interface Props {
 
 export function DayTabs({ days, activeIndex, onChange, onAddDay, readOnly = false }: Props) {
   return (
-    <div className="sticky top-0 z-10 flex items-center gap-2 bg-background/95 backdrop-blur-sm py-2">
+    <div className="flex items-center justify-between gap-2">
       <Tabs
         value={String(activeIndex)}
         onValueChange={(v) => onChange(Number(v))}
-        className="flex-1 min-w-0"
+        className="min-w-0"
       >
         <TabsList
           aria-label="Training days"
