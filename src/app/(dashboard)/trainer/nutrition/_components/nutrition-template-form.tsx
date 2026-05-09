@@ -473,17 +473,17 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
         </button>
 
         {/* Sticky save bar */}
-        <div className="sticky bottom-0 pt-8 pb-3 bg-gradient-to-t from-background from-60% to-transparent flex flex-col gap-2 z-10 pointer-events-none [&>*]:pointer-events-auto">
+        <div className="flex flex-col gap-2 pt-2">
           <Button type="submit" className="w-full" disabled={saving || !isDirty}>
             {saving ? 'Saving…' : 'Save Plan'}
           </Button>
           {onCancel && (
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               onClick={onCancel}
               disabled={saving}
-              className="w-full"
+              className="w-full border-foreground/20 hover:border-foreground/40 hover:bg-muted"
             >
               Cancel
             </Button>
