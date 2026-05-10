@@ -142,6 +142,7 @@ export class MongoSelfWorkoutLogRepository implements ISelfWorkoutLogRepository 
   async seal(id: string, userId: string): Promise<ISelfWorkoutLog | null> {
     const log = await SelfWorkoutLogModel.findOne({ _id: oid(id), userId: oid(userId) });
     if (!log || log.completedAt) return log;
+    if (!log.lastActivityAt) log.lastActivityAt = log.startedAt;
     log.completedAt = log.lastActivityAt;
     return log.save();
   }
@@ -151,6 +152,7 @@ export class MongoSelfWorkoutLogRepository implements ISelfWorkoutLogRepository 
   async autoSeal(id: string): Promise<ISelfWorkoutLog | null> {
     const log = await SelfWorkoutLogModel.findById(id);
     if (!log || log.completedAt) return log;
+    if (!log.lastActivityAt) log.lastActivityAt = log.startedAt;
     log.completedAt = log.lastActivityAt;
     log.autoSealed = true;
     return log.save();

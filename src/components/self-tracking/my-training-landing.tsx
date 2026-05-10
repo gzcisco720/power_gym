@@ -104,7 +104,7 @@ export async function MyTrainingLanding({ basePath }: { basePath: BasePath }) {
             <ActiveSessionPrompt
               dayName={activeLog.dayName}
               startedAtIso={activeLog.startedAt.toISOString()}
-              lastActivityAtIso={activeLog.lastActivityAt.toISOString()}
+              lastActivityAtIso={(activeLog.lastActivityAt ?? activeLog.startedAt).toISOString()}
               continueHref={`${basePath}/session/${activeLog._id.toString()}`}
               sealEndpoint={`/api/me/workout-logs/${activeLog._id.toString()}/seal`}
               deleteEndpoint={`/api/me/workout-logs/${activeLog._id.toString()}`}

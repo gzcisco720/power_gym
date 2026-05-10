@@ -47,6 +47,7 @@ import { CheckInModel } from '../src/lib/db/models/check-in.model';
 import { FoodModel } from '../src/lib/db/models/food.model';
 import { NutritionDailyLogModel } from '../src/lib/db/models/nutrition-daily-log.model';
 import { InviteTokenModel } from '../src/lib/db/models/invite-token.model';
+import { SelfWorkoutLogModel } from '../src/lib/db/models/self-workout-log.model';
 import { FOOD_EXTRAS_PER_100G, withExtras } from './food-extras';
 
 const GymEquipmentCatalogModel: mongoose.Model<mongoose.Document & { catalogId: string; name: string }> =
@@ -137,6 +138,32 @@ function makeSet(
     prescribedRepsMin: repsMin,
     prescribedRepsMax: repsMax,
     isExtraSet: isExtra,
+    actualWeight: weight,
+    actualReps: reps,
+    completedAt: date,
+  };
+}
+
+// Freestyle set for SelfWorkoutLog (no prescribedReps, no isExtraSet)
+function makeSelfSet(
+  exerciseId: mongoose.Types.ObjectId,
+  exerciseName: string,
+  groupId: string,
+  isBodyweight: boolean,
+  setNumber: number,
+  weight: number | null,
+  reps: number,
+  date: Date,
+) {
+  return {
+    exerciseId,
+    exerciseName,
+    groupId,
+    isSuperset: false,
+    isBodyweight,
+    setNumber,
+    prescribedRepsMin: null,
+    prescribedRepsMax: null,
     actualWeight: weight,
     actualReps: reps,
     completedAt: date,
@@ -250,13 +277,21 @@ async function seedDevData() {
     EquipmentModel.create({ name: 'Cable Cross Machine',brand: 'Technogym',  quantity: 1,  status: 'retired',     trackCondition: false, images: [], note: 'Decommissioned — replaced by new functional trainer unit' }),
   ]);
   await Promise.all([
+    // Treadmill — two-event history: problem then fix
     ConditionReportModel.create({ equipmentId: treadmill._id,    note: 'Belt slightly worn on unit #2. Scheduled for replacement next week.',   reportedAt: daysAgo(14) }),
     ConditionReportModel.create({ equipmentId: treadmill._id,    note: 'Belt replaced on unit #2, all units running normally.',                  reportedAt: daysAgo(7)  }),
+    // Leg press — ongoing issue
     ConditionReportModel.create({ equipmentId: legPress._id,     note: 'Unit #1 cable frayed — taken offline. Technician booked.',              reportedAt: daysAgo(5)  }),
+    // Smith machine — multiple maintenance history entries
+    ConditionReportModel.create({ equipmentId: smithMachine._id, note: 'Annual service completed. Guide rails lubricated, all hardware torqued.', reportedAt: daysAgo(60) }),
+    ConditionReportModel.create({ equipmentId: smithMachine._id, note: 'Unit #1 locking pins stiff. Applied lubricant. Monitor next week.',      reportedAt: daysAgo(30) }),
     ConditionReportModel.create({ equipmentId: smithMachine._id, note: 'Lubricated guide rails on both units. Operating smoothly.',             reportedAt: daysAgo(21) }),
+    // Rowing machine — maintenance + replacement record
+    ConditionReportModel.create({ equipmentId: rowingMachine._id,note: 'Unit #2 monitor unresponsive. Replacement ordered.',                    reportedAt: daysAgo(20) }),
     ConditionReportModel.create({ equipmentId: rowingMachine._id,note: 'Chain tension adjusted on unit #3. Performance monitor battery replaced.', reportedAt: daysAgo(10) }),
+    ConditionReportModel.create({ equipmentId: rowingMachine._id,note: 'Monitor replaced on unit #2. All 4 units fully operational.',           reportedAt: daysAgo(3)  }),
   ]);
-  console.log('  ✓ Equipment: 8 items + 5 condition reports created');
+  console.log('  ✓ Equipment: 8 items + 9 condition reports created (multi-event histories)');
 
   // ── Exercises ──────────────────────────────────────────────────────────────
   // 4 compound lifts for plan templates
@@ -271,7 +306,15 @@ async function seedDevData() {
     ExerciseModel.create({ name: 'Cable Fly',  muscleGroup: 'chest', isGlobal: false, createdBy: trainer._id, imageUrl: null, isBodyweight: false }),
     ExerciseModel.create({ name: 'Face Pull',  muscleGroup: 'back',  isGlobal: false, createdBy: trainer._id, imageUrl: null, isBodyweight: false }),
   ]);
-  console.log('  ✓ Exercises: 4 global + 2 trainer-custom created');
+  // 3 more global exercises used in self-tracking sessions
+  const [ohp, hipThrust, latPulldown] = await Promise.all([
+    ExerciseModel.create({ name: 'Overhead Press', muscleGroup: 'shoulders', isGlobal: true,  createdBy: null,        imageUrl: null, isBodyweight: false }),
+    ExerciseModel.create({ name: 'Hip Thrust',     muscleGroup: 'legs',      isGlobal: true,  createdBy: null,        imageUrl: null, isBodyweight: false }),
+    ExerciseModel.create({ name: 'Lat Pulldown',   muscleGroup: 'back',      isGlobal: false, createdBy: trainer._id, imageUrl: null, isBodyweight: false }),
+  ]);
+  // Owner-created food-prep exercise (tests owner-custom exercise path)
+  const dumbbellCurl = await ExerciseModel.create({ name: 'Dumbbell Curl', muscleGroup: 'arms', isGlobal: false, createdBy: owner._id, imageUrl: null, isBodyweight: false });
+  console.log('  ✓ Exercises: 4 global + 2 trainer-custom created + 3 more globals + 1 owner-custom');
 
   // ── Plan Templates ─────────────────────────────────────────────────────────
   // GroupIds for PPL (trainer)
@@ -346,6 +389,54 @@ async function seedDevData() {
     ],
   });
 
+  // GroupIds for Upper/Lower (trainer)
+  const gU1 = new mongoose.Types.ObjectId().toString(); // Bench Press  — Upper A
+  const gU2 = new mongoose.Types.ObjectId().toString(); // OHP          — Upper A
+  const gU3 = new mongoose.Types.ObjectId().toString(); // Pull-Up      — Upper A
+  const gU4 = new mongoose.Types.ObjectId().toString(); // Lat Pulldown — Upper B
+  const gU5 = new mongoose.Types.ObjectId().toString(); // Face Pull    — Upper B
+  const gL1 = new mongoose.Types.ObjectId().toString(); // Squat        — Lower A
+  const gL2 = new mongoose.Types.ObjectId().toString(); // Hip Thrust   — Lower A
+  const gL3 = new mongoose.Types.ObjectId().toString(); // Deadlift     — Lower B
+  const gL4 = new mongoose.Types.ObjectId().toString(); // Hip Thrust   — Lower B
+
+  await PlanTemplateModel.create({
+    name: 'Upper / Lower 4-Day',
+    description: 'Intermediate 4-day split alternating upper and lower body. Higher frequency per muscle group than PPL.',
+    createdBy: trainer._id,
+    days: [
+      {
+        dayNumber: 1, name: 'Upper A',
+        exercises: [
+          { groupId: gU1, isSuperset: false, exerciseId: benchPress._id, exerciseName: 'Bench Press',   imageUrl: null, isBodyweight: false, sets: 4, repsMin: 5, repsMax: 8,  restSeconds: 150 },
+          { groupId: gU2, isSuperset: false, exerciseId: ohp._id,        exerciseName: 'Overhead Press', imageUrl: null, isBodyweight: false, sets: 3, repsMin: 6, repsMax: 10, restSeconds: 120 },
+          { groupId: gU3, isSuperset: false, exerciseId: pullUp._id,     exerciseName: 'Pull-Up',        imageUrl: null, isBodyweight: true,  sets: 3, repsMin: 6, repsMax: 10, restSeconds: 90  },
+        ],
+      },
+      {
+        dayNumber: 2, name: 'Lower A',
+        exercises: [
+          { groupId: gL1, isSuperset: false, exerciseId: squat._id,     exerciseName: 'Squat',     imageUrl: null, isBodyweight: false, sets: 4, repsMin: 5, repsMax: 8,  restSeconds: 180 },
+          { groupId: gL2, isSuperset: false, exerciseId: hipThrust._id, exerciseName: 'Hip Thrust', imageUrl: null, isBodyweight: false, sets: 3, repsMin: 8, repsMax: 12, restSeconds: 90  },
+        ],
+      },
+      {
+        dayNumber: 3, name: 'Upper B',
+        exercises: [
+          { groupId: gU4, isSuperset: false, exerciseId: latPulldown._id, exerciseName: 'Lat Pulldown', imageUrl: null, isBodyweight: false, sets: 4, repsMin: 8, repsMax: 12, restSeconds: 90  },
+          { groupId: gU5, isSuperset: false, exerciseId: facePull._id,    exerciseName: 'Face Pull',    imageUrl: null, isBodyweight: false, sets: 3, repsMin: 12, repsMax: 20, restSeconds: 60 },
+        ],
+      },
+      {
+        dayNumber: 4, name: 'Lower B',
+        exercises: [
+          { groupId: gL3, isSuperset: false, exerciseId: deadlift._id,  exerciseName: 'Deadlift',  imageUrl: null, isBodyweight: false, sets: 3, repsMin: 5, repsMax: 8,  restSeconds: 180 },
+          { groupId: gL4, isSuperset: false, exerciseId: hipThrust._id, exerciseName: 'Hip Thrust', imageUrl: null, isBodyweight: false, sets: 3, repsMin: 10, repsMax: 15, restSeconds: 90 },
+        ],
+      },
+    ],
+  });
+
   const memberPlan = await MemberPlanModel.create({
     memberId: member._id, trainerId: trainer._id, templateId: pplTemplate._id,
     name: pplTemplate.name, days: pplTemplate.days, isActive: true, assignedAt: daysAgo(45),
@@ -354,7 +445,7 @@ async function seedDevData() {
     memberId: member2._id, trainerId: owner._id, templateId: fullBodyTemplate._id,
     name: fullBodyTemplate.name, days: fullBodyTemplate.days, isActive: true, assignedAt: daysAgo(20),
   });
-  console.log('  ✓ Plan templates + member plans: 2 each created');
+  console.log('  ✓ Plan templates: 3 created (PPL, Full Body 3-Day, Upper/Lower 4-Day) + 2 member plans');
 
   // ── Member Workout Sessions (12 sessions, PPL rotating) ───────────────────
   //   Push (i%3=0): Bench Press + Cable Fly
@@ -388,7 +479,7 @@ async function seedDevData() {
       const reps = [8, 8, 7, pi < 2 ? 7 : 6];
       const session = await WorkoutSessionModel.create({
         memberId: member._id, memberPlanId: memberPlan._id,
-        dayNumber: 1, dayName: 'Push', startedAt: d, completedAt: d,
+        dayNumber: 1, dayName: 'Push', startedAt: d, completedAt: d, lastActivityAt: d,
         loggedBy: pi === 3 ? trainer._id : null,
         rpe: pushRpe[pi], memberNote: pushNote[pi],
         sets: [
@@ -409,7 +500,7 @@ async function seedDevData() {
       const puReps = [8 + li, 7 + li, 6 + li];
       const session = await WorkoutSessionModel.create({
         memberId: member._id, memberPlanId: memberPlan._id,
-        dayNumber: 2, dayName: 'Pull', startedAt: d, completedAt: d,
+        dayNumber: 2, dayName: 'Pull', startedAt: d, completedAt: d, lastActivityAt: d,
         loggedBy: li === 3 ? trainer._id : null,
         rpe: pullRpe[li], memberNote: pullNote[li],
         sets: [
@@ -431,7 +522,7 @@ async function seedDevData() {
       const reps = [8, 8, lgi < 2 ? 8 : 7, lgi < 1 ? 7 : 6];
       const session = await WorkoutSessionModel.create({
         memberId: member._id, memberPlanId: memberPlan._id,
-        dayNumber: 3, dayName: 'Legs', startedAt: d, completedAt: d,
+        dayNumber: 3, dayName: 'Legs', startedAt: d, completedAt: d, lastActivityAt: d,
         rpe: legsRpe[lgi], memberNote: legsNote[lgi],
         sets: [
           makeSet(squat._id, 'Squat', g4, false, 1, 6, 10, w,     reps[0], d),
@@ -467,7 +558,13 @@ async function seedDevData() {
       achievedAt: daysAgo(4), sessionId: squatSessionIds[3],
     }),
   ]);
-  console.log('  ✓ Member PBs: Bench 72.5 kg | Deadlift 105 kg | Squat 92.5 kg');
+  // Pull-Up PB: bodyweight — best set is 10 reps in the last Pull session
+  await PersonalBestModel.create({
+    memberId: member._id, exerciseId: pullUp._id, exerciseName: 'Pull-Up',
+    bestWeight: 0, bestReps: 10, estimatedOneRM: 0,
+    achievedAt: daysAgo(7), sessionId: dlSessionIds[dlSessionIds.length - 1],
+  });
+  console.log('  ✓ Member PBs: Bench 72.5 kg | Deadlift 105 kg | Squat 92.5 kg | Pull-Up 10 reps');
 
   // ── Member2 Workout Sessions (4 sessions, Full Body) ──────────────────────
   // Day A (i%3=0): Squat + Bench Press
@@ -529,7 +626,7 @@ async function seedDevData() {
 
     const session = await WorkoutSessionModel.create({
       memberId: member2._id, memberPlanId: member2Plan._id,
-      dayNumber: dayNum, dayName, startedAt: d, completedAt: d,
+      dayNumber: dayNum, dayName, startedAt: d, completedAt: d, lastActivityAt: d,
       loggedBy: idx === 3 ? owner._id : null,
       rpe: m2Rpe[idx], memberNote: m2Notes[idx], sets,
     });
@@ -539,6 +636,123 @@ async function seedDevData() {
     if (dayNum === 3) m2SquatSessionIds.push(session._id);
   }
   console.log('  ✓ Member2 workout sessions: 4 created (with actual sets)');
+
+  // ── Trainer Self-Tracking Sessions (SelfWorkoutLog) ───────────────────────
+  // 8 completed freestyle sessions over the past 4 weeks — Push/Pull/Legs rotation.
+  // Trainer lifts at intermediate-to-advanced level (CSCS, 5+ years coaching).
+  const trainerSessions = [
+    { ago: 28, dayName: 'Push',      rpe: 8,    note: 'Bench felt great today, new top set' },
+    { ago: 25, dayName: 'Pull',      rpe: 7,    note: null },
+    { ago: 21, dayName: 'Legs',      rpe: 8,    note: 'Hip thrust is really helping squat lockout' },
+    { ago: 18, dayName: 'Push',      rpe: 9,    note: 'Pushed hard — left shoulder a bit tight at end' },
+    { ago: 14, dayName: 'Pull',      rpe: 7,    note: null },
+    { ago: 11, dayName: 'Legs',      rpe: 8,    note: 'New squat PB — 127.5 for 5' },
+    { ago:  7, dayName: 'Push',      rpe: 8,    note: null },
+    { ago:  3, dayName: 'Pull',      rpe: 7,    note: 'Deadlift technique improving — smoother off the floor' },
+  ];
+  const benchWeightsT = [102.5, 102.5, 105.0, 105.0, 107.5, 107.5, 110.0, 110.0];
+  const dlWeightsT    = [140.0, 140.0, 142.5, 142.5, 145.0, 145.0, 147.5, 147.5];
+  const squatWeightsT = [120.0, 120.0, 122.5, 122.5, 125.0, 125.0, 127.5, 127.5];
+  let tPush = 0, tPull = 0, tLegs = 0;
+  for (const s of trainerSessions) {
+    const d = daysAgo(s.ago);
+    const sg1 = new mongoose.Types.ObjectId().toString();
+    const sg2 = new mongoose.Types.ObjectId().toString();
+    const sg3 = new mongoose.Types.ObjectId().toString();
+    let sets: ReturnType<typeof makeSelfSet>[] = [];
+    if (s.dayName === 'Push') {
+      const w = benchWeightsT[tPush];
+      sets = [
+        makeSelfSet(benchPress._id, 'Bench Press',   sg1, false, 1, w,    6, d),
+        makeSelfSet(benchPress._id, 'Bench Press',   sg1, false, 2, w,    6, d),
+        makeSelfSet(benchPress._id, 'Bench Press',   sg1, false, 3, w,    5, d),
+        makeSelfSet(benchPress._id, 'Bench Press',   sg1, false, 4, w,    5, d),
+        makeSelfSet(ohp._id,        'Overhead Press', sg2, false, 1, 72.5, 8, d),
+        makeSelfSet(ohp._id,        'Overhead Press', sg2, false, 2, 72.5, 8, d),
+        makeSelfSet(ohp._id,        'Overhead Press', sg2, false, 3, 72.5, 7, d),
+        makeSelfSet(cableFly._id,   'Cable Fly',      sg3, false, 1, 22.5, 12, d),
+        makeSelfSet(cableFly._id,   'Cable Fly',      sg3, false, 2, 22.5, 12, d),
+        makeSelfSet(cableFly._id,   'Cable Fly',      sg3, false, 3, 22.5, 11, d),
+      ];
+      tPush++;
+    } else if (s.dayName === 'Pull') {
+      const w = dlWeightsT[tPull];
+      sets = [
+        makeSelfSet(deadlift._id,    'Deadlift',     sg1, false, 1, w,    5, d),
+        makeSelfSet(deadlift._id,    'Deadlift',     sg1, false, 2, w,    5, d),
+        makeSelfSet(deadlift._id,    'Deadlift',     sg1, false, 3, w,    5, d),
+        makeSelfSet(latPulldown._id, 'Lat Pulldown', sg2, false, 1, 80.0, 10, d),
+        makeSelfSet(latPulldown._id, 'Lat Pulldown', sg2, false, 2, 80.0, 10, d),
+        makeSelfSet(latPulldown._id, 'Lat Pulldown', sg2, false, 3, 80.0,  9, d),
+        makeSelfSet(facePull._id,    'Face Pull',    sg3, false, 1, 25.0, 15, d),
+        makeSelfSet(facePull._id,    'Face Pull',    sg3, false, 2, 25.0, 15, d),
+        makeSelfSet(facePull._id,    'Face Pull',    sg3, false, 3, 25.0, 14, d),
+      ];
+      tPull++;
+    } else {
+      const w = squatWeightsT[tLegs];
+      sets = [
+        makeSelfSet(squat._id,     'Squat',      sg1, false, 1, w,     6, d),
+        makeSelfSet(squat._id,     'Squat',      sg1, false, 2, w,     6, d),
+        makeSelfSet(squat._id,     'Squat',      sg1, false, 3, w,     5, d),
+        makeSelfSet(squat._id,     'Squat',      sg1, false, 4, w,     5, d),
+        makeSelfSet(hipThrust._id, 'Hip Thrust', sg2, false, 1, 100.0, 10, d),
+        makeSelfSet(hipThrust._id, 'Hip Thrust', sg2, false, 2, 102.5, 10, d),
+        makeSelfSet(hipThrust._id, 'Hip Thrust', sg2, false, 3, 102.5,  9, d),
+      ];
+      tLegs++;
+    }
+    await SelfWorkoutLogModel.create({
+      userId: trainer._id,
+      startedAt: d, completedAt: d, lastActivityAt: d,
+      autoSealed: false,
+      sourceTemplateId: null, sourceTemplateDayNumber: null,
+      dayName: s.dayName, sets, rpe: s.rpe, note: s.note,
+    });
+  }
+  console.log('  ✓ Trainer self-tracking sessions: 8 created (Push/Pull/Legs, 28-day history)');
+
+  // ── Owner Self-Tracking Sessions ──────────────────────────────────────────
+  // 3 completed sessions — Upper/Lower style. Owner has 20 years of training.
+  const ownerSelfSessions = [
+    { ago: 19, dayName: 'Upper A', sets: [
+      makeSelfSet(benchPress._id, 'Bench Press',   new mongoose.Types.ObjectId().toString(), false, 1, 115, 5, daysAgo(19)),
+      makeSelfSet(benchPress._id, 'Bench Press',   new mongoose.Types.ObjectId().toString(), false, 2, 115, 5, daysAgo(19)),
+      makeSelfSet(benchPress._id, 'Bench Press',   new mongoose.Types.ObjectId().toString(), false, 3, 115, 4, daysAgo(19)),
+      makeSelfSet(pullUp._id,     'Pull-Up',        new mongoose.Types.ObjectId().toString(), true,  1, null, 8, daysAgo(19)),
+      makeSelfSet(pullUp._id,     'Pull-Up',        new mongoose.Types.ObjectId().toString(), true,  2, null, 8, daysAgo(19)),
+      makeSelfSet(pullUp._id,     'Pull-Up',        new mongoose.Types.ObjectId().toString(), true,  3, null, 7, daysAgo(19)),
+    ], rpe: 8, note: null },
+    { ago: 12, dayName: 'Lower', sets: [
+      makeSelfSet(squat._id,     'Squat',      new mongoose.Types.ObjectId().toString(), false, 1, 130, 5, daysAgo(12)),
+      makeSelfSet(squat._id,     'Squat',      new mongoose.Types.ObjectId().toString(), false, 2, 130, 5, daysAgo(12)),
+      makeSelfSet(squat._id,     'Squat',      new mongoose.Types.ObjectId().toString(), false, 3, 130, 5, daysAgo(12)),
+      makeSelfSet(squat._id,     'Squat',      new mongoose.Types.ObjectId().toString(), false, 4, 130, 4, daysAgo(12)),
+      makeSelfSet(hipThrust._id, 'Hip Thrust', new mongoose.Types.ObjectId().toString(), false, 1, 110, 8, daysAgo(12)),
+      makeSelfSet(hipThrust._id, 'Hip Thrust', new mongoose.Types.ObjectId().toString(), false, 2, 112.5, 8, daysAgo(12)),
+      makeSelfSet(hipThrust._id, 'Hip Thrust', new mongoose.Types.ObjectId().toString(), false, 3, 112.5, 7, daysAgo(12)),
+    ], rpe: 9, note: 'Legs are responding well to the higher frequency' },
+    { ago:  5, dayName: 'Upper B', sets: [
+      makeSelfSet(ohp._id,      'Overhead Press', new mongoose.Types.ObjectId().toString(), false, 1, 87.5, 5, daysAgo(5)),
+      makeSelfSet(ohp._id,      'Overhead Press', new mongoose.Types.ObjectId().toString(), false, 2, 87.5, 5, daysAgo(5)),
+      makeSelfSet(ohp._id,      'Overhead Press', new mongoose.Types.ObjectId().toString(), false, 3, 87.5, 4, daysAgo(5)),
+      makeSelfSet(pullUp._id,   'Pull-Up',        new mongoose.Types.ObjectId().toString(), true,  1, null,  9, daysAgo(5)),
+      makeSelfSet(pullUp._id,   'Pull-Up',        new mongoose.Types.ObjectId().toString(), true,  2, null,  9, daysAgo(5)),
+      makeSelfSet(facePull._id, 'Face Pull',      new mongoose.Types.ObjectId().toString(), false, 1, 27.5, 12, daysAgo(5)),
+      makeSelfSet(facePull._id, 'Face Pull',      new mongoose.Types.ObjectId().toString(), false, 2, 27.5, 12, daysAgo(5)),
+    ], rpe: 7, note: null },
+  ];
+  for (const s of ownerSelfSessions) {
+    const d = daysAgo(s.ago);
+    await SelfWorkoutLogModel.create({
+      userId: owner._id,
+      startedAt: d, completedAt: d, lastActivityAt: d,
+      autoSealed: false,
+      sourceTemplateId: null, sourceTemplateDayNumber: null,
+      dayName: s.dayName, sets: s.sets, rpe: s.rpe, note: s.note,
+    });
+  }
+  console.log('  ✓ Owner self-tracking sessions: 3 created (Upper/Lower, 19-day history)');
 
   // ── Personal Bests for member2 ─────────────────────────────────────────────
   // Squat: 50 kg at 2nd Day A (session idx=3, daysAgo 3)
@@ -874,8 +1088,56 @@ async function seedDevData() {
         ]},
       ],
     },
+    // Days 7–13: older history for analytics / chart testing
+    { memberId: member._id, planId: memberNutritionPlan._id, date: dateISO(7),  dayTypeName: memberDayType(7),  dayCompleted: true,
+      meals: [
+        { name: 'Breakfast', order: 1, completed: true, items: [ withExtras({ foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 }), withExtras({ foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 }) ]},
+        { name: 'Lunch',    order: 2, completed: true, items: [ withExtras({ foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 }), withExtras({ foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 }) ]},
+        { name: 'Dinner',   order: 3, completed: true, items: [ withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }), withExtras({ foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 }) ]},
+      ],
+    },
+    { memberId: member._id, planId: memberNutritionPlan._id, date: dateISO(8),  dayTypeName: memberDayType(8),  dayCompleted: false,
+      meals: [
+        { name: 'Breakfast', order: 1, completed: true,  items: [ withExtras({ foodName: 'Rolled Oats', quantityG: 60, kcal: 233, protein: 10.2, carbs: 39.6, fat: 4.2 }), withExtras({ foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 }) ]},
+        { name: 'Lunch',    order: 2, completed: false, items: [ withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }), withExtras({ foodName: 'Chicken Breast', quantityG: 180, kcal: 297, protein: 55.8, carbs: 0.0, fat: 6.5 }) ]},
+      ],
+    },
+    { memberId: member._id, planId: memberNutritionPlan._id, date: dateISO(9),  dayTypeName: memberDayType(9),  dayCompleted: true,
+      meals: [
+        { name: 'Breakfast', order: 1, completed: true, items: [ withExtras({ foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 }), withExtras({ foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 }) ]},
+        { name: 'Lunch',    order: 2, completed: true, items: [ withExtras({ foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 }), withExtras({ foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 }) ]},
+        { name: 'Dinner',   order: 3, completed: true, items: [ withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }), withExtras({ foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 }) ]},
+      ],
+    },
+    { memberId: member._id, planId: memberNutritionPlan._id, date: dateISO(10), dayTypeName: memberDayType(10), dayCompleted: true,
+      meals: [
+        { name: 'Breakfast', order: 1, completed: true, items: [ withExtras({ foodName: 'Rolled Oats', quantityG: 60, kcal: 233, protein: 10.2, carbs: 39.6, fat: 4.2 }), withExtras({ foodName: 'Whole Egg', quantityG: 120, kcal: 186, protein: 15.6, carbs: 1.3, fat: 13.2 }) ]},
+        { name: 'Lunch',    order: 2, completed: true, items: [ withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }), withExtras({ foodName: 'Chicken Breast', quantityG: 180, kcal: 297, protein: 55.8, carbs: 0.0, fat: 6.5 }) ]},
+      ],
+    },
+    { memberId: member._id, planId: memberNutritionPlan._id, date: dateISO(11), dayTypeName: memberDayType(11), dayCompleted: false,
+      meals: [
+        { name: 'Breakfast', order: 1, completed: false, items: [ withExtras({ foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 }), withExtras({ foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 }) ]},
+        { name: 'Lunch',    order: 2, completed: false, items: [ withExtras({ foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 }), withExtras({ foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 }) ]},
+        { name: 'Dinner',   order: 3, completed: false, items: [ withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }), withExtras({ foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 }) ]},
+      ],
+    },
+    { memberId: member._id, planId: memberNutritionPlan._id, date: dateISO(12), dayTypeName: memberDayType(12), dayCompleted: true,
+      meals: [
+        { name: 'Breakfast', order: 1, completed: true, items: [ withExtras({ foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 }), withExtras({ foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 }) ]},
+        { name: 'Lunch',    order: 2, completed: true, items: [ withExtras({ foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 }), withExtras({ foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 }) ]},
+        { name: 'Dinner',   order: 3, completed: true, items: [ withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }), withExtras({ foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 }) ]},
+      ],
+    },
+    { memberId: member._id, planId: memberNutritionPlan._id, date: dateISO(13), dayTypeName: memberDayType(13), dayCompleted: false,
+      meals: [
+        { name: 'Breakfast', order: 1, completed: true,  items: [ withExtras({ foodName: 'Rolled Oats', quantityG: 80, kcal: 311, protein: 13.6, carbs: 52.8, fat: 5.6 }), withExtras({ foodName: 'Whole Egg', quantityG: 150, kcal: 233, protein: 19.5, carbs: 1.7, fat: 16.5 }) ]},
+        { name: 'Lunch',    order: 2, completed: false, items: [ withExtras({ foodName: 'White Rice', quantityG: 200, kcal: 730, protein: 14.2, carbs: 158.0, fat: 1.4 }), withExtras({ foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62.0, carbs: 0.0, fat: 7.2 }) ]},
+        { name: 'Dinner',   order: 3, completed: false, items: [ withExtras({ foodName: 'White Rice', quantityG: 150, kcal: 548, protein: 10.7, carbs: 118.5, fat: 1.1 }), withExtras({ foodName: 'Chicken Breast', quantityG: 150, kcal: 248, protein: 46.5, carbs: 0.0, fat: 5.4 }) ]},
+      ],
+    },
   ]);
-  console.log('  ✓ Member nutrition logs: 7 days created');
+  console.log('  ✓ Member nutrition logs: 14 days created');
 
   // ── Member2 Nutrition Daily Logs (7 days) ──────────────────────────────────
   await NutritionDailyLogModel.create([
@@ -1038,13 +1300,25 @@ async function seedDevData() {
       recordedAt: daysAgo(56), trainerNotes: 'Rounded lower back on deadlift. Dropped load to 60 kg for 2 weeks. Fully resolved.',
       memberNotes: 'Pulled it on the third deadlift set — felt a sharp twinge.', affectedMovements: 'Deadlift, Romanian deadlift',
     }),
+    // Old resolved injury — tests long-history filtering in UI
+    MemberInjuryModel.create({
+      memberId: member._id, title: 'Left ankle sprain', status: 'resolved',
+      recordedAt: daysAgo(90), trainerNotes: 'Grade 1 sprain from outside activity. No impact on upper body work. Cleared after 3 weeks.',
+      memberNotes: 'Rolled it playing basketball. Swelling gone after a week.', affectedMovements: 'Squat, lunge, running',
+    }),
+    MemberInjuryModel.create({
+      memberId: member2._id, title: 'Left knee discomfort during squats', status: 'active',
+      recordedAt: daysAgo(7), trainerNotes: 'Knee caving on descent. Cueing abduction. Avoid heavy load until form is dialed.',
+      memberNotes: 'Noticeable ache during and after squats. Feels OK walking.', affectedMovements: 'Squat, leg press, lunges',
+    }),
+    // member2 resolved wrist issue — tests multi-injury view
+    MemberInjuryModel.create({
+      memberId: member2._id, title: 'Right wrist soreness', status: 'resolved',
+      recordedAt: daysAgo(30), trainerNotes: 'Wrist flexion strain likely from gripping barbell. Used wrist wraps for 2 weeks. Resolved.',
+      memberNotes: 'Sore when putting weight through it. Wraps helped a lot.', affectedMovements: 'Bench press, barbell row',
+    }),
   ]);
-  await MemberInjuryModel.create({
-    memberId: member2._id, title: 'Left knee discomfort during squats', status: 'active',
-    recordedAt: daysAgo(7), trainerNotes: 'Knee caving on descent. Cueing abduction. Avoid heavy load until form is dialed.',
-    memberNotes: 'Noticeable ache during and after squats. Feels OK walking.', affectedMovements: 'Squat, leg press, lunges',
-  });
-  console.log('  ✓ Injuries: 2 for member (1 active, 1 resolved), 1 for member2 (active)');
+  console.log('  ✓ Injuries: 3 for member (1 active, 2 resolved), 2 for member2 (1 active, 1 resolved)');
 
   // ── Check-In Configs ───────────────────────────────────────────────────────
   await Promise.all([
@@ -1127,8 +1401,18 @@ async function seedDevData() {
       usedAt: null,
       trainerId: null,
     }),
+    // Expired: member invite that was never accepted — tests expired-token UI state
+    InviteTokenModel.create({
+      token: 'dev-token-expired-member',
+      role: 'member',
+      invitedBy: trainer._id,
+      recipientEmail: 'noshow@example.com',
+      expiresAt: daysAgo(3),
+      usedAt: null,
+      trainerId: trainer._id,
+    }),
   ]);
-  console.log('  ✓ Invite tokens: 1 used + 2 active pending created');
+  console.log('  ✓ Invite tokens: 1 used + 2 active pending + 1 expired created');
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
@@ -1167,12 +1451,12 @@ async function main() {
     console.log('  member2@dev.com / Dev123!  (member — managed by owner, full data)');
     console.log('\nmember@dev.com data:');
     console.log('  • PPL plan + 12 sessions (Push/Pull/Legs, correct exercises per day)');
-    console.log('  • 3 PBs: Bench 72.5 kg | Deadlift 105 kg | Squat 92.5 kg');
+    console.log('  • 4 PBs: Bench 72.5 kg | Deadlift 105 kg | Squat 92.5 kg | Pull-Up 10 reps');
     console.log('  • Exercise notes: Bench Press, Deadlift, Squat (3 entries each)');
-    console.log('  • Lean Bulk 2800 kcal plan + 7 days nutrition logs');
+    console.log('  • Lean Bulk 2800 kcal plan + 14 days nutrition logs');
     console.log('  • 5 body tests (56-day history)');
     console.log('  • 7 scheduled sessions (4-session Monday series included)');
-    console.log('  • 2 injuries: right shoulder (active), lower back (resolved)');
+    console.log('  • 3 injuries: right shoulder (active), lower back + ankle (resolved)');
     console.log('  • 6 check-ins with waist + step count data');
     console.log('\nmember2@dev.com data:');
     console.log('  • Full Body plan + 4 sessions (Day A/B/C with actual sets)');
@@ -1180,10 +1464,16 @@ async function main() {
     console.log('  • Exercise notes: Squat (2 entries)');
     console.log('  • Cutting Plan 1800 kcal + 7 days nutrition logs');
     console.log('  • 3 body tests (45-day history)');
-    console.log('  • 1 injury: left knee (active)');
+    console.log('  • 2 injuries: left knee (active), right wrist (resolved)');
     console.log('  • 4 check-ins (via owner)');
-    console.log('\nEquipment: 7 active/maintenance + 1 retired (Cable Cross Machine)');
-    console.log('Invite tokens: 1 used + 2 active pending');
+    console.log('\ntrainer@dev.com self-tracking:');
+    console.log('  • 8 freestyle sessions: Push/Pull/Legs rotation, 28-day history');
+    console.log('\nowner@dev.com self-tracking:');
+    console.log('  • 3 freestyle sessions: Upper/Lower, 19-day history');
+    console.log('\nPlan templates: PPL | Full Body 3-Day | Upper/Lower 4-Day');
+    console.log('Exercises: 7 global + 2 trainer-custom + 1 owner-custom');
+    console.log('Equipment: 7 active/maintenance + 1 retired | 9 condition reports');
+    console.log('Invite tokens: 1 used + 2 active pending + 1 expired');
   }
 
   await mongoose.disconnect();

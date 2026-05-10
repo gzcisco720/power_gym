@@ -59,6 +59,7 @@ export function ActiveSessionPrompt({
 }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState<'seal' | 'discard' | null>(null);
+  const [open, setOpen] = useState(true);
 
   const startedAt = new Date(startedAtIso);
   const lastActivityAt = new Date(lastActivityAtIso);
@@ -73,6 +74,7 @@ export function ActiveSessionPrompt({
         toast.error('Failed to save session');
         return;
       }
+      setOpen(false);
       toast.success('Session saved to history');
       router.refresh();
     } finally {
@@ -84,10 +86,11 @@ export function ActiveSessionPrompt({
     setBusy('discard');
     try {
       const res = await fetch(deleteEndpoint, { method: 'DELETE' });
-      if (!res.ok && res.status !== 204) {
+      if (!res.ok) {
         toast.error('Failed to discard');
         return;
       }
+      setOpen(false);
       toast.success('Session discarded');
       router.refresh();
     } finally {
@@ -97,7 +100,7 @@ export function ActiveSessionPrompt({
 
   if (!sameDay) {
     return (
-      <Dialog open onOpenChange={() => {}}>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Unfinished workout from {formatDate(startedAt)}</DialogTitle>

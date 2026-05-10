@@ -203,6 +203,7 @@ describe('MongoSelfWorkoutLogRepository', () => {
       expect(saveSpy).not.toHaveBeenCalled();
       expect((result as unknown as { completedAt: Date }).completedAt).toEqual(completedAt);
     });
+
   });
 
   describe('autoSeal', () => {
@@ -233,6 +234,7 @@ describe('MongoSelfWorkoutLogRepository', () => {
       await repo.autoSeal(LOG_ID);
       expect(saveSpy).not.toHaveBeenCalled();
     });
+
   });
 
   describe('delete', () => {
