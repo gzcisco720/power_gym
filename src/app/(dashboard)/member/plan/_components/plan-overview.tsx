@@ -9,15 +9,7 @@ import { ExerciseBadge } from '@/components/training/exercise-badge';
 import { ActiveSessionPrompt } from '@/components/shared/active-session-prompt';
 import { labelExercises } from '@/lib/training/label-exercises';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { ActiveSessionConflictDialog } from '@/components/self-tracking/active-session-conflict-dialog';
 
 interface PlanDayExercise {
   groupId: string;
@@ -65,15 +57,18 @@ export function PlanOverview({
   const [activeDay, setActiveDay] = useState<number>(plan?.days[0]?.dayNumber ?? 1);
   const router = useRouter();
   const [starting, setStarting] = useState(false);
-  const [showOverwrite, setShowOverwrite] = useState(false);
-  const [conflictDayName, setConflictDayName] = useState<string | null>(null);
-  const [pendingDay, setPendingDay] = useState<number | null>(null);
+  const [conflict, setConflict] = useState<{
+    _id: string;
+    dayName: string;
+    dayNumber: number;
+    setCount: number;
+  } | null>(null);
 
-  async function startSession(dayNum: number, overwrite = false) {
+  async function startSession(dayNum: number, deleteActive = false) {
     if (!plan) return;
     setStarting(true);
     try {
-      const url = overwrite ? '/api/sessions?overwrite=true' : '/api/sessions';
+      const url = deleteActive ? '/api/sessions?deleteActive=true' : '/api/sessions';
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -87,12 +82,10 @@ export function PlanOverview({
       if (res.status === 409) {
         const body = (await res.json()) as {
           error: string;
-          existingSession?: { dayName: string };
+          activeSession?: { _id: string; dayName: string; dayNumber: number; setCount: number };
         };
-        if (body.error === 'TODAY_ALREADY_LOGGED') {
-          setConflictDayName(body.existingSession?.dayName ?? null);
-          setPendingDay(dayNum);
-          setShowOverwrite(true);
+        if (body.error === 'ACTIVE_SESSION_EXISTS' && body.activeSession) {
+          setConflict(body.activeSession);
         }
       }
     } finally {
@@ -267,31 +260,20 @@ export function PlanOverview({
         </button>
       </div>
 
-      <Dialog open={showOverwrite} onOpenChange={setShowOverwrite}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Already logged today</DialogTitle>
-            <DialogDescription>
-              You already logged &ldquo;{conflictDayName ?? ''}&rdquo; today. Starting a new session will replace it.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowOverwrite(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                const dayNum = pendingDay!;
-                setShowOverwrite(false);
-                setPendingDay(null);
-                void startSession(dayNum, true);
-              }}
-            >
-              Overwrite &amp; Continue
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {conflict && (
+        <ActiveSessionConflictDialog
+          open
+          dayName={conflict.dayName}
+          setCount={conflict.setCount}
+          resumeHref={`${sessionBasePath}/session/${conflict._id}`}
+          onDeleteAndStart={() => {
+            const dayNum = conflict.dayNumber;
+            setConflict(null);
+            void startSession(dayNum, true);
+          }}
+          onClose={() => setConflict(null)}
+        />
+      )}
     </div>
   );
 }
