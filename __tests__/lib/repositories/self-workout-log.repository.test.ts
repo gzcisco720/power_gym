@@ -247,4 +247,37 @@ describe('MongoSelfWorkoutLogRepository', () => {
       });
     });
   });
+
+  describe('findToday', () => {
+    it('calls findOne with userId and today UTC date range', async () => {
+      const sortMock = jest.fn().mockResolvedValue(null);
+      mockModel.findOne.mockReturnValue({ sort: sortMock } as never);
+      await repo.findToday(USER_A);
+
+      expect(mockModel.findOne).toHaveBeenCalledWith({
+        userId: expect.any(mongoose.Types.ObjectId),
+        startedAt: { $gte: expect.any(Date), $lt: expect.any(Date) },
+      });
+      const args = mockModel.findOne.mock.calls[0][0] as {
+        startedAt: { $gte: Date; $lt: Date };
+      };
+      expect(args.startedAt.$lt.getTime() - args.startedAt.$gte.getTime()).toBe(86_400_000);
+      expect(sortMock).toHaveBeenCalledWith({ startedAt: -1 });
+    });
+
+    it('returns null when no log exists today', async () => {
+      const sortMock = jest.fn().mockResolvedValue(null);
+      mockModel.findOne.mockReturnValue({ sort: sortMock } as never);
+      const result = await repo.findToday(USER_A);
+      expect(result).toBeNull();
+    });
+
+    it('returns the log when one exists today', async () => {
+      const log = { _id: 'log1', dayName: 'Push', startedAt: new Date() };
+      const sortMock = jest.fn().mockResolvedValue(log);
+      mockModel.findOne.mockReturnValue({ sort: sortMock } as never);
+      const result = await repo.findToday(USER_A);
+      expect(result).toEqual(log);
+    });
+  });
 });
