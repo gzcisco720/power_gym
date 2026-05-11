@@ -9,12 +9,15 @@ export async function POST(req: Request): Promise<Response> {
   if (!session?.user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   await connectDB();
+  const url = new URL(req.url);
+  const overwrite = url.searchParams.get('overwrite') === 'true';
   const body = (await req.json()) as { memberPlanId: string; dayNumber: number; memberId?: string };
 
   const role = session.user.role as UserRole;
-  const targetMemberId = (role === 'trainer' || role === 'owner') && body.memberId
-    ? body.memberId
-    : session.user.id;
+  const targetMemberId =
+    (role === 'trainer' || role === 'owner') && body.memberId
+      ? body.memberId
+      : session.user.id;
   const loggedBy = targetMemberId !== session.user.id ? session.user.id : null;
 
   const memberPlanRepo = new MongoMemberPlanRepository();
@@ -25,22 +28,27 @@ export async function POST(req: Request): Promise<Response> {
   if (!day) return Response.json({ error: 'Day not found' }, { status: 404 });
 
   const sessionRepo = new MongoWorkoutSessionRepository();
-  const existingActive = await sessionRepo.findActive(targetMemberId);
-  if (existingActive) {
-    if (existingActive.dayNumber === body.dayNumber) {
-      return Response.json(existingActive, { status: 200 });
+  const todaySession = await sessionRepo.findToday(targetMemberId);
+
+  if (todaySession) {
+    if (todaySession.completedAt === null && todaySession.dayNumber === body.dayNumber) {
+      return Response.json(todaySession, { status: 200 });
     }
-    return Response.json(
-      {
-        error: 'ACTIVE_SESSION_CONFLICT',
-        activeSession: {
-          _id: existingActive._id.toString(),
-          dayName: existingActive.dayName,
-          dayNumber: existingActive.dayNumber,
+    if (!overwrite) {
+      return Response.json(
+        {
+          error: 'TODAY_ALREADY_LOGGED',
+          existingSession: {
+            _id: todaySession._id.toString(),
+            dayName: todaySession.dayName,
+            dayNumber: todaySession.dayNumber,
+            startedAt: todaySession.startedAt,
+          },
         },
-      },
-      { status: 409 },
-    );
+        { status: 409 },
+      );
+    }
+    await sessionRepo.delete(todaySession._id.toString());
   }
 
   const sets = day.exercises.flatMap((ex) =>
