@@ -1,6 +1,6 @@
 # My Training Bug Fixes + Calendar — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Status: COMPLETE** — All 12 tasks implemented, reviewed, and committed (2026-05-11).
 
 **Goal:** Fix 5 issues in owner/trainer My Training: one-per-day hard gate, multi-tab 404 safety, completed-session read-only mode, mini workout calendar (replaces Recent Sessions list), and a full weekly self-tracking calendar page.
 

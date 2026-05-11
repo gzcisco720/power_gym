@@ -1,6 +1,6 @@
 # Free Day Logging Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Status: COMPLETE** — All tasks implemented, reviewed, and committed (2026-05-11).
 
 **Goal:** Replace the one-per-day restriction and rotation logic with free day selection: any role can log any plan/template day, any order, multiple times per day; the only gate is one active (in-progress) session at a time.
 

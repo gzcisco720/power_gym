@@ -31,8 +31,8 @@ The page has four stacked regions. Each region is present in **all three states*
 ├─ HERO COCKPIT (TWO CARDS, EQUAL) ───────────────────────┤
 │ Left: From Template (emerald accent)                    │
 │ Right: Freestyle (sky accent)                           │
-├─ RECENT SESSIONS ───────────────────────────────────────┤
-│ List of last N sessions  /  empty preview row           │
+├─ TRAINING HISTORY ──────────────────────────────────────┤
+│ Mini month calendar with workout dots + "View calendar →"│
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -64,7 +64,7 @@ The current `StartWorkoutCard` is replaced. New components live in `src/componen
 | `ActivityStrip` | 14-day heatmap + month stats (Full/Light) or 3-step onboarding (Empty). Pure presentational. |
 | `TemplatePathCard` | Left card. Internal sub-states for Full / Light / Empty driven by props (no `<If>` branching at the page level). |
 | `FreestylePathCard` | Right card. Same shape — one component, sub-states by props. |
-| `RecentSessionsList` | Final region. Renders 0-5 rows + appropriate hint row. |
+| `MiniWorkoutCalendar` (client) | Final region. Fetches logs for current month and renders a compact month grid. Days with a completed session show a dot. Clicking a day navigates to `/my-training/calendar?date=YYYY-MM-DD`. "View calendar →" link in section header goes to the full weekly calendar. |
 | `PresetTemplatePicker` (client) | Hard-coded list of 3 frameworks. On click, `router.push('/trainer/plans/new?preset=<key>')`. Lives inside `TemplatePathCard` empty branch. |
 
 The two path cards expose the same outer shape (eyebrow, title, body, footer with primary + ghost button) so the cockpit reads as a true pair, not "two unrelated cards that happen to be side by side."
@@ -99,7 +99,7 @@ This is the load-bearing rule of the design. **Every region must render visible 
 | Activity strip | 3-step onboarding flow ("Pick path › Log sets › Mark complete") with numbered chips. No heatmap squares (which would all be empty). |
 | Left card body | 3 hard-coded preset template suggestions, each clickable, plus a one-line link to "import one you've built for a member." |
 | Right card body | 3-bullet "what you can do" list. Each bullet is a real capability of freestyle, not filler. |
-| Recent list | A single dimmed example row showing the schema ("Tue · PPL · Day 2 · Pull · 8 sets · 52 min · RPE 7") + an explanation paragraph: "Once you finish your first session, you'll see a recap row here." |
+| Training history calendar | `MiniWorkoutCalendar` always renders a month grid. Empty months show all-grey day cells with no dots — no special empty state needed. |
 
 The example row in the Recent region is the most subjective choice. If reviewers find it confusing rather than instructive, fall back to a plain `<p>` "No sessions yet" — but that's the option of last resort.
 
