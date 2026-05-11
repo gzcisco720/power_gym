@@ -10,6 +10,7 @@ import { ActiveSessionPrompt } from '@/components/shared/active-session-prompt';
 import { labelExercises } from '@/lib/training/label-exercises';
 import { cn } from '@/lib/utils';
 import { ActiveSessionConflictDialog } from '@/components/self-tracking/active-session-conflict-dialog';
+import { DayAlreadyLoggedDialog } from '@/components/self-tracking/day-already-logged-dialog';
 
 interface PlanDayExercise {
   groupId: string;
@@ -63,6 +64,10 @@ export function PlanOverview({
     dayNumber: number;
     setCount: number;
   } | null>(null);
+  const [dayAlreadyLogged, setDayAlreadyLogged] = useState<{
+    _id: string;
+    dayName: string;
+  } | null>(null);
 
   async function startSession(dayNum: number, deleteActive = false) {
     if (!plan) return;
@@ -83,9 +88,12 @@ export function PlanOverview({
         const body = (await res.json()) as {
           error: string;
           activeSession?: { _id: string; dayName: string; dayNumber: number; setCount: number };
+          session?: { _id: string; dayName: string };
         };
         if (body.error === 'ACTIVE_SESSION_EXISTS' && body.activeSession) {
           setConflict(body.activeSession);
+        } else if (body.error === 'DAY_ALREADY_LOGGED' && body.session) {
+          setDayAlreadyLogged(body.session);
         }
       }
     } finally {
@@ -272,6 +280,16 @@ export function PlanOverview({
             void startSession(dayNum, true);
           }}
           onClose={() => setConflict(null)}
+        />
+      )}
+
+      {dayAlreadyLogged && (
+        <DayAlreadyLoggedDialog
+          open
+          dayName={dayAlreadyLogged.dayName}
+          sessionId={dayAlreadyLogged._id}
+          basePath="/member/plan"
+          onClose={() => setDayAlreadyLogged(null)}
         />
       )}
     </div>
