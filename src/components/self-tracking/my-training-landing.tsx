@@ -12,7 +12,7 @@ import { RecentSessionsList, type SessionRow } from './recent-sessions-list';
 import { PageHeader } from '@/components/shared/page-header';
 import { ActiveSessionPrompt } from '@/components/shared/active-session-prompt';
 import { WorkoutCalendarHeaderTrigger } from './workout-calendar-header-trigger';
-import type { ISelfWorkoutLog, ISelfWorkoutSet } from '@/lib/db/models/self-workout-log.model';
+import type { ISelfWorkoutLog } from '@/lib/db/models/self-workout-log.model';
 import type { IPlanTemplate } from '@/lib/db/models/plan-template.model';
 
 type BasePath = '/trainer/my-training' | '/owner/my-training';
@@ -120,15 +120,10 @@ export async function MyTrainingLanding({ basePath }: { basePath: BasePath }) {
         {state === 'empty' && <ActivityStrip state="empty" />}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {state === 'empty' ? (
-            <TemplatePathCard
-              state="empty"
-              basePath={basePath}
-              templates={toUserTemplates(userTemplates)}
-            />
-          ) : (
-            await renderTemplateCard(state, lastByTemplate, templateRepo, basePath, userTemplates)
-          )}
+          <TemplatePathCard
+            templates={toUserTemplates(userTemplates)}
+            basePath={basePath}
+          />
           {state === 'empty' ? (
             <FreestylePathCard state="empty" basePath={basePath} />
           ) : (
@@ -172,67 +167,6 @@ function avgRpe(logs: ISelfWorkoutLog[]): number {
   if (withRpe.length === 0) return 0;
   const total = withRpe.reduce((acc, l) => acc + (l.rpe ?? 0), 0);
   return total / withRpe.length;
-}
-
-async function renderTemplateCard(
-  state: 'full' | 'light',
-  lastByTemplate: ISelfWorkoutLog | null,
-  templateRepo: MongoPlanTemplateRepository,
-  basePath: BasePath,
-  userTemplates: IPlanTemplate[],
-) {
-  const emptyFallback = (
-    <TemplatePathCard
-      state="empty"
-      basePath={basePath}
-      templates={toUserTemplates(userTemplates)}
-    />
-  );
-  if (!lastByTemplate || !lastByTemplate.sourceTemplateId) return emptyFallback;
-  const tpl: IPlanTemplate | null = await templateRepo.findById(lastByTemplate.sourceTemplateId.toString());
-  if (!tpl) return emptyFallback;
-
-  const lastDayNumber = lastByTemplate.sourceTemplateDayNumber ?? 1;
-  const nextDayNumber = (lastDayNumber % tpl.days.length) + 1;
-  const nextDay = tpl.days.find((d) => d.dayNumber === nextDayNumber) ?? tpl.days[0];
-
-  const exercisePreview = nextDay.exercises.slice(0, 4).map((ex) => ({
-    name: ex.exerciseName,
-    prescribed: `${ex.sets}×${ex.repsMin === ex.repsMax ? ex.repsMin : `${ex.repsMin}-${ex.repsMax}`}`,
-    lastWeight: null as number | null,
-  }));
-
-  // plannedSets shape expected by /api/me/workout-logs.
-  // Reference: src/components/self-tracking/template-day-picker-dialog.tsx pickDay().
-  const plannedSets: ISelfWorkoutSet[] = nextDay.exercises.flatMap((ex) =>
-    Array.from({ length: ex.sets }, (_, i) => ({
-      exerciseId: ex.exerciseId,
-      exerciseName: ex.exerciseName,
-      groupId: ex.groupId,
-      isSuperset: ex.isSuperset,
-      isBodyweight: ex.isBodyweight,
-      setNumber: i + 1,
-      prescribedRepsMin: ex.repsMin,
-      prescribedRepsMax: ex.repsMax,
-      actualWeight: null,
-      actualReps: null,
-      completedAt: null,
-    })),
-  );
-
-  return (
-    <TemplatePathCard
-      state={state}
-      templateId={tpl._id.toString()}
-      templateName={tpl.name}
-      nextDay={{ dayNumber: nextDay.dayNumber, dayName: nextDay.name }}
-      cycleSize={tpl.days.length}
-      completedDayNumbers={[lastDayNumber]}
-      exercisePreview={exercisePreview}
-      plannedSets={JSON.parse(JSON.stringify(plannedSets))}
-      basePath={basePath}
-    />
-  );
 }
 
 function renderFreestyleCard(state: 'full' | 'light', recent: ISelfWorkoutLog[], basePath: BasePath) {

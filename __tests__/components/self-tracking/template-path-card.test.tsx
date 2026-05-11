@@ -3,9 +3,27 @@ import { TemplatePathCard } from '@/components/self-tracking/template-path-card'
 
 const pushMock = jest.fn();
 jest.mock('next/navigation', () => ({ useRouter: () => ({ push: pushMock }) }));
-jest.mock('@/components/self-tracking/template-day-picker-dialog', () => ({
-  TemplateDayPickerDialog: ({ open }: { open: boolean }) =>
-    open ? <div data-testid="picker-dialog">picker open</div> : null,
+jest.mock('@/components/self-tracking/active-session-conflict-dialog', () => ({
+  ActiveSessionConflictDialog: ({
+    open,
+    dayName,
+    onClose,
+    onDeleteAndStart,
+  }: {
+    open: boolean;
+    dayName: string;
+    setCount: number;
+    resumeHref: string;
+    onClose: () => void;
+    onDeleteAndStart: () => void;
+  }) =>
+    open ? (
+      <div role="dialog" data-testid="conflict-dialog">
+        <span>Active session: {dayName}</span>
+        <button onClick={onDeleteAndStart}>Delete and Start</button>
+        <button onClick={onClose}>Cancel</button>
+      </div>
+    ) : null,
 }));
 
 global.fetch = jest.fn();
@@ -13,20 +31,6 @@ global.fetch = jest.fn();
 beforeEach(() => {
   jest.clearAllMocks();
 });
-
-const sampleSet = {
-  exerciseId: 'ex1',
-  exerciseName: 'Bench',
-  groupId: 'g1',
-  isSuperset: false,
-  isBodyweight: false,
-  setNumber: 1,
-  prescribedRepsMin: 6,
-  prescribedRepsMax: 8,
-  actualWeight: null,
-  actualReps: null,
-  completedAt: null,
-} as unknown as import('@/lib/db/models/self-workout-log.model').ISelfWorkoutSet;
 
 const singleDayTemplate = {
   _id: 'tplA',
@@ -62,118 +66,99 @@ const multiDayTemplate = {
 };
 
 describe('TemplatePathCard', () => {
-  it('renders Full state with cycle-progress dots and Start button', () => {
-    render(
-      <TemplatePathCard
-        state="full"
-        templateId="tpl1"
-        templateName="Push · Pull · Legs"
-        nextDay={{ dayNumber: 3, dayName: 'Push' }}
-        cycleSize={6}
-        completedDayNumbers={[1, 2]}
-        exercisePreview={[
-          { name: 'Bench Press', prescribed: '4×6-8', lastWeight: 92.5 },
-          { name: 'Overhead Press', prescribed: '3×8', lastWeight: 60 },
-        ]}
-        plannedSets={[sampleSet]}
-        basePath="/trainer/my-training"
-      />,
-    );
-    expect(screen.getByRole('heading', { name: /day 3/i })).toBeInTheDocument();
-    expect(screen.getByText('Push · Pull · Legs')).toBeInTheDocument();
-    expect(screen.getByText('Bench Press')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /start day 3/i })).toBeInTheDocument();
-  });
-
-  it('renders Light state without last weights', () => {
-    render(
-      <TemplatePathCard
-        state="light"
-        templateId="tpl1"
-        templateName="Push · Pull · Legs"
-        nextDay={{ dayNumber: 2, dayName: 'Pull' }}
-        cycleSize={6}
-        completedDayNumbers={[1]}
-        exercisePreview={[{ name: 'Bench Press', prescribed: '4×6-8', lastWeight: null }]}
-        plannedSets={[sampleSet]}
-        basePath="/trainer/my-training"
-      />,
-    );
-    expect(screen.getByRole('button', { name: /start day 2/i })).toBeInTheDocument();
-    expect(screen.queryByText(/last 9/)).not.toBeInTheDocument();
-  });
-
-  describe('Empty state', () => {
-    it('shows "no templates yet" hint + disabled Start when user has 0 templates', () => {
-      render(
-        <TemplatePathCard
-          state="empty"
-          basePath="/trainer/my-training"
-          templates={[]}
-        />,
-      );
-      expect(screen.getByText(/pick a template/i)).toBeInTheDocument();
-      expect(screen.getByText(/no templates yet/i)).toBeInTheDocument();
-      const startBtn = screen.getByRole('button', { name: /start to log/i });
-      expect(startBtn).toBeDisabled();
-      expect(screen.getByRole('button', { name: /\+ create/i })).toBeInTheDocument();
+  describe('empty state (no templates)', () => {
+    it('renders empty state with Create Template button when templates array is empty', () => {
+      render(<TemplatePathCard templates={[]} basePath="/trainer/my-training" />);
+      expect(screen.getByText(/create a training template/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /\+ create template/i })).toBeInTheDocument();
     });
 
-    it('Create button routes to plans/new', () => {
-      render(
-        <TemplatePathCard
-          state="empty"
-          basePath="/owner/my-training"
-          templates={[]}
-        />,
-      );
-      fireEvent.click(screen.getByRole('button', { name: /\+ create/i }));
+    it('Create Template button routes to plans/new', () => {
+      render(<TemplatePathCard templates={[]} basePath="/owner/my-training" />);
+      fireEvent.click(screen.getByRole('button', { name: /\+ create template/i }));
       expect(pushMock).toHaveBeenCalledWith('/owner/plans/new');
     });
+  });
 
-    it('renders user templates as a selectable list with Start disabled until selection', () => {
+  describe('has templates', () => {
+    it('renders template accordion with "Pick any day" label', () => {
       render(
         <TemplatePathCard
-          state="empty"
-          basePath="/trainer/my-training"
           templates={[singleDayTemplate, multiDayTemplate]}
+          basePath="/trainer/my-training"
         />,
       );
+      expect(screen.getByText(/pick any day/i)).toBeInTheDocument();
       expect(screen.getByText('My Strength A')).toBeInTheDocument();
       expect(screen.getByText('My PPL')).toBeInTheDocument();
-      const startBtn = screen.getByRole('button', { name: /start to log/i });
-      expect(startBtn).toBeDisabled();
     });
 
-    it('selecting a template highlights it and enables Start', () => {
+    it('auto-expands when only one template', () => {
+      render(
+        <TemplatePathCard templates={[singleDayTemplate]} basePath="/trainer/my-training" />,
+      );
+      // Day name should be visible because it's expanded
+      expect(screen.getByText('Upper')).toBeInTheDocument();
+    });
+
+    it('does not auto-expand when multiple templates', () => {
       render(
         <TemplatePathCard
-          state="empty"
-          basePath="/trainer/my-training"
           templates={[singleDayTemplate, multiDayTemplate]}
+          basePath="/trainer/my-training"
         />,
       );
-      const row = screen.getByRole('option', { name: /my strength a/i });
-      expect(row).toHaveAttribute('aria-selected', 'false');
-      fireEvent.click(row);
-      expect(row).toHaveAttribute('aria-selected', 'true');
-      expect(screen.getByRole('button', { name: /start to log/i })).not.toBeDisabled();
+      expect(screen.queryByText('Upper')).not.toBeInTheDocument();
+      expect(screen.queryByText('Push')).not.toBeInTheDocument();
     });
 
-    it('Start to log on a single-day template posts to API and navigates without opening picker', async () => {
+    it('clicking a template header expands its days', () => {
+      render(
+        <TemplatePathCard
+          templates={[singleDayTemplate, multiDayTemplate]}
+          basePath="/trainer/my-training"
+        />,
+      );
+      fireEvent.click(screen.getByText('My PPL'));
+      expect(screen.getByText('Push')).toBeInTheDocument();
+      expect(screen.getByText('Pull')).toBeInTheDocument();
+      expect(screen.getByText('Legs')).toBeInTheDocument();
+    });
+
+    it('clicking an expanded template header collapses it', () => {
+      render(
+        <TemplatePathCard templates={[singleDayTemplate]} basePath="/trainer/my-training" />,
+      );
+      // It starts expanded (only 1 template)
+      expect(screen.getByText('Upper')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('My Strength A'));
+      expect(screen.queryByText('Upper')).not.toBeInTheDocument();
+    });
+
+    it('only one template is expanded at a time', () => {
+      render(
+        <TemplatePathCard
+          templates={[singleDayTemplate, multiDayTemplate]}
+          basePath="/trainer/my-training"
+        />,
+      );
+      fireEvent.click(screen.getByText('My Strength A'));
+      expect(screen.getByText('Upper')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('My PPL'));
+      expect(screen.queryByText('Upper')).not.toBeInTheDocument();
+      expect(screen.getByText('Push')).toBeInTheDocument();
+    });
+
+    it('Log button POSTs to /api/me/workout-logs and navigates to session', async () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ _id: 'log42' }),
       });
       render(
-        <TemplatePathCard
-          state="empty"
-          basePath="/trainer/my-training"
-          templates={[singleDayTemplate]}
-        />,
+        <TemplatePathCard templates={[singleDayTemplate]} basePath="/trainer/my-training" />,
       );
-      fireEvent.click(screen.getByRole('option', { name: /my strength a/i }));
-      fireEvent.click(screen.getByRole('button', { name: /start to log/i }));
+      // singleDayTemplate auto-expands
+      fireEvent.click(screen.getByRole('button', { name: /log/i }));
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
           '/api/me/workout-logs',
@@ -188,84 +173,94 @@ describe('TemplatePathCard', () => {
       await waitFor(() =>
         expect(pushMock).toHaveBeenCalledWith('/trainer/my-training/session/log42'),
       );
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
-    it('Start to log on a multi-day template opens day picker; selecting a day fires API + navigate', async () => {
+    it('shows buildPlannedSets with correct set shape', async () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ _id: 'log99' }),
+        json: async () => ({ _id: 'logX' }),
       });
       render(
-        <TemplatePathCard
-          state="empty"
-          basePath="/trainer/my-training"
-          templates={[multiDayTemplate]}
-        />,
+        <TemplatePathCard templates={[singleDayTemplate]} basePath="/trainer/my-training" />,
       );
-      fireEvent.click(screen.getByRole('option', { name: /my ppl/i }));
-      fireEvent.click(screen.getByRole('button', { name: /start to log/i }));
-      expect(await screen.findByRole('dialog')).toBeInTheDocument();
-      fireEvent.click(screen.getByRole('button', { name: /day 2 — pull/i }));
-      await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledTimes(1);
-      });
+      fireEvent.click(screen.getByRole('button', { name: /log/i }));
+      await waitFor(() => expect(global.fetch).toHaveBeenCalled());
       const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
-      expect(body.dayName).toBe('Pull');
-      expect(body.sourceTemplateId).toBe('tplB');
-      expect(body.sourceTemplateDayNumber).toBe(2);
+      const set = body.plannedSets[0];
+      expect(set.exerciseName).toBe('Bench Press');
+      expect(set.setNumber).toBe(1);
+      expect(set.prescribedRepsMin).toBe(6);
+      expect(set.prescribedRepsMax).toBe(8);
+      expect(set.actualWeight).toBeNull();
+      expect(set.actualReps).toBeNull();
+    });
+
+    it('on 409 ACTIVE_SESSION_EXISTS shows conflict dialog', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        json: async () => ({
+          error: 'ACTIVE_SESSION_EXISTS',
+          activeSession: { _id: 'active1', dayName: 'Push', setCount: 5 },
+        }),
+      });
+      render(
+        <TemplatePathCard templates={[singleDayTemplate]} basePath="/trainer/my-training" />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: /log/i }));
+      expect(await screen.findByTestId('conflict-dialog')).toBeInTheDocument();
+      expect(screen.getByText(/active session: push/i)).toBeInTheDocument();
+    });
+
+    it('conflict dialog Cancel clears conflict state', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        json: async () => ({
+          error: 'ACTIVE_SESSION_EXISTS',
+          activeSession: { _id: 'active1', dayName: 'Push', setCount: 5 },
+        }),
+      });
+      render(
+        <TemplatePathCard templates={[singleDayTemplate]} basePath="/trainer/my-training" />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: /log/i }));
+      await screen.findByTestId('conflict-dialog');
+      fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
       await waitFor(() =>
-        expect(pushMock).toHaveBeenCalledWith('/trainer/my-training/session/log99'),
+        expect(screen.queryByTestId('conflict-dialog')).not.toBeInTheDocument(),
       );
     });
-  });
 
-  it('"Start Day N" posts to /api/me/workout-logs and routes to the session', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: async () => ({ _id: 'log9' }) });
-    render(
-      <TemplatePathCard
-        state="full"
-        templateId="tpl1"
-        templateName="Push · Pull · Legs"
-        nextDay={{ dayNumber: 3, dayName: 'Push' }}
-        cycleSize={6}
-        completedDayNumbers={[1, 2]}
-        exercisePreview={[]}
-        plannedSets={[sampleSet]}
-        basePath="/trainer/my-training"
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: /start day 3/i }));
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/me/workout-logs',
-        expect.objectContaining({ method: 'POST' }),
+    it('conflict dialog "Delete and Start" re-POSTs with deleteActive=true', async () => {
+      (global.fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 409,
+          json: async () => ({
+            error: 'ACTIVE_SESSION_EXISTS',
+            activeSession: { _id: 'active1', dayName: 'Push', setCount: 5 },
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ _id: 'newLog' }),
+        });
+      render(
+        <TemplatePathCard templates={[singleDayTemplate]} basePath="/trainer/my-training" />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: /log/i }));
+      await screen.findByTestId('conflict-dialog');
+      fireEvent.click(screen.getByRole('button', { name: /delete and start/i }));
+      await waitFor(() =>
+        expect(global.fetch).toHaveBeenCalledWith(
+          '/api/me/workout-logs?deleteActive=true',
+          expect.objectContaining({ method: 'POST' }),
+        ),
+      );
+      await waitFor(() =>
+        expect(pushMock).toHaveBeenCalledWith('/trainer/my-training/session/newLog'),
       );
     });
-    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
-    expect(body.dayName).toBe('Push');
-    expect(body.sourceTemplateId).toBe('tpl1');
-    expect(body.sourceTemplateDayNumber).toBe(3);
-    expect(body.plannedSets).toHaveLength(1);
-    await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/trainer/my-training/session/log9'));
-  });
-
-  it('"Pick another day" opens the TemplateDayPickerDialog', () => {
-    render(
-      <TemplatePathCard
-        state="full"
-        templateId="tpl1"
-        templateName="Push · Pull · Legs"
-        nextDay={{ dayNumber: 3, dayName: 'Push' }}
-        cycleSize={6}
-        completedDayNumbers={[1, 2]}
-        exercisePreview={[]}
-        plannedSets={[sampleSet]}
-        basePath="/trainer/my-training"
-      />,
-    );
-    expect(screen.queryByTestId('picker-dialog')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /pick another day/i }));
-    expect(screen.getByTestId('picker-dialog')).toBeInTheDocument();
   });
 });

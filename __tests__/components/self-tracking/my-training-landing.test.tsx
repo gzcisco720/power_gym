@@ -41,7 +41,7 @@ describe('MyTrainingLanding', () => {
     const ui = await MyTrainingLanding({ basePath: '/trainer/my-training' });
     render(ui);
     expect(screen.getByText(/get started/i)).toBeInTheDocument();
-    expect(screen.getByText(/pick a template/i)).toBeInTheDocument();
+    expect(screen.getByText(/from template/i)).toBeInTheDocument();
     expect(screen.getByText(/blank session/i)).toBeInTheDocument();
     expect(screen.getByText(/coming soon/i)).toBeInTheDocument();
   });
