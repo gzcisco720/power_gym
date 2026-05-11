@@ -33,8 +33,9 @@ describe('/api/me/workout-logs', () => {
       mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
       const create = jest.fn().mockResolvedValue({ _id: 'log1' });
       const findActive = jest.fn().mockResolvedValue(null);
+      const findCompletedToday = jest.fn().mockResolvedValue(null);
       mockSelfRepo.mockImplementation(
-        () => ({ create, findActive } as unknown as MongoSelfWorkoutLogRepository),
+        () => ({ create, findActive, findCompletedToday } as unknown as MongoSelfWorkoutLogRepository),
       );
       const res = await POST(
         new Request('http://x', {
@@ -91,8 +92,9 @@ describe('/api/me/workout-logs', () => {
       });
       const deleteFn = jest.fn().mockResolvedValue(true);
       const create = jest.fn().mockResolvedValue({ _id: 'log-new' });
+      const findCompletedToday = jest.fn().mockResolvedValue(null);
       mockSelfRepo.mockImplementation(
-        () => ({ findActive, delete: deleteFn, create } as unknown as MongoSelfWorkoutLogRepository),
+        () => ({ findActive, delete: deleteFn, create, findCompletedToday } as unknown as MongoSelfWorkoutLogRepository),
       );
       const res = await POST(
         new Request('http://x?deleteActive=true', {
@@ -118,8 +120,9 @@ describe('/api/me/workout-logs', () => {
       const findById = jest.fn().mockResolvedValue(null);
       mockTplRepo.mockImplementation(() => ({ findById } as unknown as MongoPlanTemplateRepository));
       const findActive = jest.fn().mockResolvedValue(null);
+      const findCompletedToday = jest.fn().mockResolvedValue(null);
       mockSelfRepo.mockImplementation(
-        () => ({ findActive } as unknown as MongoSelfWorkoutLogRepository),
+        () => ({ findActive, findCompletedToday } as unknown as MongoSelfWorkoutLogRepository),
       );
       const res = await POST(
         new Request('http://x', {
@@ -133,6 +136,56 @@ describe('/api/me/workout-logs', () => {
         }),
       );
       expect(res.status).toBe(404);
+    });
+
+    it('returns 409 DAY_ALREADY_LOGGED when a completed log exists today', async () => {
+      mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
+      const findActive = jest.fn().mockResolvedValue(null);
+      const findCompletedToday = jest.fn().mockResolvedValue({
+        _id: { toString: () => 'log-today' },
+        dayName: 'Push',
+      });
+      const create = jest.fn();
+      mockSelfRepo.mockImplementation(
+        () => ({ findActive, findCompletedToday, create } as unknown as MongoSelfWorkoutLogRepository),
+      );
+      const res = await POST(
+        new Request('http://x', {
+          method: 'POST',
+          body: JSON.stringify({ dayName: 'Pull', plannedSets: [] }),
+        }),
+      );
+      expect(res.status).toBe(409);
+      const body = (await res.json()) as { error: string; session: { _id: string; dayName: string } };
+      expect(body.error).toBe('DAY_ALREADY_LOGGED');
+      expect(body.session._id).toBe('log-today');
+      expect(body.session.dayName).toBe('Push');
+      expect(create).not.toHaveBeenCalled();
+    });
+
+    it('does not check completedToday when an active log exists (active check runs first)', async () => {
+      mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
+      const findActive = jest.fn().mockResolvedValue({
+        _id: { toString: () => 'log-active' },
+        dayName: 'Push',
+        startedAt: new Date(),
+        sets: [],
+      });
+      const findCompletedToday = jest.fn();
+      const create = jest.fn();
+      mockSelfRepo.mockImplementation(
+        () => ({ findActive, findCompletedToday, create } as unknown as MongoSelfWorkoutLogRepository),
+      );
+      const res = await POST(
+        new Request('http://x', {
+          method: 'POST',
+          body: JSON.stringify({ dayName: 'Pull', plannedSets: [] }),
+        }),
+      );
+      expect(res.status).toBe(409);
+      const body = (await res.json()) as { error: string };
+      expect(body.error).toBe('ACTIVE_SESSION_EXISTS');
+      expect(findCompletedToday).not.toHaveBeenCalled();
     });
   });
 

@@ -51,6 +51,20 @@ export async function POST(req: Request): Promise<Response> {
     await repo.delete(activeLog._id.toString(), guard.userId);
   }
 
+  const completedToday = await repo.findCompletedToday(guard.userId);
+  if (completedToday) {
+    return Response.json(
+      {
+        error: 'DAY_ALREADY_LOGGED',
+        session: {
+          _id: completedToday._id.toString(),
+          dayName: completedToday.dayName,
+        },
+      },
+      { status: 409 },
+    );
+  }
+
   const log = await repo.create({
     userId: guard.userId,
     startedAt: new Date(),
