@@ -9,6 +9,7 @@ type BasePath = '/owner/my-training' | '/trainer/my-training';
 
 interface Props {
   basePath: BasePath;
+  initialDate?: string;
 }
 
 function getMonday(d: Date): Date {
@@ -20,9 +21,15 @@ function getMonday(d: Date): Date {
   return monday;
 }
 
-export function SelfWorkoutCalendarClient({ basePath }: Props) {
+export function SelfWorkoutCalendarClient({ basePath, initialDate }: Props) {
   const router = useRouter();
-  const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
+  const [weekStart, setWeekStart] = useState(() => {
+    if (initialDate) {
+      const d = new Date(`${initialDate}T00:00:00`);
+      if (!isNaN(d.getTime())) return getMonday(d);
+    }
+    return getMonday(new Date());
+  });
   const [logs, setLogs] = useState<SelfCalendarLog[] | null>(null);
 
   useEffect(() => {

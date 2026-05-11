@@ -53,7 +53,10 @@ export function MiniWorkoutCalendar({ basePath }: Props) {
       </div>
       <SelfWorkoutCalendar
         logs={logs}
-        onSelect={(log) => router.push(`${basePath}/session/${log._id}`)}
+        onSelect={(log) => {
+          const date = log.completedAt.split('T')[0];
+          router.push(`${basePath}/calendar?date=${date}`);
+        }}
         onMonthChange={(y, m) => {
           setYear(y);
           setMonth(m);

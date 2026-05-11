@@ -3,14 +3,20 @@ import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/shared/page-header';
 import { SelfWorkoutCalendarClient } from '@/components/self-tracking/self-workout-calendar-client';
 
-export default async function OwnerMyTrainingCalendarPage() {
+export default async function OwnerMyTrainingCalendarPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string }>;
+}) {
   const session = await auth();
   if (!session?.user || session.user.role !== 'owner') redirect('/login');
+
+  const { date } = await searchParams;
 
   return (
     <div className="flex flex-col min-h-screen">
       <PageHeader title="Training Calendar" subtitle="Your workout history" />
-      <SelfWorkoutCalendarClient basePath="/owner/my-training" />
+      <SelfWorkoutCalendarClient basePath="/owner/my-training" initialDate={date} />
     </div>
   );
 }
