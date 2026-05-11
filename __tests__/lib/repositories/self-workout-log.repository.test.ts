@@ -280,4 +280,27 @@ describe('MongoSelfWorkoutLogRepository', () => {
       expect(result).toEqual(log);
     });
   });
+
+  describe('findCompletedToday', () => {
+    it('calls findOne with completedAt range covering today UTC', async () => {
+      mockModel.findOne.mockReturnValue({ sort: jest.fn().mockResolvedValue(null) } as never);
+      await repo.findCompletedToday(USER_A);
+
+      const callArg = mockModel.findOne.mock.calls[0][0] as {
+        userId: unknown;
+        completedAt: { $gte: Date; $lt: Date };
+      };
+      const { $gte, $lt } = callArg.completedAt;
+      expect($gte.getUTCHours()).toBe(0);
+      expect($gte.getUTCMinutes()).toBe(0);
+      expect($lt.getTime() - $gte.getTime()).toBe(86_400_000);
+      expect(callArg.userId).toEqual(new mongoose.Types.ObjectId(USER_A));
+    });
+
+    it('returns null when no completed session exists today', async () => {
+      mockModel.findOne.mockReturnValue({ sort: jest.fn().mockResolvedValue(null) } as never);
+      const result = await repo.findCompletedToday(USER_A);
+      expect(result).toBeNull();
+    });
+  });
 });
