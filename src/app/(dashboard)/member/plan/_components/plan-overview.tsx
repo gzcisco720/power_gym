@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { CalendarDays } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ExerciseThumbnail } from '@/components/training/exercise-thumbnail';
@@ -8,6 +9,15 @@ import { ExerciseBadge } from '@/components/training/exercise-badge';
 import { ActiveSessionPrompt } from '@/components/shared/active-session-prompt';
 import { labelExercises } from '@/lib/training/label-exercises';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface PlanDayExercise {
   groupId: string;
@@ -53,6 +63,42 @@ export function PlanOverview({
   activePrompt,
 }: Props) {
   const [activeDay, setActiveDay] = useState<number>(plan?.days[0]?.dayNumber ?? 1);
+  const router = useRouter();
+  const [starting, setStarting] = useState(false);
+  const [showOverwrite, setShowOverwrite] = useState(false);
+  const [conflictDayName, setConflictDayName] = useState<string | null>(null);
+  const [pendingDay, setPendingDay] = useState<number | null>(null);
+
+  async function startSession(dayNum: number, overwrite = false) {
+    if (!plan) return;
+    setStarting(true);
+    try {
+      const url = overwrite ? '/api/sessions?overwrite=true' : '/api/sessions';
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberPlanId: plan._id, dayNumber: dayNum }),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { _id: string };
+        router.push(`${sessionBasePath}/session/${data._id}`);
+        return;
+      }
+      if (res.status === 409) {
+        const body = (await res.json()) as {
+          error: string;
+          existingSession?: { dayName: string };
+        };
+        if (body.error === 'TODAY_ALREADY_LOGGED') {
+          setConflictDayName(body.existingSession?.dayName ?? null);
+          setPendingDay(dayNum);
+          setShowOverwrite(true);
+        }
+      }
+    } finally {
+      setStarting(false);
+    }
+  }
 
   if (!plan) {
     return (
@@ -212,13 +258,40 @@ export function PlanOverview({
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 lg:left-[220px] border-t border-[#0f0f0f] bg-[#050505] px-4 sm:px-8 py-3">
-        <a
-          href={`${sessionBasePath}/session/new?day=${activeDay}`}
-          className="flex w-full items-center justify-center rounded-xl bg-white px-4 py-3 text-[13px] font-bold text-black hover:bg-white/90 transition-colors"
+        <button
+          disabled={starting}
+          onClick={() => startSession(activeDay)}
+          className="flex w-full items-center justify-center rounded-xl bg-white px-4 py-3 text-[13px] font-bold text-black hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Log This Workout
-        </a>
+          {starting ? 'Starting…' : 'Log This Workout'}
+        </button>
       </div>
+
+      <Dialog open={showOverwrite} onOpenChange={setShowOverwrite}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>今天已有打卡记录</DialogTitle>
+            <DialogDescription>
+              你今天已记录了「{conflictDayName ?? ''}」。继续将删除这条记录并创建新记录。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowOverwrite(false)}>
+              取消
+            </Button>
+            <Button
+              onClick={() => {
+                const dayNum = pendingDay!;
+                setShowOverwrite(false);
+                setPendingDay(null);
+                void startSession(dayNum, true);
+              }}
+            >
+              覆盖并继续
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

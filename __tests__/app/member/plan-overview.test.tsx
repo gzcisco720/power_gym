@@ -1,5 +1,10 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PlanOverview } from '@/app/(dashboard)/member/plan/_components/plan-overview';
+
+const mockPush = jest.fn();
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockPush }),
+}));
 
 const mockPlan = {
   _id: 'mp1',
@@ -50,6 +55,15 @@ const mockPlan = {
 };
 
 describe('PlanOverview', () => {
+  beforeEach(() => {
+    mockPush.mockReset();
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ _id: 'session1' }),
+    }) as jest.Mock;
+  });
+
   it('shows plan name', () => {
     render(<PlanOverview plan={mockPlan} />);
     expect(screen.getByText('Push Pull Legs')).toBeInTheDocument();
@@ -62,19 +76,38 @@ describe('PlanOverview', () => {
     expect(screen.getByText('Day 3 — Legs')).toBeInTheDocument();
   });
 
-  it('shows "Log This Workout" link pointing to the active day', () => {
+  it('shows "Log This Workout" button for the active day', async () => {
     render(<PlanOverview plan={mockPlan} />);
-    const link = screen.getByRole('link', { name: /log this workout/i });
-    expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute('href', '/member/plan/session/new?day=1');
+    const btn = screen.getByRole('button', { name: /log this workout/i });
+    expect(btn).toBeInTheDocument();
+    fireEvent.click(btn);
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/sessions',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ memberPlanId: 'mp1', dayNumber: 1 }),
+        }),
+      );
+    });
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/member/plan/session/session1'));
   });
 
-  it('updates "Log This Workout" href when a different day tab is clicked', () => {
+  it('posts dayNumber 2 when day 2 tab is active', async () => {
     render(<PlanOverview plan={mockPlan} />);
     const dayTwoTab = screen.getByRole('button', { name: /day 2 — pull/i });
     fireEvent.click(dayTwoTab);
-    const link = screen.getByRole('link', { name: /log this workout/i });
-    expect(link).toHaveAttribute('href', '/member/plan/session/new?day=2');
+    const btn = screen.getByRole('button', { name: /log this workout/i });
+    fireEvent.click(btn);
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/sessions',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ memberPlanId: 'mp1', dayNumber: 2 }),
+        }),
+      );
+    });
   });
 
   it('shows exercises for the active day', () => {
@@ -94,9 +127,12 @@ describe('PlanOverview', () => {
     expect(screen.getByText('No plan assigned')).toBeInTheDocument();
   });
 
-  it('uses sessionBasePath prop for the workout link', () => {
+  it('uses sessionBasePath prop when navigating after session start', async () => {
     render(<PlanOverview plan={mockPlan} sessionBasePath="/owner/my-plan" />);
-    const link = screen.getByRole('link', { name: /log this workout/i });
-    expect(link).toHaveAttribute('href', '/owner/my-plan/session/new?day=1');
+    const btn = screen.getByRole('button', { name: /log this workout/i });
+    fireEvent.click(btn);
+    await waitFor(() =>
+      expect(mockPush).toHaveBeenCalledWith('/owner/my-plan/session/session1'),
+    );
   });
 });
