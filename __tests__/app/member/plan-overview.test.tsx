@@ -135,4 +135,49 @@ describe('PlanOverview', () => {
       expect(mockPush).toHaveBeenCalledWith('/owner/my-plan/session/session1'),
     );
   });
+
+  describe('DAY_ALREADY_LOGGED', () => {
+    it('shows DayAlreadyLoggedDialog when API returns DAY_ALREADY_LOGGED', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 409,
+        json: async () => ({
+          error: 'DAY_ALREADY_LOGGED',
+          session: { _id: 'log-today', dayName: 'Day 1 — Push' },
+        }),
+      }) as jest.Mock;
+
+      render(<PlanOverview plan={mockPlan} />);
+      fireEvent.click(screen.getByRole('button', { name: /log this workout/i }));
+
+      await waitFor(() =>
+        expect(screen.getByText(/already trained today/i)).toBeInTheDocument()
+      );
+      // The dialog description should mention the day name (there may be multiple matches)
+      expect(screen.getAllByText(/Day 1 — Push/).length).toBeGreaterThan(0);
+      // "View session →" link goes to /member/plan/session/log-today
+      const viewLink = screen.getByRole('link', { name: /view session/i });
+      expect(viewLink).toHaveAttribute('href', '/member/plan/session/log-today');
+    });
+
+    it('existing ACTIVE_SESSION_EXISTS handling is preserved', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 409,
+        json: async () => ({
+          error: 'ACTIVE_SESSION_EXISTS',
+          activeSession: { _id: 'active1', dayName: 'Day 2 — Pull', dayNumber: 2, setCount: 3 },
+        }),
+      }) as jest.Mock;
+
+      render(<PlanOverview plan={mockPlan} />);
+      fireEvent.click(screen.getByRole('button', { name: /log this workout/i }));
+
+      await waitFor(() =>
+        expect(screen.getByText(/is still in progress/i)).toBeInTheDocument()
+      );
+      // DayAlreadyLoggedDialog should NOT be shown
+      expect(screen.queryByText(/already trained today/i)).not.toBeInTheDocument();
+    });
+  });
 });

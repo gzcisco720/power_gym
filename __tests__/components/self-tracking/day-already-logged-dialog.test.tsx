@@ -66,4 +66,18 @@ describe('DayAlreadyLoggedDialog', () => {
     render(<DayAlreadyLoggedDialog {...defaultProps} open={false} />);
     expect(screen.queryByText('Already trained today')).not.toBeInTheDocument();
   });
+
+  it('View session link uses /member/plan basePath correctly', () => {
+    render(
+      <DayAlreadyLoggedDialog
+        open
+        dayName="Push"
+        sessionId="abc123"
+        basePath="/member/plan"
+        onClose={jest.fn()}
+      />
+    );
+    const link = screen.getByRole('link', { name: /view session/i });
+    expect(link).toHaveAttribute('href', '/member/plan/session/abc123');
+  });
 });

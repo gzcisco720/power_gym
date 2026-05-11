@@ -5,8 +5,9 @@ import { toast } from 'sonner';
 
 jest.mock('sonner', () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
 
+const mockPush = jest.fn();
 jest.mock('next/navigation', () => ({
-  useRouter: () => ({ push: jest.fn() }),
+  useRouter: () => ({ push: mockPush }),
 }));
 
 // Mock ExerciseSearchSheet to avoid Sheet/fetch complexity in these unit tests
@@ -207,5 +208,55 @@ describe('SessionLogger', () => {
         expect.objectContaining({ method: 'POST' }),
       ),
     );
+  });
+
+  describe('read-only mode (completed session)', () => {
+    const completedSession = {
+      ...mockSession,
+      completedAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+      rpe: 8,
+    };
+
+    it('does not show "Complete Workout" button when session is completed', async () => {
+      await act(async () => { render(<SessionLogger session={completedSession} />); });
+      expect(screen.queryByRole('button', { name: /complete workout/i })).not.toBeInTheDocument();
+    });
+
+    it('shows completion summary in bottom bar', async () => {
+      await act(async () => { render(<SessionLogger session={completedSession} />); });
+      expect(screen.getByText(/completed/i)).toBeInTheDocument();
+      expect(screen.getByText(/RPE 8/i)).toBeInTheDocument();
+    });
+
+    it('does not show "+ Add Exercise" button when session is completed', async () => {
+      await act(async () => { render(<SessionLogger session={completedSession} />); });
+      expect(screen.queryByRole('button', { name: /\+ add exercise/i })).not.toBeInTheDocument();
+    });
+
+    it('shows "Complete Workout" button for active (non-completed) session', async () => {
+      await act(async () => { render(<SessionLogger session={mockSession} />); });
+      expect(screen.getByRole('button', { name: /complete workout/i })).toBeInTheDocument();
+    });
+  });
+
+  describe('404 safety', () => {
+    it('shows toast and redirects when logSet returns 404', async () => {
+      // First fetch (exercises) resolves normally. logSet fetch returns 404.
+      global.fetch = jest.fn()
+        .mockResolvedValueOnce({ ok: true, json: async () => [] }) // /api/exercises
+        .mockResolvedValue({ ok: false, status: 404, json: async () => ({}) });
+
+      await act(async () => { render(<SessionLogger session={mockSession} />); });
+
+      // Fill in weight and click complete set button
+      const weightInput = screen.getByLabelText(/set 1 weight/i);
+      fireEvent.change(weightInput, { target: { value: '80' } });
+      const completeBtn = screen.getByRole('button', { name: /complete set 1/i });
+      await act(async () => { fireEvent.click(completeBtn); });
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith('This session was ended on another device.');
+      });
+    });
   });
 });
