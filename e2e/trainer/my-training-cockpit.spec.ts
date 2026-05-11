@@ -40,7 +40,7 @@ test.describe('My Training cockpit', () => {
     }
   });
 
-  test('Empty state with no templates — Start to log is disabled and hint is shown', async ({
+  test('Template card shows expandable template list in empty-log state', async ({
     page,
   }) => {
     await page.goto('/trainer/my-training');
@@ -48,11 +48,10 @@ test.describe('My Training cockpit', () => {
     // Empty-state ActivityStrip shows the "Get started" eyebrow.
     await expect(page.getByText(/get started/i)).toBeVisible();
 
-    // When the trainer has no plan templates, the EmptyCard shows the empty hint
-    // and the Start-to-log button is disabled until a template is selected.
-    // (The seeded trainer in e2e has at least one template, so this path is
-    // exercised by the unit tests; here we just verify the new copy renders.)
-    await expect(page.getByText(/pick a template/i)).toBeVisible();
+    // The seeded trainer has templates — the card renders as an expandable list.
+    await expect(page.getByText(/from template/i)).toBeVisible();
+    await expect(page.getByText(/pick any day/i)).toBeVisible();
+    await expect(page.getByText('E2E Test Plan')).toBeVisible();
   });
 
   test('Freestyle path — Start blank creates a log and routes to the session', async ({
@@ -75,9 +74,11 @@ test.describe('My Training cockpit', () => {
     }
   });
 
-  test('Empty state — Create button routes to /trainer/plans/new', async ({ page }) => {
+  test('Template card — expanding template reveals Log buttons per day', async ({ page }) => {
     await page.goto('/trainer/my-training');
-    await page.getByRole('button', { name: /\+ create/i }).click();
-    await expect(page).toHaveURL(/\/trainer\/plans\/new$/);
+    // Click the template row to expand it.
+    await page.getByRole('button', { name: /E2E Test Plan/i }).click();
+    // After expanding, at least one "Log" button should appear.
+    await expect(page.getByRole('button', { name: /^Log$/i }).first()).toBeVisible();
   });
 });

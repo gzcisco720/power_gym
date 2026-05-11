@@ -4,17 +4,15 @@ import { test, expect } from '@playwright/test';
 // "Save as template" finish-dialog option.
 //
 // What this test covers end-to-end:
-//   1. Seed a completed template-derived log so the cockpit renders Light state
-//      (the Template card with a "Pick another day" button).
-//   2. Trainer navigates to /trainer/my-training and clicks "Pick another day"
-//      → TemplateDayPickerDialog opens.
-//   3. Picks the seeded "E2E Test Plan" template → picks "Day 1 — Push"
-//   4. POST /api/me/workout-logs → redirect to /session/[id]
-//   5. Session page loads with heading "Push"
-//   6. Trainer clicks Finish → CompleteWorkoutDialog opens
-//   7. Checks "Save as template", fills in template name
-//   8. Clicks "Finish workout" → saves template + redirects to my-training
-//   9. Verifies the new template exists via GET /api/plan-templates
+//   1. Seed a completed template-derived log so the cockpit renders Light state.
+//   2. Trainer navigates to /trainer/my-training and expands "E2E Test Plan"
+//      in the template accordion.
+//   3. Clicks "Log" on Day 1 (Push) → POST /api/me/workout-logs → redirect to /session/[id]
+//   4. Session page loads with heading "Push"
+//   5. Trainer clicks Finish → CompleteWorkoutDialog opens
+//   6. Checks "Save as template", fills in template name
+//   7. Clicks "Finish workout" → saves template + redirects to my-training
+//   8. Verifies the new template exists via GET /api/plan-templates
 
 test.use({ storageState: 'e2e/.auth/trainer.json' });
 
@@ -88,25 +86,16 @@ test.describe('trainer template workout + saveAsTemplate', () => {
 
     await page.goto('/trainer/my-training');
 
-    // --- Step 1: open the template picker via the cockpit's Light state ---
-    // The Template card exposes a "Pick another day" button when the trainer
-    // has prior template-derived logs (seeded above).
-    const pickAnotherBtn = page.getByRole('button', { name: /pick another day/i });
-    await expect(pickAnotherBtn).toBeVisible();
-    await pickAnotherBtn.click();
+    // --- Step 1: expand the E2E Test Plan in the template accordion ---
+    const templateRow = page.getByRole('button', { name: /E2E Test Plan/i });
+    await expect(templateRow).toBeVisible();
+    await templateRow.click();
 
-    // --- Step 2: pick the seeded plan template ---
-    // The dialog renders one ghost Button per template; the seed creates "E2E Test Plan".
-    await expect(page.getByRole('button', { name: 'E2E Test Plan' })).toBeVisible();
-    await page.getByRole('button', { name: 'E2E Test Plan' }).click();
+    // --- Step 2: click Log on the first day (Push / Day 1) ---
+    await expect(page.getByRole('button', { name: /^Log$/i }).first()).toBeVisible();
+    await page.getByRole('button', { name: /^Log$/i }).first().click();
 
-    // --- Step 3: pick day 1 ---
-    // After selecting the template the dialog lists day buttons: "Day 1 — Push"
-    const day1Btn = page.getByRole('button', { name: /^Day 1 — Push$/i });
-    await expect(day1Btn).toBeVisible();
-    await day1Btn.click();
-
-    // --- Step 4: redirect to session page ---
+    // --- Step 3: redirect to session page ---
     await page.waitForURL(/\/trainer\/my-training\/session\/[a-f0-9]+/);
 
     // Session page renders <h1>{log.dayName}</h1> which is the day name "Push".

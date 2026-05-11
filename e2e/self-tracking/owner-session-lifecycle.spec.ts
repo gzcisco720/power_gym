@@ -128,8 +128,8 @@ test.describe('owner: my-training session lifecycle', () => {
       data: { dayName: 'Freestyle 2', plannedSets: [] },
     });
     expect(second.status()).toBe(409);
-    const body = (await second.json()) as { error: string; activeSession: { _id: string; dayName: string } };
-    expect(body.error).toBe('ACTIVE_SESSION_CONFLICT');
+    const body = (await second.json()) as { error: string; activeSession: { _id: string; dayName: string; setCount: number } };
+    expect(body.error).toBe('ACTIVE_SESSION_EXISTS');
     expect(body.activeSession.dayName).toBe('Freestyle');
   });
 });

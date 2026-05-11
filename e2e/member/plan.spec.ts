@@ -11,15 +11,14 @@ test.describe('Member: Training Plan', () => {
 
   test('start session navigates to session page', async ({ page }) => {
     await page.goto('/member/plan');
-    await page.getByRole('link', { name: /log this workout/i }).first().click();
-    // session/new is a server component that auto-creates the session and redirects
+    await page.getByRole('button', { name: /log this workout/i }).first().click();
     await page.waitForURL(/\/member\/plan\/session\/[^/]+$/, { timeout: 15000 });
     await expect(page.url()).toMatch(/\/member\/plan\/session\//);
   });
 
   test('log a set in a session', async ({ page }) => {
     await page.goto('/member/plan');
-    await page.getByRole('link', { name: /log this workout/i }).first().click();
+    await page.getByRole('button', { name: /log this workout/i }).first().click();
     await page.waitForURL(/\/member\/plan\/session\/[^/]+$/, { timeout: 15000 });
 
     await page.fill('[aria-label="Set 1 weight"]', '60');
@@ -32,7 +31,7 @@ test.describe('Member: Training Plan', () => {
 
   test('session shows exercise name and prescribed reps', async ({ page }) => {
     await page.goto('/member/plan');
-    await page.getByRole('link', { name: /log this workout/i }).first().click();
+    await page.getByRole('button', { name: /log this workout/i }).first().click();
     await page.waitForURL(/\/member\/plan\/session\/[^/]+$/, { timeout: 15000 });
     await expect(page.getByText('Bench Press')).toBeVisible();
     // ExerciseRow logging mode renders prescribed reps as a chip "Reps: 8–12"
@@ -41,7 +40,7 @@ test.describe('Member: Training Plan', () => {
 
   test('complete session after logging all sets navigates to plan', async ({ page }) => {
     await page.goto('/member/plan');
-    await page.getByRole('link', { name: /log this workout/i }).first().click();
+    await page.getByRole('button', { name: /log this workout/i }).first().click();
     await page.waitForURL(/\/member\/plan\/session\/[^/]+$/, { timeout: 15000 });
 
     // POST /api/sessions reuses an existing active session for the day, so
