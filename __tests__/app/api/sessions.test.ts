@@ -6,6 +6,7 @@ const mockSessionRepo = {
   create: jest.fn(),
   findByMember: jest.fn(),
   findActive: jest.fn(),
+  findCompletedToday: jest.fn(),
   delete: jest.fn(),
 };
 jest.mock('@/lib/repositories/workout-session.repository', () => ({
@@ -68,6 +69,7 @@ describe('POST /api/sessions', () => {
     };
     mockMemberPlanRepo.findActive.mockResolvedValue(plan);
     mockSessionRepo.findActive.mockResolvedValue(null);
+    mockSessionRepo.findCompletedToday.mockResolvedValue(null);
     mockSessionRepo.create.mockResolvedValue({ _id: 's1', dayNumber: 1, sets: [] });
 
     const { POST } = await import('@/app/api/sessions/route');
@@ -144,6 +146,7 @@ describe('POST /api/sessions', () => {
     };
     mockSessionRepo.findActive.mockResolvedValue(existing);
     mockSessionRepo.delete.mockResolvedValue(true);
+    mockSessionRepo.findCompletedToday.mockResolvedValue(null);
     mockSessionRepo.create.mockResolvedValue({ _id: 'sNew', dayNumber: 2 });
 
     const { POST } = await import('@/app/api/sessions/route');
@@ -156,6 +159,54 @@ describe('POST /api/sessions', () => {
     expect(res.status).toBe(201);
     expect(mockSessionRepo.delete).toHaveBeenCalledWith('sActive');
     expect(mockSessionRepo.create).toHaveBeenCalled();
+  });
+
+  it('returns 409 DAY_ALREADY_LOGGED when completed session exists today', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    mockMemberPlanRepo.findActive.mockResolvedValue(PLAN_WITH_TWO_DAYS);
+    mockSessionRepo.findActive.mockResolvedValue(null);
+    const completedSession = {
+      _id: { toString: () => 'sCompleted' },
+      dayName: 'Day A',
+      completedAt: new Date(),
+    };
+    mockSessionRepo.findCompletedToday.mockResolvedValue(completedSession);
+
+    const { POST } = await import('@/app/api/sessions/route');
+    const res = await POST(new Request('http://localhost/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memberPlanId: 'mp1', dayNumber: 1 }),
+    }));
+    const data = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(data.error).toBe('DAY_ALREADY_LOGGED');
+    expect(data.session).toMatchObject({ _id: 'sCompleted', dayName: 'Day A' });
+    expect(mockSessionRepo.create).not.toHaveBeenCalled();
+  });
+
+  it('does not call findCompletedToday when active session exists', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    mockMemberPlanRepo.findActive.mockResolvedValue(PLAN_WITH_TWO_DAYS);
+    const existing = {
+      _id: { toString: () => 'sActive' }, dayNumber: 1, dayName: 'Day A',
+      completedAt: null, startedAt: new Date(),
+      sets: [{ completedAt: new Date() }],
+    };
+    mockSessionRepo.findActive.mockResolvedValue(existing);
+
+    const { POST } = await import('@/app/api/sessions/route');
+    const res = await POST(new Request('http://localhost/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memberPlanId: 'mp1', dayNumber: 2 }),
+    }));
+    const data = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(data.error).toBe('ACTIVE_SESSION_EXISTS');
+    expect(mockSessionRepo.findCompletedToday).not.toHaveBeenCalled();
   });
 });
 

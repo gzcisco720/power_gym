@@ -52,6 +52,20 @@ export async function POST(req: Request): Promise<Response> {
     await sessionRepo.delete(activeSession._id.toString());
   }
 
+  const completedToday = await sessionRepo.findCompletedToday(targetMemberId);
+  if (completedToday) {
+    return Response.json(
+      {
+        error: 'DAY_ALREADY_LOGGED',
+        session: {
+          _id: completedToday._id.toString(),
+          dayName: completedToday.dayName,
+        },
+      },
+      { status: 409 },
+    );
+  }
+
   const sets = day.exercises.flatMap((ex) =>
     Array.from({ length: ex.sets }, (_, i) => ({
       exerciseId: ex.exerciseId,

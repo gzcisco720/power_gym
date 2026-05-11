@@ -2,7 +2,7 @@
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 jest.mock('@/lib/auth/auth', () => ({ auth: jest.fn() }));
 
-const mockSessionRepo = { create: jest.fn(), findByMember: jest.fn(), findByMonth: jest.fn(), findActive: jest.fn() };
+const mockSessionRepo = { create: jest.fn(), findByMember: jest.fn(), findByMonth: jest.fn(), findActive: jest.fn(), findCompletedToday: jest.fn() };
 jest.mock('@/lib/repositories/workout-session.repository', () => ({
   MongoWorkoutSessionRepository: jest.fn(() => mockSessionRepo),
 }));
@@ -29,6 +29,8 @@ describe('POST /api/sessions — trainer creates for member', () => {
       }],
     };
     mockMemberPlanRepo.findActive.mockResolvedValue(plan);
+    mockSessionRepo.findActive.mockResolvedValue(null);
+    mockSessionRepo.findCompletedToday.mockResolvedValue(null);
     mockSessionRepo.create.mockResolvedValue({ _id: 's1' });
 
     const { POST } = await import('@/app/api/sessions/route');

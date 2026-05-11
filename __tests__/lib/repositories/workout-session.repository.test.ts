@@ -345,4 +345,39 @@ describe('MongoWorkoutSessionRepository', () => {
       expect(result).toEqual(session);
     });
   });
+
+  describe('findCompletedToday', () => {
+    it('calls findOne with memberId and completedAt UTC date range sorted desc', async () => {
+      const sortMock = jest.fn().mockResolvedValue(null);
+      mockModel.findOne.mockReturnValue({ sort: sortMock } as never);
+      const id = new mongoose.Types.ObjectId().toString();
+      await repo.findCompletedToday(id);
+
+      expect(mockModel.findOne).toHaveBeenCalledWith({
+        memberId: expect.any(mongoose.Types.ObjectId),
+        completedAt: { $gte: expect.any(Date), $lt: expect.any(Date) },
+      });
+      const args = mockModel.findOne.mock.calls[0][0] as {
+        completedAt: { $gte: Date; $lt: Date };
+      };
+      // $lt - $gte should equal exactly 24 hours
+      expect(args.completedAt.$lt.getTime() - args.completedAt.$gte.getTime()).toBe(86_400_000);
+      expect(sortMock).toHaveBeenCalledWith({ completedAt: -1 });
+    });
+
+    it('returns null when no completed session exists today', async () => {
+      const sortMock = jest.fn().mockResolvedValue(null);
+      mockModel.findOne.mockReturnValue({ sort: sortMock } as never);
+      const result = await repo.findCompletedToday(new mongoose.Types.ObjectId().toString());
+      expect(result).toBeNull();
+    });
+
+    it('returns the session when a completed session exists today', async () => {
+      const session = { _id: 's1', dayNumber: 1, dayName: 'Push Day', completedAt: new Date() };
+      const sortMock = jest.fn().mockResolvedValue(session);
+      mockModel.findOne.mockReturnValue({ sort: sortMock } as never);
+      const result = await repo.findCompletedToday(new mongoose.Types.ObjectId().toString());
+      expect(result).toEqual(session);
+    });
+  });
 });
