@@ -2,7 +2,7 @@
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 jest.mock('@/lib/auth/auth', () => ({ auth: jest.fn() }));
 
-const mockSessionRepo = { create: jest.fn(), findByMember: jest.fn() };
+const mockSessionRepo = { create: jest.fn(), findByMember: jest.fn(), findActive: jest.fn() };
 jest.mock('@/lib/repositories/workout-session.repository', () => ({
   MongoWorkoutSessionRepository: jest.fn(() => mockSessionRepo),
 }));

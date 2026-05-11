@@ -10,7 +10,7 @@ export async function POST(req: Request): Promise<Response> {
 
   await connectDB();
   const url = new URL(req.url);
-  const overwrite = url.searchParams.get('overwrite') === 'true';
+  const deleteActive = url.searchParams.get('deleteActive') === 'true';
   const body = (await req.json()) as { memberPlanId: string; dayNumber: number; memberId?: string };
 
   const role = session.user.role as UserRole;
@@ -28,27 +28,28 @@ export async function POST(req: Request): Promise<Response> {
   if (!day) return Response.json({ error: 'Day not found' }, { status: 404 });
 
   const sessionRepo = new MongoWorkoutSessionRepository();
-  const todaySession = await sessionRepo.findToday(targetMemberId);
+  const activeSession = await sessionRepo.findActive(targetMemberId);
 
-  if (todaySession) {
-    if (todaySession.completedAt === null && todaySession.dayNumber === body.dayNumber) {
-      return Response.json(todaySession, { status: 200 });
+  if (activeSession) {
+    if (activeSession.dayNumber === body.dayNumber) {
+      return Response.json(activeSession, { status: 200 });
     }
-    if (!overwrite) {
+    if (!deleteActive) {
       return Response.json(
         {
-          error: 'TODAY_ALREADY_LOGGED',
-          existingSession: {
-            _id: todaySession._id.toString(),
-            dayName: todaySession.dayName,
-            dayNumber: todaySession.dayNumber,
-            startedAt: todaySession.startedAt,
+          error: 'ACTIVE_SESSION_EXISTS',
+          activeSession: {
+            _id: activeSession._id.toString(),
+            dayName: activeSession.dayName,
+            dayNumber: activeSession.dayNumber,
+            startedAt: activeSession.startedAt,
+            setCount: activeSession.sets.filter((s) => s.completedAt !== null).length,
           },
         },
         { status: 409 },
       );
     }
-    await sessionRepo.delete(todaySession._id.toString());
+    await sessionRepo.delete(activeSession._id.toString());
   }
 
   const sets = day.exercises.flatMap((ex) =>
