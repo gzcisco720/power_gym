@@ -29,12 +29,12 @@ describe('/api/me/workout-logs', () => {
       expect(res.status).toBe(403);
     });
 
-    it('creates a freestyle log when no session exists today', async () => {
+    it('creates a log when no active log exists', async () => {
       mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
       const create = jest.fn().mockResolvedValue({ _id: 'log1' });
-      const findToday = jest.fn().mockResolvedValue(null);
+      const findActive = jest.fn().mockResolvedValue(null);
       mockSelfRepo.mockImplementation(
-        () => ({ create, findToday } as unknown as MongoSelfWorkoutLogRepository),
+        () => ({ create, findActive } as unknown as MongoSelfWorkoutLogRepository),
       );
       const res = await POST(
         new Request('http://x', {
@@ -45,26 +45,23 @@ describe('/api/me/workout-logs', () => {
       expect(res.status).toBe(201);
       expect(create).toHaveBeenCalledWith(
         expect.objectContaining({
-          userId: USER,
-          dayName: 'Freestyle',
-          sourceTemplateId: null,
-          sourceTemplateDayNumber: null,
-          sets: [],
+          userId: USER, dayName: 'Freestyle',
+          sourceTemplateId: null, sourceTemplateDayNumber: null, sets: [],
         }),
       );
     });
 
-    it('returns 409 TODAY_ALREADY_LOGGED when an active log exists today', async () => {
+    it('returns 409 ACTIVE_SESSION_EXISTS when an active log exists', async () => {
       mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
-      const findToday = jest.fn().mockResolvedValue({
+      const findActive = jest.fn().mockResolvedValue({
         _id: { toString: () => 'log-active' },
         dayName: 'Push',
         startedAt: new Date('2026-05-11T10:00:00Z'),
-        completedAt: null,
+        sets: [{ completedAt: new Date() }, { completedAt: new Date() }, { completedAt: null }],
       });
       const create = jest.fn();
       mockSelfRepo.mockImplementation(
-        () => ({ findToday, create } as unknown as MongoSelfWorkoutLogRepository),
+        () => ({ findActive, create } as unknown as MongoSelfWorkoutLogRepository),
       );
       const res = await POST(
         new Request('http://x', {
@@ -73,52 +70,32 @@ describe('/api/me/workout-logs', () => {
         }),
       );
       expect(res.status).toBe(409);
-      const body = (await res.json()) as { error: string; existingLog: { _id: string; dayName: string } };
-      expect(body.error).toBe('TODAY_ALREADY_LOGGED');
-      expect(body.existingLog._id).toBe('log-active');
-      expect(body.existingLog.dayName).toBe('Push');
+      const body = (await res.json()) as {
+        error: string;
+        activeSession: { _id: string; dayName: string; setCount: number };
+      };
+      expect(body.error).toBe('ACTIVE_SESSION_EXISTS');
+      expect(body.activeSession._id).toBe('log-active');
+      expect(body.activeSession.dayName).toBe('Push');
+      expect(body.activeSession.setCount).toBe(2);
       expect(create).not.toHaveBeenCalled();
     });
 
-    it('returns 409 TODAY_ALREADY_LOGGED when a completed log exists today', async () => {
+    it('deletes active log and creates new when ?deleteActive=true', async () => {
       mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
-      const findToday = jest.fn().mockResolvedValue({
-        _id: { toString: () => 'log-done' },
-        dayName: 'Legs',
-        startedAt: new Date('2026-05-11T08:00:00Z'),
-        completedAt: new Date('2026-05-11T09:00:00Z'),
-      });
-      const create = jest.fn();
-      mockSelfRepo.mockImplementation(
-        () => ({ findToday, create } as unknown as MongoSelfWorkoutLogRepository),
-      );
-      const res = await POST(
-        new Request('http://x', {
-          method: 'POST',
-          body: JSON.stringify({ dayName: 'Push', plannedSets: [] }),
-        }),
-      );
-      expect(res.status).toBe(409);
-      const body = (await res.json()) as { error: string };
-      expect(body.error).toBe('TODAY_ALREADY_LOGGED');
-      expect(create).not.toHaveBeenCalled();
-    });
-
-    it('deletes today log and creates new when ?overwrite=true', async () => {
-      mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
-      const findToday = jest.fn().mockResolvedValue({
+      const findActive = jest.fn().mockResolvedValue({
         _id: { toString: () => 'log-old' },
         dayName: 'Push',
         startedAt: new Date(),
-        completedAt: new Date(),
+        sets: [],
       });
       const deleteFn = jest.fn().mockResolvedValue(true);
       const create = jest.fn().mockResolvedValue({ _id: 'log-new' });
       mockSelfRepo.mockImplementation(
-        () => ({ findToday, delete: deleteFn, create } as unknown as MongoSelfWorkoutLogRepository),
+        () => ({ findActive, delete: deleteFn, create } as unknown as MongoSelfWorkoutLogRepository),
       );
       const res = await POST(
-        new Request('http://x?overwrite=true', {
+        new Request('http://x?deleteActive=true', {
           method: 'POST',
           body: JSON.stringify({ dayName: 'Pull', plannedSets: [] }),
         }),
@@ -140,9 +117,9 @@ describe('/api/me/workout-logs', () => {
       mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
       const findById = jest.fn().mockResolvedValue(null);
       mockTplRepo.mockImplementation(() => ({ findById } as unknown as MongoPlanTemplateRepository));
-      const findToday = jest.fn().mockResolvedValue(null);
+      const findActive = jest.fn().mockResolvedValue(null);
       mockSelfRepo.mockImplementation(
-        () => ({ findToday } as unknown as MongoSelfWorkoutLogRepository),
+        () => ({ findActive } as unknown as MongoSelfWorkoutLogRepository),
       );
       const res = await POST(
         new Request('http://x', {

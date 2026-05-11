@@ -16,7 +16,7 @@ export async function POST(req: Request): Promise<Response> {
   if (!guard.ok) return guard.response;
 
   const url = new URL(req.url);
-  const overwrite = url.searchParams.get('overwrite') === 'true';
+  const deleteActive = url.searchParams.get('deleteActive') === 'true';
   const body = (await req.json()) as PostBody;
   if (!body.dayName || typeof body.dayName !== 'string') {
     return Response.json({ error: 'dayName is required' }, { status: 400 });
@@ -31,23 +31,24 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   const repo = new MongoSelfWorkoutLogRepository();
-  const todayLog = await repo.findToday(guard.userId);
+  const activeLog = await repo.findActive(guard.userId);
 
-  if (todayLog) {
-    if (!overwrite) {
+  if (activeLog) {
+    if (!deleteActive) {
       return Response.json(
         {
-          error: 'TODAY_ALREADY_LOGGED',
-          existingLog: {
-            _id: todayLog._id.toString(),
-            dayName: todayLog.dayName,
-            startedAt: todayLog.startedAt,
+          error: 'ACTIVE_SESSION_EXISTS',
+          activeSession: {
+            _id: activeLog._id.toString(),
+            dayName: activeLog.dayName,
+            startedAt: activeLog.startedAt,
+            setCount: activeLog.sets.filter((s) => s.completedAt !== null).length,
           },
         },
         { status: 409 },
       );
     }
-    await repo.delete(todayLog._id.toString(), guard.userId);
+    await repo.delete(activeLog._id.toString(), guard.userId);
   }
 
   const log = await repo.create({
