@@ -270,14 +270,14 @@ export function PlanOverview({
       <Dialog open={showOverwrite} onOpenChange={setShowOverwrite}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>今天已有打卡记录</DialogTitle>
+            <DialogTitle>Already logged today</DialogTitle>
             <DialogDescription>
-              你今天已记录了「{conflictDayName ?? ''}」。继续将删除这条记录并创建新记录。
+              You already logged &ldquo;{conflictDayName ?? ''}&rdquo; today. Starting a new session will replace it.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowOverwrite(false)}>
-              取消
+              Cancel
             </Button>
             <Button
               onClick={() => {
@@ -287,7 +287,7 @@ export function PlanOverview({
                 void startSession(dayNum, true);
               }}
             >
-              覆盖并继续
+              Overwrite &amp; Continue
             </Button>
           </DialogFooter>
         </DialogContent>

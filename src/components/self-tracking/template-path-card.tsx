@@ -202,14 +202,14 @@ function DataCard(props: FullProps | LightProps) {
     <Dialog open={pendingPayload !== null} onOpenChange={() => setPendingPayload(null)}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>今天已有打卡记录</DialogTitle>
+          <DialogTitle>Already logged today</DialogTitle>
           <DialogDescription>
-            你今天已记录了「{conflictDayName ?? ''}」。继续将删除这条记录并创建新记录。
+            You already logged &ldquo;{conflictDayName ?? ''}&rdquo; today. Starting a new session will replace it.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => setPendingPayload(null)}>
-            取消
+            Cancel
           </Button>
           <Button
             onClick={() => {
@@ -218,7 +218,7 @@ function DataCard(props: FullProps | LightProps) {
               void start(payload, true);
             }}
           >
-            覆盖并继续
+            Overwrite &amp; Continue
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -394,14 +394,14 @@ function EmptyCard({ basePath, templates }: EmptyProps) {
     <Dialog open={pendingDay !== null} onOpenChange={() => setPendingDay(null)}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>今天已有打卡记录</DialogTitle>
+          <DialogTitle>Already logged today</DialogTitle>
           <DialogDescription>
-            你今天已记录了「{conflictDayName ?? ''}」。继续将删除这条记录并创建新记录。
+            You already logged &ldquo;{conflictDayName ?? ''}&rdquo; today. Starting a new session will replace it.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => setPendingDay(null)}>
-            取消
+            Cancel
           </Button>
           <Button
             onClick={() => {
@@ -410,7 +410,7 @@ function EmptyCard({ basePath, templates }: EmptyProps) {
               void startDay(day, true);
             }}
           >
-            覆盖并继续
+            Overwrite &amp; Continue
           </Button>
         </DialogFooter>
       </DialogContent>
