@@ -313,7 +313,7 @@ async function seedDevData() {
     ExerciseModel.create({ name: 'Lat Pulldown',   muscleGroup: 'back',      isGlobal: false, createdBy: trainer._id, imageUrl: null, isBodyweight: false }),
   ]);
   // Owner-created food-prep exercise (tests owner-custom exercise path)
-  const dumbbellCurl = await ExerciseModel.create({ name: 'Dumbbell Curl', muscleGroup: 'arms', isGlobal: false, createdBy: owner._id, imageUrl: null, isBodyweight: false });
+  await ExerciseModel.create({ name: 'Dumbbell Curl', muscleGroup: 'arms', isGlobal: false, createdBy: owner._id, imageUrl: null, isBodyweight: false });
   console.log('  ✓ Exercises: 4 global + 2 trainer-custom created + 3 more globals + 1 owner-custom');
 
   // ── Plan Templates ─────────────────────────────────────────────────────────
