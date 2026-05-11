@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ActiveSessionConflictDialog } from './active-session-conflict-dialog';
+import { DayAlreadyLoggedDialog } from './day-already-logged-dialog';
 import type { ISelfWorkoutSet } from '@/lib/db/models/self-workout-log.model';
 
 type BasePath = '/trainer/my-training' | '/owner/my-training';
@@ -52,6 +53,10 @@ export function TemplatePathCard({ templates, basePath }: Props) {
   const [starting, setStarting] = useState(false);
   const [conflict, setConflict] = useState<ConflictInfo | null>(null);
   const [pending, setPending] = useState<PendingLog | null>(null);
+  const [dayAlreadyLogged, setDayAlreadyLogged] = useState<{
+    _id: string;
+    dayName: string;
+  } | null>(null);
 
   async function handleLog(template: UserTemplate, day: UserTemplateDay, deleteActive = false) {
     setStarting(true);
@@ -78,10 +83,13 @@ export function TemplatePathCard({ templates, basePath }: Props) {
         const body = (await res.json()) as {
           error: string;
           activeSession?: ConflictInfo;
+          session?: { _id: string; dayName: string };
         };
         if (body.error === 'ACTIVE_SESSION_EXISTS' && body.activeSession) {
           setConflict(body.activeSession);
           setPending({ template, day });
+        } else if (body.error === 'DAY_ALREADY_LOGGED' && body.session) {
+          setDayAlreadyLogged(body.session);
         }
       }
     } finally {
@@ -192,6 +200,15 @@ export function TemplatePathCard({ templates, basePath }: Props) {
             setConflict(null);
             setPending(null);
           }}
+        />
+      )}
+      {dayAlreadyLogged && (
+        <DayAlreadyLoggedDialog
+          open
+          dayName={dayAlreadyLogged.dayName}
+          sessionId={dayAlreadyLogged._id}
+          basePath={basePath}
+          onClose={() => setDayAlreadyLogged(null)}
         />
       )}
     </>

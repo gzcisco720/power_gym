@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ActiveSessionConflictDialog } from './active-session-conflict-dialog';
+import { DayAlreadyLoggedDialog } from './day-already-logged-dialog';
 
 type BasePath = '/trainer/my-training' | '/owner/my-training';
 
@@ -44,6 +45,10 @@ export function FreestylePathCard(props: Props) {
     dayName: string;
     setCount: number;
   } | null>(null);
+  const [dayAlreadyLogged, setDayAlreadyLogged] = useState<{
+    _id: string;
+    dayName: string;
+  } | null>(null);
 
   async function startBlank(deleteActive = false) {
     setStarting(true);
@@ -65,9 +70,12 @@ export function FreestylePathCard(props: Props) {
         const body = (await res.json()) as {
           error: string;
           activeSession?: { _id: string; dayName: string; setCount: number };
+          session?: { _id: string; dayName: string };
         };
         if (body.error === 'ACTIVE_SESSION_EXISTS' && body.activeSession) {
           setConflict(body.activeSession);
+        } else if (body.error === 'DAY_ALREADY_LOGGED' && body.session) {
+          setDayAlreadyLogged(body.session);
         }
       }
     } finally {
@@ -161,6 +169,15 @@ export function FreestylePathCard(props: Props) {
           void startBlank(true);
         }}
         onClose={() => setConflict(null)}
+      />
+    )}
+    {dayAlreadyLogged && (
+      <DayAlreadyLoggedDialog
+        open
+        dayName={dayAlreadyLogged.dayName}
+        sessionId={dayAlreadyLogged._id}
+        basePath={props.basePath}
+        onClose={() => setDayAlreadyLogged(null)}
       />
     )}
     </>
