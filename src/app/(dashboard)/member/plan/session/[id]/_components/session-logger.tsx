@@ -33,7 +33,15 @@ interface Session {
   dayName: string;
   startedAt: string;
   completedAt: string | null;
+  rpe: number | null;
   sets: SessionSet[];
+}
+
+function formatStaticDuration(startIso: string, endIso: string | null): string {
+  if (!endIso) return '0m';
+  const ms = new Date(endIso).getTime() - new Date(startIso).getTime();
+  const min = Math.max(0, Math.round(ms / 60000));
+  return min >= 60 ? `${Math.floor(min / 60)}h ${min % 60}m` : `${min}m`;
 }
 
 function useElapsedTimer(startedAt: string) {
@@ -123,6 +131,15 @@ export function SessionLogger({
 }) {
   const router = useRouter();
   const elapsed = useElapsedTimer(initialSession.startedAt);
+  const isCompleted = initialSession.completedAt !== null;
+  const staticDuration = formatStaticDuration(initialSession.startedAt, initialSession.completedAt);
+  const completedDateLabel = initialSession.completedAt
+    ? new Date(initialSession.completedAt).toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      })
+    : '';
   const [session, setSession] = useState(initialSession);
   const [inputs, setInputs] = useState<{ weight: string; reps: string }[]>(
     initialSession.sets.map(() => ({ weight: '', reps: '' })),
@@ -179,6 +196,11 @@ export function SessionLogger({
           actualReps: parseInt(input.reps, 10) || null,
         }),
       });
+      if (res.status === 404) {
+        toast.error('This session was ended on another device.');
+        router.push(backPath);
+        return;
+      }
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
         toast.error(data.error ?? 'Failed to log set');
@@ -204,6 +226,11 @@ export function SessionLogger({
           prescribedRepsMax: exercise.prescribedRepsMax,
         }),
       });
+      if (res.status === 404) {
+        toast.error('This session was ended on another device.');
+        router.push(backPath);
+        return;
+      }
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
         toast.error(data.error ?? 'Failed to add set');
@@ -228,6 +255,11 @@ export function SessionLogger({
           prescribedRepsMax: 12,
         }),
       });
+      if (res.status === 404) {
+        toast.error('This session was ended on another device.');
+        router.push(backPath);
+        return;
+      }
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
         toast.error(data.error ?? 'Failed to add exercise');
@@ -298,7 +330,7 @@ export function SessionLogger({
           )}
         </div>
         <div className="text-sm font-mono font-semibold text-foreground/65 bg-muted rounded-md px-2 py-1">
-          {elapsed}
+          {isCompleted ? staticDuration : elapsed}
         </div>
       </div>
 
@@ -333,6 +365,7 @@ export function SessionLogger({
                   onBwToggle={(next) =>
                     setBwOverrides((prev) => ({ ...prev, [ex.exerciseId]: next }))
                   }
+                  readOnly={isCompleted}
                 />
                 {mode === 'trainer' && loggedForMember && (
                   <div className="px-3 pb-3">
@@ -376,26 +409,36 @@ export function SessionLogger({
               onBwToggle={(exId, next) =>
                 setBwOverrides((prev) => ({ ...prev, [exId]: next }))
               }
+              readOnly={isCompleted}
             />
           );
         })}
 
-        <button
-          onClick={() => setExerciseSheetOpen(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/15 py-4 text-xs text-foreground/65 hover:border-foreground/40 hover:text-foreground transition-colors cursor-pointer"
-        >
-          + Add Exercise
-        </button>
+        {!isCompleted && (
+          <button
+            onClick={() => setExerciseSheetOpen(true)}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/15 py-4 text-xs text-foreground/65 hover:border-foreground/40 hover:text-foreground transition-colors cursor-pointer"
+          >
+            + Add Exercise
+          </button>
+        )}
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 lg:left-[220px] border-t border-foreground/10 bg-background px-4 sm:px-8 py-3">
-        <Button
-          onClick={() => setShowCompleteModal(true)}
-          disabled={completing}
-          className="w-full text-sm font-bold py-3 h-auto rounded-xl"
-        >
-          {completing ? 'Saving…' : 'Complete Workout'}
-        </Button>
+        {isCompleted ? (
+          <div className="text-xs text-foreground/65 text-center tabular-nums py-1">
+            Completed {completedDateLabel} · {session.sets.length} sets · {staticDuration}
+            {session.rpe != null ? ` · RPE ${session.rpe}` : ''}
+          </div>
+        ) : (
+          <Button
+            onClick={() => setShowCompleteModal(true)}
+            disabled={completing}
+            className="w-full text-sm font-bold py-3 h-auto rounded-xl"
+          >
+            {completing ? 'Saving…' : 'Complete Workout'}
+          </Button>
+        )}
       </div>
 
       {showCompleteModal && (
