@@ -34,6 +34,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Day Complete Confirm + Future Date Lockdown | [day-complete-confirm-design.md](2026-05-08/plans/day-complete-confirm-design.md) | Approved |
 | My Training Cockpit Landing | [my-training-cockpit-design.md](2026-05-08/plans/my-training-cockpit-design.md) | Approved |
 | Training Template Redesign | [training-template-redesign-design.md](2026-05-09/plans/training-template-redesign-design.md) | Approved |
+| Free Day Logging | [free-day-logging-design.md](2026-05-11/plans/free-day-logging-design.md) | Approved |
 
 ---
 
