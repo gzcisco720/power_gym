@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ExerciseRow, type ExerciseRowData } from '@/components/training/exercise-row';
+import { ExerciseRow, type ExerciseRowData, type LoggingSetInput } from '@/components/training/exercise-row';
 
 const baseRow: ExerciseRowData = {
   exerciseId: 'ex1',
@@ -98,6 +98,111 @@ describe('ExerciseRow (edit mode)', () => {
   it('uses no hardcoded hex classes', () => {
     const { container } = renderEdit();
     expect(container.innerHTML).not.toMatch(/\[#[0-9a-fA-F]{3,8}\]/);
+  });
+});
+
+describe('logging mode — readOnly', () => {
+  const loggingRow: ExerciseRowData = {
+    exerciseId: 'ex2',
+    exerciseName: 'Bench Press',
+    imageUrl: null,
+    isBodyweight: false,
+    groupId: 'ex2',
+    isSuperset: false,
+    sets: 2,
+    repsMin: 8,
+    repsMax: 10,
+    restSeconds: 90,
+  };
+
+  const completedSets: LoggingSetInput[] = [
+    {
+      setNumber: 1,
+      prescribedRepsMin: 8,
+      prescribedRepsMax: 10,
+      actualWeight: 80,
+      actualReps: 9,
+      completedAt: '2024-01-01T10:00:00Z',
+      globalIndex: 0,
+    },
+    {
+      setNumber: 2,
+      prescribedRepsMin: 8,
+      prescribedRepsMax: 10,
+      actualWeight: null,
+      actualReps: null,
+      completedAt: '2024-01-01T10:05:00Z',
+      globalIndex: 1,
+    },
+  ];
+
+  const loggingCallbacks = {
+    onInputChange: jest.fn(),
+    onLogSet: jest.fn(),
+    onAddSet: jest.fn(),
+    onBwToggle: jest.fn(),
+  };
+
+  function renderLogging(readOnly: boolean | undefined) {
+    return render(
+      <ExerciseRow
+        mode="logging"
+        row={loggingRow}
+        label="A"
+        loggingSets={completedSets}
+        inputs={[]}
+        readOnly={readOnly}
+        {...loggingCallbacks}
+      />,
+    );
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('when readOnly={true}', () => {
+    it('BW toggle checkbox is NOT in the document', () => {
+      renderLogging(true);
+      expect(screen.queryByRole('checkbox', { name: /^bw$/i })).not.toBeInTheDocument();
+    });
+
+    it('"+ Add Set" button is NOT in the document', () => {
+      renderLogging(true);
+      expect(screen.queryByText(/\+ add set/i)).not.toBeInTheDocument();
+    });
+
+    it('completed sets show their logged values', () => {
+      renderLogging(true);
+      // Set 1: weight=80 × reps=9
+      expect(screen.getByText(/80 kg × 9 reps/i)).toBeInTheDocument();
+      // Set 2: weight=null, reps=null → shows "–"
+      expect(screen.getByText('–')).toBeInTheDocument();
+    });
+  });
+
+  describe('when readOnly={false}', () => {
+    it('BW toggle checkbox IS in the document', () => {
+      renderLogging(false);
+      expect(screen.getByRole('checkbox', { name: /^bw$/i })).toBeInTheDocument();
+    });
+
+    it('"+ Add Set" button IS in the document', () => {
+      renderLogging(false);
+      expect(screen.getByText(/\+ add set/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('when readOnly is omitted (defaults to interactive)', () => {
+    it('BW toggle checkbox IS in the document', () => {
+      renderLogging(undefined);
+      expect(screen.getByRole('checkbox', { name: /^bw$/i })).toBeInTheDocument();
+    });
+
+    it('"+ Add Set" button IS in the document', () => {
+      renderLogging(undefined);
+      expect(screen.getByText(/\+ add set/i)).toBeInTheDocument();
+    });
   });
 });
 
