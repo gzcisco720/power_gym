@@ -56,6 +56,7 @@ interface LoggingProps extends BaseProps {
   onAddSet: () => void;
   onBwToggle: (next: boolean) => void;
   bwOverride?: boolean;
+  readOnly?: boolean;
 }
 
 interface ViewProps extends BaseProps {
@@ -216,7 +217,7 @@ export function ExerciseRow(props: Props) {
   }
 
   if (mode === 'logging') {
-    const { loggingSets, inputs, onInputChange, onLogSet, onAddSet, onBwToggle, bwOverride } = props;
+    const { loggingSets, inputs, onInputChange, onLogSet, onAddSet, onBwToggle, bwOverride, readOnly } = props;
     const isBw = bwOverride ?? row.isBodyweight;
     const completedCount = loggingSets.length;
     const repsLabel =
@@ -242,16 +243,18 @@ export function ExerciseRow(props: Props) {
               )}
             </div>
           </div>
-          <label className="inline-flex items-center gap-1.5 text-xs text-foreground/65 cursor-pointer select-none shrink-0">
-            <input
-              type="checkbox"
-              aria-label="BW"
-              checked={isBw}
-              onChange={(e) => onBwToggle(e.target.checked)}
-              className="accent-foreground"
-            />
-            BW
-          </label>
+          {!readOnly && (
+            <label className="inline-flex items-center gap-1.5 text-xs text-foreground/65 cursor-pointer select-none shrink-0">
+              <input
+                type="checkbox"
+                aria-label="BW"
+                checked={isBw}
+                onChange={(e) => onBwToggle(e.target.checked)}
+                className="accent-foreground"
+              />
+              BW
+            </label>
+          )}
         </div>
 
         <div className="space-y-1.5">
@@ -321,13 +324,15 @@ export function ExerciseRow(props: Props) {
           })}
         </div>
 
-        <button
-          type="button"
-          onClick={onAddSet}
-          className="mt-2 text-xs text-foreground/65 hover:text-foreground transition-colors cursor-pointer"
-        >
-          + Add Set
-        </button>
+        {!readOnly && (
+          <button
+            type="button"
+            onClick={onAddSet}
+            className="mt-2 text-xs text-foreground/65 hover:text-foreground transition-colors cursor-pointer"
+          >
+            + Add Set
+          </button>
+        )}
       </div>
     );
   }

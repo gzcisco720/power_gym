@@ -119,6 +119,13 @@ function useElapsedTimer(startedAtIso: string | null) {
   return `${mm}:${ss}`;
 }
 
+function formatStaticDuration(startIso: string | null, endIso: string | null): string {
+  if (!startIso || !endIso) return '0m';
+  const ms = new Date(endIso).getTime() - new Date(startIso).getTime();
+  const min = Math.max(0, Math.round(ms / 60000));
+  return min >= 60 ? `${Math.floor(min / 60)}h ${min % 60}m` : `${min}m`;
+}
+
 export function SelfWorkoutSession({ logId, basePath }: Props) {
   const router = useRouter();
   const [log, setLog] = useState<ISelfWorkoutLog | null>(null);
@@ -175,6 +182,21 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     : null;
   const elapsed = useElapsedTimer(startedAtIso);
 
+  const completedAtIso = log?.completedAt
+    ? log.completedAt instanceof Date
+      ? log.completedAt.toISOString()
+      : (log.completedAt as unknown as string)
+    : null;
+  const isCompleted = completedAtIso !== null;
+  const staticDuration = formatStaticDuration(startedAtIso, completedAtIso);
+  const completedDateLabel = completedAtIso
+    ? new Date(completedAtIso).toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      })
+    : '';
+
   function syncLog(next: ISelfWorkoutLog) {
     setLog(next);
     setInputs((prev) => {
@@ -209,6 +231,11 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ actualWeight: weight, actualReps: reps }),
     });
+    if (res.status === 404) {
+      toast.error('This session was ended on another device.');
+      router.push(basePath);
+      return;
+    }
     if (res.ok) syncLog((await res.json()) as ISelfWorkoutLog);
   }
 
@@ -229,6 +256,11 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newSet),
     });
+    if (res.status === 404) {
+      toast.error('This session was ended on another device.');
+      router.push(basePath);
+      return;
+    }
     if (res.ok) syncLog((await res.json()) as ISelfWorkoutLog);
   }
 
@@ -255,6 +287,11 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newSet),
     });
+    if (res.status === 404) {
+      toast.error('This session was ended on another device.');
+      router.push(basePath);
+      return;
+    }
     if (!res.ok) {
       toast.error('Failed to add exercise');
       return;
@@ -289,7 +326,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
           )}
         </div>
         <div className="text-sm font-mono font-semibold text-foreground/65 bg-muted rounded-md px-2 py-1">
-          {elapsed}
+          {isCompleted ? staticDuration : elapsed}
         </div>
       </div>
 
@@ -320,6 +357,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
                   onBwToggle={(next) =>
                     setBwOverrides((prev) => ({ ...prev, [group.exerciseId]: next }))
                   }
+                  readOnly={isCompleted}
                 />
               </div>
             );
@@ -346,7 +384,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
           );
         })}
 
-        {isFreestyle && (
+        {isFreestyle && !isCompleted && (
           <button
             type="button"
             onClick={() => setPickerOpen(true)}
@@ -364,7 +402,14 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
               ? 'No sets yet'
               : `${log.sets.filter((s) => s.completedAt != null).length} / ${log.sets.length} sets logged`}
           </span>
-          <Button onClick={() => setCompleteOpen(true)}>Finish</Button>
+          {isCompleted ? (
+            <span className="text-xs text-foreground/65 tabular-nums">
+              Completed {completedDateLabel} · {log.sets.length} sets · {staticDuration}
+              {log.rpe != null ? ` · RPE ${log.rpe}` : ''}
+            </span>
+          ) : (
+            <Button onClick={() => setCompleteOpen(true)}>Finish</Button>
+          )}
         </div>
       </div>
 
