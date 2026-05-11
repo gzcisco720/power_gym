@@ -39,9 +39,12 @@ export function ActiveSessionConflictDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" asChild>
-            <a href={resumeHref}>Resume &ldquo;{dayName}&rdquo;</a>
-          </Button>
+          <a
+            href={resumeHref}
+            className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border bg-background hover:bg-muted hover:text-foreground h-8 gap-1.5 px-2.5 text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            Resume &ldquo;{dayName}&rdquo;
+          </a>
           <Button variant="destructive" onClick={onDeleteAndStart}>
             Delete &amp; Start New
           </Button>
