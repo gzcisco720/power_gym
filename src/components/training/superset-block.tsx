@@ -61,6 +61,7 @@ interface LoggingProps extends BaseProps {
   onLogSet: (memberExerciseId: string, globalIndex: number) => void;
   onAddSet: (memberExerciseId: string) => void;
   onBwToggle: (memberExerciseId: string, next: boolean) => void;
+  readOnly?: boolean;
 }
 
 interface ViewProps extends BaseProps {
@@ -175,7 +176,7 @@ export function SupersetBlock(props: Props) {
   }
 
   if (props.mode === 'logging') {
-    const { loggingMembers, onInputChange, onLogSet, onAddSet, onBwToggle } = props;
+    const { loggingMembers, onInputChange, onLogSet, onAddSet, onBwToggle, readOnly } = props;
     return (
       <div className="rounded-lg bg-card ring-1 ring-foreground/25 overflow-hidden">
         <div className="px-3 py-1.5 bg-muted/40 flex items-center justify-center">
@@ -199,6 +200,7 @@ export function SupersetBlock(props: Props) {
               onLogSet={(idx) => onLogSet(m.row.exerciseId, idx)}
               onAddSet={() => onAddSet(m.row.exerciseId)}
               onBwToggle={(next) => onBwToggle(m.row.exerciseId, next)}
+              readOnly={readOnly}
             />
           </Fragment>
         ))}

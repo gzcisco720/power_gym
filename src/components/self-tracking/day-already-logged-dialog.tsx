@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import {
   Dialog,
   DialogContent,
@@ -27,12 +28,12 @@ export function DayAlreadyLoggedDialog({ open, dayName, sessionId, basePath, onC
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <a
+          <Link
             href={`${basePath}/session/${sessionId}`}
             className="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
           >
             View session →
-          </a>
+          </Link>
           <Button onClick={onClose}>Got it</Button>
         </DialogFooter>
       </DialogContent>

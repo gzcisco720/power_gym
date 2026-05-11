@@ -380,6 +380,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
               onBwToggle={(exId, next) =>
                 setBwOverrides((prev) => ({ ...prev, [exId]: next }))
               }
+              readOnly={isCompleted}
             />
           );
         })}

@@ -281,6 +281,26 @@ describe('MongoSelfWorkoutLogRepository', () => {
     });
   });
 
+  describe('findByUserDateRange', () => {
+    it('calls find with userId and startedAt range, sorts by startedAt asc', async () => {
+      const start = new Date('2026-05-01T00:00:00Z');
+      const end = new Date('2026-05-08T00:00:00Z');
+      mockModel.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([]) } as never);
+      await repo.findByUserDateRange(USER_A, start, end);
+
+      const callArg = mockModel.find.mock.calls[0][0] as {
+        userId: unknown;
+        startedAt: { $gte: Date; $lt: Date };
+      };
+      expect(callArg.userId).toEqual(new mongoose.Types.ObjectId(USER_A));
+      expect(callArg.startedAt.$gte).toEqual(start);
+      expect(callArg.startedAt.$lt).toEqual(end);
+
+      const sortFn = (mockModel.find.mock.results[0].value as { sort: jest.Mock }).sort;
+      expect(sortFn).toHaveBeenCalledWith({ startedAt: 1 });
+    });
+  });
+
   describe('findCompletedToday', () => {
     it('calls findOne with completedAt range covering today UTC', async () => {
       mockModel.findOne.mockReturnValue({ sort: jest.fn().mockResolvedValue(null) } as never);
