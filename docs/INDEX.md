@@ -36,6 +36,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Training Template Redesign | [training-template-redesign-design.md](2026-05-09/plans/training-template-redesign-design.md) | Approved |
 | Free Day Logging | [free-day-logging-design.md](2026-05-11/plans/free-day-logging-design.md) | Approved |
 | Free Day Logging (Plan) | [free-day-logging-plan.md](2026-05-11/plans/free-day-logging-plan.md) | In Progress |
+| My Training Bug Fixes + Calendar | [my-training-fixes-and-calendar.md](2026-05-11/plans/my-training-fixes-and-calendar.md) | Approved |
 
 ---
 
