@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -72,17 +74,28 @@ function DataCard(props: FullProps | LightProps) {
   const router = useRouter();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [starting, setStarting] = useState(false);
-  const eyebrow = props.state === 'full' ? 'Next in rotation' : 'Repeat or rotate';
-
-  async function start(payload: {
+  const [pendingPayload, setPendingPayload] = useState<{
     templateId: string;
     dayNumber: number;
     dayName: string;
     plannedSets: ISelfWorkoutSet[];
-  }) {
+  } | null>(null);
+  const [conflictDayName, setConflictDayName] = useState<string | null>(null);
+  const eyebrow = props.state === 'full' ? 'Next in rotation' : 'Repeat or rotate';
+
+  async function start(
+    payload: {
+      templateId: string;
+      dayNumber: number;
+      dayName: string;
+      plannedSets: ISelfWorkoutSet[];
+    },
+    overwrite = false,
+  ) {
     setStarting(true);
     try {
-      const res = await fetch('/api/me/workout-logs', {
+      const url = overwrite ? '/api/me/workout-logs?overwrite=true' : '/api/me/workout-logs';
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -95,6 +108,14 @@ function DataCard(props: FullProps | LightProps) {
       if (res.ok) {
         const log = (await res.json()) as { _id: string };
         router.push(`${props.basePath}/session/${log._id}`);
+        return;
+      }
+      if (res.status === 409) {
+        const body = (await res.json()) as { error: string; existingLog?: { dayName: string } };
+        if (body.error === 'TODAY_ALREADY_LOGGED') {
+          setConflictDayName(body.existingLog?.dayName ?? null);
+          setPendingPayload(payload);
+        }
       }
     } finally {
       setStarting(false);
@@ -102,6 +123,7 @@ function DataCard(props: FullProps | LightProps) {
   }
 
   return (
+    <>
     <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 flex flex-col">
       <div className="flex items-center justify-between mb-3">
         <span className="text-[10px] uppercase tracking-[1.6px] font-bold text-emerald-300">{eyebrow}</span>
@@ -177,6 +199,31 @@ function DataCard(props: FullProps | LightProps) {
         }}
       />
     </div>
+    <Dialog open={pendingPayload !== null} onOpenChange={() => setPendingPayload(null)}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>今天已有打卡记录</DialogTitle>
+          <DialogDescription>
+            你今天已记录了「{conflictDayName ?? ''}」。继续将删除这条记录并创建新记录。
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setPendingPayload(null)}>
+            取消
+          </Button>
+          <Button
+            onClick={() => {
+              const payload = pendingPayload!;
+              setPendingPayload(null);
+              void start(payload, true);
+            }}
+          >
+            覆盖并继续
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
 
@@ -204,16 +251,19 @@ function EmptyCard({ basePath, templates }: EmptyProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [starting, setStarting] = useState(false);
+  const [pendingDay, setPendingDay] = useState<UserTemplateDay | null>(null);
+  const [conflictDayName, setConflictDayName] = useState<string | null>(null);
 
   const plansBase = basePath.replace('/my-training', '/plans');
   const selected = templates.find((t) => t._id === selectedId) ?? null;
   const hasTemplates = templates.length > 0;
 
-  async function startDay(day: UserTemplateDay) {
+  async function startDay(day: UserTemplateDay, overwrite = false) {
     if (!selected) return;
     setStarting(true);
     try {
-      const res = await fetch('/api/me/workout-logs', {
+      const url = overwrite ? '/api/me/workout-logs?overwrite=true' : '/api/me/workout-logs';
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -226,6 +276,14 @@ function EmptyCard({ basePath, templates }: EmptyProps) {
       if (res.ok) {
         const log = (await res.json()) as { _id: string };
         router.push(`${basePath}/session/${log._id}`);
+        return;
+      }
+      if (res.status === 409) {
+        const body = (await res.json()) as { error: string; existingLog?: { dayName: string } };
+        if (body.error === 'TODAY_ALREADY_LOGGED') {
+          setConflictDayName(body.existingLog?.dayName ?? null);
+          setPendingDay(day);
+        }
       }
     } finally {
       setStarting(false);
@@ -242,6 +300,7 @@ function EmptyCard({ basePath, templates }: EmptyProps) {
   }
 
   return (
+    <>
     <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 flex flex-col">
       <div className="flex items-center justify-between mb-3">
         <span className="text-[10px] uppercase tracking-[1.6px] font-bold text-emerald-300">Follow a plan</span>
@@ -332,5 +391,30 @@ function EmptyCard({ basePath, templates }: EmptyProps) {
         </Dialog>
       )}
     </div>
+    <Dialog open={pendingDay !== null} onOpenChange={() => setPendingDay(null)}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>今天已有打卡记录</DialogTitle>
+          <DialogDescription>
+            你今天已记录了「{conflictDayName ?? ''}」。继续将删除这条记录并创建新记录。
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setPendingDay(null)}>
+            取消
+          </Button>
+          <Button
+            onClick={() => {
+              const day = pendingDay!;
+              setPendingDay(null);
+              void startDay(day, true);
+            }}
+          >
+            覆盖并继续
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

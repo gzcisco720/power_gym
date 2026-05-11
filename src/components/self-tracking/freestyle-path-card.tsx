@@ -2,6 +2,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 type BasePath = '/trainer/my-training' | '/owner/my-training';
 
@@ -38,11 +46,14 @@ type Props = FullProps | LightProps | EmptyProps;
 export function FreestylePathCard(props: Props) {
   const router = useRouter();
   const [starting, setStarting] = useState(false);
+  const [showOverwrite, setShowOverwrite] = useState(false);
+  const [conflictDayName, setConflictDayName] = useState<string | null>(null);
 
-  async function startBlank() {
+  async function startBlank(overwrite = false) {
     setStarting(true);
     try {
-      const res = await fetch('/api/me/workout-logs', {
+      const url = overwrite ? '/api/me/workout-logs?overwrite=true' : '/api/me/workout-logs';
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dayName: 'Freestyle', plannedSets: [] }),
@@ -50,6 +61,14 @@ export function FreestylePathCard(props: Props) {
       if (res.ok) {
         const log = (await res.json()) as { _id: string };
         router.push(`${props.basePath}/session/${log._id}`);
+        return;
+      }
+      if (res.status === 409) {
+        const body = (await res.json()) as { error: string; existingLog?: { dayName: string } };
+        if (body.error === 'TODAY_ALREADY_LOGGED') {
+          setConflictDayName(body.existingLog?.dayName ?? null);
+          setShowOverwrite(true);
+        }
       }
     } finally {
       setStarting(false);
@@ -57,6 +76,7 @@ export function FreestylePathCard(props: Props) {
   }
 
   return (
+    <>
     <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 flex flex-col">
       <div className="flex items-center justify-between mb-3">
         <span className="text-[10px] uppercase tracking-[1.6px] font-bold text-sky-300">
@@ -125,11 +145,35 @@ export function FreestylePathCard(props: Props) {
       )}
 
       <div className="mt-auto">
-        <Button onClick={startBlank} disabled={starting} className="w-full">
+        <Button onClick={() => startBlank()} disabled={starting} className="w-full">
           {starting ? 'Starting…' : 'Start blank →'}
         </Button>
       </div>
     </div>
+    <Dialog open={showOverwrite} onOpenChange={setShowOverwrite}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>今天已有打卡记录</DialogTitle>
+          <DialogDescription>
+            你今天已记录了「{conflictDayName ?? ''}」。继续将删除这条记录并创建新记录。
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setShowOverwrite(false)}>
+            取消
+          </Button>
+          <Button
+            onClick={() => {
+              setShowOverwrite(false);
+              void startBlank(true);
+            }}
+          >
+            覆盖并继续
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
 
