@@ -28,17 +28,16 @@ export async function MyTrainingLanding({ basePath }: { basePath: BasePath }) {
   const templateRepo = new MongoPlanTemplateRepository();
 
   const now = new Date();
-  const [activeLog, monthLogs, recent, lastByTemplate, pbs, userTemplates] = await Promise.all([
+  const [activeLog, monthLogs, recent, pbs, userTemplates] = await Promise.all([
     logRepo.findActive(userId),
     logRepo.findByUserMonth(userId, now.getFullYear(), now.getMonth() + 1),
     logRepo.findRecent(userId, 10),
-    logRepo.findLastByTemplate(userId),
     pbRepo.findByUser(userId),
     templateRepo.findByCreator(userId),
   ]);
 
   const completedSessionCount = recent.length;
-  const hasUsedTemplate = lastByTemplate !== null;
+  const hasUsedTemplate = recent.some((r) => r.sourceTemplateId !== null);
   const state = detectLandingState({ completedSessionCount, hasUsedTemplate });
 
   // 14-day heatmap
