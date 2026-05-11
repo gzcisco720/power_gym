@@ -2,14 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { ActiveSessionConflictDialog } from './active-session-conflict-dialog';
 
 type BasePath = '/trainer/my-training' | '/owner/my-training';
 
@@ -46,13 +39,18 @@ type Props = FullProps | LightProps | EmptyProps;
 export function FreestylePathCard(props: Props) {
   const router = useRouter();
   const [starting, setStarting] = useState(false);
-  const [showOverwrite, setShowOverwrite] = useState(false);
-  const [conflictDayName, setConflictDayName] = useState<string | null>(null);
+  const [conflict, setConflict] = useState<{
+    _id: string;
+    dayName: string;
+    setCount: number;
+  } | null>(null);
 
-  async function startBlank(overwrite = false) {
+  async function startBlank(deleteActive = false) {
     setStarting(true);
     try {
-      const url = overwrite ? '/api/me/workout-logs?overwrite=true' : '/api/me/workout-logs';
+      const url = deleteActive
+        ? '/api/me/workout-logs?deleteActive=true'
+        : '/api/me/workout-logs';
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -64,10 +62,12 @@ export function FreestylePathCard(props: Props) {
         return;
       }
       if (res.status === 409) {
-        const body = (await res.json()) as { error: string; existingLog?: { dayName: string } };
-        if (body.error === 'TODAY_ALREADY_LOGGED') {
-          setConflictDayName(body.existingLog?.dayName ?? null);
-          setShowOverwrite(true);
+        const body = (await res.json()) as {
+          error: string;
+          activeSession?: { _id: string; dayName: string; setCount: number };
+        };
+        if (body.error === 'ACTIVE_SESSION_EXISTS' && body.activeSession) {
+          setConflict(body.activeSession);
         }
       }
     } finally {
@@ -150,29 +150,19 @@ export function FreestylePathCard(props: Props) {
         </Button>
       </div>
     </div>
-    <Dialog open={showOverwrite} onOpenChange={setShowOverwrite}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Already logged today</DialogTitle>
-          <DialogDescription>
-            You already logged &ldquo;{conflictDayName ?? ''}&rdquo; today. Starting a new session will replace it.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setShowOverwrite(false)}>
-            Cancel
-          </Button>
-          <Button
-            onClick={() => {
-              setShowOverwrite(false);
-              void startBlank(true);
-            }}
-          >
-            Overwrite &amp; Continue
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    {conflict && (
+      <ActiveSessionConflictDialog
+        open
+        dayName={conflict.dayName}
+        setCount={conflict.setCount}
+        resumeHref={`${props.basePath}/session/${conflict._id}`}
+        onDeleteAndStart={() => {
+          setConflict(null);
+          void startBlank(true);
+        }}
+        onClose={() => setConflict(null)}
+      />
+    )}
     </>
   );
 }
