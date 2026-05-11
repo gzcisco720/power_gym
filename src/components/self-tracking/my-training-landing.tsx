@@ -8,7 +8,7 @@ import { detectLandingState } from '@/lib/self-tracking/landing-state';
 import { ActivityStrip } from './activity-strip';
 import { TemplatePathCard, type UserTemplate } from './template-path-card';
 import { FreestylePathCard } from './freestyle-path-card';
-import { RecentSessionsList, type SessionRow } from './recent-sessions-list';
+import { MiniWorkoutCalendar } from './mini-workout-calendar';
 import { PageHeader } from '@/components/shared/page-header';
 import { ActiveSessionPrompt } from '@/components/shared/active-session-prompt';
 import { WorkoutCalendarHeaderTrigger } from './workout-calendar-header-trigger';
@@ -51,29 +51,6 @@ export async function MyTrainingLanding({ basePath }: { basePath: BasePath }) {
       recent.some((r) => r.completedAt && r.completedAt >= day && r.completedAt < next),
     );
   }
-
-  // Recent rows (top 5). Duration uses lastActivityAt instead of `now -
-  // startedAt` so abandoned/sealed sessions report a meaningful number.
-  const pbLogIds = new Set(pbs.map((pb) => pb.logId.toString()));
-  const sessionRows: SessionRow[] = recent.slice(0, 5).map((r) => {
-    const startedMs = r.startedAt.getTime();
-    const endedMs = (r.lastActivityAt ?? r.completedAt ?? new Date()).getTime();
-    const hasNoSets = r.sets.length === 0;
-    const durationMin = hasNoSets ? 0 : Math.max(1, Math.round((endedMs - startedMs) / 60000));
-    return {
-      id: r._id.toString(),
-      dateLabel: r.completedAt
-        ? r.completedAt.toLocaleDateString('en-US', { weekday: 'short' })
-        : '—',
-      dayName: r.dayName,
-      setCount: r.sets.length,
-      durationMin,
-      rpe: r.rpe,
-      hasPR: pbLogIds.has(r._id.toString()),
-      autoSealed: r.autoSealed,
-      isEmpty: hasNoSets,
-    };
-  });
 
   const headerSubtitle =
     state === 'full'
@@ -130,11 +107,7 @@ export async function MyTrainingLanding({ basePath }: { basePath: BasePath }) {
           )}
         </div>
 
-        {state === 'empty' ? (
-          <RecentSessionsList state="empty" basePath={basePath} />
-        ) : (
-          <RecentSessionsList state={state} sessions={sessionRows} basePath={basePath} />
-        )}
+        <MiniWorkoutCalendar basePath={basePath} />
       </div>
     </div>
   );

@@ -24,6 +24,9 @@ jest.mock('@/lib/repositories/self-personal-best.repository', () => ({
 jest.mock('@/lib/repositories/plan-template.repository', () => ({
   MongoPlanTemplateRepository: jest.fn().mockImplementation(() => ({ findById, findByCreator })),
 }));
+jest.mock('@/components/self-tracking/mini-workout-calendar', () => ({
+  MiniWorkoutCalendar: () => <div data-testid="mini-workout-calendar" />,
+}));
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -43,7 +46,7 @@ describe('MyTrainingLanding', () => {
     expect(screen.getByText(/get started/i)).toBeInTheDocument();
     expect(screen.getByText(/from template/i)).toBeInTheDocument();
     expect(screen.getByText(/blank session/i)).toBeInTheDocument();
-    expect(screen.getByText(/coming soon/i)).toBeInTheDocument();
+    expect(screen.getByTestId('mini-workout-calendar')).toBeInTheDocument();
   });
 
   it('Empty state lists the user\'s plan templates', async () => {
@@ -85,6 +88,6 @@ describe('MyTrainingLanding', () => {
     const ui = await MyTrainingLanding({ basePath: '/trainer/my-training' });
     render(ui);
     expect(screen.getByText(/build a streak/i)).toBeInTheDocument();
-    expect(screen.getByText(/newer sessions will land/i)).toBeInTheDocument();
+    expect(screen.getByTestId('mini-workout-calendar')).toBeInTheDocument();
   });
 });
