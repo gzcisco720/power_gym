@@ -23,6 +23,7 @@ export interface ISelfWorkoutLogRepository {
   findToday(userId: string): Promise<ISelfWorkoutLog | null>;
   findCompletedToday(userId: string): Promise<ISelfWorkoutLog | null>;
   findByUserMonth(userId: string, year: number, month: number): Promise<ISelfWorkoutLog[]>;
+  findByUserDateRange(userId: string, start: Date, end: Date): Promise<ISelfWorkoutLog[]>;
   findRecent(userId: string, limit: number): Promise<ISelfWorkoutLog[]>;
   findLastByTemplate(userId: string): Promise<ISelfWorkoutLog | null>;
   findStaleActive(olderThanHours: number): Promise<ISelfWorkoutLog[]>;
@@ -89,6 +90,13 @@ export class MongoSelfWorkoutLogRepository implements ISelfWorkoutLogRepository 
       userId: oid(userId),
       completedAt: { $gte: start, $lt: end },
     }).sort({ completedAt: 1 });
+  }
+
+  async findByUserDateRange(userId: string, start: Date, end: Date): Promise<ISelfWorkoutLog[]> {
+    return SelfWorkoutLogModel.find({
+      userId: oid(userId),
+      startedAt: { $gte: start, $lt: end },
+    }).sort({ startedAt: 1 });
   }
 
   async findRecent(userId: string, limit: number): Promise<ISelfWorkoutLog[]> {
