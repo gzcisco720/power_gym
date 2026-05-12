@@ -31,6 +31,7 @@ export interface IWorkoutSessionRepository {
   findToday(memberId: string): Promise<IWorkoutSession | null>;
   findCompletedToday(memberId: string): Promise<IWorkoutSession | null>;
   findByMonth(memberId: string, year: number, month: number): Promise<IWorkoutSession[]>;
+  findByDateRange(memberId: string, start: Date, end: Date): Promise<IWorkoutSession[]>;
   findStaleActive(olderThanHours: number): Promise<IWorkoutSession[]>;
   updateSet(id: string, setIndex: number, data: UpdateSetData): Promise<IWorkoutSession | null>;
   addExtraSet(id: string, extraSet: ISessionSet): Promise<IWorkoutSession | null>;
@@ -179,6 +180,13 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
       memberId: new mongoose.Types.ObjectId(memberId),
       completedAt: { $gte: start, $lt: end },
     }).sort({ completedAt: 1 });
+  }
+
+  async findByDateRange(memberId: string, start: Date, end: Date): Promise<IWorkoutSession[]> {
+    return WorkoutSessionModel.find({
+      memberId: new mongoose.Types.ObjectId(memberId),
+      startedAt: { $gte: start, $lt: end },
+    }).sort({ startedAt: 1 });
   }
 
   async countByMemberIdsSince(memberIds: string[], since: Date): Promise<number> {

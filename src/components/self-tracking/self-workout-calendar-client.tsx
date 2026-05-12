@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { SelfWeekCalendarGrid, type SelfCalendarLog } from './self-week-calendar-grid';
 
-type BasePath = '/owner/my-training' | '/trainer/my-training';
+type BasePath = '/owner/my-training' | '/trainer/my-training' | '/member/plan';
 
 interface Props {
   basePath: BasePath;
@@ -36,9 +36,11 @@ export function SelfWorkoutCalendarClient({ basePath, initialDate }: Props) {
     let cancelled = false;
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 7);
-    fetch(
-      `/api/me/workout-logs/range?start=${weekStart.toISOString()}&end=${weekEnd.toISOString()}`,
-    )
+    const apiUrl =
+      basePath === '/member/plan'
+        ? `/api/sessions?memberId=me&start=${weekStart.toISOString()}&end=${weekEnd.toISOString()}`
+        : `/api/me/workout-logs/range?start=${weekStart.toISOString()}&end=${weekEnd.toISOString()}`;
+    fetch(apiUrl)
       .then((r) => r.json())
       .then((data: SelfCalendarLog[]) => {
         if (!cancelled) setLogs(data);
@@ -50,7 +52,7 @@ export function SelfWorkoutCalendarClient({ basePath, initialDate }: Props) {
       cancelled = true;
       setLogs(null);
     };
-  }, [weekStart]);
+  }, [weekStart, basePath]);
 
   function prevWeek() {
     setWeekStart((d) => {

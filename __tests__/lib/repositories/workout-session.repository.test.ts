@@ -346,6 +346,23 @@ describe('MongoWorkoutSessionRepository', () => {
     });
   });
 
+  describe('findByDateRange', () => {
+    it('queries sessions where startedAt is within the given range, sorted asc', async () => {
+      const sortMock = jest.fn().mockResolvedValue([]);
+      mockModel.find.mockReturnValue({ sort: sortMock } as never);
+      const id = new mongoose.Types.ObjectId().toString();
+      const start = new Date('2026-05-01T00:00:00Z');
+      const end = new Date('2026-05-08T00:00:00Z');
+      await repo.findByDateRange(id, start, end);
+
+      expect(mockModel.find).toHaveBeenCalledWith({
+        memberId: expect.any(mongoose.Types.ObjectId),
+        startedAt: { $gte: start, $lt: end },
+      });
+      expect(sortMock).toHaveBeenCalledWith({ startedAt: 1 });
+    });
+  });
+
   describe('findCompletedToday', () => {
     it('calls findOne with memberId and completedAt UTC date range sorted desc', async () => {
       const sortMock = jest.fn().mockResolvedValue(null);

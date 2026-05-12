@@ -122,6 +122,20 @@ export async function GET(req: Request): Promise<Response> {
     return Response.json(sessions);
   }
 
+  const startParam = url.searchParams.get('start');
+  const endParam = url.searchParams.get('end');
+  if (startParam && endParam) {
+    const sessions = await sessionRepo.findByDateRange(resolvedMemberId, new Date(startParam), new Date(endParam));
+    return Response.json(sessions.map((s) => ({
+      _id: s._id.toString(),
+      dayName: s.dayName,
+      startedAt: s.startedAt,
+      completedAt: s.completedAt,
+      setCount: s.sets.filter((set) => set.completedAt !== null).length,
+      rpe: s.rpe ?? null,
+    })));
+  }
+
   const sessions = await sessionRepo.findByMember(resolvedMemberId);
   return Response.json(sessions);
 }

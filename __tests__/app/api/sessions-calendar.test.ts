@@ -2,7 +2,7 @@
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 jest.mock('@/lib/auth/auth', () => ({ auth: jest.fn() }));
 
-const mockSessionRepo = { create: jest.fn(), findByMember: jest.fn(), findByMonth: jest.fn(), findActive: jest.fn(), findCompletedToday: jest.fn() };
+const mockSessionRepo = { create: jest.fn(), findByMember: jest.fn(), findByMonth: jest.fn(), findByDateRange: jest.fn(), findActive: jest.fn(), findCompletedToday: jest.fn() };
 jest.mock('@/lib/repositories/workout-session.repository', () => ({
   MongoWorkoutSessionRepository: jest.fn(() => mockSessionRepo),
 }));
@@ -64,6 +64,44 @@ describe('GET /api/sessions — calendar month filter', () => {
     expect(res.status).toBe(200);
     expect(mockSessionRepo.findByMonth).toHaveBeenCalledWith('m1', 2026, 5);
     expect(data).toEqual(sessions);
+  });
+
+  it('calls findByDateRange and returns SelfCalendarLog shape when start and end params provided', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    const start = '2026-05-05T00:00:00.000Z';
+    const end = '2026-05-12T00:00:00.000Z';
+    const sessions = [{
+      _id: { toString: () => 's1' },
+      dayName: 'Push Day',
+      startedAt: new Date('2026-05-07T10:00:00Z'),
+      completedAt: new Date('2026-05-07T11:00:00Z'),
+      rpe: 7,
+      sets: [
+        { completedAt: new Date() },
+        { completedAt: new Date() },
+        { completedAt: null },
+      ],
+    }];
+    mockSessionRepo.findByDateRange.mockResolvedValue(sessions);
+
+    const { GET } = await import('@/app/api/sessions/route');
+    const res = await GET(new Request(`http://localhost/api/sessions?memberId=me&start=${start}&end=${end}`));
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(mockSessionRepo.findByDateRange).toHaveBeenCalledWith(
+      'm1',
+      new Date(start),
+      new Date(end),
+    );
+    expect(data).toEqual([{
+      _id: 's1',
+      dayName: 'Push Day',
+      startedAt: sessions[0].startedAt.toISOString(),
+      completedAt: sessions[0].completedAt!.toISOString(),
+      setCount: 2,
+      rpe: 7,
+    }]);
   });
 
   it('calls findByMember when no year/month provided', async () => {
