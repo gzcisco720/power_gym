@@ -196,7 +196,7 @@ export function AppShell({ role, userName, children, logoutSlot }: AppShellProps
         <div className="flex items-center gap-3 border-b border-[#0f0f0f] px-4 py-3 lg:hidden">
           <button
             onClick={() => setDrawerOpen(true)}
-            className="text-[#888] hover:text-[#aaa] transition-colors"
+            className="cursor-pointer text-[#888] hover:text-[#aaa] transition-colors"
             aria-label="Open navigation"
           >
             <Menu className="h-5 w-5" />

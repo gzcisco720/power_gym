@@ -26,7 +26,7 @@ export function TabNav({ base, tabs }: TabNavProps) {
             key={tab.label}
             href={href}
             className={cn(
-              'px-4 py-3 text-[12px] font-medium transition-colors border-b-2 -mb-px',
+              'cursor-pointer px-4 py-3 text-[12px] font-medium transition-colors border-b-2 -mb-px',
               isActive
                 ? 'text-white border-white'
                 : 'text-[#555] border-transparent hover:text-[#888]',
