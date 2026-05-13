@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { clearInbox, waitForEmailTo } from '../helpers/mailpit';
 
 test.use({ storageState: 'e2e/.auth/trainer.json' });
 
@@ -9,11 +10,17 @@ test.describe('Trainer: Invites', () => {
   });
 
   test('full invite flow: create invite, register as member, login succeeds', async ({ page, browser }) => {
+    await clearInbox();
     const response = await page.request.post('/api/trainer/invites', {
       data: { recipientEmail: 'e2etrainerinvite@test.com' },
     });
     expect(response.ok()).toBeTruthy();
     const { inviteUrl } = (await response.json()) as { inviteUrl: string };
+
+    // Verify invite email
+    const email = await waitForEmailTo('e2etrainerinvite@test.com');
+    expect(email.Subject).toContain('Member');
+    expect(email.HTML).toContain(inviteUrl);
 
     const freshCtx = await browser.newContext();
     const freshPage = await freshCtx.newPage();
