@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -97,12 +96,6 @@ export function SecurityTab() {
             </Button>
           </div>
         </form>
-        <p className="mt-4 text-xs text-foreground/65">
-          Forgot your password?{' '}
-          <Link href="/forgot-password" className="underline text-foreground/80 hover:text-foreground">
-            Reset it here
-          </Link>
-        </p>
       </div>
     </div>
   );

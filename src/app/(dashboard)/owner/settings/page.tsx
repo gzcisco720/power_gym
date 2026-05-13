@@ -4,14 +4,12 @@ import { MongoUserProfileRepository } from '@/lib/repositories/user-profile.repo
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { PageHeader } from '@/components/shared/page-header';
 import { SettingsTabs } from '@/components/shared/settings-tabs';
-import { AccountTab } from '@/components/settings/account-tab';
 import { SecurityTab } from '@/components/settings/security-tab';
 import { OwnerProfileTab } from './_components/profile-tab';
 import { GymInfoTab } from './_components/gym-info-tab';
 
 const TABS = [
   { value: 'profile', label: 'Profile' },
-  { value: 'account', label: 'Account' },
   { value: 'security', label: 'Security' },
   { value: 'gym-info', label: 'Gym Info' },
 ];
@@ -40,6 +38,7 @@ export default async function OwnerSettingsPage({
           <OwnerProfileTab
             firstName={user?.firstName ?? ''}
             lastName={user?.lastName ?? ''}
+            currentEmail={user?.email ?? ''}
             mobile={raw?.mobile ?? null}
             address={raw?.address ?? null}
             dateOfBirth={raw?.dateOfBirth ? raw.dateOfBirth.toISOString() : null}
@@ -47,7 +46,6 @@ export default async function OwnerSettingsPage({
             certifications={raw?.certifications ?? []}
           />
         )}
-        {tab === 'account' && <AccountTab currentEmail={user?.email ?? ''} />}
         {tab === 'security' && <SecurityTab />}
         {tab === 'gym-info' && <GymInfoTab gymInfo={raw?.gymInfo ?? null} />}
       </div>

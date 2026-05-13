@@ -4,13 +4,11 @@ import { MongoUserProfileRepository } from '@/lib/repositories/user-profile.repo
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { PageHeader } from '@/components/shared/page-header';
 import { SettingsTabs } from '@/components/shared/settings-tabs';
-import { AccountTab } from '@/components/settings/account-tab';
 import { SecurityTab } from '@/components/settings/security-tab';
 import { TrainerProfileTab } from './_components/profile-tab';
 
 const TABS = [
   { value: 'profile', label: 'Profile' },
-  { value: 'account', label: 'Account' },
   { value: 'security', label: 'Security' },
 ];
 
@@ -45,9 +43,9 @@ export default async function TrainerSettingsPage({
             bio={raw?.bio ?? null}
             specializations={raw?.specializations ?? []}
             certifications={raw?.certifications ?? []}
+            currentEmail={user?.email ?? ''}
           />
         )}
-        {tab === 'account' && <AccountTab currentEmail={user?.email ?? ''} />}
         {tab === 'security' && <SecurityTab />}
       </div>
     </div>
