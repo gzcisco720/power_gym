@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, Settings, LogOut } from 'lucide-react';
+import { Menu, Settings } from 'lucide-react';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { Popover, PopoverTrigger, PopoverPortal, PopoverPositioner, PopoverPopup } from '@/components/ui/popover';
 import { cn, initials } from '@/lib/utils';
@@ -195,12 +195,7 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, lo
                   Profile &amp; Settings
                 </a>
                 <div className="my-1 border-t border-[#222]" />
-                {logoutSlot && (
-                  <div className="flex items-center gap-3 px-4 py-1 text-[13px] text-red-400 hover:bg-[#1e1e1e] transition-colors [&>*]:flex-1">
-                    <LogOut className="h-4 w-4 shrink-0 text-red-400" />
-                    {logoutSlot}
-                  </div>
-                )}
+                {logoutSlot}
               </div>
             </PopoverPopup>
           </PopoverPositioner>
