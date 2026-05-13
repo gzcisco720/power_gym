@@ -79,6 +79,16 @@ export async function seed(): Promise<void> {
     trainerId: trainer._id,
   });
 
+  // Dedicated user for password-reset e2e test — role member so login lands on /member/plan
+  await UserModel.create({
+    firstName: 'Reset',
+    lastName: 'Test',
+    email: 'reset-test@test.com',
+    passwordHash,
+    role: 'member',
+    trainerId: trainer._id,
+  });
+
   // ── User Profiles ────────────────────────────────────────────────────────
   // Member profile populates defaultAge / defaultSex in NewBodyTestDialog so
   // body-test add tests can submit without an explicit age input.
