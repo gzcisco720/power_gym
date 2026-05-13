@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { clearInbox, waitForEmailTo } from '../helpers/mailpit';
+import { waitForEmailTo } from '../helpers/mailpit';
 
 test.use({ storageState: 'e2e/.auth/trainer.json' });
 
@@ -10,7 +10,6 @@ test.describe('Trainer: Invites', () => {
   });
 
   test('full invite flow: create invite, register as member, login succeeds', async ({ page, browser }) => {
-    await clearInbox();
     const response = await page.request.post('/api/trainer/invites', {
       data: { recipientEmail: 'e2etrainerinvite@test.com' },
     });

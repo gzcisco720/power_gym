@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { clearInbox, waitForEmailTo } from '../helpers/mailpit';
+import { waitForEmailTo } from '../helpers/mailpit';
 
 test.use({ storageState: 'e2e/.auth/owner.json' });
 
@@ -10,7 +10,6 @@ test.describe('Owner: Invites', () => {
   });
 
   test('full invite flow: create invite, register, login succeeds', async ({ page, browser }) => {
-    await clearInbox();
     const response = await page.request.post('/api/owner/invites', {
       data: { recipientEmail: 'e2einvite@test.com', role: 'trainer' },
     });

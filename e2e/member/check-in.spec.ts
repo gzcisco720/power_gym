@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { clearInbox, waitForEmailTo } from '../helpers/mailpit';
+import { waitForEmailTo } from '../helpers/mailpit';
 
 test.use({ storageState: 'e2e/.auth/member.json' });
 
@@ -24,7 +24,6 @@ test.describe('Member: Check-In', () => {
   });
 
   test('can submit the check-in form and sees confirmation', async ({ page }) => {
-    await clearInbox();
     await page.goto('/member/check-in');
 
     // Fill in optional text areas

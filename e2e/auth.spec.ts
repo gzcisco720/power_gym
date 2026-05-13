@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { clearInbox, waitForEmailTo } from './helpers/mailpit';
+import { waitForEmailTo } from './helpers/mailpit';
 
 test.describe('Authentication', () => {
   test('owner login redirects to /owner', async ({ page }) => {
@@ -68,21 +68,19 @@ test.describe('Authentication', () => {
   });
 
   test('forgot-password sends reset email to known user', async ({ page }) => {
-    await clearInbox();
-
+    const before = new Date();
     await page.goto('/forgot-password');
     await page.fill('input[type="email"]', 'reset-test@test.com');
     await page.getByRole('button', { name: 'Send reset link' }).click();
     await expect(page.getByText('If that email exists')).toBeVisible();
 
-    const email = await waitForEmailTo('reset-test@test.com');
+    const email = await waitForEmailTo('reset-test@test.com', { since: before });
     expect(email.Subject).toBe('Reset your POWER GYM password');
     expect(email.HTML).toContain('reset-password');
   });
 
   test('forgot-password reset link works end-to-end', async ({ page }) => {
-    await clearInbox();
-
+    const before = new Date();
     // 1. Submit forgot-password for the dedicated reset-test user
     await page.goto('/forgot-password');
     await page.fill('input[type="email"]', 'reset-test@test.com');
@@ -91,6 +89,7 @@ test.describe('Authentication', () => {
     // 2. Get email and extract the reset URL from the HTML
     const email = await waitForEmailTo('reset-test@test.com', {
       subject: /Reset your POWER GYM password/,
+      since: before,
     });
     const match = email.HTML.match(/href="(http:\/\/[^"]*reset-password[^"]*)"/);
     expect(match).not.toBeNull();

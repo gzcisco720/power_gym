@@ -4,6 +4,7 @@ interface MailpitSummary {
   ID: string;
   Subject: string;
   To: { Address: string; Name: string }[];
+  Created: string;
 }
 
 interface MailpitSearchResponse {
@@ -26,9 +27,9 @@ export async function clearInbox(): Promise<void> {
 
 export async function waitForEmailTo(
   to: string,
-  options: { subject?: RegExp; timeout?: number } = {},
+  options: { subject?: RegExp; timeout?: number; since?: Date } = {},
 ): Promise<MailpitMessage> {
-  const { subject, timeout = 5000 } = options;
+  const { subject, timeout = 5000, since } = options;
   const deadline = Date.now() + timeout;
 
   while (Date.now() < deadline) {
@@ -38,9 +39,11 @@ export async function waitForEmailTo(
       );
       if (res.ok) {
         const data = (await res.json()) as MailpitSearchResponse;
-        const match = data.messages.find(
-          (m) => !subject || subject.test(m.Subject),
-        );
+        const match = data.messages.find((m) => {
+          if (subject && !subject.test(m.Subject)) return false;
+          if (since && new Date(m.Created) <= since) return false;
+          return true;
+        });
         if (match) {
           const detail = await fetch(`${MAILPIT_API}/message/${match.ID}`);
           if (!detail.ok) continue;

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { clearInbox, waitForEmailTo } from '../helpers/mailpit';
+import { waitForEmailTo } from '../helpers/mailpit';
 
 test.use({ storageState: 'e2e/.auth/owner.json' });
 
@@ -11,7 +11,6 @@ test.describe('Owner: Members', () => {
   });
 
   test('reassign member to a different trainer', async ({ page }) => {
-    await clearInbox();
     await page.goto('/owner/members');
     const memberRow = page.getByText('reassign-member@test.com', { exact: true }).locator('..').locator('..');
     await memberRow.getByRole('button', { name: /reassign/i }).click();

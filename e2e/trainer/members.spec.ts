@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { clearInbox, waitForEmailTo } from '../helpers/mailpit';
+import { waitForEmailTo } from '../helpers/mailpit';
 
 test.use({ storageState: 'e2e/.auth/trainer.json' });
 
@@ -45,7 +45,6 @@ test.describe('Trainer: Members', () => {
   });
 
   test('assign plan to member via hub', async ({ page }) => {
-    await clearInbox();
     await page.goto('/trainer/members');
     await page.getByText('Test Member').click();
     await page.waitForURL(/\/trainer\/members\/.+$/);

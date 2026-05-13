@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { clearInbox, waitForEmailTo } from '../helpers/mailpit';
+import { waitForEmailTo } from '../helpers/mailpit';
 
 test.use({ storageState: 'e2e/.auth/owner.json' });
 
@@ -31,7 +31,6 @@ test.describe('Owner: Calendar', () => {
   });
 
   test('can cancel a session from the edit modal', async ({ page }) => {
-    await clearInbox();
     await page.goto('/owner/calendar');
     await nextWeekBtn(page).click();
     await page.getByRole('button').filter({ hasText: '14:00–15:00' }).click();
@@ -48,7 +47,6 @@ test.describe('Owner: Calendar', () => {
   });
 
   test('can create a one-off session via slot click', async ({ page }) => {
-    await clearInbox();
     await page.goto('/owner/calendar');
     await page.locator('div.cursor-pointer').first().click();
     await expect(page.getByRole('dialog').getByText('New Training Session')).toBeVisible();
