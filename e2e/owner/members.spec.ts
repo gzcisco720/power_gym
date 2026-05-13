@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { clearInbox, waitForEmailTo } from '../helpers/mailpit';
 
 test.use({ storageState: 'e2e/.auth/owner.json' });
 
@@ -10,6 +11,7 @@ test.describe('Owner: Members', () => {
   });
 
   test('reassign member to a different trainer', async ({ page }) => {
+    await clearInbox();
     await page.goto('/owner/members');
     const memberRow = page.getByText('reassign-member@test.com', { exact: true }).locator('..').locator('..');
     await memberRow.getByRole('button', { name: /reassign/i }).click();
@@ -20,6 +22,13 @@ test.describe('Owner: Members', () => {
     await expect(page.getByText('reassign-member@test.com', { exact: true })
       .locator('..').locator('..')
       .getByText('Test Trainer2')).toBeVisible({ timeout: 10000 });
+
+    // Verify member-assigned email sent to the receiving trainer
+    const email = await waitForEmailTo('trainer2@test.com', {
+      subject: /New Member/,
+    });
+    expect(email.Subject).toBe('New Member(s) Assigned to You — POWER GYM');
+    expect(email.HTML).toContain('Reassign Member');
   });
 
   test('View link navigates to member hub page', async ({ page }) => {
