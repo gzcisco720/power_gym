@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { clearInbox, waitForEmailTo } from '../helpers/mailpit';
 
 test.use({ storageState: 'e2e/.auth/member.json' });
 
@@ -23,6 +24,7 @@ test.describe('Member: Check-In', () => {
   });
 
   test('can submit the check-in form and sees confirmation', async ({ page }) => {
+    await clearInbox();
     await page.goto('/member/check-in');
 
     // Fill in optional text areas
@@ -33,5 +35,12 @@ test.describe('Member: Check-In', () => {
 
     // After submit, shows already-submitted message
     await expect(page.getByText("You've already submitted your check-in this week.")).toBeVisible();
+    // Verify notification email sent to the trainer
+    const email = await waitForEmailTo('trainer@test.com', {
+      subject: /check-in/i,
+    });
+    expect(email.Subject).toContain('Test Member');
+    expect(email.Subject).toContain('check-in');
+    expect(email.HTML).toContain('Test Member');
   });
 });
