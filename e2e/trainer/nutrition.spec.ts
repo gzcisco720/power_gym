@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForEmailTo } from '../helpers/mailpit';
 
 test.use({ storageState: 'e2e/.auth/trainer.json' });
 
@@ -65,5 +66,27 @@ test.describe('Trainer: Nutrition Templates', () => {
 
     // Current Plan section shows the seeded active plan
     await expect(page.getByText('E2E Nutrition Template').first()).toBeVisible();
+  });
+
+  test('assigning nutrition plan sends email to member', async ({ page }) => {
+    const before = new Date();
+    await page.goto('/trainer/members');
+    await page.getByText('Test Member').click();
+    await page.waitForURL(/\/trainer\/members\/.+$/);
+    await page.getByRole('link', { name: 'Nutrition', exact: true }).click();
+    await page.waitForURL(/\/trainer\/members\/.+\/nutrition/);
+
+    await page.getByRole('button', { name: 'Change Plan' }).click();
+    await page.getByLabel('Select nutrition template').selectOption({ label: 'E2E Nutrition Template' });
+    await page.getByRole('button', { name: 'Assign', exact: true }).click();
+    await expect(page.getByText('Plan assigned')).toBeVisible();
+
+    const email = await waitForEmailTo('member@test.com', {
+      subject: /Nutrition Plan/,
+      since: before,
+    });
+    expect(email.Subject).toBe('Your Nutrition Plan Has Been Updated — POWER GYM');
+    expect(email.HTML).toContain('E2E Nutrition Template');
+    expect(email.HTML).toContain('Test Trainer');
   });
 });

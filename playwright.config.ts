@@ -26,6 +26,7 @@ export default defineConfig({
       SMTP_PORT: '1025',
       SMTP_FROM: 'noreply@test.com',
       UPLOAD_PROVIDER: 'local',
+      CRON_SECRET: 'e2e-test-cron-secret',
     },
   },
 });

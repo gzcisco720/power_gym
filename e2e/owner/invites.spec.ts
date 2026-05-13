@@ -37,4 +37,19 @@ test.describe('Owner: Invites', () => {
 
     await freshCtx.close();
   });
+
+  test('resend invite sends email again to pending recipient', async ({ page }) => {
+    const before = new Date();
+    const listRes = await page.request.get('/api/owner/invites');
+    const invites = (await listRes.json()) as Array<{ _id: string; recipientEmail: string; role: string }>;
+    const pending = invites.find((i) => i.recipientEmail === 'pending@test.com');
+    expect(pending).toBeDefined();
+
+    const resendRes = await page.request.post(`/api/owner/invites/${pending!._id}/resend`);
+    expect(resendRes.ok()).toBeTruthy();
+
+    const email = await waitForEmailTo('pending@test.com', { since: before });
+    expect(email.Subject).toContain('Trainer');
+    expect(email.HTML).toContain('register');
+  });
 });

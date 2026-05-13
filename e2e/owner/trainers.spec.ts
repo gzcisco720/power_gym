@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForEmailTo } from '../helpers/mailpit';
 
 test.use({ storageState: 'e2e/.auth/owner.json' });
 
@@ -67,7 +68,8 @@ test.describe('Owner: Trainers', () => {
     await expect(page.getByRole('button', { name: 'Today' })).toBeVisible();
   });
 
-  test('reassign from trainer hub removes member from trainer list', async ({ page }) => {
+  test('reassign from trainer hub removes member from trainer list and sends email', async ({ page }) => {
+    const before = new Date();
     await page.goto('/owner/trainers');
     await page.getByRole('link', { name: 'View', exact: true }).first().click();
     await page.waitForURL(/\/owner\/trainers\/.+$/);
@@ -79,5 +81,13 @@ test.describe('Owner: Trainers', () => {
     await page.getByRole('button', { name: /confirm reassign/i }).click();
     await expect(page.getByRole('button', { name: /confirm reassign/i })).not.toBeVisible({ timeout: 10000 });
     await expect(page.getByText('Hub Reassign').first()).not.toBeVisible({ timeout: 10000 });
+
+    // Verify member-assigned email sent to the trainer receiving the member
+    const email = await waitForEmailTo('trainer2@test.com', {
+      subject: /New Member/,
+      since: before,
+    });
+    expect(email.Subject).toBe('New Member(s) Assigned to You — POWER GYM');
+    expect(email.HTML).toContain('Hub Reassign');
   });
 });
