@@ -4,15 +4,16 @@ import { signIn } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { ROLE_DEFAULT_PATH } from '@/lib/auth/middleware-helpers';
+import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; message?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, message } = await searchParams;
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#030303] px-4">
@@ -25,6 +26,10 @@ export default async function LoginPage({
 
         {error === 'CredentialsSignin' && (
           <p className="text-[13px] text-red-400">Invalid email or password.</p>
+        )}
+
+        {message === 'password-reset' && (
+          <p className="text-[13px] text-green-400">Password reset successfully. Please sign in.</p>
         )}
 
         <form
@@ -85,9 +90,15 @@ export default async function LoginPage({
             />
           </div>
 
-          <Button type="submit" className="w-full bg-white text-black hover:bg-white/90 font-semibold mt-2">
+          <Button type="submit" className="w-full bg-white text-black hover:bg-white/90 font-semibold mt-2 cursor-pointer">
             Sign in
           </Button>
+          <Link
+            href="/forgot-password"
+            className="block text-center text-[13px] text-[#666] hover:text-[#999]"
+          >
+            Forgot password?
+          </Link>
         </form>
       </div>
     </main>
