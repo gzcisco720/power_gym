@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { clearInbox, waitForEmailTo } from '../helpers/mailpit';
 
 test.use({ storageState: 'e2e/.auth/trainer.json' });
 
@@ -44,6 +45,7 @@ test.describe('Trainer: Members', () => {
   });
 
   test('assign plan to member via hub', async ({ page }) => {
+    await clearInbox();
     await page.goto('/trainer/members');
     await page.getByText('Test Member').click();
     await page.waitForURL(/\/trainer\/members\/.+$/);
@@ -58,6 +60,14 @@ test.describe('Trainer: Members', () => {
     await page.getByRole('button', { name: 'Assign', exact: true }).click();
 
     await expect(page.getByText('E2E Test Plan').first()).toBeVisible();
+
+    // Verify plan assigned email
+    const email = await waitForEmailTo('member@test.com', {
+      subject: /Training Plan/,
+    });
+    expect(email.Subject).toBe('Your Training Plan Has Been Updated — POWER GYM');
+    expect(email.HTML).toContain('E2E Test Plan');
+    expect(email.HTML).toContain('Test Trainer');
   });
 
   test('Progress tab navigates to progress page', async ({ page }) => {
