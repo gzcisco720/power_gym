@@ -40,6 +40,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | My Training Fixes + Calendar (Plan) | [my-training-fixes-calendar-plan.md](2026-05-11/plans/my-training-fixes-calendar-plan.md) | Complete |
 | Profile & Account Redesign | [profile-account-redesign.md](2026-05-13/plans/profile-account-redesign.md) | Approved |
 | Profile & Account Redesign (Plan) | [profile-account-redesign-plan.md](2026-05-13/plans/profile-account-redesign-plan.md) | In Progress |
+| E2E Email Testing (Plan) | [e2e-email-testing-plan.md](2026-05-14/plans/e2e-email-testing-plan.md) | In Progress |
 
 ---
 
