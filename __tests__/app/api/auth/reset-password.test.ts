@@ -4,25 +4,17 @@
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 jest.mock('bcryptjs');
 
-const mockFindOne = jest.fn();
+const mockTokenRepo = {
+  findValidByUserId: jest.fn(),
+  markUsed: jest.fn(),
+};
 const mockUserRepo = { updatePassword: jest.fn() };
-const mockTokenRepo = { markUsed: jest.fn() };
 
-// Mock PasswordResetTokenModel.findOne with sort chain
-jest.mock('@/lib/db/models/password-reset-token.model', () => ({
-  PasswordResetTokenModel: {
-    findOne: jest.fn(() => ({ sort: () => mockFindOne() })),
-  },
-}));
-jest.mock('@/lib/repositories/user.repository', () => ({
-  MongoUserRepository: jest.fn(() => mockUserRepo),
-}));
 jest.mock('@/lib/repositories/password-reset-token.repository', () => ({
   MongoPasswordResetTokenRepository: jest.fn(() => mockTokenRepo),
 }));
-jest.mock('mongoose', () => ({
-  default: { Types: { ObjectId: jest.fn((id: string) => id) } },
-  Types: { ObjectId: jest.fn((id: string) => id) },
+jest.mock('@/lib/repositories/user.repository', () => ({
+  MongoUserRepository: jest.fn(() => mockUserRepo),
 }));
 
 import bcrypt from 'bcryptjs';
@@ -40,8 +32,7 @@ describe('POST /api/auth/reset-password', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('returns 400 when no valid token found for user', async () => {
-    mockFindOne.mockResolvedValue(null);
-    mockBcrypt.hash.mockResolvedValue('h' as never);
+    mockTokenRepo.findValidByUserId.mockResolvedValue(null);
 
     const { POST } = await import('@/app/api/auth/reset-password/route');
     const res = await POST(makeRequest({ token: 'bad', userId: 'uid', newPassword: 'NewPass1!' }));
@@ -49,9 +40,8 @@ describe('POST /api/auth/reset-password', () => {
   });
 
   it('returns 400 when bcrypt compare fails (wrong token)', async () => {
-    mockFindOne.mockResolvedValue({ _id: 'tid', tokenHash: 'stored-hash', userId: { toString: () => 'uid' } });
+    mockTokenRepo.findValidByUserId.mockResolvedValue({ _id: 'tid', tokenHash: 'stored-hash' });
     mockBcrypt.compare.mockResolvedValue(false as never);
-    mockBcrypt.hash.mockResolvedValue('newhash' as never);
 
     const { POST } = await import('@/app/api/auth/reset-password/route');
     const res = await POST(makeRequest({ token: 'wrongtoken', userId: 'uid', newPassword: 'NewPass1!' }));
@@ -65,7 +55,7 @@ describe('POST /api/auth/reset-password', () => {
   });
 
   it('updates password and marks token used on valid token', async () => {
-    mockFindOne.mockResolvedValue({ _id: 'tid', tokenHash: 'stored-hash', userId: { toString: () => 'uid' } });
+    mockTokenRepo.findValidByUserId.mockResolvedValue({ _id: 'tid', tokenHash: 'stored-hash' });
     mockBcrypt.compare.mockResolvedValue(true as never);
     mockBcrypt.hash.mockResolvedValue('newhash' as never);
     mockUserRepo.updatePassword.mockResolvedValue(undefined);
