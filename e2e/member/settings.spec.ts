@@ -32,6 +32,15 @@ test.describe('Member: Settings', () => {
     await expect(page.locator('#mobile')).toHaveValue('0400333444');
     await expect(page.locator('#fitnessGoal')).toHaveValue('build_muscle');
     await expect(page.locator('#fitnessLevel')).toHaveValue('intermediate');
+
+    // Restore seed data so other tests are not affected
+    await page.fill('#firstName', 'Test');
+    await page.fill('#lastName', 'Member');
+    await page.fill('#mobile', '');
+    await page.selectOption('#fitnessGoal', '');
+    await page.selectOption('#fitnessLevel', '');
+    await page.getByRole('button', { name: 'Save Profile' }).click();
+    await expect(page.getByText('Profile saved')).toBeVisible();
   });
 
   test('tabs navigate correctly — no Account tab', async ({ page }) => {

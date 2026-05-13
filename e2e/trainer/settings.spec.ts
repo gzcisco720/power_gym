@@ -28,6 +28,14 @@ test.describe('Trainer: Settings', () => {
     await expect(page.locator('#lastName')).toHaveValue('TrainerTest');
     await expect(page.locator('#mobile')).toHaveValue('0400111222');
     await expect(page.locator('#bio')).toHaveValue('E2E trainer bio updated');
+
+    // Restore seed data so other tests are not affected
+    await page.fill('#firstName', 'Test');
+    await page.fill('#lastName', 'Trainer');
+    await page.fill('#mobile', '');
+    await page.fill('#bio', '');
+    await page.getByRole('button', { name: 'Save Profile' }).click();
+    await expect(page.getByText('Profile saved')).toBeVisible();
   });
 
   test('security tab shows change password form', async ({ page }) => {

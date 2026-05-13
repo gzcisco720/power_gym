@@ -28,6 +28,14 @@ test.describe('Owner: Settings', () => {
     await expect(page.locator('#lastName')).toHaveValue('OwnerTest');
     await expect(page.locator('#mobile')).toHaveValue('0400555666');
     await expect(page.locator('#certifications')).toHaveValue('CPT, CSCS');
+
+    // Restore seed data so other tests are not affected
+    await page.fill('#firstName', 'Test');
+    await page.fill('#lastName', 'Owner');
+    await page.fill('#mobile', '');
+    await page.fill('#certifications', '');
+    await page.getByRole('button', { name: 'Save Profile' }).click();
+    await expect(page.getByText('Profile saved')).toBeVisible();
   });
 
   test('gym info tab — save and persist', async ({ page }) => {
@@ -45,6 +53,13 @@ test.describe('Owner: Settings', () => {
     await expect(page.locator('#gymName')).toHaveValue('E2E Power Gym');
     await expect(page.locator('#gymAddress')).toHaveValue('123 Test Street');
     await expect(page.locator('#gymPhone')).toHaveValue('0299990000');
+
+    // Restore gym info
+    await page.fill('#gymName', '');
+    await page.fill('#gymAddress', '');
+    await page.fill('#gymPhone', '');
+    await page.getByRole('button', { name: 'Save Gym Info' }).click();
+    await expect(page.getByText('Gym info saved')).toBeVisible();
   });
 
   test('tabs navigate correctly — no Account tab', async ({ page }) => {
