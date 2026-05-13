@@ -25,12 +25,25 @@ async function loginAs(email: string, password: string, outFile: string): Promis
   await browser.close();
 }
 
+const MAILPIT_API = 'http://localhost:8025/api/v1';
+
+async function clearMailpit(): Promise<void> {
+  try {
+    await fetch(`${MAILPIT_API}/messages`, { method: 'DELETE' });
+  } catch {
+    // Mailpit not running — e2e emails will fail silently, tests still pass
+  }
+}
+
 export default async function globalSetup(): Promise<void> {
   const uri = process.env.MONGODB_URI;
   if (!uri) throw new Error('MONGODB_URI not set in .env.e2e');
 
   // Ensure auth directory exists
   fs.mkdirSync(AUTH_DIR, { recursive: true });
+
+  // Clear Mailpit inbox so each run starts with a clean slate
+  await clearMailpit();
 
   // Reset and seed test database
   await mongoose.connect(uri);
