@@ -73,11 +73,11 @@ test.describe('Owner: Trainers', () => {
     await page.waitForURL(/\/owner\/trainers\/.+$/);
     await page.locator('a[href*="/owner/trainers/"][href$="/members"]').click();
     await page.waitForURL(/\/owner\/trainers\/.+\/members$/);
-    const row = page.getByText('Hub Reassign Member').locator('..').locator('..');
+    const row = page.getByText('Hub Reassign').locator('..').locator('..');
     await row.getByRole('button', { name: /reassign/i }).click();
-    await expect(page.getByText('Hub Reassign Member').first()).toBeVisible();
+    await expect(page.getByText('Hub Reassign').first()).toBeVisible();
     await page.getByRole('button', { name: /confirm reassign/i }).click();
     await expect(page.getByRole('button', { name: /confirm reassign/i })).not.toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('Hub Reassign Member').first()).not.toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Hub Reassign').first()).not.toBeVisible({ timeout: 10000 });
   });
 });

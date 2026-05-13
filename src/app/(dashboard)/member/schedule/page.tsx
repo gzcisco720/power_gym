@@ -21,7 +21,7 @@ export default async function MemberSchedulePage() {
   const trainerIds = [...new Set(all.map((s) => s.trainerId.toString()))];
   const trainerDocs = await Promise.all(trainerIds.map((id) => userRepo.findById(id)));
   const trainerMap = Object.fromEntries(
-    trainerDocs.filter((t): t is NonNullable<typeof t> => t !== null).map((t) => [t._id.toString(), t.name]),
+    trainerDocs.filter((t): t is NonNullable<typeof t> => t !== null).map((t) => [t._id.toString(), `${t.firstName} ${t.lastName}`.trim()]),
   );
 
   type SessionItem = (typeof all)[0];

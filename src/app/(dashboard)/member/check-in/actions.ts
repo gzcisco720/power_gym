@@ -112,7 +112,7 @@ export async function createCheckInAction(input: CreateCheckInInput): Promise<Cr
         try {
           await emailService.sendCheckInReceived({
             to: trainer.email,
-            trainerName: trainer.name,
+            trainerName: `${trainer.firstName} ${trainer.lastName}`.trim(),
             memberName,
             submittedAt: now.toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'short' }),
           });

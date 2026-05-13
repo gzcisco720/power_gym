@@ -2,7 +2,44 @@ import { test, expect } from '@playwright/test';
 
 test.use({ storageState: 'e2e/.auth/member.json' });
 
+async function clearTodayMemberSessions(
+  request: import('@playwright/test').APIRequestContext,
+) {
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const tomorrow = new Date(today.getTime() + 86_400_000);
+  const r = await request.get(
+    `/api/sessions?memberId=me&start=${today.toISOString()}&end=${tomorrow.toISOString()}`,
+  );
+  if (r.ok()) {
+    const sessions = (await r.json()) as Array<{ _id: string }>;
+    await Promise.all(sessions.map((s) => request.delete(`/api/sessions/${s._id}`)));
+  }
+  // Also clear any active sessions not captured by the date range
+  const allRes = await request.get('/api/sessions?memberId=me');
+  if (allRes.ok()) {
+    const all = (await allRes.json()) as Array<{ _id: string; completedAt: string | null }>;
+    const active = all.filter((s) => !s.completedAt);
+    await Promise.all(active.map((s) => request.delete(`/api/sessions/${s._id}`)));
+  }
+}
+
 test.describe('Member: Training Plan', () => {
+  test.beforeEach(async ({ request }) => {
+    await clearTodayMemberSessions(request);
+  });
+
+  test.afterEach(async ({ request }) => {
+    // Only clean up active (incomplete) sessions so that the completed session
+    // from "complete session after logging all sets" persists for progress.spec.ts.
+    const allRes = await request.get('/api/sessions?memberId=me');
+    if (allRes.ok()) {
+      const all = (await allRes.json()) as Array<{ _id: string; completedAt: string | null }>;
+      const active = all.filter((s) => !s.completedAt);
+      await Promise.all(active.map((s) => request.delete(`/api/sessions/${s._id}`)));
+    }
+  });
+
   test('plan page shows plan name and day name', async ({ page }) => {
     await page.goto('/member/plan');
     await expect(page.getByText('E2E Test Plan')).toBeVisible();

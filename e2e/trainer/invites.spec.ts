@@ -21,7 +21,8 @@ test.describe('Trainer: Invites', () => {
     await freshPage.goto(inviteUrl);
     await expect(freshPage.getByText(/invited as a/i)).toBeVisible();
 
-    await freshPage.fill('#name', 'E2E Trainer Invite User');
+    await freshPage.fill('#firstName', 'E2E');
+    await freshPage.fill('#lastName', 'TrainerInviteUser');
     await freshPage.fill('#email', 'e2etrainerinvite@test.com');
     await freshPage.fill('#password', 'TestPass123!');
     await freshPage.getByRole('button', { name: /create account/i }).click();

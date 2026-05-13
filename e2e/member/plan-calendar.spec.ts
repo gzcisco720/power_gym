@@ -17,9 +17,9 @@ test.describe('Member: Plan Calendar', () => {
 
   test('seeded completed session is clickable and shows workout details', async ({ page }) => {
     await page.goto('/member/plan/calendar');
-    // The seeded session was completed today — its day cell is the only enabled calendar button
-    const todayDay = String(new Date().getDate());
-    await page.locator('.gap-y-1 button').filter({ hasText: new RegExp(`^${todayDay}$`) }).click();
+    // The seeded "Push" session was completed today — it renders as a button in the weekly grid
+    await page.locator('button').filter({ hasText: 'Push' }).first().click();
+    await page.waitForURL(/\/member\/plan\/session\//);
     await expect(page.getByText('Push')).toBeVisible();
     await expect(page.getByText('Bench Press')).toBeVisible();
   });

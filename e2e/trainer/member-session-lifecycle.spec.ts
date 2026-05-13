@@ -10,12 +10,24 @@ async function clearActive(
   request: import('@playwright/test').APIRequestContext,
   memberId: string,
 ) {
+  // Delete active sessions
   const r = await request.get(`/api/sessions?memberId=${memberId}`);
   const sessions = (await r.json()) as { _id: string; completedAt: string | null }[];
   for (const s of sessions) {
     if (s.completedAt == null) {
       await request.delete(`/api/sessions/${s._id}`);
     }
+  }
+  // Also delete today's completed sessions so DAY_ALREADY_LOGGED is never hit
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const tomorrow = new Date(today.getTime() + 86_400_000);
+  const rangeRes = await request.get(
+    `/api/sessions?memberId=${memberId}&start=${today.toISOString()}&end=${tomorrow.toISOString()}`,
+  );
+  if (rangeRes.ok()) {
+    const todaySessions = (await rangeRes.json()) as Array<{ _id: string }>;
+    await Promise.all(todaySessions.map((s) => request.delete(`/api/sessions/${s._id}`)));
   }
 }
 

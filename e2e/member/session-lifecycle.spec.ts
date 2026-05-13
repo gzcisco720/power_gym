@@ -10,16 +10,24 @@ test.use({ storageState: 'e2e/.auth/member.json' });
 async function clearActiveMemberSessions(
   request: import('@playwright/test').APIRequestContext,
 ) {
-  // Member can't directly call findActive, but we can poll their sessions
-  // and DELETE any with completedAt: null. The session DELETE endpoint we
-  // added in /api/sessions/[id] is auth-scoped and lets the member discard
-  // their own active sessions.
+  // Delete active sessions
   const r = await request.get('/api/sessions?memberId=me');
   const sessions = (await r.json()) as { _id: string; completedAt: string | null }[];
   for (const s of sessions) {
     if (s.completedAt == null) {
       await request.delete(`/api/sessions/${s._id}`);
     }
+  }
+  // Also delete today's completed sessions so DAY_ALREADY_LOGGED is never hit
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const tomorrow = new Date(today.getTime() + 86_400_000);
+  const rangeRes = await request.get(
+    `/api/sessions?memberId=me&start=${today.toISOString()}&end=${tomorrow.toISOString()}`,
+  );
+  if (rangeRes.ok()) {
+    const todaySessions = (await rangeRes.json()) as Array<{ _id: string }>;
+    await Promise.all(todaySessions.map((s) => request.delete(`/api/sessions/${s._id}`)));
   }
 }
 

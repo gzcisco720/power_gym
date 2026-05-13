@@ -1,71 +1,52 @@
 import { test, expect } from '@playwright/test';
 
-// Verifies the template workout flow via the new cockpit landing, plus the
+// Verifies the template workout flow via the cockpit landing, plus the
 // "Save as template" finish-dialog option.
 //
 // What this test covers end-to-end:
-//   1. Seed a completed template-derived log so the cockpit renders Light state.
-//   2. Trainer navigates to /trainer/my-training and expands "E2E Test Plan"
-//      in the template accordion.
-//   3. Clicks "Log" on Day 1 (Push) → POST /api/me/workout-logs → redirect to /session/[id]
-//   4. Session page loads with heading "Push"
-//   5. Trainer clicks Finish → CompleteWorkoutDialog opens
-//   6. Checks "Save as template", fills in template name
-//   7. Clicks "Finish workout" → saves template + redirects to my-training
-//   8. Verifies the new template exists via GET /api/plan-templates
+//   1. Trainer navigates to /trainer/my-training and expands "E2E Test Plan"
+//      in the template accordion (always visible when templates exist).
+//   2. Clicks "Log" on Day 1 (Push) → POST /api/me/workout-logs → redirect to /session/[id]
+//   3. Session page loads with heading "Push"
+//   4. Trainer clicks Finish → CompleteWorkoutDialog opens
+//   5. Checks "Save as template", fills in template name
+//   6. Clicks "Finish workout" → saves template + redirects to my-training
+//   7. Verifies the new template exists via GET /api/plan-templates
 
 test.use({ storageState: 'e2e/.auth/trainer.json' });
 
 // Use a unique name per run so concurrent / repeated runs don't collide.
 const SAVED_TEMPLATE_NAME = `My Push Template ${Date.now()}`;
 
+async function clearTodayLogs(request: import('@playwright/test').APIRequestContext) {
+  const activeRes = await request.get('/api/me/workout-logs/active');
+  const active = (await activeRes.json()) as { _id?: string } | null;
+  if (active?._id) {
+    await request.delete(`/api/me/workout-logs/${active._id}`);
+  }
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const tomorrow = new Date(today.getTime() + 86_400_000);
+  const rangeRes = await request.get(
+    `/api/me/workout-logs/range?start=${today.toISOString()}&end=${tomorrow.toISOString()}`,
+  );
+  if (rangeRes.ok()) {
+    const logs = (await rangeRes.json()) as Array<{ _id: string }>;
+    await Promise.all(logs.map((l) => request.delete(`/api/me/workout-logs/${l._id}`)));
+  }
+}
+
 test.describe('trainer template workout + saveAsTemplate', () => {
   let savedTemplateId: string | null = null;
-  let seededLogId: string | null = null;
 
   test.beforeEach(async ({ request }) => {
-    // Clean up any active log left by a previous test.
-    const activeRes = await request.get('/api/me/workout-logs/active');
-    const active = (await activeRes.json()) as { _id?: string } | null;
-    if (active && active._id) {
-      await request.delete(`/api/me/workout-logs/${active._id}`);
-    }
-
-    // Seed a completed template-derived log so the cockpit renders Light state
-    // with the Template card visible. Without this, the trainer would see the
-    // Empty cockpit which only offers preset shortcuts (no "Pick another day").
-    const tplListRes = await request.get('/api/plan-templates');
-    const tplList = (await tplListRes.json()) as Array<{
-      _id: string;
-      name: string;
-      days: Array<{ dayNumber: number; name: string }>;
-    }>;
-    const tpl = tplList.find((t) => t.name === 'E2E Test Plan');
-    if (!tpl) throw new Error('Seed template "E2E Test Plan" not found');
-
-    const createRes = await request.post('/api/me/workout-logs', {
-      data: {
-        dayName: tpl.days[0].name,
-        sourceTemplateId: tpl._id,
-        sourceTemplateDayNumber: tpl.days[0].dayNumber,
-        plannedSets: [],
-      },
-    });
-    const created = (await createRes.json()) as { _id: string };
-    seededLogId = created._id;
-    // Immediately complete it so it counts as a past session and the cockpit
-    // detects "hasUsedTemplate" → Light state.
-    await request.post(`/api/me/workout-logs/${created._id}/complete`, {
-      data: { rpe: null, note: null },
-    });
+    // Clear any active or completed-today logs so DAY_ALREADY_LOGGED is never hit.
+    await clearTodayLogs(request);
   });
 
   test.afterEach(async ({ request }) => {
-    // Remove the seeded prior log so subsequent runs / tests start clean.
-    if (seededLogId) {
-      await request.delete(`/api/me/workout-logs/${seededLogId}`);
-      seededLogId = null;
-    }
+    // Clean up any logs created during the test.
+    await clearTodayLogs(request);
   });
 
   test.afterAll(async ({ request }) => {

@@ -88,6 +88,12 @@ export function SelfWorkoutCalendarClient({ basePath, initialDate }: Props) {
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
       <div className="flex items-center gap-3 px-4 sm:px-8 py-3 border-b border-foreground/10 shrink-0">
+        <a
+          href={basePath}
+          className="text-[12px] text-foreground/65 hover:text-foreground transition-colors mr-1"
+        >
+          {basePath === '/member/plan' ? '← Back to Plan' : '← Back'}
+        </a>
         <button
           onClick={prevWeek}
           aria-label="Previous week"

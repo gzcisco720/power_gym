@@ -17,6 +17,18 @@ async function clearActive(request: import('@playwright/test').APIRequestContext
   if (log?._id) {
     await request.delete(`/api/me/workout-logs/${log._id}`);
   }
+  // Also clear completed-today logs so DAY_ALREADY_LOGGED is never hit on the
+  // next POST /api/me/workout-logs (e.g. after the cross-day Save test seals one).
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const tomorrow = new Date(today.getTime() + 86_400_000);
+  const rangeRes = await request.get(
+    `/api/me/workout-logs/range?start=${today.toISOString()}&end=${tomorrow.toISOString()}`,
+  );
+  if (rangeRes.ok()) {
+    const logs = (await rangeRes.json()) as Array<{ _id: string }>;
+    await Promise.all(logs.map((l) => request.delete(`/api/me/workout-logs/${l._id}`)));
+  }
 }
 
 test.describe('owner: my-training session lifecycle', () => {

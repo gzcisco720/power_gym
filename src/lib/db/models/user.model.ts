@@ -4,6 +4,7 @@ import type { UserRole } from '@/types/auth';
 export interface IUser extends Document {
   firstName: string;
   lastName: string;
+  readonly name: string;
   email: string;
   passwordHash: string;
   role: UserRole;

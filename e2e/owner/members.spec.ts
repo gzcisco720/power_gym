@@ -14,12 +14,12 @@ test.describe('Owner: Members', () => {
     const memberRow = page.getByText('reassign-member@test.com', { exact: true }).locator('..').locator('..');
     await memberRow.getByRole('button', { name: /reassign/i }).click();
 
-    await page.selectOption('select', { label: 'Test Trainer 2' });
+    await page.selectOption('select', { label: 'Test Trainer2' });
     await page.getByRole('button', { name: /confirm/i }).click();
 
     await expect(page.getByText('reassign-member@test.com', { exact: true })
       .locator('..').locator('..')
-      .getByText('Test Trainer 2')).toBeVisible({ timeout: 10000 });
+      .getByText('Test Trainer2')).toBeVisible({ timeout: 10000 });
   });
 
   test('View link navigates to member hub page', async ({ page }) => {
