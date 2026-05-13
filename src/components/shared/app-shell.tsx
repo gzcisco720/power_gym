@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu } from 'lucide-react';
+import { Menu, Settings, LogOut } from 'lucide-react';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { Popover, PopoverTrigger, PopoverPortal, PopoverPositioner, PopoverPopup } from '@/components/ui/popover';
 import { cn, initials } from '@/lib/utils';
 import type { UserRole } from '@/types/auth';
 
@@ -25,10 +26,6 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
         { href: '/member/body-tests', label: 'Body Tests' },
         { href: '/member/check-in', label: 'Check-In' },
       ],
-    },
-    {
-      group: 'ACCOUNT',
-      items: [{ href: '/member/settings', label: 'Settings' }],
     },
   ],
   trainer: [
@@ -53,10 +50,6 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
         { href: '/trainer/my-training', label: 'My Training' },
         { href: '/trainer/my-nutrition', label: 'My Nutrition' },
       ],
-    },
-    {
-      group: 'ACCOUNT',
-      items: [{ href: '/trainer/settings', label: 'Settings' }],
     },
   ],
   owner: [
@@ -94,10 +87,6 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
         { href: '/owner/my-body-tests', label: 'Body Tests' },
       ],
     },
-    {
-      group: 'ACCOUNT',
-      items: [{ href: '/owner/settings', label: 'Settings' }],
-    },
   ],
 };
 
@@ -110,7 +99,6 @@ interface SidebarContentProps {
   logoutSlot?: React.ReactNode;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, logoutSlot }: SidebarContentProps) {
   const pathname = usePathname();
   const groups = NAV[role] ?? [];
@@ -152,26 +140,72 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, lo
         ))}
       </nav>
 
-      <div className="border-t border-[#161616] px-5 py-4">
-        <div className="flex items-center gap-3">
-          {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={avatarUrl}
-              alt={userName}
-              className="h-8 w-8 shrink-0 rounded-full object-cover border border-[#222]"
-            />
-          ) : (
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#222] bg-[#1a1a1a] text-[11px] font-semibold text-[#666]">
-              {userInitials}
+      <div className="border-t border-[#161616] px-3 py-3">
+        <Popover>
+          <PopoverTrigger
+            className="flex w-full items-center gap-3 rounded-md px-2 py-2 cursor-pointer hover:bg-[#141414] transition-colors"
+            aria-label="User menu"
+          >
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={avatarUrl}
+                alt={userName}
+                className="h-8 w-8 shrink-0 rounded-full object-cover border border-[#222]"
+              />
+            ) : (
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#222] bg-[#1a1a1a] text-[11px] font-semibold text-[#666]">
+                {userInitials}
+              </div>
+            )}
+            <div className="min-w-0 flex-1 text-left">
+              <div className="text-[12px] font-medium text-[#888] truncate">{userName}</div>
+              <div className="text-[10px] capitalize text-[#555]">{role}</div>
             </div>
-          )}
-          <div>
-            <div className="text-[12px] font-medium text-[#888]">{userName}</div>
-            <div className="text-[10px] capitalize text-[#555]">{role}</div>
-          </div>
-        </div>
-        {logoutSlot && <div className="mt-3">{logoutSlot}</div>}
+          </PopoverTrigger>
+          <PopoverPortal>
+          <PopoverPositioner side="top" align="start">
+            <PopoverPopup className="w-60 p-0 bg-[#141414] border-[#2a2a2a]">
+              {/* User info header */}
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-[#222]">
+                {avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={avatarUrl}
+                    alt={userName}
+                    className="h-9 w-9 shrink-0 rounded-full object-cover border border-[#333]"
+                  />
+                ) : (
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#333] bg-[#2a2a2a] text-[12px] font-semibold text-[#777]">
+                    {userInitials}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-[13px] font-medium text-[#e5e5e5] truncate">{userName}</p>
+                  <p className="text-[11px] text-[#666] truncate">{userEmail}</p>
+                </div>
+              </div>
+              {/* Menu items */}
+              <div className="py-1">
+                <a
+                  href={`/${role}/settings`}
+                  className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-[#ccc] hover:bg-[#1e1e1e] hover:text-white transition-colors cursor-pointer"
+                >
+                  <Settings className="h-4 w-4 shrink-0 text-[#666]" />
+                  Profile &amp; Settings
+                </a>
+                <div className="my-1 border-t border-[#222]" />
+                {logoutSlot && (
+                  <div className="flex items-center gap-3 px-4 py-1 text-[13px] text-red-400 hover:bg-[#1e1e1e] transition-colors [&>*]:flex-1">
+                    <LogOut className="h-4 w-4 shrink-0 text-red-400" />
+                    {logoutSlot}
+                  </div>
+                )}
+              </div>
+            </PopoverPopup>
+          </PopoverPositioner>
+          </PopoverPortal>
+        </Popover>
       </div>
     </div>
   );
