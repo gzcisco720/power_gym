@@ -11,8 +11,8 @@ export default async function OwnerSettingsPage() {
   await connectDB();
   const raw = await new MongoUserProfileRepository().findByUserId(session.user.id);
   const profile = {
-    phone: raw?.phone ?? null,
-    gymName: raw?.gymName ?? null,
+    mobile: raw?.mobile ?? null,
+    gymName: raw?.gymInfo?.name ?? null,
   };
 
   return (

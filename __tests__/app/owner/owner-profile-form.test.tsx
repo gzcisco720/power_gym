@@ -12,14 +12,14 @@ import { OwnerProfileForm } from '@/app/(dashboard)/owner/settings/_components/o
 import { updateOwnerProfileAction } from '@/app/(dashboard)/owner/settings/actions';
 const mockUpdateOwnerProfileAction = jest.mocked(updateOwnerProfileAction);
 
-const DEFAULT_PROFILE = { phone: null, gymName: null };
+const DEFAULT_PROFILE = { mobile: null, gymName: null };
 
 describe('OwnerProfileForm', () => {
   beforeEach(() => {
     mockUpdateOwnerProfileAction.mockResolvedValue({ error: '' });
   });
 
-  it('renders phone and gymName fields', () => {
+  it('renders mobile and gymName fields', () => {
     render(<OwnerProfileForm initialProfile={DEFAULT_PROFILE} />);
     expect(screen.getByLabelText(/phone/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/gym name/i)).toBeInTheDocument();

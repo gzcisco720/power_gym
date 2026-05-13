@@ -15,7 +15,7 @@ export async function updateMemberProfileAction(
   const session = await auth();
   if (!session?.user) return { error: 'Unauthorized' };
 
-  const phone = (formData.get('phone') as string | null) || null;
+  const mobile = (formData.get('mobile') as string | null) || null;
   const sex = (formData.get('sex') as 'male' | 'female' | null) || null;
   const dateOfBirthRaw = formData.get('dateOfBirth') as string | null;
   const dateOfBirth = dateOfBirthRaw ? new Date(dateOfBirthRaw) : null;
@@ -34,7 +34,7 @@ export async function updateMemberProfileAction(
   try {
     await connectDB();
     await new MongoUserProfileRepository().upsert(session.user.id, {
-      phone,
+      mobile,
       sex,
       fitnessGoal,
       fitnessLevel,

@@ -1,21 +1,26 @@
 import mongoose from 'mongoose';
 import { UserProfileModel } from '@/lib/db/models/user-profile.model';
-import type { IUserProfile } from '@/lib/db/models/user-profile.model';
+import type { IUserProfile, IGymInfo } from '@/lib/db/models/user-profile.model';
 
 export type UpdateProfileData = Partial<
   Pick<
     IUserProfile,
-    | 'phone'
-    | 'sex'
+    | 'mobile'
+    | 'address'
     | 'dateOfBirth'
+    | 'avatarUrl'
+    | 'sex'
     | 'height'
     | 'fitnessGoal'
     | 'fitnessLevel'
+    | 'certifications'
     | 'bio'
     | 'specializations'
-    | 'gymName'
+    | 'gymInfo'
   >
 >;
+
+export type { IGymInfo };
 
 export interface IUserProfileRepository {
   findByUserId(userId: string): Promise<IUserProfile | null>;

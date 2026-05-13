@@ -15,7 +15,7 @@ export async function updateTrainerProfileAction(
   const session = await auth();
   if (!session?.user) return { error: 'Unauthorized' };
 
-  const phone = (formData.get('phone') as string | null) || null;
+  const mobile = (formData.get('mobile') as string | null) || null;
   const bio = (formData.get('bio') as string | null) || null;
   const specializationsRaw = (formData.get('specializations') as string | null) ?? '';
   const specializations = specializationsRaw
@@ -25,7 +25,7 @@ export async function updateTrainerProfileAction(
 
   try {
     await connectDB();
-    await new MongoUserProfileRepository().upsert(session.user.id, { phone, bio, specializations });
+    await new MongoUserProfileRepository().upsert(session.user.id, { mobile, bio, specializations });
     return { error: '' };
   } catch {
     return { error: 'Failed to save profile' };

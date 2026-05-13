@@ -11,7 +11,7 @@ export default async function TrainerSettingsPage() {
   await connectDB();
   const raw = await new MongoUserProfileRepository().findByUserId(session.user.id);
   const profile = {
-    phone: raw?.phone ?? null,
+    mobile: raw?.mobile ?? null,
     bio: raw?.bio ?? null,
     specializations: raw?.specializations ?? [],
   };

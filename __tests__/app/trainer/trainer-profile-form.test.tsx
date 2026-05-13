@@ -12,14 +12,14 @@ import { TrainerProfileForm } from '@/app/(dashboard)/trainer/settings/_componen
 import { updateTrainerProfileAction } from '@/app/(dashboard)/trainer/settings/actions';
 const mockUpdateTrainerProfileAction = jest.mocked(updateTrainerProfileAction);
 
-const DEFAULT_PROFILE = { phone: null, bio: null, specializations: [] as string[] };
+const DEFAULT_PROFILE = { mobile: null, bio: null, specializations: [] as string[] };
 
 describe('TrainerProfileForm', () => {
   beforeEach(() => {
     mockUpdateTrainerProfileAction.mockResolvedValue({ error: '' });
   });
 
-  it('renders phone, bio, and specializations fields', () => {
+  it('renders mobile, bio, and specializations fields', () => {
     render(<TrainerProfileForm initialProfile={DEFAULT_PROFILE} />);
     expect(screen.getByLabelText(/phone/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/bio/i)).toBeInTheDocument();

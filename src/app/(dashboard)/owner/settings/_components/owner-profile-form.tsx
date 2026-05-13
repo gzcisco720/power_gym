@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { updateOwnerProfileAction, type UpdateProfileState } from '../actions';
 
 interface InitialProfile {
-  phone: string | null;
+  mobile: string | null;
   gymName: string | null;
 }
 
@@ -38,16 +38,16 @@ export function OwnerProfileForm({ initialProfile }: Props) {
     <form action={action} className="space-y-5">
       <div className="space-y-1.5">
         <label
-          htmlFor="phone"
+          htmlFor="mobile"
           className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]"
         >
           Phone
         </label>
         <Input
-          id="phone"
-          name="phone"
+          id="mobile"
+          name="mobile"
           type="tel"
-          defaultValue={initialProfile.phone ?? ''}
+          defaultValue={initialProfile.mobile ?? ''}
           className="bg-[#0c0c0c] border-[#1e1e1e] text-white"
         />
       </div>

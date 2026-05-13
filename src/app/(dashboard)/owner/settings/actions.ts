@@ -15,12 +15,25 @@ export async function updateOwnerProfileAction(
   const session = await auth();
   if (!session?.user) return { error: 'Unauthorized' };
 
-  const phone = (formData.get('phone') as string | null) || null;
-  const gymName = (formData.get('gymName') as string | null) || null;
+  const mobile = (formData.get('mobile') as string | null)?.trim() || null;
+  const gymNameValue = (formData.get('gymName') as string | null)?.trim() || null;
 
   try {
     await connectDB();
-    await new MongoUserProfileRepository().upsert(session.user.id, { phone, gymName });
+    await new MongoUserProfileRepository().upsert(session.user.id, {
+      mobile,
+      gymInfo: gymNameValue
+        ? {
+            name: gymNameValue,
+            address: null,
+            phone: null,
+            email: null,
+            website: null,
+            hours: null,
+            description: null,
+          }
+        : null,
+    });
     return { error: '' };
   } catch {
     return { error: 'Failed to save profile' };

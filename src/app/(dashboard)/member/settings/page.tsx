@@ -11,7 +11,7 @@ export default async function MemberSettingsPage() {
   await connectDB();
   const raw = await new MongoUserProfileRepository().findByUserId(session.user.id);
   const profile = {
-    phone: raw?.phone ?? null,
+    mobile: raw?.mobile ?? null,
     sex: (raw?.sex ?? null) as 'male' | 'female' | null,
     dateOfBirth: raw?.dateOfBirth ? raw.dateOfBirth.toISOString() : null,
     height: raw?.height ?? null,

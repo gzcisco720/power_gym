@@ -89,7 +89,10 @@ export async function seed(): Promise<void> {
     sex: 'male',
     dateOfBirth: memberDob,
     height: 178,
-    phone: null,
+    mobile: null,
+    address: null,
+    avatarUrl: null,
+    certifications: [],
   });
 
   // ── Exercise ─────────────────────────────────────────────────────────────

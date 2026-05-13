@@ -13,7 +13,7 @@ import { updateMemberProfileAction } from '@/app/(dashboard)/member/settings/act
 const mockUpdateMemberProfileAction = jest.mocked(updateMemberProfileAction);
 
 const DEFAULT_PROFILE = {
-  phone: null,
+  mobile: null,
   sex: null as 'male' | 'female' | null,
   dateOfBirth: null as string | null,
   height: null as number | null,
