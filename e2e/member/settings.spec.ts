@@ -23,7 +23,7 @@ test.describe('Member: Settings', () => {
     await page.selectOption('#fitnessLevel', 'intermediate');
     await page.getByRole('button', { name: 'Save Profile' }).click();
 
-    await expect(page.getByRole('button', { name: 'Save Profile' })).toBeEnabled();
+    await expect(page.getByText('Profile saved')).toBeVisible();
 
     await page.reload();
 

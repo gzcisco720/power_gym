@@ -20,7 +20,7 @@ test.describe('Owner: Settings', () => {
     await page.fill('#certifications', 'CPT, CSCS');
     await page.getByRole('button', { name: 'Save Profile' }).click();
 
-    await expect(page.getByRole('button', { name: 'Save Profile' })).toBeEnabled();
+    await expect(page.getByText('Profile saved')).toBeVisible();
 
     await page.reload();
 
@@ -38,7 +38,7 @@ test.describe('Owner: Settings', () => {
     await page.fill('#gymPhone', '0299990000');
     await page.getByRole('button', { name: 'Save Gym Info' }).click();
 
-    await expect(page.getByRole('button', { name: 'Save Gym Info' })).toBeEnabled();
+    await expect(page.getByText('Gym info saved')).toBeVisible();
 
     await page.reload();
 

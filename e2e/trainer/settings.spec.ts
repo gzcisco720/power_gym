@@ -20,7 +20,7 @@ test.describe('Trainer: Settings', () => {
     await page.fill('#bio', 'E2E trainer bio updated');
     await page.getByRole('button', { name: 'Save Profile' }).click();
 
-    await expect(page.getByRole('button', { name: 'Save Profile' })).toBeEnabled();
+    await expect(page.getByText('Profile saved')).toBeVisible();
 
     await page.reload();
 
