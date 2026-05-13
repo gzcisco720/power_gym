@@ -11,6 +11,7 @@ import type {
   SendSessionCancelledParams,
   SendCheckInReminderParams,
   SendCheckInReceivedParams,
+  SendPasswordResetParams,
 } from '@/lib/email/index';
 import { inviteEmailTemplate } from '@/lib/email/templates/invite';
 import { sessionReminderTemplate } from '@/lib/email/templates/session-reminder';
@@ -21,6 +22,7 @@ import { sessionBookedTemplate } from '@/lib/email/templates/session-booked';
 import { sessionCancelledTemplate } from '@/lib/email/templates/session-cancelled';
 import { checkInReminderTemplate } from '@/lib/email/templates/check-in-reminder';
 import { checkInReceivedTemplate } from '@/lib/email/templates/check-in-received';
+import { passwordResetEmailTemplate } from '@/lib/email/templates/password-reset';
 
 export class MailgunEmailService implements IEmailService {
   private mg: ReturnType<InstanceType<typeof Mailgun>['client']>;
@@ -87,6 +89,11 @@ export class MailgunEmailService implements IEmailService {
 
   async sendCheckInReceived(params: SendCheckInReceivedParams): Promise<void> {
     const { subject, html } = checkInReceivedTemplate(params);
+    await this.send(params.to, subject, html);
+  }
+
+  async sendPasswordReset(params: SendPasswordResetParams): Promise<void> {
+    const { subject, html } = passwordResetEmailTemplate({ resetUrl: params.resetUrl });
     await this.send(params.to, subject, html);
   }
 }

@@ -67,6 +67,11 @@ export interface SendCheckInReceivedParams {
   submittedAt: string;
 }
 
+export interface SendPasswordResetParams {
+  to: string;
+  resetUrl: string;
+}
+
 export interface IEmailService {
   sendInvite(params: SendInviteParams): Promise<void>;
   sendSessionReminder(params: SendSessionReminderParams): Promise<void>;
@@ -77,6 +82,7 @@ export interface IEmailService {
   sendSessionCancelled(params: SendSessionCancelledParams): Promise<void>;
   sendCheckInReminder(params: SendCheckInReminderParams): Promise<void>;
   sendCheckInReceived(params: SendCheckInReceivedParams): Promise<void>;
+  sendPasswordReset(params: SendPasswordResetParams): Promise<void>;
 }
 
 let _emailService: IEmailService | null = null;

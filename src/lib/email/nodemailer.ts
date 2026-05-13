@@ -10,6 +10,7 @@ import type {
   SendSessionCancelledParams,
   SendCheckInReminderParams,
   SendCheckInReceivedParams,
+  SendPasswordResetParams,
 } from '@/lib/email/index';
 import { inviteEmailTemplate } from '@/lib/email/templates/invite';
 import { sessionReminderTemplate } from '@/lib/email/templates/session-reminder';
@@ -20,6 +21,7 @@ import { sessionBookedTemplate } from '@/lib/email/templates/session-booked';
 import { sessionCancelledTemplate } from '@/lib/email/templates/session-cancelled';
 import { checkInReminderTemplate } from '@/lib/email/templates/check-in-reminder';
 import { checkInReceivedTemplate } from '@/lib/email/templates/check-in-received';
+import { passwordResetEmailTemplate } from '@/lib/email/templates/password-reset';
 
 export class NodemailerEmailService implements IEmailService {
   private readonly transporter = process.env.EMAIL_PROVIDER === 'mailtrap'
@@ -87,6 +89,11 @@ export class NodemailerEmailService implements IEmailService {
   async sendCheckInReceived(params: SendCheckInReceivedParams): Promise<void> {
 
     const { subject, html } = checkInReceivedTemplate(params);
+    await this.transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
+  }
+
+  async sendPasswordReset(params: SendPasswordResetParams): Promise<void> {
+    const { subject, html } = passwordResetEmailTemplate({ resetUrl: params.resetUrl });
     await this.transporter.sendMail({ from: process.env.SMTP_FROM, to: params.to, subject, html });
   }
 }
