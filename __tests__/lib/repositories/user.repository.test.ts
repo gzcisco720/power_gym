@@ -94,6 +94,6 @@ describe('MongoUserRepository extensions', () => {
   it('updateName trims firstName and lastName before update', async () => {
     mockFindByIdAndUpdate.mockResolvedValue(null);
     await repo.updateName(MEMBER_ID, '  John  ', '  Doe  ');
-    expect(mockFindByIdAndUpdate).toHaveBeenCalledWith(MEMBER_ID, { $set: { firstName: 'John', lastName: 'Doe' } });
+    expect(mockFindByIdAndUpdate).toHaveBeenCalledWith(MEMBER_ID, { $set: { firstName: 'John', lastName: 'Doe' } }, { strict: false });
   });
 });

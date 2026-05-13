@@ -27,11 +27,11 @@ export interface IUserRepository {
 
 export class MongoUserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<IUser | null> {
-    return UserModel.findOne({ email });
+    return UserModel.findOne({ email }).lean() as Promise<IUser | null>;
   }
 
   async findById(id: string): Promise<IUser | null> {
-    return UserModel.findById(id);
+    return UserModel.findById(id).lean() as Promise<IUser | null>;
   }
 
   async count(): Promise<number> {
@@ -70,6 +70,10 @@ export class MongoUserRepository implements IUserRepository {
   }
 
   async updateName(userId: string, firstName: string, lastName: string): Promise<void> {
-    await UserModel.findByIdAndUpdate(userId, { $set: { firstName: firstName.trim(), lastName: lastName.trim() } });
+    await UserModel.findByIdAndUpdate(
+      userId,
+      { $set: { firstName: firstName.trim(), lastName: lastName.trim() } },
+      { strict: false },
+    );
   }
 }

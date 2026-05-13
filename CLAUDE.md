@@ -4,6 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## 🔴 CRITICAL: ONE-FIX-AT-A-TIME RULE 🔴
+
+**如果一个 fix 不 work，那就证明这个 fix 是错误的，必须立即 revert，再重新分析，再尝试下一个方案。禁止在未验证的 fix 上叠加更多修改。**
+
+---
+
 ## 🔴 CRITICAL: TEST-DRIVEN DEVELOPMENT 🔴
 
 **This project follows TDD. Never write implementation code before writing a failing test.**
