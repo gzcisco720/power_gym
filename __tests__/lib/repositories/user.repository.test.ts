@@ -78,4 +78,22 @@ describe('MongoUserRepository extensions', () => {
       $set: { trainerId: null },
     });
   });
+
+  it('updatePassword calls findByIdAndUpdate with $set passwordHash', async () => {
+    mockFindByIdAndUpdate.mockResolvedValue(null);
+    await repo.updatePassword(MEMBER_ID, 'newhash');
+    expect(mockFindByIdAndUpdate).toHaveBeenCalledWith(MEMBER_ID, { $set: { passwordHash: 'newhash' } });
+  });
+
+  it('updateEmail lowercases and trims email before update', async () => {
+    mockFindByIdAndUpdate.mockResolvedValue(null);
+    await repo.updateEmail(MEMBER_ID, '  NEW@EMAIL.COM  ');
+    expect(mockFindByIdAndUpdate).toHaveBeenCalledWith(MEMBER_ID, { $set: { email: 'new@email.com' } });
+  });
+
+  it('updateName trims firstName and lastName before update', async () => {
+    mockFindByIdAndUpdate.mockResolvedValue(null);
+    await repo.updateName(MEMBER_ID, '  John  ', '  Doe  ');
+    expect(mockFindByIdAndUpdate).toHaveBeenCalledWith(MEMBER_ID, { $set: { firstName: 'John', lastName: 'Doe' } });
+  });
 });

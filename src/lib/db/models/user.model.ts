@@ -4,7 +4,6 @@ import type { UserRole } from '@/types/auth';
 export interface IUser extends Document {
   firstName: string;
   lastName: string;
-  readonly name: string;
   email: string;
   passwordHash: string;
   role: UserRole;
@@ -21,7 +20,7 @@ const UserSchema = new Schema<IUser>(
     role: { type: String, enum: ['owner', 'trainer', 'member'], required: true },
     trainerId: { type: Schema.Types.ObjectId, default: null },
   },
-  { timestamps: { createdAt: true, updatedAt: false } },
+  { timestamps: { createdAt: true, updatedAt: false }, toJSON: { virtuals: true } },
 );
 
 UserSchema.virtual('name').get(function (this: IUser) {

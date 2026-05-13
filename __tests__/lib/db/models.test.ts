@@ -41,7 +41,8 @@ describe('UserModel schema', () => {
       passwordHash: 'hash',
       role: 'member',
     });
-    expect((user as unknown as { name: string }).name).toBe('John Doe');
+    const obj = user.toJSON() as { name: string };
+    expect(obj.name).toBe('John Doe');
   });
 });
 
