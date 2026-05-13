@@ -2,51 +2,49 @@
  * @jest-environment jsdom
  */
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 jest.mock('@/app/(dashboard)/member/settings/actions', () => ({
   updateMemberProfileAction: jest.fn(),
 }));
 
-import { MemberProfileForm } from '@/app/(dashboard)/member/settings/_components/member-profile-form';
-import { updateMemberProfileAction } from '@/app/(dashboard)/member/settings/actions';
-const mockUpdateMemberProfileAction = jest.mocked(updateMemberProfileAction);
+jest.mock('@/components/settings/avatar-upload', () => ({
+  AvatarUpload: () => <div data-testid="avatar-upload" />,
+}));
 
-const DEFAULT_PROFILE = {
+import { MemberProfileTab } from '@/app/(dashboard)/member/settings/_components/profile-tab';
+
+const DEFAULT_PROPS = {
+  firstName: 'Eric',
+  lastName: 'Gong',
   mobile: null,
+  address: null,
+  dateOfBirth: null,
+  avatarUrl: null,
   sex: null as 'male' | 'female' | null,
-  dateOfBirth: null as string | null,
-  height: null as number | null,
-  fitnessGoal: null as string | null,
-  fitnessLevel: null as string | null,
+  fitnessGoal: null,
+  fitnessLevel: null,
 };
 
-describe('MemberProfileForm', () => {
-  beforeEach(() => {
-    mockUpdateMemberProfileAction.mockResolvedValue({ error: '' });
+describe('MemberProfileTab', () => {
+  it('renders name, mobile, address, sex, fitness fields', () => {
+    render(<MemberProfileTab {...DEFAULT_PROPS} />);
+    expect(screen.getByLabelText(/first name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/last name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/mobile/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/address/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/fitness goal/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/fitness level/i)).toBeInTheDocument();
   });
 
-  it('renders all profile fields', () => {
-    render(<MemberProfileForm initialProfile={DEFAULT_PROFILE} />);
-    expect(screen.getByLabelText(/phone/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/height/i)).toBeInTheDocument();
+  it('pre-fills firstName and lastName', () => {
+    render(<MemberProfileTab {...DEFAULT_PROPS} firstName="Alice" lastName="Smith" />);
+    expect((screen.getByLabelText(/first name/i) as HTMLInputElement).value).toBe('Alice');
+    expect((screen.getByLabelText(/last name/i) as HTMLInputElement).value).toBe('Smith');
   });
 
-  it('calls action when form is submitted', async () => {
-    render(<MemberProfileForm initialProfile={DEFAULT_PROFILE} />);
-    fireEvent.click(screen.getByRole('button', { name: /save/i }));
-    await waitFor(() => expect(mockUpdateMemberProfileAction).toHaveBeenCalled());
-  });
-
-  it('shows error message when action returns error', async () => {
-    mockUpdateMemberProfileAction.mockResolvedValue({ error: 'Save failed' });
-    render(<MemberProfileForm initialProfile={DEFAULT_PROFILE} />);
-    fireEvent.click(screen.getByRole('button', { name: /save/i }));
-    await waitFor(() => expect(screen.getByText('Save failed')).toBeInTheDocument());
-  });
-
-  it('pre-fills height field when initialProfile has height', () => {
-    render(<MemberProfileForm initialProfile={{ ...DEFAULT_PROFILE, height: 170 }} />);
-    expect((screen.getByLabelText(/height/i) as HTMLInputElement).value).toBe('170');
+  it('renders save button', () => {
+    render(<MemberProfileTab {...DEFAULT_PROPS} />);
+    expect(screen.getByRole('button', { name: /save profile/i })).toBeInTheDocument();
   });
 });

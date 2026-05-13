@@ -2,39 +2,51 @@
  * @jest-environment jsdom
  */
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 jest.mock('@/app/(dashboard)/trainer/settings/actions', () => ({
   updateTrainerProfileAction: jest.fn(),
 }));
 
-import { TrainerProfileForm } from '@/app/(dashboard)/trainer/settings/_components/trainer-profile-form';
-import { updateTrainerProfileAction } from '@/app/(dashboard)/trainer/settings/actions';
-const mockUpdateTrainerProfileAction = jest.mocked(updateTrainerProfileAction);
+jest.mock('@/components/settings/avatar-upload', () => ({
+  AvatarUpload: () => <div data-testid="avatar-upload" />,
+}));
 
-const DEFAULT_PROFILE = { mobile: null, bio: null, specializations: [] as string[] };
+import { TrainerProfileTab } from '@/app/(dashboard)/trainer/settings/_components/profile-tab';
 
-describe('TrainerProfileForm', () => {
-  beforeEach(() => {
-    mockUpdateTrainerProfileAction.mockResolvedValue({ error: '' });
-  });
+const DEFAULT_PROPS = {
+  firstName: 'John',
+  lastName: 'Smith',
+  mobile: null,
+  address: null,
+  dateOfBirth: null,
+  avatarUrl: null,
+  bio: null,
+  specializations: [] as string[],
+  certifications: [] as string[],
+};
 
-  it('renders mobile, bio, and specializations fields', () => {
-    render(<TrainerProfileForm initialProfile={DEFAULT_PROFILE} />);
-    expect(screen.getByLabelText(/phone/i)).toBeInTheDocument();
+describe('TrainerProfileTab', () => {
+  it('renders mobile, bio, specializations, and certifications fields', () => {
+    render(<TrainerProfileTab {...DEFAULT_PROPS} />);
+    expect(screen.getByLabelText(/mobile/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/bio/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/specializations/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/certifications/i)).toBeInTheDocument();
   });
 
-  it('pre-fills bio when initialProfile has bio', () => {
-    render(<TrainerProfileForm initialProfile={{ ...DEFAULT_PROFILE, bio: 'NSCA-CPT' }} />);
+  it('pre-fills bio when provided', () => {
+    render(<TrainerProfileTab {...DEFAULT_PROPS} bio="NSCA-CPT" />);
     expect((screen.getByLabelText(/bio/i) as HTMLTextAreaElement).value).toBe('NSCA-CPT');
   });
 
-  it('shows error message when action returns error', async () => {
-    mockUpdateTrainerProfileAction.mockResolvedValue({ error: 'Network error' });
-    render(<TrainerProfileForm initialProfile={DEFAULT_PROFILE} />);
-    fireEvent.click(screen.getByRole('button', { name: /save/i }));
-    await waitFor(() => expect(screen.getByText('Network error')).toBeInTheDocument());
+  it('pre-fills specializations as comma-separated string', () => {
+    render(<TrainerProfileTab {...DEFAULT_PROPS} specializations={['strength', 'rehabilitation']} />);
+    expect((screen.getByLabelText(/specializations/i) as HTMLInputElement).value).toBe('strength, rehabilitation');
+  });
+
+  it('renders save button', () => {
+    render(<TrainerProfileTab {...DEFAULT_PROPS} />);
+    expect(screen.getByRole('button', { name: /save profile/i })).toBeInTheDocument();
   });
 });

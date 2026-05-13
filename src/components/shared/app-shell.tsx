@@ -105,10 +105,13 @@ interface SidebarContentProps {
   role: UserRole;
   userName: string;
   userInitials: string;
+  userEmail: string;
+  avatarUrl: string | null;
   logoutSlot?: React.ReactNode;
 }
 
-function SidebarContent({ role, userName, userInitials, logoutSlot }: SidebarContentProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, logoutSlot }: SidebarContentProps) {
   const pathname = usePathname();
   const groups = NAV[role] ?? [];
 
@@ -151,9 +154,18 @@ function SidebarContent({ role, userName, userInitials, logoutSlot }: SidebarCon
 
       <div className="border-t border-[#161616] px-5 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#222] bg-[#1a1a1a] text-[11px] font-semibold text-[#666]">
-            {userInitials}
-          </div>
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={avatarUrl}
+              alt={userName}
+              className="h-8 w-8 shrink-0 rounded-full object-cover border border-[#222]"
+            />
+          ) : (
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#222] bg-[#1a1a1a] text-[11px] font-semibold text-[#666]">
+              {userInitials}
+            </div>
+          )}
           <div>
             <div className="text-[12px] font-medium text-[#888]">{userName}</div>
             <div className="text-[10px] capitalize text-[#555]">{role}</div>
@@ -168,18 +180,20 @@ function SidebarContent({ role, userName, userInitials, logoutSlot }: SidebarCon
 interface AppShellProps {
   role: UserRole;
   userName: string;
+  userEmail?: string;
+  avatarUrl?: string | null;
   children: React.ReactNode;
   logoutSlot?: React.ReactNode;
 }
 
-export function AppShell({ role, userName, children, logoutSlot }: AppShellProps) {
+export function AppShell({ role, userName, userEmail = '', avatarUrl = null, children, logoutSlot }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const userInitials = initials(userName);
 
   return (
     <div className="flex h-screen bg-[#030303]">
       <aside className="hidden w-[220px] shrink-0 flex-col border-r border-[#161616] bg-[#0a0a0a] lg:flex">
-        <SidebarContent role={role} userName={userName} userInitials={userInitials} logoutSlot={logoutSlot} />
+        <SidebarContent role={role} userName={userName} userInitials={userInitials} userEmail={userEmail} avatarUrl={avatarUrl} logoutSlot={logoutSlot} />
       </aside>
 
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
@@ -188,7 +202,7 @@ export function AppShell({ role, userName, children, logoutSlot }: AppShellProps
           className="w-[220px] border-r border-[#161616] bg-[#0a0a0a] p-0"
         >
           <SheetTitle className="sr-only">Navigation</SheetTitle>
-          <SidebarContent role={role} userName={userName} userInitials={userInitials} logoutSlot={logoutSlot} />
+          <SidebarContent role={role} userName={userName} userInitials={userInitials} userEmail={userEmail} avatarUrl={avatarUrl} logoutSlot={logoutSlot} />
         </SheetContent>
       </Sheet>
 
