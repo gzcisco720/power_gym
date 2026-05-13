@@ -30,7 +30,7 @@ export default async function MemberSettingsPage({
   return (
     <div>
       <PageHeader title="Settings" />
-      <SettingsTabs tabs={TABS} basePath="/member/settings" />
+      <SettingsTabs tabs={TABS} basePath="/member/settings" activeTab={tab} />
       <div className="px-4 sm:px-8 py-7 max-w-lg">
         {tab === 'profile' && (
           <MemberProfileTab

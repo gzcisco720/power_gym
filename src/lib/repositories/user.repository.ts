@@ -27,11 +27,11 @@ export interface IUserRepository {
 
 export class MongoUserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<IUser | null> {
-    return UserModel.findOne({ email }).lean() as Promise<IUser | null>;
+    return UserModel.findOne({ email });
   }
 
   async findById(id: string): Promise<IUser | null> {
-    return UserModel.findById(id).lean() as Promise<IUser | null>;
+    return UserModel.findById(id);
   }
 
   async count(): Promise<number> {

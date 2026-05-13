@@ -35,7 +35,12 @@ test.describe('Authentication', () => {
     await page.getByRole('button', { name: 'Sign in' }).click();
     await page.waitForURL(/\/(owner|trainer|member)(\/|$)/);
 
-    await page.getByRole('button', { name: /sign out/i }).click();
+    // Open user menu popover (bottom-left of sidebar)
+    await page.getByRole('button', { name: 'User menu' }).click();
+    // Click Sign out in popover
+    await page.getByRole('button', { name: 'Sign out' }).first().click();
+    // Confirmation dialog appears — click Sign out button in dialog
+    await page.getByRole('button', { name: 'Sign out' }).last().click();
     await page.waitForURL('/login');
     await expect(page).toHaveURL('/login');
   });
@@ -52,11 +57,22 @@ test.describe('Authentication', () => {
     await page.goto('/register?token=e2e-test-invite-token');
     await expect(page.getByText(/invited as a/i)).toBeVisible();
 
-    await page.fill('#name', 'New Trainer');
+    await page.fill('#firstName', 'New');
+    await page.fill('#lastName', 'Trainer');
     await page.fill('#email', 'newtrainer@test.com');
     await page.fill('#password', 'TestPass123!');
     await page.getByRole('button', { name: /create account/i }).click();
     await page.waitForURL('/trainer/members');
     await expect(page).toHaveURL('/trainer/members');
+  });
+
+  test('forgot-password shows confirmation regardless of email', async ({ page }) => {
+    await page.goto('/forgot-password');
+    await expect(page.getByRole('heading', { name: 'Forgot password' })).toBeVisible();
+
+    await page.fill('input[type="email"]', 'anyemail@test.com');
+    await page.getByRole('button', { name: 'Send reset link' }).click();
+
+    await expect(page.getByText("If that email exists")).toBeVisible();
   });
 });

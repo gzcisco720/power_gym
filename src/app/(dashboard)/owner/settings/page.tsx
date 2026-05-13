@@ -32,7 +32,7 @@ export default async function OwnerSettingsPage({
   return (
     <div>
       <PageHeader title="Settings" />
-      <SettingsTabs tabs={TABS} basePath="/owner/settings" />
+      <SettingsTabs tabs={TABS} basePath="/owner/settings" activeTab={tab} />
       <div className="px-4 sm:px-8 py-7 max-w-lg">
         {tab === 'profile' && (
           <OwnerProfileTab
@@ -47,7 +47,23 @@ export default async function OwnerSettingsPage({
           />
         )}
         {tab === 'security' && <SecurityTab />}
-        {tab === 'gym-info' && <GymInfoTab gymInfo={raw?.gymInfo ?? null} />}
+        {tab === 'gym-info' && (
+          <GymInfoTab
+            gymInfo={
+              raw?.gymInfo
+                ? {
+                    name: raw.gymInfo.name ?? null,
+                    address: raw.gymInfo.address ?? null,
+                    phone: raw.gymInfo.phone ?? null,
+                    email: raw.gymInfo.email ?? null,
+                    website: raw.gymInfo.website ?? null,
+                    hours: raw.gymInfo.hours ?? null,
+                    description: raw.gymInfo.description ?? null,
+                  }
+                : null
+            }
+          />
+        )}
       </div>
     </div>
   );
