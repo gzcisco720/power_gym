@@ -2,7 +2,9 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 import type { UserRole } from '@/types/auth';
 
 export interface IUser extends Document {
-  name: string;
+  firstName: string;
+  lastName: string;
+  readonly name: string;
   email: string;
   passwordHash: string;
   role: UserRole;
@@ -12,7 +14,8 @@ export interface IUser extends Document {
 
 const UserSchema = new Schema<IUser>(
   {
-    name: { type: String, required: true },
+    firstName: { type: String, required: true, trim: true },
+    lastName: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ['owner', 'trainer', 'member'], required: true },
@@ -20,6 +23,10 @@ const UserSchema = new Schema<IUser>(
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 );
+
+UserSchema.virtual('name').get(function (this: IUser) {
+  return `${this.firstName} ${this.lastName}`;
+});
 
 UserSchema.index({ role: 1, trainerId: 1 });
 

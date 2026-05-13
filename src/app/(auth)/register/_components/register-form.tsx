@@ -43,18 +43,29 @@ export function RegisterForm({ token, inviteRole, isFirstUser }: Props) {
       )}
 
       <div className="space-y-1.5">
-        <label
-          htmlFor="name"
-          className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]"
-        >
-          Full Name
+        <label htmlFor="firstName" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">
+          First Name
         </label>
         <Input
-          id="name"
-          name="name"
+          id="firstName"
+          name="firstName"
           type="text"
           required
-          autoComplete="name"
+          autoComplete="given-name"
+          className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#555] focus-visible:ring-white"
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <label htmlFor="lastName" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">
+          Last Name
+        </label>
+        <Input
+          id="lastName"
+          name="lastName"
+          type="text"
+          required
+          autoComplete="family-name"
           className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#555] focus-visible:ring-white"
         />
       </div>

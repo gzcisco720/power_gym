@@ -22,7 +22,8 @@ export async function authorizeCredentials(
 
   return {
     id: user._id.toString(),
-    name: user.name,
+    firstName: user.firstName,
+    lastName: user.lastName,
     email: user.email,
     role: user.role,
     trainerId: user.trainerId?.toString() ?? null,

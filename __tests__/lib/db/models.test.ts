@@ -11,16 +11,37 @@ describe('UserModel schema', () => {
     expect(err?.errors['role']).toBeDefined();
   });
 
+  it('requires firstName and lastName', async () => {
+    const { UserModel } = await import('@/lib/db/models/user.model');
+    const user = new UserModel({ email: 'a@b.com', passwordHash: 'x', role: 'member' });
+    const err = user.validateSync();
+    expect(err?.errors['firstName']).toBeDefined();
+    expect(err?.errors['lastName']).toBeDefined();
+  });
+
   it('rejects invalid role', async () => {
     const { UserModel } = await import('@/lib/db/models/user.model');
     const user = new UserModel({
-      name: 'Test',
+      firstName: 'Test',
+      lastName: 'User',
       email: 'test@test.com',
       passwordHash: 'hash',
       role: 'superadmin',
     });
     const err = user.validateSync();
     expect(err?.errors['role']).toBeDefined();
+  });
+
+  it('virtual name returns firstName + lastName', async () => {
+    const { UserModel } = await import('@/lib/db/models/user.model');
+    const user = new UserModel({
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john@test.com',
+      passwordHash: 'hash',
+      role: 'member',
+    });
+    expect((user as unknown as { name: string }).name).toBe('John Doe');
   });
 });
 

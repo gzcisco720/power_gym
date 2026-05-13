@@ -5,8 +5,9 @@ import { MongoInviteRepository } from '@/lib/repositories/invite.repository';
 import { validateInviteToken } from '@/lib/auth/invite';
 
 export async function POST(req: Request): Promise<Response> {
-  const { name, email, password, token } = (await req.json()) as {
-    name: string;
+  const { firstName, lastName, email, password, token } = (await req.json()) as {
+    firstName: string;
+    lastName: string;
     email: string;
     password: string;
     token?: string;
@@ -20,9 +21,8 @@ export async function POST(req: Request): Promise<Response> {
     if (count > 0) {
       return Response.json({ error: 'Must use an invite link' }, { status: 403 });
     }
-
     const passwordHash = await bcrypt.hash(password, 12);
-    await userRepo.create({ name, email, passwordHash, role: 'owner', trainerId: null });
+    await userRepo.create({ firstName, lastName, email, passwordHash, role: 'owner', trainerId: null });
     return Response.json({ success: true });
   }
 
@@ -40,7 +40,8 @@ export async function POST(req: Request): Promise<Response> {
 
   const passwordHash = await bcrypt.hash(password, 12);
   await userRepo.create({
-    name,
+    firstName,
+    lastName,
     email,
     passwordHash,
     role: validation.invite.role,

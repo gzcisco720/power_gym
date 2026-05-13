@@ -27,7 +27,8 @@ export async function registerAction(
   _prev: RegisterState,
   formData: FormData,
 ): Promise<RegisterState> {
-  const name = (formData.get('name') ?? '') as string;
+  const firstName = (formData.get('firstName') ?? '') as string;
+  const lastName = (formData.get('lastName') ?? '') as string;
   const email = ((formData.get('email') ?? '') as string).toLowerCase().trim();
   const password = (formData.get('password') ?? '') as string;
   const token = (formData.get('token') as string) || null;
@@ -41,7 +42,7 @@ export async function registerAction(
       const count = await userRepo.count();
       if (count > 0) return { error: 'Must use an invite link' };
       const passwordHash = await bcrypt.hash(password, 12);
-      await userRepo.create({ name, email, passwordHash, role: 'owner', trainerId: null });
+      await userRepo.create({ firstName, lastName, email, passwordHash, role: 'owner', trainerId: null });
       role = 'owner';
     } else {
       const inviteRepo = new MongoInviteRepository();
@@ -54,7 +55,8 @@ export async function registerAction(
       const passwordHash = await bcrypt.hash(password, 12);
       role = validation.invite.role;
       await userRepo.create({
-        name,
+        firstName,
+        lastName,
         email,
         passwordHash,
         role,

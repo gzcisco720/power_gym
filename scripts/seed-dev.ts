@@ -202,10 +202,10 @@ async function seedDevData() {
   const hash = await bcrypt.hash(PASS, 10);
 
   // ── Users ──────────────────────────────────────────────────────────────────
-  const owner = await UserModel.create({ name: 'Dev Owner', email: 'owner@dev.com', passwordHash: hash, role: 'owner', trainerId: null });
-  const trainer = await UserModel.create({ name: 'Dev Trainer', email: 'trainer@dev.com', passwordHash: hash, role: 'trainer', trainerId: owner._id });
-  const member = await UserModel.create({ name: 'Dev Member', email: 'member@dev.com', passwordHash: hash, role: 'member', trainerId: trainer._id });
-  const member2 = await UserModel.create({ name: 'Dev Member 2', email: 'member2@dev.com', passwordHash: hash, role: 'member', trainerId: owner._id });
+  const owner = await UserModel.create({ firstName: 'Dev', lastName: 'Owner', email: 'owner@dev.com', passwordHash: hash, role: 'owner', trainerId: null });
+  const trainer = await UserModel.create({ firstName: 'Dev', lastName: 'Trainer', email: 'trainer@dev.com', passwordHash: hash, role: 'trainer', trainerId: owner._id });
+  const member = await UserModel.create({ firstName: 'Dev', lastName: 'Member', email: 'member@dev.com', passwordHash: hash, role: 'member', trainerId: trainer._id });
+  const member2 = await UserModel.create({ firstName: 'Dev', lastName: 'Member2', email: 'member2@dev.com', passwordHash: hash, role: 'member', trainerId: owner._id });
   console.log('  ✓ Users: 4 created');
 
   // ── User Profiles ──────────────────────────────────────────────────────────

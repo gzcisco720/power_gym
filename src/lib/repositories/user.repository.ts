@@ -4,7 +4,8 @@ import { UserModel } from '@/lib/db/models/user.model';
 import type { UserRole } from '@/types/auth';
 
 export interface CreateUserData {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   passwordHash: string;
   role: UserRole;
@@ -19,6 +20,9 @@ export interface IUserRepository {
   findByRole(role: 'trainer' | 'member'): Promise<IUser[]>;
   findAllMembers(trainerId?: string): Promise<IUser[]>;
   updateTrainerId(memberId: string, trainerId: string | null): Promise<void>;
+  updatePassword(userId: string, passwordHash: string): Promise<void>;
+  updateEmail(userId: string, email: string): Promise<void>;
+  updateName(userId: string, firstName: string, lastName: string): Promise<void>;
 }
 
 export class MongoUserRepository implements IUserRepository {
@@ -55,5 +59,17 @@ export class MongoUserRepository implements IUserRepository {
     await UserModel.findByIdAndUpdate(memberId, {
       $set: { trainerId: trainerId ? new mongoose.Types.ObjectId(trainerId) : null },
     });
+  }
+
+  async updatePassword(userId: string, passwordHash: string): Promise<void> {
+    await UserModel.findByIdAndUpdate(userId, { $set: { passwordHash } });
+  }
+
+  async updateEmail(userId: string, email: string): Promise<void> {
+    await UserModel.findByIdAndUpdate(userId, { $set: { email: email.toLowerCase().trim() } });
+  }
+
+  async updateName(userId: string, firstName: string, lastName: string): Promise<void> {
+    await UserModel.findByIdAndUpdate(userId, { $set: { firstName: firstName.trim(), lastName: lastName.trim() } });
   }
 }

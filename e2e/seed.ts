@@ -24,7 +24,8 @@ export async function seed(): Promise<void> {
 
   // ── Users ────────────────────────────────────────────────────────────────
   const owner = await UserModel.create({
-    name: 'Test Owner',
+    firstName: 'Test',
+    lastName: 'Owner',
     email: 'owner@test.com',
     passwordHash,
     role: 'owner',
@@ -32,7 +33,8 @@ export async function seed(): Promise<void> {
   });
 
   const trainer = await UserModel.create({
-    name: 'Test Trainer',
+    firstName: 'Test',
+    lastName: 'Trainer',
     email: 'trainer@test.com',
     passwordHash,
     role: 'trainer',
@@ -40,7 +42,8 @@ export async function seed(): Promise<void> {
   });
 
   await UserModel.create({
-    name: 'Test Trainer 2',
+    firstName: 'Test',
+    lastName: 'Trainer2',
     email: 'trainer2@test.com',
     passwordHash,
     role: 'trainer',
@@ -48,7 +51,8 @@ export async function seed(): Promise<void> {
   });
 
   const member = await UserModel.create({
-    name: 'Test Member',
+    firstName: 'Test',
+    lastName: 'Member',
     email: 'member@test.com',
     passwordHash,
     role: 'member',
@@ -57,7 +61,8 @@ export async function seed(): Promise<void> {
 
   // Dedicated member for reassign test — keeps member@test.com's assignment stable
   await UserModel.create({
-    name: 'Reassign Member',
+    firstName: 'Reassign',
+    lastName: 'Member',
     email: 'reassign-member@test.com',
     passwordHash,
     role: 'member',
@@ -66,7 +71,8 @@ export async function seed(): Promise<void> {
 
   // Dedicated member for trainer hub reassign test
   await UserModel.create({
-    name: 'Hub Reassign Member',
+    firstName: 'Hub',
+    lastName: 'Reassign',
     email: 'hub-reassign@test.com',
     passwordHash,
     role: 'member',

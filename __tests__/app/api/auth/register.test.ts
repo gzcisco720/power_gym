@@ -44,7 +44,7 @@ describe('POST /api/auth/register', () => {
     mockBcrypt.hash.mockResolvedValue('hashed' as never);
 
     const { POST } = await import('@/app/api/auth/register/route');
-    const res = await POST(makeRequest({ name: 'Owner', email: 'owner@test.com', password: 'pass' }));
+    const res = await POST(makeRequest({ firstName: 'Owner', lastName: 'User', email: 'owner@test.com', password: 'pass' }));
     const data = await res.json() as { success: boolean };
 
     expect(res.status).toBe(200);
@@ -58,7 +58,7 @@ describe('POST /api/auth/register', () => {
     mockUserRepo.count.mockResolvedValue(1);
 
     const { POST } = await import('@/app/api/auth/register/route');
-    const res = await POST(makeRequest({ name: 'X', email: 'x@test.com', password: 'pass' }));
+    const res = await POST(makeRequest({ firstName: 'X', lastName: 'Y', email: 'x@test.com', password: 'pass' }));
 
     expect(res.status).toBe(403);
   });
@@ -67,7 +67,7 @@ describe('POST /api/auth/register', () => {
     mockInviteRepo.findByToken.mockResolvedValue(null);
 
     const { POST } = await import('@/app/api/auth/register/route');
-    const res = await POST(makeRequest({ name: 'X', email: 'x@test.com', password: 'pass', token: 'bad' }));
+    const res = await POST(makeRequest({ firstName: 'X', lastName: 'Y', email: 'x@test.com', password: 'pass', token: 'bad' }));
 
     expect(res.status).toBe(400);
   });
@@ -82,7 +82,7 @@ describe('POST /api/auth/register', () => {
     });
 
     const { POST } = await import('@/app/api/auth/register/route');
-    const res = await POST(makeRequest({ name: 'X', email: 'x@test.com', password: 'pass', token: 'tok' }));
+    const res = await POST(makeRequest({ firstName: 'X', lastName: 'Y', email: 'x@test.com', password: 'pass', token: 'tok' }));
 
     expect(res.status).toBe(400);
   });
@@ -100,7 +100,7 @@ describe('POST /api/auth/register', () => {
     mockBcrypt.hash.mockResolvedValue('hashed' as never);
 
     const { POST } = await import('@/app/api/auth/register/route');
-    const res = await POST(makeRequest({ name: 'New', email: 'invited@test.com', password: 'pass', token: 'tok' }));
+    const res = await POST(makeRequest({ firstName: 'New', lastName: 'User', email: 'invited@test.com', password: 'pass', token: 'tok' }));
 
     expect(res.status).toBe(200);
     expect(mockUserRepo.create).toHaveBeenCalledWith(

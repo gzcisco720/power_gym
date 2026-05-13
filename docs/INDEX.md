@@ -38,6 +38,8 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Free Day Logging (Plan) | [free-day-logging-plan.md](2026-05-11/plans/free-day-logging-plan.md) | Complete |
 | My Training Bug Fixes + Calendar | [my-training-fixes-and-calendar.md](2026-05-11/plans/my-training-fixes-and-calendar.md) | Approved |
 | My Training Fixes + Calendar (Plan) | [my-training-fixes-calendar-plan.md](2026-05-11/plans/my-training-fixes-calendar-plan.md) | Complete |
+| Profile & Account Redesign | [profile-account-redesign.md](2026-05-13/plans/profile-account-redesign.md) | Approved |
+| Profile & Account Redesign (Plan) | [profile-account-redesign-plan.md](2026-05-13/plans/profile-account-redesign-plan.md) | In Progress |
 
 ---
 

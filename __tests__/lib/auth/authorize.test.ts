@@ -15,6 +15,9 @@ function makeRepo(user: Partial<IUser> | null): IUserRepository {
     findByRole: jest.fn(),
     findAllMembers: jest.fn(),
     updateTrainerId: jest.fn(),
+    updatePassword: jest.fn(),
+    updateEmail: jest.fn(),
+    updateName: jest.fn(),
   };
 }
 
@@ -36,7 +39,8 @@ describe('authorizeCredentials', () => {
   it('returns user object when credentials are valid', async () => {
     const mockUser = {
       _id: { toString: () => 'user-id' },
-      name: 'Alice',
+      firstName: 'Alice',
+      lastName: 'Smith',
       email: 'alice@test.com',
       passwordHash: 'hash',
       role: 'owner',
@@ -50,7 +54,8 @@ describe('authorizeCredentials', () => {
 
     expect(result).toEqual({
       id: 'user-id',
-      name: 'Alice',
+      firstName: 'Alice',
+      lastName: 'Smith',
       email: 'alice@test.com',
       role: 'owner',
       trainerId: null,
