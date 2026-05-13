@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { clearInbox, waitForEmailTo } from './helpers/mailpit';
 
 test.describe('Authentication', () => {
   test('owner login redirects to /owner', async ({ page }) => {
@@ -66,13 +67,53 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL('/trainer/members');
   });
 
-  test('forgot-password shows confirmation regardless of email', async ({ page }) => {
-    await page.goto('/forgot-password');
-    await expect(page.getByRole('heading', { name: 'Forgot password' })).toBeVisible();
+  test('forgot-password sends reset email to known user', async ({ page }) => {
+    await clearInbox();
 
-    await page.fill('input[type="email"]', 'anyemail@test.com');
+    await page.goto('/forgot-password');
+    await page.fill('input[type="email"]', 'reset-test@test.com');
+    await page.getByRole('button', { name: 'Send reset link' }).click();
+    await expect(page.getByText('If that email exists')).toBeVisible();
+
+    const email = await waitForEmailTo('reset-test@test.com');
+    expect(email.Subject).toBe('Reset your POWER GYM password');
+    expect(email.HTML).toContain('reset-password');
+  });
+
+  test('forgot-password reset link works end-to-end', async ({ page }) => {
+    await clearInbox();
+
+    // 1. Submit forgot-password for the dedicated reset-test user
+    await page.goto('/forgot-password');
+    await page.fill('input[type="email"]', 'reset-test@test.com');
     await page.getByRole('button', { name: 'Send reset link' }).click();
 
-    await expect(page.getByText("If that email exists")).toBeVisible();
+    // 2. Get email and extract the reset URL from the HTML
+    const email = await waitForEmailTo('reset-test@test.com', {
+      subject: /Reset your POWER GYM password/,
+    });
+    const match = email.HTML.match(/href="(http:\/\/[^"]*reset-password[^"]*)"/);
+    expect(match).not.toBeNull();
+    const resetUrl = match![1];
+
+    // 3. Navigate to the reset URL and set a new password
+    await page.goto(resetUrl);
+    await expect(page.getByRole('heading', { name: /reset/i })).toBeVisible();
+    await page.fill('input[type="password"]', 'NewPass456!');
+    const confirmInput = page.locator('input[name="confirmPassword"], input[id="confirmPassword"]');
+    if (await confirmInput.count() > 0) {
+      await confirmInput.fill('NewPass456!');
+    }
+    await page.getByRole('button', { name: /reset|save|update/i }).click();
+
+    // 4. Should redirect to login
+    await page.waitForURL(/\/login/);
+
+    // 5. Log in with the new password
+    await page.fill('#email', 'reset-test@test.com');
+    await page.fill('#password', 'NewPass456!');
+    await page.getByRole('button', { name: 'Sign in' }).click();
+    await page.waitForURL('/member/plan');
+    await expect(page).toHaveURL('/member/plan');
   });
 });
