@@ -49,6 +49,9 @@ export interface IWorkoutSessionRepository {
     completedCount: number;
     lastCompletedAt: Date | null;
   }>;
+  countByMemberIdsByMonth(memberIds: string[], months: number): Promise<{ label: string; count: number }[]>;
+  countActiveMembersSince(memberIds: string[], since: Date): Promise<number>;
+  findRecentCompletedByMemberIds(memberIds: string[], limit: number): Promise<{ memberId: string; dayName: string; completedAt: Date }[]>;
 }
 
 export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository {
@@ -312,5 +315,66 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
       memberId: new mongoose.Types.ObjectId(memberId),
       completedAt: { $gte: since, $ne: null },
     });
+  }
+
+  async countByMemberIdsByMonth(memberIds: string[], months: number): Promise<{ label: string; count: number }[]> {
+    const since = new Date();
+    since.setMonth(since.getMonth() - months + 1);
+    since.setDate(1);
+    since.setHours(0, 0, 0, 0);
+
+    const rows = await WorkoutSessionModel.aggregate<{ _id: { year: number; month: number }; count: number }>([
+      {
+        $match: {
+          memberId: { $in: memberIds.map((id) => new mongoose.Types.ObjectId(id)) },
+          completedAt: { $gte: since, $ne: null },
+        },
+      },
+      {
+        $group: {
+          _id: { year: { $year: '$completedAt' }, month: { $month: '$completedAt' } },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const result: { label: string; count: number }[] = [];
+    for (let i = months - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const year = d.getFullYear();
+      const month = d.getMonth() + 1;
+      const found = rows.find((r) => r._id.year === year && r._id.month === month);
+      result.push({ label: MONTHS[month - 1], count: found?.count ?? 0 });
+    }
+    return result;
+  }
+
+  async countActiveMembersSince(memberIds: string[], since: Date): Promise<number> {
+    const ids = await WorkoutSessionModel.distinct('memberId', {
+      memberId: { $in: memberIds.map((id) => new mongoose.Types.ObjectId(id)) },
+      completedAt: { $gte: since, $ne: null },
+    });
+    return ids.length;
+  }
+
+  async findRecentCompletedByMemberIds(
+    memberIds: string[],
+    limit: number,
+  ): Promise<{ memberId: string; dayName: string; completedAt: Date }[]> {
+    const docs = await WorkoutSessionModel.find({
+      memberId: { $in: memberIds.map((id) => new mongoose.Types.ObjectId(id)) },
+      completedAt: { $ne: null },
+    })
+      .select('memberId dayName completedAt')
+      .sort({ completedAt: -1 })
+      .limit(limit)
+      .lean();
+    return docs.map((d) => ({
+      memberId: d.memberId.toString(),
+      dayName: d.dayName,
+      completedAt: d.completedAt!,
+    }));
   }
 }
