@@ -12,6 +12,7 @@ import { MiniWorkoutCalendar } from './mini-workout-calendar';
 import { PageHeader } from '@/components/shared/page-header';
 import { ActiveSessionPrompt } from '@/components/shared/active-session-prompt';
 import { WorkoutCalendarHeaderTrigger } from './workout-calendar-header-trigger';
+import { PathCardsGrid, PathCardItem } from './path-cards-grid';
 import type { ISelfWorkoutLog } from '@/lib/db/models/self-workout-log.model';
 import type { IPlanTemplate } from '@/lib/db/models/plan-template.model';
 
@@ -95,17 +96,21 @@ export async function MyTrainingLanding({ basePath }: { basePath: BasePath }) {
         )}
         {state === 'empty' && <ActivityStrip state="empty" />}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <TemplatePathCard
-            templates={toUserTemplates(userTemplates)}
-            basePath={basePath}
-          />
-          {state === 'empty' ? (
-            <FreestylePathCard state="empty" basePath={basePath} />
-          ) : (
-            renderFreestyleCard(state, recent, basePath)
-          )}
-        </div>
+        <PathCardsGrid>
+          <PathCardItem>
+            <TemplatePathCard
+              templates={toUserTemplates(userTemplates)}
+              basePath={basePath}
+            />
+          </PathCardItem>
+          <PathCardItem>
+            {state === 'empty' ? (
+              <FreestylePathCard state="empty" basePath={basePath} />
+            ) : (
+              renderFreestyleCard(state, recent, basePath)
+            )}
+          </PathCardItem>
+        </PathCardsGrid>
 
         <MiniWorkoutCalendar basePath={basePath} />
       </div>
