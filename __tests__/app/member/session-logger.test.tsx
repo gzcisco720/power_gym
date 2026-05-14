@@ -3,6 +3,14 @@ import userEvent from '@testing-library/user-event';
 import { SessionLogger } from '@/app/(dashboard)/member/plan/session/[id]/_components/session-logger';
 import { toast } from 'sonner';
 
+// Skip the animation phase so tests interact with the confirmation form directly
+jest.mock('@/components/animations/workout-complete', () => ({
+  WorkoutCompleteAnimation: ({ onComplete }: { onComplete?: () => void }) => {
+    onComplete?.();
+    return null;
+  },
+}));
+
 jest.mock('sonner', () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
 
 const mockPush = jest.fn();

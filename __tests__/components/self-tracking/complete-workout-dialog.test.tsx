@@ -1,6 +1,14 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { CompleteWorkoutDialog } from '@/components/self-tracking/complete-workout-dialog';
 
+// Skip the animation phase so tests interact with the form directly
+jest.mock('@/components/animations/workout-complete', () => ({
+  WorkoutCompleteAnimation: ({ onComplete }: { onComplete?: () => void }) => {
+    onComplete?.();
+    return null;
+  },
+}));
+
 describe('CompleteWorkoutDialog', () => {
   beforeEach(() => {
     global.fetch = jest.fn().mockResolvedValue({

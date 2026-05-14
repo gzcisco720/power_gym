@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { WorkoutCompleteAnimation } from '@/components/animations/workout-complete';
 
 interface WorkoutCompleteModalProps {
   onConfirm: (rpe: number | null, memberNote: string | null) => void;
@@ -13,6 +14,17 @@ interface WorkoutCompleteModalProps {
 export function WorkoutCompleteModal({ onConfirm, onCancel, isLoading }: WorkoutCompleteModalProps) {
   const [rpe, setRpe] = useState<number>(5);
   const [note, setNote] = useState('');
+  const [showAnimation, setShowAnimation] = useState(true);
+
+  if (showAnimation) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+        <div className="w-full max-w-md rounded-2xl bg-white/[.04] ring-1 ring-white/10 backdrop-blur-md p-6">
+          <WorkoutCompleteAnimation onComplete={() => setShowAnimation(false)} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
