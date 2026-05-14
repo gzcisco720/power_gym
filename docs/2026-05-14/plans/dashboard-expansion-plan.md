@@ -1005,7 +1005,7 @@ export async function TrainerTodaySessions() {
         : [null, null];
 
       const testOverdue = latestTest
-        ? new Date(latestTest.recordedAt) < thirtyDaysAgo
+        ? new Date(latestTest.date) < thirtyDaysAgo
         : true;
 
       const fmt = (d: Date) =>
@@ -1103,7 +1103,7 @@ export async function TrainerNeedsAttention() {
       if (!nutritionPlan) {
         alerts.push({ memberId: id, memberName: member.name, message: 'No nutrition plan', actionLabel: 'Assign Nutrition', actionHref: `/trainer/members/${id}/nutrition`, severity: 'pink' });
       }
-      if (latestTest && new Date(latestTest.recordedAt) < thirtyDaysAgo) {
+      if (latestTest && new Date(latestTest.date) < thirtyDaysAgo) {
         alerts.push({ memberId: id, memberName: member.name, message: 'Body test 30+ days ago', actionLabel: 'Log Test', actionHref: `/trainer/members/${id}/body-tests`, severity: 'indigo' });
       }
       if (sessions30d === 0) {
@@ -1657,7 +1657,7 @@ export async function MemberKeyNumbers() {
       />
       <StatCard
         label="Body Fat"
-        value={latest ? `${latest.bodyFatPercent.toFixed(1)}` : '—'}
+        value={latest ? `${latest.bodyFatPct.toFixed(1)}` : '—'}
         unit={latest ? '%' : undefined}
         accentColor={bfDelta && parseFloat(bfDelta) < 0 ? 'success' : undefined}
         delta={bfDelta ? `${parseFloat(bfDelta) < 0 ? '↓' : '↑'} ${Math.abs(parseFloat(bfDelta)).toFixed(1)}% vs last` : 'No test yet'}
