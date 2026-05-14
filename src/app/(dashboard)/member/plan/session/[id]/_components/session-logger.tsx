@@ -11,6 +11,8 @@ import { WorkoutCompleteModal } from '@/components/training/workout-complete-mod
 import { ExerciseNotePanel } from '@/components/training/exercise-note-panel';
 import { labelExercises } from '@/lib/training/label-exercises';
 import { useDirtyInputGuard } from '@/lib/training/dirty-input-guard';
+import { motion } from 'framer-motion';
+import { variants } from '@/lib/animations/variants';
 
 interface SessionSet {
   exerciseId: string;
@@ -346,7 +348,12 @@ export function SessionLogger({
         </div>
       </div>
 
-      <div className="flex-1 px-4 sm:px-8 py-5 pb-32 space-y-3">
+      <motion.div
+        className="flex-1 px-4 sm:px-8 py-5 pb-32 space-y-3"
+        variants={variants.staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
         {groups.map((group) => {
           if (group.type === 'standalone') {
             const ex = group.exercise;
@@ -363,7 +370,7 @@ export function SessionLogger({
               restSeconds: ex.restSeconds,
             };
             return (
-              <div key={ex.exerciseId} className="rounded-xl bg-card ring-1 ring-foreground/10">
+              <motion.div key={ex.exerciseId} variants={variants.staggerItem} className="rounded-xl bg-card ring-1 ring-foreground/10">
                 <ExerciseRow
                   mode="logging"
                   row={exRow}
@@ -391,42 +398,43 @@ export function SessionLogger({
                     />
                   </div>
                 )}
-              </div>
+              </motion.div>
             );
           }
           return (
-            <SupersetBlock
-              key={group.groupId}
-              mode="logging"
-              groupId={group.groupId}
-              loggingMembers={group.exercises.map(({ exercise, sets: exSets }) => ({
-                row: {
-                  exerciseId: exercise.exerciseId,
-                  exerciseName: exercise.exerciseName,
-                  imageUrl: exercise.imageUrl,
-                  isBodyweight: exercise.isBodyweight,
-                  groupId: exercise.groupId,
-                  isSuperset: exercise.isSuperset,
-                  sets: exercise.sets,
-                  repsMin: exercise.repsMin,
-                  repsMax: exercise.repsMax,
-                  restSeconds: exercise.restSeconds,
-                },
-                label: exercise.label,
-                loggingSets: toLoggingSets(exSets),
-                inputs,
-                bwOverride: bwOverrides[exercise.exerciseId],
-                pendingSetIndex: loggingSetIndex,
-                isAddingSet: addingSetFor === exercise.exerciseId,
-              }))}
-              onInputChange={(_, idx, field, value) => updateInput(idx, field, value)}
-              onLogSet={(_, idx) => void logSet(idx)}
-              onAddSet={(exId) => void addSet(exId)}
-              onBwToggle={(exId, next) =>
-                setBwOverrides((prev) => ({ ...prev, [exId]: next }))
-              }
-              readOnly={isCompleted}
-            />
+            <motion.div key={group.groupId} variants={variants.staggerItem}>
+              <SupersetBlock
+                mode="logging"
+                groupId={group.groupId}
+                loggingMembers={group.exercises.map(({ exercise, sets: exSets }) => ({
+                  row: {
+                    exerciseId: exercise.exerciseId,
+                    exerciseName: exercise.exerciseName,
+                    imageUrl: exercise.imageUrl,
+                    isBodyweight: exercise.isBodyweight,
+                    groupId: exercise.groupId,
+                    isSuperset: exercise.isSuperset,
+                    sets: exercise.sets,
+                    repsMin: exercise.repsMin,
+                    repsMax: exercise.repsMax,
+                    restSeconds: exercise.restSeconds,
+                  },
+                  label: exercise.label,
+                  loggingSets: toLoggingSets(exSets),
+                  inputs,
+                  bwOverride: bwOverrides[exercise.exerciseId],
+                  pendingSetIndex: loggingSetIndex,
+                  isAddingSet: addingSetFor === exercise.exerciseId,
+                }))}
+                onInputChange={(_, idx, field, value) => updateInput(idx, field, value)}
+                onLogSet={(_, idx) => void logSet(idx)}
+                onAddSet={(exId) => void addSet(exId)}
+                onBwToggle={(exId, next) =>
+                  setBwOverrides((prev) => ({ ...prev, [exId]: next }))
+                }
+                readOnly={isCompleted}
+              />
+            </motion.div>
           );
         })}
 
@@ -440,7 +448,7 @@ export function SessionLogger({
             + Add Exercise
           </button>
         )}
-      </div>
+      </motion.div>
 
       <div className="fixed bottom-0 left-0 right-0 lg:left-[220px] border-t border-foreground/10 bg-background px-4 sm:px-8 py-3">
         {isCompleted ? (

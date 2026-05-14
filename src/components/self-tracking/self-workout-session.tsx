@@ -17,6 +17,8 @@ import {
 } from '@/components/training/exercise-search-sheet';
 import { labelExercises } from '@/lib/training/label-exercises';
 import { useDirtyInputGuard } from '@/lib/training/dirty-input-guard';
+import { motion } from 'framer-motion';
+import { variants } from '@/lib/animations/variants';
 import type { ISelfWorkoutLog, ISelfWorkoutSet } from '@/lib/db/models/self-workout-log.model';
 import { CompleteWorkoutDialog } from './complete-workout-dialog';
 
@@ -330,7 +332,12 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
         </div>
       </div>
 
-      <div className="flex-1 px-4 sm:px-8 py-5 pb-32 max-w-2xl mx-auto w-full space-y-3">
+      <motion.div
+        className="flex-1 px-4 sm:px-8 py-5 pb-32 max-w-2xl mx-auto w-full space-y-3"
+        variants={variants.staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
         {groups.length === 0 && isFreestyle && (
           <p className="text-xs text-foreground/65 text-center pt-4">
             Pick exercises as you go. Log sets, then finish when you&apos;re done.
@@ -340,8 +347,9 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
         {groups.map((group, gi) => {
           if (group.type === 'standalone') {
             return (
-              <div
+              <motion.div
                 key={`${group.exerciseId}-${gi}`}
+                variants={variants.staggerItem}
                 className="rounded-xl bg-card ring-1 ring-foreground/10"
               >
                 <ExerciseRow
@@ -359,29 +367,30 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
                   }
                   readOnly={isCompleted}
                 />
-              </div>
+              </motion.div>
             );
           }
           return (
-            <SupersetBlock
-              key={group.groupId}
-              mode="logging"
-              groupId={group.groupId}
-              loggingMembers={group.exercises.map((m) => ({
-                row: m.exercise,
-                label: (m.exercise as ExerciseRowData & { label?: string }).label ?? '',
-                loggingSets: toLoggingSets(m.sets),
-                inputs,
-                bwOverride: bwOverrides[m.exerciseId],
-              }))}
-              onInputChange={(_, idx, field, value) => updateInput(idx, field, value)}
-              onLogSet={(_, idx) => void logSet(idx)}
-              onAddSet={(exId) => void addSet(exId)}
-              onBwToggle={(exId, next) =>
-                setBwOverrides((prev) => ({ ...prev, [exId]: next }))
-              }
-              readOnly={isCompleted}
-            />
+            <motion.div key={group.groupId} variants={variants.staggerItem}>
+              <SupersetBlock
+                mode="logging"
+                groupId={group.groupId}
+                loggingMembers={group.exercises.map((m) => ({
+                  row: m.exercise,
+                  label: (m.exercise as ExerciseRowData & { label?: string }).label ?? '',
+                  loggingSets: toLoggingSets(m.sets),
+                  inputs,
+                  bwOverride: bwOverrides[m.exerciseId],
+                }))}
+                onInputChange={(_, idx, field, value) => updateInput(idx, field, value)}
+                onLogSet={(_, idx) => void logSet(idx)}
+                onAddSet={(exId) => void addSet(exId)}
+                onBwToggle={(exId, next) =>
+                  setBwOverrides((prev) => ({ ...prev, [exId]: next }))
+                }
+                readOnly={isCompleted}
+              />
+            </motion.div>
           );
         })}
 
@@ -394,7 +403,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
             + Add Exercise
           </button>
         )}
-      </div>
+      </motion.div>
 
       <div className="sticky bottom-0 z-10 border-t border-foreground/10 backdrop-blur-md bg-background/50 px-4 sm:px-8 py-3">
         <div className="max-w-2xl mx-auto w-full flex items-center justify-between gap-3">
