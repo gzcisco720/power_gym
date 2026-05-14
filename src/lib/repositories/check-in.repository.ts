@@ -30,6 +30,7 @@ export interface ICheckInRepository {
   findByMember(memberId: string): Promise<ICheckIn[]>;
   findById(checkInId: string, memberId: string): Promise<ICheckIn | null>;
   hasCheckInThisWeek(memberId: string, weekStart: Date): Promise<boolean>;
+  countSince(since: Date): Promise<number>;
 }
 
 export class MongoCheckInRepository implements ICheckInRepository {
@@ -61,5 +62,9 @@ export class MongoCheckInRepository implements ICheckInRepository {
       submittedAt: { $gte: weekStart },
     });
     return doc !== null;
+  }
+
+  async countSince(since: Date): Promise<number> {
+    return CheckInModel.countDocuments({ submittedAt: { $gte: since } });
   }
 }

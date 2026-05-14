@@ -4,9 +4,11 @@ jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 const mockUserRepo = {
   findByRole: jest.fn(),
   findAllMembers: jest.fn(),
+  findMembersJoinedByMonth: jest.fn(),
 };
 const mockInviteRepo = { findAll: jest.fn() };
 const mockSessionRepo = { countByMemberIdsSince: jest.fn() };
+const mockCheckInRepo = { countSince: jest.fn() };
 
 jest.mock('@/lib/repositories/user.repository', () => ({
   MongoUserRepository: jest.fn(() => mockUserRepo),
@@ -17,13 +19,18 @@ jest.mock('@/lib/repositories/invite.repository', () => ({
 jest.mock('@/lib/repositories/workout-session.repository', () => ({
   MongoWorkoutSessionRepository: jest.fn(() => mockSessionRepo),
 }));
+jest.mock('@/lib/repositories/check-in.repository', () => ({
+  MongoCheckInRepository: jest.fn(() => mockCheckInRepo),
+}));
 
 describe('TrainerBreakdownSection', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUserRepo.findByRole.mockResolvedValue([]);
     mockUserRepo.findAllMembers.mockResolvedValue([]);
+    mockUserRepo.findMembersJoinedByMonth.mockResolvedValue([{ label: 'May', newCount: 0 }]);
     mockSessionRepo.countByMemberIdsSince.mockResolvedValue(0);
+    mockCheckInRepo.countSince.mockResolvedValue(0);
   });
 
   it('fetches trainers and all members', async () => {
@@ -66,8 +73,10 @@ describe('DashboardStats', () => {
     jest.clearAllMocks();
     mockUserRepo.findByRole.mockResolvedValue([]);
     mockUserRepo.findAllMembers.mockResolvedValue([]);
+    mockUserRepo.findMembersJoinedByMonth.mockResolvedValue([{ label: 'May', newCount: 0 }]);
     mockInviteRepo.findAll.mockResolvedValue([]);
     mockSessionRepo.countByMemberIdsSince.mockResolvedValue(0);
+    mockCheckInRepo.countSince.mockResolvedValue(0);
   });
 
   it('fetches trainers, members and invites in parallel', async () => {
