@@ -39,7 +39,8 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Profile & Account Redesign | [profile-account-redesign.md](2026-05-13/plans/profile-account-redesign.md) | Approved |
 | Edit Equipment Dialog | [edit-equipment-design.md](2025-05-14/plans/edit-equipment-design.md) | Approved |
 | UI/UX Comprehensive Upgrade (Design) | [ui-ux-upgrade-design.md](2026-05-14/plans/ui-ux-upgrade-design.md) | Approved |
-| UI/UX Comprehensive Upgrade (Plan) | [ui-ux-upgrade-plan.md](2026-05-14/plans/ui-ux-upgrade-plan.md) | In Progress |
+| UI/UX Comprehensive Upgrade (Plan) | [ui-ux-upgrade-plan.md](2026-05-14/plans/ui-ux-upgrade-plan.md) | Complete |
+| Dashboard Expansion (Owner + Trainer + Member) | [dashboard-expansion-design.md](2026-05-14/plans/dashboard-expansion-design.md) | Approved |
 
 ---
 
