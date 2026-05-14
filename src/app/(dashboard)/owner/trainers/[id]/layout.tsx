@@ -33,24 +33,24 @@ export default async function TrainerHubLayout({ children, params }: TrainerHubL
 
   return (
     <div>
-      <div className="sticky top-0 z-10 border-b border-[#0f0f0f] bg-[#050505]">
+      <div className="sticky top-0 z-10 border-b border-foreground/[.06] bg-background">
         <div className="flex items-center justify-between px-4 py-4 sm:px-8">
           <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#222] bg-[#1a1a1a] text-[13px] font-semibold text-[#666]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 shadow-[0_0_14px_rgba(99,102,241,0.35)] text-[13px] font-bold text-white">
               {initials}
             </div>
             <div>
-              <div className="text-[16px] font-bold text-white leading-tight">{trainer.name}</div>
-              <div className="text-[11px] text-[#666] mt-0.5">
+              <div className="text-[16px] font-bold text-foreground leading-tight">{trainer.name}</div>
+              <div className="text-[11px] text-foreground/35 mt-0.5">
                 {trainer.email}
-                <span className="mx-1.5 text-[#333]">·</span>
+                <span className="mx-1.5 text-foreground/20">·</span>
                 Joined {daysSinceJoined} days ago
               </div>
             </div>
           </div>
           <Link
             href="/owner/trainers"
-            className="text-[11px] text-[#666] hover:text-[#aaa] transition-colors"
+            className="text-[11px] text-foreground/30 hover:text-foreground/60 transition-colors"
           >
             ← All Trainers
           </Link>

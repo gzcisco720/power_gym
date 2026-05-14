@@ -17,7 +17,7 @@ interface TabNavProps {
 export function TabNav({ base, tabs }: TabNavProps) {
   const pathname = usePathname();
   return (
-    <div className="flex gap-0 border-b border-[#141414] px-4 sm:px-8">
+    <div className="flex gap-0 border-b border-foreground/[.06] px-4 sm:px-8 overflow-x-auto">
       {tabs.map((tab) => {
         const href = `${base}${tab.segment}`;
         const isActive = tab.segment === '' ? pathname === href : pathname.startsWith(href);
@@ -26,10 +26,10 @@ export function TabNav({ base, tabs }: TabNavProps) {
             key={tab.label}
             href={href}
             className={cn(
-              'cursor-pointer px-4 py-3 text-[12px] font-medium transition-colors border-b-2 -mb-px',
+              'cursor-pointer whitespace-nowrap px-4 py-3 text-[12px] font-medium transition-colors border-b-2 -mb-px',
               isActive
-                ? 'text-white border-white'
-                : 'text-[#555] border-transparent hover:text-[#888]',
+                ? 'text-primary-light border-primary'
+                : 'text-foreground/30 border-transparent hover:text-foreground/60',
             )}
           >
             {tab.label}

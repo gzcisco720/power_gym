@@ -39,7 +39,7 @@ describe('MemberTabNav', () => {
     render(<MemberTabNav memberId={memberId} />);
 
     const overviewLink = screen.getByText('Overview').closest('a');
-    expect(overviewLink?.className).toContain('text-white');
+    expect(overviewLink?.className).toContain('text-primary-light');
   });
 
   it('does not highlight Overview tab when on a sub-route', () => {
@@ -47,7 +47,7 @@ describe('MemberTabNav', () => {
     render(<MemberTabNav memberId={memberId} />);
 
     const overviewLink = screen.getByText('Overview').closest('a');
-    expect(overviewLink?.className).not.toContain('text-white');
+    expect(overviewLink?.className).not.toContain('text-primary-light');
   });
 
   it('highlights Plan tab when on plan route', () => {
@@ -55,6 +55,6 @@ describe('MemberTabNav', () => {
     render(<MemberTabNav memberId={memberId} />);
 
     const planLink = screen.getByText('Plan').closest('a');
-    expect(planLink?.className).toContain('text-white');
+    expect(planLink?.className).toContain('text-primary-light');
   });
 });
