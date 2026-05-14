@@ -41,7 +41,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | UI/UX Comprehensive Upgrade (Design) | [ui-ux-upgrade-design.md](2026-05-14/plans/ui-ux-upgrade-design.md) | Approved |
 | UI/UX Comprehensive Upgrade (Plan) | [ui-ux-upgrade-plan.md](2026-05-14/plans/ui-ux-upgrade-plan.md) | Complete |
 | Dashboard Expansion (Design) | [dashboard-expansion-design.md](2026-05-14/plans/dashboard-expansion-design.md) | Approved |
-| Dashboard Expansion (Plan) | [dashboard-expansion-plan.md](2026-05-14/plans/dashboard-expansion-plan.md) | In Progress |
+| Dashboard Expansion (Plan) | [dashboard-expansion-plan.md](2026-05-14/plans/dashboard-expansion-plan.md) | Complete |
 
 ---
 
