@@ -42,6 +42,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | UI/UX Comprehensive Upgrade (Plan) | [ui-ux-upgrade-plan.md](2026-05-14/plans/ui-ux-upgrade-plan.md) | Complete |
 | Dashboard Expansion (Design) | [dashboard-expansion-design.md](2026-05-14/plans/dashboard-expansion-design.md) | Approved |
 | Dashboard Expansion (Plan) | [dashboard-expansion-plan.md](2026-05-14/plans/dashboard-expansion-plan.md) | Complete |
+| Per-Trainer Hub Redesign | [per-trainer-hub-redesign.md](2026-05-15/plans/per-trainer-hub-redesign.md) | Approved |
 
 ---
 
