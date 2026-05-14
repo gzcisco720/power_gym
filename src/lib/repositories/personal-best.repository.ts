@@ -15,6 +15,7 @@ export interface UpsertPBData {
 export interface IPersonalBestRepository {
   findByMember(memberId: string): Promise<IPersonalBest[]>;
   findByMemberIdsSince(memberIds: string[], since: Date): Promise<IPersonalBest[]>;
+  findRecentByMemberIds(memberIds: string[], limit: number): Promise<IPersonalBest[]>;
   upsertIfBetter(data: UpsertPBData): Promise<void>;
 }
 
@@ -29,6 +30,15 @@ export class MongoPersonalBestRepository implements IPersonalBestRepository {
       achievedAt: { $gte: since },
     })
       .sort({ achievedAt: -1 })
+      .lean();
+  }
+
+  async findRecentByMemberIds(memberIds: string[], limit: number): Promise<IPersonalBest[]> {
+    return PersonalBestModel.find({
+      memberId: { $in: memberIds.map((id) => new mongoose.Types.ObjectId(id)) },
+    })
+      .sort({ achievedAt: -1 })
+      .limit(limit)
       .lean();
   }
 
