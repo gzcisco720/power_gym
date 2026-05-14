@@ -19,6 +19,7 @@ export interface IUserRepository {
   create(data: CreateUserData): Promise<IUser>;
   findByRole(role: 'trainer' | 'member'): Promise<IUser[]>;
   findAllMembers(trainerId?: string): Promise<IUser[]>;
+  findAllMembersPaginated(trainerId: string, page: number, limit: number): Promise<{ members: IUser[]; total: number }>;
   updateTrainerId(memberId: string, trainerId: string | null): Promise<void>;
   updatePassword(userId: string, passwordHash: string): Promise<void>;
   updateEmail(userId: string, email: string): Promise<void>;
@@ -54,6 +55,15 @@ export class MongoUserRepository implements IUserRepository {
       filter.trainerId = new mongoose.Types.ObjectId(trainerId);
     }
     return UserModel.find(filter);
+  }
+
+  async findAllMembersPaginated(trainerId: string, page: number, limit: number): Promise<{ members: IUser[]; total: number }> {
+    const filter = { role: 'member' as const, trainerId: new mongoose.Types.ObjectId(trainerId) };
+    const [members, total] = await Promise.all([
+      UserModel.find(filter).skip((page - 1) * limit).limit(limit),
+      UserModel.countDocuments(filter),
+    ]);
+    return { members, total };
   }
 
   async updateTrainerId(memberId: string, trainerId: string | null): Promise<void> {

@@ -21,6 +21,7 @@ export interface INutritionTemplateRepository {
   create(data: CreateNutritionTemplateData): Promise<INutritionTemplate>;
   update(id: string, data: UpdateNutritionTemplateData): Promise<INutritionTemplate | null>;
   deleteById(id: string, createdBy: string): Promise<boolean>;
+  findByCreatorPaginated(createdBy: string, page: number, limit: number): Promise<{ templates: INutritionTemplate[]; total: number }>;
 }
 
 export class MongoNutritionTemplateRepository implements INutritionTemplateRepository {
@@ -50,5 +51,14 @@ export class MongoNutritionTemplateRepository implements INutritionTemplateRepos
       createdBy: new mongoose.Types.ObjectId(createdBy),
     });
     return result !== null;
+  }
+
+  async findByCreatorPaginated(createdBy: string, page: number, limit: number): Promise<{ templates: INutritionTemplate[]; total: number }> {
+    const filter = { createdBy: new mongoose.Types.ObjectId(createdBy) };
+    const [templates, total] = await Promise.all([
+      NutritionTemplateModel.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
+      NutritionTemplateModel.countDocuments(filter),
+    ]);
+    return { templates, total };
   }
 }

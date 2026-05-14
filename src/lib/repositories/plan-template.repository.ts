@@ -22,6 +22,7 @@ export interface IPlanTemplateRepository {
   update(id: string, data: UpdatePlanTemplateData): Promise<IPlanTemplate | null>;
   deleteById(id: string, createdBy: string): Promise<boolean>;
   countByCreator(createdBy: string): Promise<number>;
+  findByCreatorPaginated(createdBy: string, page: number, limit: number): Promise<{ templates: IPlanTemplate[]; total: number }>;
 }
 
 export class MongoPlanTemplateRepository implements IPlanTemplateRepository {
@@ -57,5 +58,14 @@ export class MongoPlanTemplateRepository implements IPlanTemplateRepository {
     return PlanTemplateModel.countDocuments({
       createdBy: new mongoose.Types.ObjectId(createdBy),
     });
+  }
+
+  async findByCreatorPaginated(createdBy: string, page: number, limit: number): Promise<{ templates: IPlanTemplate[]; total: number }> {
+    const filter = { createdBy: new mongoose.Types.ObjectId(createdBy) };
+    const [templates, total] = await Promise.all([
+      PlanTemplateModel.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
+      PlanTemplateModel.countDocuments(filter),
+    ]);
+    return { templates, total };
   }
 }
