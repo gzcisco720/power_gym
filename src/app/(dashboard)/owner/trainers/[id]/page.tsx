@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth/auth';
 import { StatCardsSkeleton } from '@/components/shared/stat-cards-skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { TrainerStatsSection } from './_components/trainer-stats-section';
 
 export default async function TrainerHubOverviewPage({
@@ -16,7 +17,14 @@ export default async function TrainerHubOverviewPage({
 
   return (
     <div className="px-4 sm:px-8 py-7">
-      <Suspense fallback={<StatCardsSkeleton count={3} className="grid-cols-3" />}>
+      <Suspense
+        fallback={
+          <div className="space-y-4">
+            <StatCardsSkeleton count={6} className="grid-cols-3" />
+            <Skeleton className="h-36 rounded-xl" />
+          </div>
+        }
+      >
         <TrainerStatsSection trainerId={trainerId} />
       </Suspense>
     </div>
