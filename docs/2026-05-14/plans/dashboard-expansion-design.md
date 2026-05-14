@@ -178,11 +178,13 @@ Redirects to `/member/plan`. Replace redirect with a real page.
 #### Section D — Two-column grid (Nutrition + Upcoming Sessions)
 
 **Left: Today's Nutrition Targets**
-- Four macro target bars: Protein (emerald) / Carbs (amber) / Fat (pink) / Calories (white)
-- Each bar: label, target value (g or kcal), full bar (100% filled — shows the target, not progress)
-- "Target" = from assigned nutrition plan for today's day type
-- Note: member nutrition logging (tracking consumed vs target) is roadmap item E and not in scope here. This section shows targets only.
-- If no nutrition plan: empty state "No nutrition plan assigned"
+- Section title: "Today's Nutrition Targets"
+- Four macro rows: Protein (emerald) / Carbs (amber) / Fat (pink) / Calories (white)
+- Each row: macro label + target value (e.g. "180 g" or "2,400 kcal") — no progress bar fill, no "consumed" value
+- Display as plain stat rows (label left, value right), not as progress bars
+- "Target" = from assigned nutrition plan for today's day type (training day / rest day / etc.)
+- Note: actual consumption tracking is roadmap item E; this section is read-only targets only
+- If no nutrition plan assigned: empty state card "No nutrition plan assigned"
 
 **Right: Upcoming Sessions**
 - Next 3 scheduled sessions from calendar
