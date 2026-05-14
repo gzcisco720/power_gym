@@ -8,17 +8,19 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={pathname}
-        initial="pageEnter"
-        animate="pageVisible"
-        exit="pageExit"
-        variants={variants}
-        className="h-full"
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <div className="h-full overflow-x-hidden">
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={pathname}
+          initial="pageEnter"
+          animate="pageVisible"
+          exit="pageExit"
+          variants={variants}
+          className="h-full"
+        >
+          {children}
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 }
