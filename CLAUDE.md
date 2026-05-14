@@ -143,6 +143,10 @@ The theme is near-black (`bg-background` ≈ oklch 0.04). Picking the wrong "mut
 
 **For visible secondary text, always use `text-foreground/65`.** Never use `text-muted-foreground`, `text-[#555]/[#666]/[#777]/[#888]`, or any other dim hex.
 
+**Primary accent** — `bg-primary` / `text-primary-light`
+
+The primary accent colour is **indigo** (`oklch(0.585 0.233 277.1)` / `#6366f1`). Use `bg-primary` for primary buttons, active states, and icon container gradients. Use `text-primary-light` (`#a5b4fc`) for glow text and badge labels. **Emerald is now the success/completion colour only** — do not use it as the main brand colour.
+
 | Use | For | Why not the alternative |
 |---|---|---|
 | `text-foreground` | Primary text, names, values | — |
@@ -151,6 +155,20 @@ The theme is near-black (`bg-background` ≈ oklch 0.04). Picking the wrong "mut
 | `text-destructive` | Required `*`, destructive button hover | — |
 | `bg-card` + `ring-1 ring-foreground/10` | Card surfaces | `bg-[#0c0c0c] border-[#141414]` is the same in pixels but loses theme switching |
 | `bg-muted` | Chip backgrounds, hover states | — |
+
+### Animation tokens
+
+All Framer Motion config lives in `src/lib/animations/variants.ts`. Import from there — never define inline spring configs.
+
+| Variant | Use |
+|---|---|
+| `variants.fadeSlideUp` | Page-level content entry |
+| `variants.staggerContainer` + `variants.staggerItem` | List/grid entries |
+| `variants.scaleIn` | Badges, dialogs, toasts |
+| `springs.bouncy` | Stat numbers, checkmarks |
+| `springs.snappy` | Button press feedback |
+
+Page transitions are handled automatically by `PageTransition` in the dashboard layout.
 
 **Macro palette** — fixed across the app: Protein **emerald**, Carbs **amber**, Fat **pink**, kcal **neutral white**. Use the `<MacroPill>` component (`src/components/nutrition/macro-pill.tsx`).
 
