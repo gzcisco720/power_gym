@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { variants } from '@/lib/animations/variants';
 import { Plus, Trash2, Search, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
@@ -40,7 +41,6 @@ async function fetchFoods(q: string): Promise<FoodListItem[]> {
 }
 
 export function FoodsListClient({ basePath }: Props) {
-  const shouldReduce = useReducedMotion();
   const [items, setItems] = useState<FoodListItem[]>([]);
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
@@ -163,13 +163,16 @@ export function FoodsListClient({ basePath }: Props) {
             }
           />
         ) : (
-          <ul className="space-y-1.5">
-            {items.map((f, idx) => (
+          <motion.ul
+            className="space-y-1.5"
+            variants={variants.staggerContainer}
+            initial="hidden"
+            animate="visible"
+          >
+            {items.map((f) => (
               <motion.li
                 key={f._id}
-                initial={{ opacity: 0, y: shouldReduce ? 0 : 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: shouldReduce ? 0 : idx * 0.02 }}
+                variants={variants.staggerItem}
                 className="relative group"
               >
                 <Link
@@ -225,7 +228,7 @@ export function FoodsListClient({ basePath }: Props) {
                 </button>
               </motion.li>
             ))}
-          </ul>
+          </motion.ul>
         )}
       </div>
 

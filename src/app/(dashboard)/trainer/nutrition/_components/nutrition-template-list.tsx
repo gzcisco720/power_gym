@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { variants } from '@/lib/animations/variants';
 import { Plus, Trash2, Apple } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared/page-header';
@@ -64,7 +65,6 @@ function MacroStat({ value, suffix, label, color }: { value: number; suffix?: st
 }
 
 export function NutritionTemplateList({ templates, onDelete, basePath = '/trainer/nutrition' }: Props) {
-  const shouldReduce = useReducedMotion();
   const foodsPath = basePath.startsWith('/owner/') ? '/owner/foods' : '/trainer/foods';
 
   return (
@@ -107,15 +107,18 @@ export function NutritionTemplateList({ templates, onDelete, basePath = '/traine
             }
           />
         ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {templates.map((template, i) => {
+          <motion.div
+            className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            variants={variants.staggerContainer}
+            initial="hidden"
+            animate="visible"
+          >
+            {templates.map((template) => {
               const accent = ACCENT_BORDERS[hashIndex(template._id, ACCENT_BORDERS.length)];
               return (
                 <motion.div
                   key={template._id}
-                  initial={{ opacity: 0, y: shouldReduce ? 0 : 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: shouldReduce ? 0 : i * 0.04 }}
+                  variants={variants.staggerItem}
                   className="relative"
                 >
                   <Link
@@ -175,7 +178,7 @@ export function NutritionTemplateList({ templates, onDelete, basePath = '/traine
                 </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
