@@ -21,8 +21,8 @@ export function SetChip({ setNumber, done, onClick }: SetChipProps) {
       className={cn(
         'flex h-[22px] w-[22px] items-center justify-center rounded-full border text-[8px] font-bold transition-colors',
         done
-          ? 'border-white bg-white text-black'
-          : 'border-[#1e1e1e] bg-transparent text-[#555] hover:border-[#333]'
+          ? 'border-primary bg-primary text-white shadow-[0_0_8px_rgba(99,102,241,0.4)]'
+          : 'border-white/10 bg-transparent text-foreground/35 hover:border-white/20'
       )}
       aria-label={done ? `Set ${setNumber} complete` : `Set ${setNumber}`}
     >
