@@ -1,3 +1,7 @@
+'use client';
+
+import { motion, useReducedMotion } from 'framer-motion';
+
 interface MacroRingProps {
   protein: number; // grams
   carbs: number; // grams
@@ -12,7 +16,10 @@ type Ring = (typeof RINGS)[number];
 
 const KCAL_PER_G: Record<Ring, number> = { protein: 4, carbs: 4, fat: 9 };
 
+const OFFSET_REST = 25; // rotates the arc start to 12 o'clock
+
 export function MacroRing({ protein, carbs, fat, size = 120 }: MacroRingProps) {
+  const shouldReduce = useReducedMotion();
   const grams: Record<Ring, number> = { protein, carbs, fat };
   const totalKcal = protein * 4 + carbs * 4 + fat * 9;
 
@@ -35,6 +42,11 @@ export function MacroRing({ protein, carbs, fat, size = 120 }: MacroRingProps) {
       {RINGS.map((ring, i) => {
         const r = cx - stroke / 2 - i * (stroke + 2);
         const filled = pct(ring);
+        // Animate by sliding strokeDashoffset:
+        //   hidden  → offset = filled + OFFSET_REST  (arc hidden behind gap)
+        //   visible → offset = OFFSET_REST           (arc drawn at 12 o'clock)
+        const hiddenOffset = filled + OFFSET_REST;
+        const visibleOffset = OFFSET_REST;
         return (
           <g key={ring}>
             <circle
@@ -46,7 +58,7 @@ export function MacroRing({ protein, carbs, fat, size = 120 }: MacroRingProps) {
               strokeWidth={stroke}
               pathLength={100}
             />
-            <circle
+            <motion.circle
               cx={cx}
               cy={cy}
               r={r}
@@ -55,9 +67,15 @@ export function MacroRing({ protein, carbs, fat, size = 120 }: MacroRingProps) {
               strokeWidth={stroke}
               pathLength={100}
               strokeDasharray={`${filled} ${100 - filled}`}
-              strokeDashoffset={25}
               transform={`rotate(-90 ${cx} ${cy})`}
               strokeLinecap="round"
+              initial={{ strokeDashoffset: shouldReduce ? visibleOffset : hiddenOffset }}
+              animate={{ strokeDashoffset: visibleOffset }}
+              transition={
+                shouldReduce
+                  ? { duration: 0 }
+                  : { duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: i * 0.1 }
+              }
             />
           </g>
         );

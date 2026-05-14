@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trash2 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { variants } from '@/lib/animations/variants';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared/page-header';
@@ -128,15 +129,19 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
               />
             </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {tests.map((test, i) => {
+            <motion.div
+              className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              variants={variants.staggerContainer}
+              initial="hidden"
+              animate="visible"
+            >
+              {tests.map((test) => {
                 const accent = ACCENT_BORDERS[hashIndex(test._id, ACCENT_BORDERS.length)];
                 return (
                   <motion.div
                     key={test._id}
-                    initial={{ opacity: 0, y: shouldReduce ? 0 : 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: shouldReduce ? 0 : i * 0.04 }}
+                    variants={shouldReduce ? undefined : variants.staggerItem}
+                    initial={shouldReduce ? { opacity: 1 } : undefined}
                     className="relative"
                   >
                     <div className={`rounded-xl border border-[#141414] border-t-2 ${accent} bg-[#0c0c0c] p-4 pr-11`}>
@@ -165,7 +170,7 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
                   </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
           </>
         )}
       </div>
