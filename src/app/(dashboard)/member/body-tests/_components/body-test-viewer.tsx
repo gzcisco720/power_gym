@@ -1,11 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { PageHeader } from '@/components/shared/page-header';
 import { StatCard } from '@/components/shared/stat-card';
 import { EmptyState } from '@/components/shared/empty-state';
 import { SectionHeader } from '@/components/shared/section-header';
+import { BodyTestImprovementAnimation } from '@/components/animations/body-test-improvement';
 import {
   ResponsiveContainer,
   LineChart,
@@ -33,6 +35,11 @@ interface Props {
 
 export function BodyTestViewer({ tests }: Props) {
   const shouldReduce = useReducedMotion();
+  const [showImprovement, setShowImprovement] = useState(() => {
+    if (tests.length < 2) return false;
+    const byDate = [...tests].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return byDate[0].bodyFatPct < byDate[1].bodyFatPct;
+  });
 
   if (tests.length === 0) {
     return (
@@ -50,6 +57,7 @@ export function BodyTestViewer({ tests }: Props) {
 
   const sorted = [...tests].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const latest = sorted[0];
+  const previous = sorted.length > 1 ? sorted[1] : null;
 
   const chartData = [...tests]
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -61,6 +69,19 @@ export function BodyTestViewer({ tests }: Props) {
 
   return (
     <div>
+      {showImprovement && previous && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="bg-white/[.04] ring-1 ring-white/10 backdrop-blur-md rounded-2xl p-6 w-full max-w-xs mx-4">
+            <BodyTestImprovementAnimation
+              metricLabel="Body Fat %"
+              previousValue={`${previous.bodyFatPct.toFixed(1)}%`}
+              currentValue={`${latest.bodyFatPct.toFixed(1)}%`}
+              diffLabel={`↓ ${(previous.bodyFatPct - latest.bodyFatPct).toFixed(1)}% reduced`}
+              onComplete={() => setShowImprovement(false)}
+            />
+          </div>
+        </div>
+      )}
       <PageHeader title="Body Composition" />
 
       <div className="px-4 sm:px-8 py-7 space-y-7">

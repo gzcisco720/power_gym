@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { SaveAsTemplateCheckbox } from './save-as-template-checkbox';
 import { DayCompleteBar } from './day-complete-bar';
 import { DayCompleteConfirmDialog } from './day-complete-confirm-dialog';
+import { NutritionDayCompleteAnimation } from '@/components/animations/nutrition-day-complete';
 import { NutritionCalendarPopover } from './nutrition-calendar-popover';
 import { MacroSummaryCard } from '@/components/nutrition/macro-summary-card';
 import { MealSection } from '@/components/nutrition/meal-section';
@@ -101,6 +102,11 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
   const [pickerForMeal, setPickerForMeal] = useState<number | null>(null);
   const [submittingComplete, setSubmittingComplete] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [celebrationMacros, setCelebrationMacros] = useState<{
+    proteinG: number;
+    carbsG: number;
+    fatG: number;
+  } | null>(null);
 
   function setDate(next: string): void {
     setDateInternal(next);
@@ -172,9 +178,15 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
       ? log.meals.map((m) => ({ ...m, completed: true }))
       : log.meals;
     const next: SelfNutritionLog = { ...log, meals: nextMeals, dayCompleted: true };
+    const completedMacros = aggregate(nextMeals);
     await persist(next);
     setSubmittingComplete(false);
     setConfirmOpen(false);
+    setCelebrationMacros({
+      proteinG: Math.round(completedMacros.protein),
+      carbsG: Math.round(completedMacros.carbs),
+      fatG: Math.round(completedMacros.fat),
+    });
   }
 
   if (!log) return <div className="p-4 text-foreground/65 text-sm">Loading…</div>;
@@ -320,6 +332,19 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
         onConfirm={markDayComplete}
         submitting={submittingComplete}
       />
+
+      {celebrationMacros && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="bg-white/[.04] ring-1 ring-white/10 backdrop-blur-md rounded-2xl p-6 w-full max-w-xs mx-4">
+            <NutritionDayCompleteAnimation
+              proteinG={celebrationMacros.proteinG}
+              carbsG={celebrationMacros.carbsG}
+              fatG={celebrationMacros.fatG}
+              onComplete={() => setCelebrationMacros(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
