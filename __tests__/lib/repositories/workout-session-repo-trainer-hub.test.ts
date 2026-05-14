@@ -40,6 +40,12 @@ describe('MongoWorkoutSessionRepository — trainer hub methods', () => {
       expect(result).toHaveLength(6);
       result.forEach((r) => expect(r.count).toBe(0));
     });
+
+    it('returns correct number of buckets for months=3', async () => {
+      mockModel.aggregate.mockResolvedValue([] as never);
+      const result = await repo.countByMemberIdsByMonth([validId1], 3);
+      expect(result).toHaveLength(3);
+    });
   });
 
   describe('countActiveMembersSince', () => {

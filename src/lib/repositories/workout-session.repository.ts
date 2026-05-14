@@ -3,6 +3,8 @@ import type { IWorkoutSession, ISessionSet } from '@/lib/db/models/workout-sessi
 import { WorkoutSessionModel } from '@/lib/db/models/workout-session.model';
 import { estimatedOneRM } from '@/lib/training/epley';
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 export interface CreateSessionData {
   memberId: string;
   memberPlanId: string;
@@ -318,9 +320,10 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
   }
 
   async countByMemberIdsByMonth(memberIds: string[], months: number): Promise<{ label: string; count: number }[]> {
-    const since = new Date();
-    since.setMonth(since.getMonth() - months + 1);
+    const now = new Date();
+    const since = new Date(now);
     since.setDate(1);
+    since.setMonth(since.getMonth() - months + 1);
     since.setHours(0, 0, 0, 0);
 
     const rows = await WorkoutSessionModel.aggregate<{ _id: { year: number; month: number }; count: number }>([
@@ -338,10 +341,10 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
       },
     ]);
 
-    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const result: { label: string; count: number }[] = [];
     for (let i = months - 1; i >= 0; i--) {
-      const d = new Date();
+      const d = new Date(now);
+      d.setDate(1);
       d.setMonth(d.getMonth() - i);
       const year = d.getFullYear();
       const month = d.getMonth() + 1;
