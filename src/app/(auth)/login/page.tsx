@@ -6,7 +6,7 @@ import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { ROLE_DEFAULT_PATH } from '@/lib/auth/middleware-helpers';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { LoginButton } from './_components/login-button';
 
 export default async function LoginPage({
   searchParams,
@@ -90,9 +90,7 @@ export default async function LoginPage({
             />
           </div>
 
-          <Button type="submit" className="w-full bg-white text-black hover:bg-white/90 font-semibold mt-2 cursor-pointer">
-            Sign in
-          </Button>
+          <LoginButton />
           <Link
             href="/forgot-password"
             className="block text-center text-[13px] text-[#666] hover:text-[#999]"

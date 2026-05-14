@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { initials } from '@/lib/utils';
 
 interface MemberRow {
@@ -131,7 +131,9 @@ export function TrainerListClient({ trainers, allTrainers }: Props) {
                 onClick={() => handleRemove(trainer._id)}
                 className="h-8 cursor-pointer px-3 text-[12px] text-[#883333] hover:text-red-400 hover:bg-[#1a0808]"
               >
-                {removing === trainer._id ? '…' : 'Remove'}
+                {removing === trainer._id
+                  ? <Loader2 className="h-3 w-3 animate-spin" />
+                  : 'Remove'}
               </Button>
             </div>
           </div>

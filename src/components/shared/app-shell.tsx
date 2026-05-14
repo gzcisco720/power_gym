@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, Settings } from 'lucide-react';
@@ -101,7 +101,24 @@ interface SidebarContentProps {
 
 function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, logoutSlot }: SidebarContentProps) {
   const pathname = usePathname();
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
   const groups = NAV[role] ?? [];
+
+  const handleNavClick = useCallback((href: string) => {
+    setPendingHref(href);
+  }, []);
+
+  // Clear pending once navigation completes (pathname updated)
+  if (pendingHref && (pathname === pendingHref || pathname.startsWith(pendingHref + '/'))) {
+    setPendingHref(null);
+  }
+
+  function isActive(item: { href: string; exact?: boolean }) {
+    const effectivePath = pendingHref ?? pathname;
+    return item.exact
+      ? effectivePath === item.href
+      : (effectivePath === item.href || effectivePath.startsWith(item.href + '/'));
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -126,9 +143,10 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, lo
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => handleNavClick(item.href)}
                 className={cn(
                   'flex items-center rounded-md px-3 py-2 text-[13px] font-medium transition-colors duration-150',
-                  (item.exact ? pathname === item.href : (pathname === item.href || pathname.startsWith(item.href + '/')))
+                  isActive(item)
                     ? 'bg-white text-black'
                     : 'text-[#666] hover:bg-[#141414] hover:text-[#aaa]'
                 )}

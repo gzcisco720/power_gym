@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { SectionHeader } from '@/components/shared/section-header';
-import { Trash2, Check, RotateCcw, Pencil } from 'lucide-react';
+import { Trash2, Check, RotateCcw, Pencil, Loader2 } from 'lucide-react';
 import type { SerializedInjury } from '../page';
 
 interface Props {
@@ -35,6 +35,9 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState<AddForm>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [changingStatusId, setChangingStatusId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [savingNotes, setSavingNotes] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
   const [memberNoteDraft, setMemberNoteDraft] = useState('');
@@ -78,39 +81,54 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
   }
 
   async function handleStatusChange(id: string, status: 'active' | 'resolved') {
-    const res = await fetch(`/api/members/${memberId}/injuries/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
-    if (!res.ok) { toast.error('Failed to update'); return; }
-    const updated = (await res.json()) as SerializedInjury;
-    setInjuries((prev) => prev.map((i) => (i._id === id ? updated : i)));
-    toast.success(status === 'resolved' ? 'Marked as resolved' : 'Reactivated');
-    router.refresh();
+    setChangingStatusId(id);
+    try {
+      const res = await fetch(`/api/members/${memberId}/injuries/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) { toast.error('Failed to update'); return; }
+      const updated = (await res.json()) as SerializedInjury;
+      setInjuries((prev) => prev.map((i) => (i._id === id ? updated : i)));
+      toast.success(status === 'resolved' ? 'Marked as resolved' : 'Reactivated');
+      router.refresh();
+    } finally {
+      setChangingStatusId(null);
+    }
   }
 
   async function handleConfirmDelete() {
     if (!deleteId) return;
-    const res = await fetch(`/api/members/${memberId}/injuries/${deleteId}`, { method: 'DELETE' });
-    if (!res.ok) { toast.error('Failed to delete'); setDeleteId(null); return; }
-    setInjuries((prev) => prev.filter((i) => i._id !== deleteId));
-    setDeleteId(null);
-    toast.success('Record deleted');
-    router.refresh();
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/members/${memberId}/injuries/${deleteId}`, { method: 'DELETE' });
+      if (!res.ok) { toast.error('Failed to delete'); return; }
+      setInjuries((prev) => prev.filter((i) => i._id !== deleteId));
+      setDeleteId(null);
+      toast.success('Record deleted');
+      router.refresh();
+    } finally {
+      setDeleting(false);
+    }
   }
 
   async function handleSaveMemberNotes(id: string) {
-    const res = await fetch(`/api/members/${memberId}/injuries/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ memberNotes: memberNoteDraft.trim() || null }),
-    });
-    if (!res.ok) { toast.error('Failed to save'); return; }
-    const updated = (await res.json()) as SerializedInjury;
-    setInjuries((prev) => prev.map((i) => (i._id === id ? updated : i)));
-    setEditingNotesId(null);
-    toast.success('Notes saved');
+    setSavingNotes(true);
+    try {
+      const res = await fetch(`/api/members/${memberId}/injuries/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberNotes: memberNoteDraft.trim() || null }),
+      });
+      if (!res.ok) { toast.error('Failed to save'); return; }
+      const updated = (await res.json()) as SerializedInjury;
+      setInjuries((prev) => prev.map((i) => (i._id === id ? updated : i)));
+      setEditingNotesId(null);
+      toast.success('Notes saved');
+    } finally {
+      setSavingNotes(false);
+    }
   }
 
   function renderInjury(injury: SerializedInjury, isResolved: boolean) {
@@ -140,9 +158,12 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
                 size="icon-sm"
                 aria-label={isResolved ? 'Reactivate' : 'Mark resolved'}
                 onClick={() => handleStatusChange(injury._id, isResolved ? 'active' : 'resolved')}
+                disabled={changingStatusId === injury._id}
                 className="text-foreground/65 hover:text-foreground"
               >
-                {isResolved ? <RotateCcw className="size-3.5" /> : <Check className="size-3.5" />}
+                {changingStatusId === injury._id
+                  ? <Loader2 className="size-3.5 animate-spin" />
+                  : isResolved ? <RotateCcw className="size-3.5" /> : <Check className="size-3.5" />}
               </Button>
               <Button
                 variant="ghost"
@@ -169,10 +190,11 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
                 />
                 <Button
                   onClick={() => handleSaveMemberNotes(injury._id)}
+                  disabled={savingNotes}
                   size="sm"
                   className="text-xs"
                 >
-                  Save
+                  {savingNotes ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
                 </Button>
                 <Button
                   variant="ghost"
@@ -305,9 +327,10 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
               variant="destructive"
               size="sm"
               onClick={handleConfirmDelete}
+              disabled={deleting}
               className="text-xs font-semibold"
             >
-              Delete
+              {deleting ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Delete'}
             </Button>
           </div>
         </DialogContent>

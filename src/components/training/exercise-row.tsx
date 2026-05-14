@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronUp, ChevronDown, X } from 'lucide-react';
+import { ChevronUp, ChevronDown, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ExerciseBadge } from '@/components/training/exercise-badge';
 import { ExerciseThumbnail } from '@/components/training/exercise-thumbnail';
@@ -57,6 +57,8 @@ interface LoggingProps extends BaseProps {
   onBwToggle: (next: boolean) => void;
   bwOverride?: boolean;
   readOnly?: boolean;
+  pendingSetIndex?: number | null;
+  isAddingSet?: boolean;
 }
 
 interface ViewProps extends BaseProps {
@@ -217,7 +219,7 @@ export function ExerciseRow(props: Props) {
   }
 
   if (mode === 'logging') {
-    const { loggingSets, inputs, onInputChange, onLogSet, onAddSet, onBwToggle, bwOverride, readOnly } = props;
+    const { loggingSets, inputs, onInputChange, onLogSet, onAddSet, onBwToggle, bwOverride, readOnly, pendingSetIndex, isAddingSet } = props;
     const isBw = bwOverride ?? row.isBodyweight;
     const completedCount = loggingSets.length;
     const repsLabel =
@@ -312,10 +314,13 @@ export function ExerciseRow(props: Props) {
                     <button
                       type="button"
                       onClick={() => onLogSet(s.globalIndex)}
-                      className="h-7 w-7 shrink-0 inline-flex items-center justify-center rounded-md ring-1 ring-foreground/25 text-foreground/65 hover:text-foreground hover:ring-foreground cursor-pointer"
+                      disabled={pendingSetIndex === s.globalIndex}
+                      className="h-7 w-7 shrink-0 inline-flex items-center justify-center rounded-md ring-1 ring-foreground/25 text-foreground/65 hover:text-foreground hover:ring-foreground cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label={`Complete set ${s.setNumber}`}
                     >
-                      ✓
+                      {pendingSetIndex === s.globalIndex
+                        ? <Loader2 className="h-3 w-3 animate-spin" />
+                        : '✓'}
                     </button>
                   </>
                 )}
@@ -328,9 +333,10 @@ export function ExerciseRow(props: Props) {
           <button
             type="button"
             onClick={onAddSet}
-            className="mt-2 text-xs text-foreground/65 hover:text-foreground transition-colors cursor-pointer"
+            disabled={isAddingSet}
+            className="mt-2 text-xs text-foreground/65 hover:text-foreground transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            + Add Set
+            {isAddingSet ? <Loader2 className="h-3 w-3 animate-spin inline" /> : '+ Add Set'}
           </button>
         )}
       </div>

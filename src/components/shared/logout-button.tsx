@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { LogOut } from 'lucide-react';
+import { LogOut, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -55,7 +55,14 @@ export function LogoutButton() {
               disabled={loading}
               className="bg-red-600 hover:bg-red-700 text-white cursor-pointer"
             >
-              {loading ? 'Signing out...' : 'Sign out'}
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing out…
+                </>
+              ) : (
+                'Sign out'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -27,6 +27,8 @@ export interface SupersetLoggingMember {
   loggingSets: LoggingSetInput[];
   inputs: { weight: string; reps: string }[];
   bwOverride?: boolean;
+  pendingSetIndex?: number | null;
+  isAddingSet?: boolean;
 }
 
 interface BaseProps {
@@ -201,6 +203,8 @@ export function SupersetBlock(props: Props) {
               onAddSet={() => onAddSet(m.row.exerciseId)}
               onBwToggle={(next) => onBwToggle(m.row.exerciseId, next)}
               readOnly={readOnly}
+              pendingSetIndex={m.pendingSetIndex}
+              isAddingSet={m.isAddingSet}
             />
           </Fragment>
         ))}

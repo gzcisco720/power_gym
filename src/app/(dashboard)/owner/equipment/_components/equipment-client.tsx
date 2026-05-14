@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { ImageIcon } from 'lucide-react';
+import { ImageIcon, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ImageLightbox } from '@/components/shared/image-lightbox';
@@ -38,6 +38,7 @@ export function EquipmentClient({ initialItems }: Props) {
   const [items, setItems] = useState<EquipmentItem[]>(initialItems);
   const [showAdd, setShowAdd] = useState(false);
   const [editTarget, setEditTarget] = useState<EquipmentItem | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
 
   function handleCreated(item: NewEquipmentItem) {
@@ -52,11 +53,16 @@ export function EquipmentClient({ initialItems }: Props) {
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this equipment? This cannot be undone.')) return;
-    const res = await fetch(`/api/owner/equipment/${id}`, { method: 'DELETE' });
-    if (!res.ok) { toast.error('Failed to delete'); return; }
-    setItems((prev) => prev.filter((i) => i._id !== id));
-    toast.success('Equipment deleted');
-    router.refresh();
+    setDeletingId(id);
+    try {
+      const res = await fetch(`/api/owner/equipment/${id}`, { method: 'DELETE' });
+      if (!res.ok) { toast.error('Failed to delete'); return; }
+      setItems((prev) => prev.filter((i) => i._id !== id));
+      toast.success('Equipment deleted');
+      router.refresh();
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   return (
@@ -144,9 +150,12 @@ export function EquipmentClient({ initialItems }: Props) {
                   <Button
                     variant="ghost"
                     onClick={() => handleDelete(item._id)}
-                    className="text-[#555] hover:text-red-400 hover:bg-[#141414] text-xs h-7 px-2"
+                    disabled={deletingId === item._id}
+                    className="text-[#555] hover:text-red-400 hover:bg-[#141414] text-xs h-7 px-2 disabled:opacity-50"
                   >
-                    Delete
+                    {deletingId === item._id
+                      ? <Loader2 className="h-3 w-3 animate-spin" />
+                      : 'Delete'}
                   </Button>
                 </div>
               </div>

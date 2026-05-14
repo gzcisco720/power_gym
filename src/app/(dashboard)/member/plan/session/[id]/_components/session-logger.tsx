@@ -151,6 +151,9 @@ export function SessionLogger({
     });
     return map;
   });
+  const [loggingSetIndex, setLoggingSetIndex] = useState<number | null>(null);
+  const [addingSetFor, setAddingSetFor] = useState<string | null>(null);
+  const [addingExercise, setAddingExercise] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [exerciseSheetOpen, setExerciseSheetOpen] = useState(false);
@@ -184,6 +187,7 @@ export function SessionLogger({
   }
 
   async function logSet(setIndex: number) {
+    setLoggingSetIndex(setIndex);
     const input = inputs[setIndex];
     const set = session.sets[setIndex];
     const isBodyweight = bwOverrides[set.exerciseId] ?? set.isBodyweight;
@@ -210,10 +214,13 @@ export function SessionLogger({
       syncInputsToSession(updated);
     } catch {
       toast.error('Something went wrong');
+    } finally {
+      setLoggingSetIndex(null);
     }
   }
 
   async function addSet(exerciseId: string) {
+    setAddingSetFor(exerciseId);
     const exercise = session.sets.find((s) => s.exerciseId === exerciseId);
     if (!exercise) return;
     try {
@@ -240,10 +247,13 @@ export function SessionLogger({
       syncInputsToSession(updated);
     } catch {
       toast.error('Something went wrong');
+    } finally {
+      setAddingSetFor(null);
     }
   }
 
   async function addExercise(exercise: ExerciseOption) {
+    setAddingExercise(true);
     try {
       const res = await fetch(`/api/sessions/${session._id}/sets`, {
         method: 'POST',
@@ -270,6 +280,8 @@ export function SessionLogger({
       setBwOverrides((prev) => ({ ...prev, [exercise._id]: exercise.isBodyweight }));
     } catch {
       toast.error('Something went wrong');
+    } finally {
+      setAddingExercise(false);
     }
   }
 
@@ -366,6 +378,8 @@ export function SessionLogger({
                     setBwOverrides((prev) => ({ ...prev, [ex.exerciseId]: next }))
                   }
                   readOnly={isCompleted}
+                  pendingSetIndex={loggingSetIndex}
+                  isAddingSet={addingSetFor === ex.exerciseId}
                 />
                 {mode === 'trainer' && loggedForMember && (
                   <div className="px-3 pb-3">
@@ -402,6 +416,8 @@ export function SessionLogger({
                 loggingSets: toLoggingSets(exSets),
                 inputs,
                 bwOverride: bwOverrides[exercise.exerciseId],
+                pendingSetIndex: loggingSetIndex,
+                isAddingSet: addingSetFor === exercise.exerciseId,
               }))}
               onInputChange={(_, idx, field, value) => updateInput(idx, field, value)}
               onLogSet={(_, idx) => void logSet(idx)}
@@ -416,8 +432,10 @@ export function SessionLogger({
 
         {!isCompleted && (
           <button
-            onClick={() => setExerciseSheetOpen(true)}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/15 py-4 text-xs text-foreground/65 hover:border-foreground/40 hover:text-foreground transition-colors cursor-pointer"
+            onClick={() => !addingExercise && setExerciseSheetOpen(true)}
+            disabled={addingExercise}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/15 py-4 text-xs text-foreground/65 hover:border-foreground/40 hover:text-foreground transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="+ Add Exercise"
           >
             + Add Exercise
           </button>
