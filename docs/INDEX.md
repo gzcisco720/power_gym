@@ -40,7 +40,8 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Edit Equipment Dialog | [edit-equipment-design.md](2025-05-14/plans/edit-equipment-design.md) | Approved |
 | UI/UX Comprehensive Upgrade (Design) | [ui-ux-upgrade-design.md](2026-05-14/plans/ui-ux-upgrade-design.md) | Approved |
 | UI/UX Comprehensive Upgrade (Plan) | [ui-ux-upgrade-plan.md](2026-05-14/plans/ui-ux-upgrade-plan.md) | Complete |
-| Dashboard Expansion (Owner + Trainer + Member) | [dashboard-expansion-design.md](2026-05-14/plans/dashboard-expansion-design.md) | Approved |
+| Dashboard Expansion (Design) | [dashboard-expansion-design.md](2026-05-14/plans/dashboard-expansion-design.md) | Approved |
+| Dashboard Expansion (Plan) | [dashboard-expansion-plan.md](2026-05-14/plans/dashboard-expansion-plan.md) | In Progress |
 
 ---
 
