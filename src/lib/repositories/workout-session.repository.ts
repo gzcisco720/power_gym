@@ -41,6 +41,8 @@ export interface IWorkoutSessionRepository {
   delete(id: string): Promise<boolean>;
   countByMemberIdsSince(memberIds: string[], since: Date): Promise<number>;
   findCompletedDates(memberId: string, since: Date): Promise<Date[]>;
+  findConsecutiveStreakDays(memberId: string): Promise<number>;
+  countCompletedByMemberSince(memberId: string, since: Date): Promise<number>;
   findTrainedExercises(memberId: string): Promise<{ exerciseId: string; exerciseName: string }[]>;
   findExerciseHistory(memberId: string, exerciseId: string): Promise<{ date: Date; estimatedOneRM: number }[]>;
   findMemberStats(memberId: string): Promise<{
@@ -275,5 +277,40 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
       completedCount: results[0].completedCount,
       lastCompletedAt: results[0].lastCompletedAt,
     };
+  }
+
+  async findConsecutiveStreakDays(memberId: string): Promise<number> {
+    const since = new Date();
+    since.setDate(since.getDate() - 365);
+    const docs = await WorkoutSessionModel.find({
+      memberId: new mongoose.Types.ObjectId(memberId),
+      completedAt: { $gte: since, $ne: null },
+    })
+      .select('completedAt')
+      .lean();
+
+    const toKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    const daySet = new Set(
+      docs.filter((d) => d.completedAt).map((d) => toKey(new Date(d.completedAt!))),
+    );
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const cursor = new Date(today);
+    if (!daySet.has(toKey(cursor))) cursor.setDate(cursor.getDate() - 1);
+
+    let streak = 0;
+    while (daySet.has(toKey(cursor))) {
+      streak++;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
+  }
+
+  async countCompletedByMemberSince(memberId: string, since: Date): Promise<number> {
+    return WorkoutSessionModel.countDocuments({
+      memberId: new mongoose.Types.ObjectId(memberId),
+      completedAt: { $gte: since, $ne: null },
+    });
   }
 }
