@@ -41,6 +41,8 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Profile & Account Redesign | [profile-account-redesign.md](2026-05-13/plans/profile-account-redesign.md) | Approved |
 | Profile & Account Redesign (Plan) | [profile-account-redesign-plan.md](2026-05-13/plans/profile-account-redesign-plan.md) | In Progress |
 | E2E Email Testing (Plan) | [e2e-email-testing-plan.md](2026-05-14/plans/e2e-email-testing-plan.md) | In Progress |
+| Edit Equipment Dialog | [edit-equipment-design.md](2025-05-14/plans/edit-equipment-design.md) | Approved |
+| Edit Equipment Dialog (Plan) | [edit-equipment-plan.md](2025-05-14/plans/edit-equipment-plan.md) | In Progress |
 
 ---
 

@@ -40,14 +40,13 @@ describe('EquipmentClient', () => {
   it('shows status badge only for items with trackCondition enabled', () => {
     render(<EquipmentClient initialItems={mockItems} />);
     const activeBadges = screen.getAllByText('active');
-    // Weight Plates (trackCondition:false) should not have a badge — only Smith Machine
     expect(activeBadges).toHaveLength(1);
   });
 
-  it('shows Condition button for each item', () => {
+  it('shows Edit button for each item', () => {
     render(<EquipmentClient initialItems={mockItems} />);
-    const conditionBtns = screen.getAllByRole('button', { name: /condition/i });
-    expect(conditionBtns).toHaveLength(mockItems.length);
+    const editBtns = screen.getAllByRole('button', { name: /^edit$/i });
+    expect(editBtns).toHaveLength(mockItems.length);
   });
 
   it('opens Add Equipment dialog when Add button clicked', () => {
@@ -61,7 +60,6 @@ describe('EquipmentClient', () => {
     render(<EquipmentClient initialItems={mockItems} />);
     const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
     fireEvent.click(deleteButtons[0]);
-
     await waitFor(() =>
       expect(global.fetch).toHaveBeenCalledWith(
         '/api/owner/equipment/e1',
@@ -73,7 +71,6 @@ describe('EquipmentClient', () => {
   it('shows placeholder for equipment with no images', () => {
     render(<EquipmentClient initialItems={mockItems} />);
     const placeholders = screen.getAllByLabelText('No image');
-    // e2 and e3 have no images
     expect(placeholders).toHaveLength(2);
   });
 
@@ -89,17 +86,19 @@ describe('EquipmentClient', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
-  it('updates status in list when ConditionDialog reports a status change', async () => {
+  it('opens EditEquipmentDialog and fetches condition reports when Edit clicked', async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve([]),
     });
     render(<EquipmentClient initialItems={mockItems} />);
-    const conditionBtns = screen.getAllByRole('button', { name: /condition/i });
-    fireEvent.click(conditionBtns[0]);
-    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith(
-      '/api/owner/equipment/e1/condition-reports',
-      expect.objectContaining({ signal: expect.any(AbortSignal) }),
-    ));
+    const editBtns = screen.getAllByRole('button', { name: /^edit$/i });
+    fireEvent.click(editBtns[0]);
+    await waitFor(() =>
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/owner/equipment/e1/condition-reports',
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      ),
+    );
   });
 });

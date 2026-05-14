@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ImageLightbox } from '@/components/shared/image-lightbox';
 import { AddEquipmentDialog } from './add-equipment-dialog';
-import { ConditionDialog } from './condition-dialog';
+import { EditEquipmentDialog } from './edit-equipment-dialog';
 import type { EquipmentStatus } from '@/lib/db/models/equipment.model';
 import type { NewEquipmentItem } from './add-equipment-dialog';
 
@@ -27,7 +27,7 @@ interface Props {
   initialItems: EquipmentItem[];
 }
 
-const STATUS_COLOURS: Record<EquipmentStatus, string> = {
+export const STATUS_COLOURS: Record<EquipmentStatus, string> = {
   active: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   maintenance: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
   retired: 'bg-[#333] text-[#666] border-[#222]',
@@ -37,7 +37,7 @@ export function EquipmentClient({ initialItems }: Props) {
   const router = useRouter();
   const [items, setItems] = useState<EquipmentItem[]>(initialItems);
   const [showAdd, setShowAdd] = useState(false);
-  const [conditionTarget, setConditionTarget] = useState<EquipmentItem | null>(null);
+  const [editTarget, setEditTarget] = useState<EquipmentItem | null>(null);
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
 
   function handleCreated(item: NewEquipmentItem) {
@@ -45,11 +45,9 @@ export function EquipmentClient({ initialItems }: Props) {
     router.refresh();
   }
 
-  function handleStatusUpdated(id: string, status: EquipmentStatus) {
-    setItems((prev) => prev.map((i) => i._id === id ? { ...i, status } : i));
-    if (conditionTarget?._id === id) {
-      setConditionTarget((prev) => prev ? { ...prev, status } : prev);
-    }
+  function handleUpdated(updated: EquipmentItem) {
+    setItems((prev) => prev.map((i) => i._id === updated._id ? updated : i));
+    setEditTarget((prev) => prev?._id === updated._id ? updated : prev);
   }
 
   async function handleDelete(id: string) {
@@ -135,10 +133,10 @@ export function EquipmentClient({ initialItems }: Props) {
                 <div className="hidden sm:flex justify-center">
                   <Button
                     variant="ghost"
-                    onClick={() => setConditionTarget(item)}
+                    onClick={() => setEditTarget(item)}
                     className="text-[#555] hover:text-[#aaa] hover:bg-[#141414] text-xs h-7 px-3"
                   >
-                    Condition
+                    Edit
                   </Button>
                 </div>
 
@@ -163,10 +161,10 @@ export function EquipmentClient({ initialItems }: Props) {
         onCreated={handleCreated}
       />
 
-      <ConditionDialog
-        equipment={conditionTarget}
-        onClose={() => setConditionTarget(null)}
-        onStatusUpdated={handleStatusUpdated}
+      <EditEquipmentDialog
+        equipment={editTarget}
+        onClose={() => setEditTarget(null)}
+        onUpdated={handleUpdated}
       />
 
       <ImageLightbox

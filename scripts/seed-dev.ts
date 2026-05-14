@@ -66,6 +66,9 @@ const PASS  = 'Dev123!';
 interface RawExercise { id: string; name: string; body_parts: string[]; image: string }
 interface RawEquipmentCatalog { equipment: { id: string; name: string }[] }
 
+const IMG_BASE = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises';
+const exImg = (id: string) => `${IMG_BASE}/${id}/0.jpg`;
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function daysAgo(n: number): Date {
@@ -263,55 +266,63 @@ async function seedDevData() {
   console.log('  ✓ User profiles: 4 created');
 
   // ── Equipment + Condition Reports ──────────────────────────────────────────
-  const [treadmill, smithMachine, legPress,,,, rowingMachine] = await Promise.all([
-    EquipmentModel.create({ name: 'Treadmill',         brand: 'Life Fitness', quantity: 3,  status: 'active',      trackCondition: true,  images: [], note: 'Zone A, rows 1–3' }),
-    EquipmentModel.create({ name: 'Smith Machine',     brand: 'Matrix',       quantity: 2,  status: 'active',      trackCondition: true,  images: [], note: null }),
-    EquipmentModel.create({ name: 'Leg Press Machine', brand: null,           quantity: 2,  status: 'maintenance', trackCondition: true,  images: [], note: 'One unit under repair' }),
-    EquipmentModel.create({ name: 'Dumbbells',         brand: null,           quantity: 40, status: 'active',      trackCondition: false, images: [], note: '2 kg – 40 kg, 2 kg increments' }),
-    EquipmentModel.create({ name: 'Olympic Barbell',   brand: null,           quantity: 10, status: 'active',      trackCondition: false, images: [], note: null }),
-    EquipmentModel.create({ name: 'Weight Plates',     brand: null,           quantity: 120,status: 'active',      trackCondition: false, images: [], note: '1.25 kg – 25 kg pairs' }),
-    EquipmentModel.create({ name: 'Rowing Machine',    brand: 'Concept2',     quantity: 4,  status: 'active',      trackCondition: true,  images: [], note: null }),
-    EquipmentModel.create({ name: 'Cable Cross Machine',brand: 'Technogym',  quantity: 1,  status: 'retired',     trackCondition: false, images: [], note: 'Decommissioned — replaced by new functional trainer unit' }),
+  const [treadmill, smithMachine, legPress,,,, rowingMachine,, functionalTrainer, powerRack] = await Promise.all([
+    EquipmentModel.create({ name: 'Treadmill',               brand: 'Life Fitness', quantity: 3,  status: 'active',      trackCondition: true,  images: [], note: 'Zone A, rows 1–3' }),
+    EquipmentModel.create({ name: 'Smith Machine',           brand: 'Matrix',       quantity: 2,  status: 'active',      trackCondition: true,  images: [], note: null }),
+    EquipmentModel.create({ name: 'Plate-Loaded Leg Press',  brand: 'Hammer Strength', quantity: 2, status: 'maintenance', trackCondition: true, images: [], note: 'One unit under repair — cable issue' }),
+    EquipmentModel.create({ name: 'Dumbbells',               brand: null,           quantity: 40, status: 'active',      trackCondition: false, images: [], note: '2 kg – 40 kg, 2 kg increments' }),
+    EquipmentModel.create({ name: 'Olympic Barbell',         brand: null,           quantity: 10, status: 'active',      trackCondition: false, images: [], note: null }),
+    EquipmentModel.create({ name: 'Weight Plates',           brand: null,           quantity: 120,status: 'active',      trackCondition: false, images: [], note: '1.25 kg – 25 kg pairs' }),
+    EquipmentModel.create({ name: 'Rowing Machine',          brand: 'Concept2',     quantity: 4,  status: 'active',      trackCondition: true,  images: [], note: null }),
+    EquipmentModel.create({ name: 'Cable Crossover',         brand: 'Technogym',    quantity: 1,  status: 'retired',     trackCondition: false, images: [], note: 'Decommissioned — replaced by Functional Trainer (EQ-0039)' }),
+    EquipmentModel.create({ name: 'Functional Trainer',      brand: 'Technogym',    quantity: 1,  status: 'active',      trackCondition: true,  images: [], note: 'New unit installed Dec 2024. Replaces retired Cable Crossover.' }),
+    EquipmentModel.create({ name: 'Power Rack',              brand: 'Rogue',        quantity: 4,  status: 'active',      trackCondition: true,  images: [], note: 'Zone B, units 1–4. Safety bars must be set before use.' }),
+    EquipmentModel.create({ name: 'Adjustable Bench',        brand: 'Inspire',      quantity: 6,  status: 'active',      trackCondition: false, images: [], note: null }),
+    EquipmentModel.create({ name: 'Kettlebells',             brand: null,           quantity: 24, status: 'active',      trackCondition: false, images: [], note: '8 kg – 48 kg, various increments' }),
   ]);
   await Promise.all([
     // Treadmill — two-event history: problem then fix
-    ConditionReportModel.create({ equipmentId: treadmill._id,    note: 'Belt slightly worn on unit #2. Scheduled for replacement next week.',   reportedAt: daysAgo(14) }),
-    ConditionReportModel.create({ equipmentId: treadmill._id,    note: 'Belt replaced on unit #2, all units running normally.',                  reportedAt: daysAgo(7)  }),
-    // Leg press — ongoing issue
-    ConditionReportModel.create({ equipmentId: legPress._id,     note: 'Unit #1 cable frayed — taken offline. Technician booked.',              reportedAt: daysAgo(5)  }),
+    ConditionReportModel.create({ equipmentId: treadmill._id,         note: 'Belt slightly worn on unit #2. Scheduled for replacement next week.',          reportedAt: daysAgo(14) }),
+    ConditionReportModel.create({ equipmentId: treadmill._id,         note: 'Belt replaced on unit #2, all units running normally.',                         reportedAt: daysAgo(7)  }),
+    // Plate-Loaded Leg Press — ongoing issue
+    ConditionReportModel.create({ equipmentId: legPress._id,          note: 'Unit #1 cable frayed — taken offline. Technician booked.',                     reportedAt: daysAgo(5)  }),
     // Smith machine — multiple maintenance history entries
-    ConditionReportModel.create({ equipmentId: smithMachine._id, note: 'Annual service completed. Guide rails lubricated, all hardware torqued.', reportedAt: daysAgo(60) }),
-    ConditionReportModel.create({ equipmentId: smithMachine._id, note: 'Unit #1 locking pins stiff. Applied lubricant. Monitor next week.',      reportedAt: daysAgo(30) }),
-    ConditionReportModel.create({ equipmentId: smithMachine._id, note: 'Lubricated guide rails on both units. Operating smoothly.',             reportedAt: daysAgo(21) }),
+    ConditionReportModel.create({ equipmentId: smithMachine._id,      note: 'Annual service completed. Guide rails lubricated, all hardware torqued.',       reportedAt: daysAgo(60) }),
+    ConditionReportModel.create({ equipmentId: smithMachine._id,      note: 'Unit #1 locking pins stiff. Applied lubricant. Monitor next week.',             reportedAt: daysAgo(30) }),
+    ConditionReportModel.create({ equipmentId: smithMachine._id,      note: 'Lubricated guide rails on both units. Operating smoothly.',                    reportedAt: daysAgo(21) }),
     // Rowing machine — maintenance + replacement record
-    ConditionReportModel.create({ equipmentId: rowingMachine._id,note: 'Unit #2 monitor unresponsive. Replacement ordered.',                    reportedAt: daysAgo(20) }),
-    ConditionReportModel.create({ equipmentId: rowingMachine._id,note: 'Chain tension adjusted on unit #3. Performance monitor battery replaced.', reportedAt: daysAgo(10) }),
-    ConditionReportModel.create({ equipmentId: rowingMachine._id,note: 'Monitor replaced on unit #2. All 4 units fully operational.',           reportedAt: daysAgo(3)  }),
+    ConditionReportModel.create({ equipmentId: rowingMachine._id,     note: 'Unit #2 monitor unresponsive. Replacement ordered.',                           reportedAt: daysAgo(20) }),
+    ConditionReportModel.create({ equipmentId: rowingMachine._id,     note: 'Chain tension adjusted on unit #3. Performance monitor battery replaced.',      reportedAt: daysAgo(10) }),
+    ConditionReportModel.create({ equipmentId: rowingMachine._id,     note: 'Monitor replaced on unit #2. All 4 units fully operational.',                  reportedAt: daysAgo(3)  }),
+    // Functional Trainer — first condition report after installation
+    ConditionReportModel.create({ equipmentId: functionalTrainer._id, note: 'Post-installation check completed. All cables and pulleys operating smoothly.', reportedAt: daysAgo(150) }),
+    // Power Rack — annual service
+    ConditionReportModel.create({ equipmentId: powerRack._id,         note: 'Annual inspection complete. All J-cups, safety bars, and bolts checked.',       reportedAt: daysAgo(45) }),
   ]);
-  console.log('  ✓ Equipment: 8 items + 9 condition reports created (multi-event histories)');
+  console.log('  ✓ Equipment: 12 items (incl. Plate-Loaded Leg Press, Functional Trainer, Power Rack, Kettlebells) + 11 condition reports');
 
   // ── Exercises ──────────────────────────────────────────────────────────────
   // 4 compound lifts for plan templates
   const [benchPress, squat, deadlift, pullUp] = await Promise.all([
-    ExerciseModel.create({ name: 'Bench Press', muscleGroup: 'chest', isGlobal: true,  createdBy: null,        imageUrl: null, isBodyweight: false }),
-    ExerciseModel.create({ name: 'Squat',       muscleGroup: 'legs',  isGlobal: true,  createdBy: null,        imageUrl: null, isBodyweight: false }),
-    ExerciseModel.create({ name: 'Deadlift',    muscleGroup: 'back',  isGlobal: true,  createdBy: null,        imageUrl: null, isBodyweight: false }),
-    ExerciseModel.create({ name: 'Pull-Up',     muscleGroup: 'back',  isGlobal: true,  createdBy: null,        imageUrl: null, isBodyweight: true  }),
+    ExerciseModel.create({ name: 'Bench Press', muscleGroup: 'chest', isGlobal: true,  createdBy: null,        imageUrl: exImg('Barbell_Bench_Press_-_Medium_Grip'), isBodyweight: false }),
+    ExerciseModel.create({ name: 'Squat',       muscleGroup: 'legs',  isGlobal: true,  createdBy: null,        imageUrl: exImg('Barbell_Squat'),                     isBodyweight: false }),
+    ExerciseModel.create({ name: 'Deadlift',    muscleGroup: 'back',  isGlobal: true,  createdBy: null,        imageUrl: exImg('Barbell_Deadlift'),                  isBodyweight: false }),
+    ExerciseModel.create({ name: 'Pull-Up',     muscleGroup: 'back',  isGlobal: true,  createdBy: null,        imageUrl: exImg('Weighted_Pull_Ups'),                 isBodyweight: true  }),
   ]);
   // 2 trainer-created custom exercises
   const [cableFly, facePull] = await Promise.all([
-    ExerciseModel.create({ name: 'Cable Fly',  muscleGroup: 'chest', isGlobal: false, createdBy: trainer._id, imageUrl: null, isBodyweight: false }),
-    ExerciseModel.create({ name: 'Face Pull',  muscleGroup: 'back',  isGlobal: false, createdBy: trainer._id, imageUrl: null, isBodyweight: false }),
+    ExerciseModel.create({ name: 'Cable Fly',  muscleGroup: 'chest', isGlobal: false, createdBy: trainer._id, imageUrl: exImg('Flat_Bench_Cable_Flyes'), isBodyweight: false }),
+    ExerciseModel.create({ name: 'Face Pull',  muscleGroup: 'back',  isGlobal: false, createdBy: trainer._id, imageUrl: exImg('Face_Pull'),              isBodyweight: false }),
   ]);
   // 3 more global exercises used in self-tracking sessions
   const [ohp, hipThrust, latPulldown] = await Promise.all([
-    ExerciseModel.create({ name: 'Overhead Press', muscleGroup: 'shoulders', isGlobal: true,  createdBy: null,        imageUrl: null, isBodyweight: false }),
-    ExerciseModel.create({ name: 'Hip Thrust',     muscleGroup: 'legs',      isGlobal: true,  createdBy: null,        imageUrl: null, isBodyweight: false }),
-    ExerciseModel.create({ name: 'Lat Pulldown',   muscleGroup: 'back',      isGlobal: false, createdBy: trainer._id, imageUrl: null, isBodyweight: false }),
+    ExerciseModel.create({ name: 'Overhead Press', muscleGroup: 'shoulders', isGlobal: true,  createdBy: null,        imageUrl: exImg('Barbell_Shoulder_Press'),   isBodyweight: false }),
+    ExerciseModel.create({ name: 'Hip Thrust',     muscleGroup: 'legs',      isGlobal: true,  createdBy: null,        imageUrl: exImg('Barbell_Hip_Thrust'),       isBodyweight: false }),
+    ExerciseModel.create({ name: 'Lat Pulldown',   muscleGroup: 'back',      isGlobal: false, createdBy: trainer._id, imageUrl: exImg('Wide-Grip_Lat_Pulldown'),   isBodyweight: false }),
   ]);
-  // Owner-created food-prep exercise (tests owner-custom exercise path)
-  await ExerciseModel.create({ name: 'Dumbbell Curl', muscleGroup: 'arms', isGlobal: false, createdBy: owner._id, imageUrl: null, isBodyweight: false });
-  console.log('  ✓ Exercises: 4 global + 2 trainer-custom created + 3 more globals + 1 owner-custom');
+  // Owner-created exercise (tests owner-custom exercise path)
+  await ExerciseModel.create({ name: 'Dumbbell Curl', muscleGroup: 'arms', isGlobal: false, createdBy: owner._id, imageUrl: exImg('Dumbbell_Bicep_Curl'), isBodyweight: false });
+  console.log('  ✓ Exercises: 4 global + 2 trainer-custom created + 3 more globals + 1 owner-custom (all with catalog image URLs)');
 
   // ── Plan Templates ─────────────────────────────────────────────────────────
   // GroupIds for PPL (trainer)
@@ -330,22 +341,22 @@ async function seedDevData() {
       {
         dayNumber: 1, name: 'Push',
         exercises: [
-          { groupId: g1, isSuperset: false, exerciseId: benchPress._id, exerciseName: 'Bench Press', imageUrl: null, isBodyweight: false, sets: 4, repsMin: 6, repsMax: 10, restSeconds: 120 },
-          { groupId: g5, isSuperset: false, exerciseId: cableFly._id,   exerciseName: 'Cable Fly',   imageUrl: null, isBodyweight: false, sets: 3, repsMin: 10, repsMax: 15, restSeconds: 60  },
+          { groupId: g1, isSuperset: false, exerciseId: benchPress._id, exerciseName: 'Bench Press', imageUrl: exImg('Barbell_Bench_Press_-_Medium_Grip'), isBodyweight: false, sets: 4, repsMin: 6, repsMax: 10, restSeconds: 120 },
+          { groupId: g5, isSuperset: false, exerciseId: cableFly._id,   exerciseName: 'Cable Fly',   imageUrl: exImg('Flat_Bench_Cable_Flyes'),             isBodyweight: false, sets: 3, repsMin: 10, repsMax: 15, restSeconds: 60  },
         ],
       },
       {
         dayNumber: 2, name: 'Pull',
         exercises: [
-          { groupId: g2, isSuperset: false, exerciseId: deadlift._id, exerciseName: 'Deadlift', imageUrl: null, isBodyweight: false, sets: 3, repsMin: 5, repsMax: 8,  restSeconds: 180 },
-          { groupId: g3, isSuperset: false, exerciseId: pullUp._id,   exerciseName: 'Pull-Up',  imageUrl: null, isBodyweight: true,  sets: 3, repsMin: 6, repsMax: 10, restSeconds: 90  },
-          { groupId: g6, isSuperset: false, exerciseId: facePull._id, exerciseName: 'Face Pull', imageUrl: null, isBodyweight: false, sets: 3, repsMin: 12, repsMax: 20, restSeconds: 60 },
+          { groupId: g2, isSuperset: false, exerciseId: deadlift._id, exerciseName: 'Deadlift',  imageUrl: exImg('Barbell_Deadlift'),  isBodyweight: false, sets: 3, repsMin: 5, repsMax: 8,  restSeconds: 180 },
+          { groupId: g3, isSuperset: false, exerciseId: pullUp._id,   exerciseName: 'Pull-Up',   imageUrl: exImg('Weighted_Pull_Ups'), isBodyweight: true,  sets: 3, repsMin: 6, repsMax: 10, restSeconds: 90  },
+          { groupId: g6, isSuperset: false, exerciseId: facePull._id, exerciseName: 'Face Pull', imageUrl: exImg('Face_Pull'),         isBodyweight: false, sets: 3, repsMin: 12, repsMax: 20, restSeconds: 60 },
         ],
       },
       {
         dayNumber: 3, name: 'Legs',
         exercises: [
-          { groupId: g4, isSuperset: false, exerciseId: squat._id, exerciseName: 'Squat', imageUrl: null, isBodyweight: false, sets: 4, repsMin: 6, repsMax: 10, restSeconds: 150 },
+          { groupId: g4, isSuperset: false, exerciseId: squat._id, exerciseName: 'Squat', imageUrl: exImg('Barbell_Squat'), isBodyweight: false, sets: 4, repsMin: 6, repsMax: 10, restSeconds: 150 },
         ],
       },
     ],
@@ -366,21 +377,21 @@ async function seedDevData() {
       {
         dayNumber: 1, name: 'Day A',
         exercises: [
-          { groupId: gA1, isSuperset: false, exerciseId: squat._id,      exerciseName: 'Squat',       imageUrl: null, isBodyweight: false, sets: 4, repsMin: 8, repsMax: 12, restSeconds: 120 },
-          { groupId: gA2, isSuperset: false, exerciseId: benchPress._id, exerciseName: 'Bench Press', imageUrl: null, isBodyweight: false, sets: 3, repsMin: 8, repsMax: 12, restSeconds: 120 },
+          { groupId: gA1, isSuperset: false, exerciseId: squat._id,      exerciseName: 'Squat',       imageUrl: exImg('Barbell_Squat'),                      isBodyweight: false, sets: 4, repsMin: 8, repsMax: 12, restSeconds: 120 },
+          { groupId: gA2, isSuperset: false, exerciseId: benchPress._id, exerciseName: 'Bench Press', imageUrl: exImg('Barbell_Bench_Press_-_Medium_Grip'),   isBodyweight: false, sets: 3, repsMin: 8, repsMax: 12, restSeconds: 120 },
         ],
       },
       {
         dayNumber: 2, name: 'Day B',
         exercises: [
-          { groupId: gB1, isSuperset: false, exerciseId: deadlift._id, exerciseName: 'Deadlift', imageUrl: null, isBodyweight: false, sets: 3, repsMin: 5, repsMax: 8,  restSeconds: 180 },
-          { groupId: gB2, isSuperset: false, exerciseId: pullUp._id,   exerciseName: 'Pull-Up',  imageUrl: null, isBodyweight: true,  sets: 3, repsMin: 6, repsMax: 10, restSeconds: 90  },
+          { groupId: gB1, isSuperset: false, exerciseId: deadlift._id, exerciseName: 'Deadlift', imageUrl: exImg('Barbell_Deadlift'),  isBodyweight: false, sets: 3, repsMin: 5, repsMax: 8,  restSeconds: 180 },
+          { groupId: gB2, isSuperset: false, exerciseId: pullUp._id,   exerciseName: 'Pull-Up',  imageUrl: exImg('Weighted_Pull_Ups'), isBodyweight: true,  sets: 3, repsMin: 6, repsMax: 10, restSeconds: 90  },
         ],
       },
       {
         dayNumber: 3, name: 'Day C',
         exercises: [
-          { groupId: gC1, isSuperset: false, exerciseId: squat._id, exerciseName: 'Squat', imageUrl: null, isBodyweight: false, sets: 3, repsMin: 10, repsMax: 15, restSeconds: 90 },
+          { groupId: gC1, isSuperset: false, exerciseId: squat._id, exerciseName: 'Squat', imageUrl: exImg('Barbell_Squat'), isBodyweight: false, sets: 3, repsMin: 10, repsMax: 15, restSeconds: 90 },
         ],
       },
     ],
@@ -405,30 +416,30 @@ async function seedDevData() {
       {
         dayNumber: 1, name: 'Upper A',
         exercises: [
-          { groupId: gU1, isSuperset: false, exerciseId: benchPress._id, exerciseName: 'Bench Press',   imageUrl: null, isBodyweight: false, sets: 4, repsMin: 5, repsMax: 8,  restSeconds: 150 },
-          { groupId: gU2, isSuperset: false, exerciseId: ohp._id,        exerciseName: 'Overhead Press', imageUrl: null, isBodyweight: false, sets: 3, repsMin: 6, repsMax: 10, restSeconds: 120 },
-          { groupId: gU3, isSuperset: false, exerciseId: pullUp._id,     exerciseName: 'Pull-Up',        imageUrl: null, isBodyweight: true,  sets: 3, repsMin: 6, repsMax: 10, restSeconds: 90  },
+          { groupId: gU1, isSuperset: false, exerciseId: benchPress._id, exerciseName: 'Bench Press',   imageUrl: exImg('Barbell_Bench_Press_-_Medium_Grip'), isBodyweight: false, sets: 4, repsMin: 5, repsMax: 8,  restSeconds: 150 },
+          { groupId: gU2, isSuperset: false, exerciseId: ohp._id,        exerciseName: 'Overhead Press', imageUrl: exImg('Barbell_Shoulder_Press'),            isBodyweight: false, sets: 3, repsMin: 6, repsMax: 10, restSeconds: 120 },
+          { groupId: gU3, isSuperset: false, exerciseId: pullUp._id,     exerciseName: 'Pull-Up',        imageUrl: exImg('Weighted_Pull_Ups'),                 isBodyweight: true,  sets: 3, repsMin: 6, repsMax: 10, restSeconds: 90  },
         ],
       },
       {
         dayNumber: 2, name: 'Lower A',
         exercises: [
-          { groupId: gL1, isSuperset: false, exerciseId: squat._id,     exerciseName: 'Squat',     imageUrl: null, isBodyweight: false, sets: 4, repsMin: 5, repsMax: 8,  restSeconds: 180 },
-          { groupId: gL2, isSuperset: false, exerciseId: hipThrust._id, exerciseName: 'Hip Thrust', imageUrl: null, isBodyweight: false, sets: 3, repsMin: 8, repsMax: 12, restSeconds: 90  },
+          { groupId: gL1, isSuperset: false, exerciseId: squat._id,     exerciseName: 'Squat',      imageUrl: exImg('Barbell_Squat'),      isBodyweight: false, sets: 4, repsMin: 5, repsMax: 8,  restSeconds: 180 },
+          { groupId: gL2, isSuperset: false, exerciseId: hipThrust._id, exerciseName: 'Hip Thrust', imageUrl: exImg('Barbell_Hip_Thrust'), isBodyweight: false, sets: 3, repsMin: 8, repsMax: 12, restSeconds: 90  },
         ],
       },
       {
         dayNumber: 3, name: 'Upper B',
         exercises: [
-          { groupId: gU4, isSuperset: false, exerciseId: latPulldown._id, exerciseName: 'Lat Pulldown', imageUrl: null, isBodyweight: false, sets: 4, repsMin: 8, repsMax: 12, restSeconds: 90  },
-          { groupId: gU5, isSuperset: false, exerciseId: facePull._id,    exerciseName: 'Face Pull',    imageUrl: null, isBodyweight: false, sets: 3, repsMin: 12, repsMax: 20, restSeconds: 60 },
+          { groupId: gU4, isSuperset: false, exerciseId: latPulldown._id, exerciseName: 'Lat Pulldown', imageUrl: exImg('Wide-Grip_Lat_Pulldown'), isBodyweight: false, sets: 4, repsMin: 8, repsMax: 12, restSeconds: 90  },
+          { groupId: gU5, isSuperset: false, exerciseId: facePull._id,    exerciseName: 'Face Pull',    imageUrl: exImg('Face_Pull'),              isBodyweight: false, sets: 3, repsMin: 12, repsMax: 20, restSeconds: 60 },
         ],
       },
       {
         dayNumber: 4, name: 'Lower B',
         exercises: [
-          { groupId: gL3, isSuperset: false, exerciseId: deadlift._id,  exerciseName: 'Deadlift',  imageUrl: null, isBodyweight: false, sets: 3, repsMin: 5, repsMax: 8,  restSeconds: 180 },
-          { groupId: gL4, isSuperset: false, exerciseId: hipThrust._id, exerciseName: 'Hip Thrust', imageUrl: null, isBodyweight: false, sets: 3, repsMin: 10, repsMax: 15, restSeconds: 90 },
+          { groupId: gL3, isSuperset: false, exerciseId: deadlift._id,  exerciseName: 'Deadlift',   imageUrl: exImg('Barbell_Deadlift'),   isBodyweight: false, sets: 3, repsMin: 5, repsMax: 8,  restSeconds: 180 },
+          { groupId: gL4, isSuperset: false, exerciseId: hipThrust._id, exerciseName: 'Hip Thrust', imageUrl: exImg('Barbell_Hip_Thrust'), isBodyweight: false, sets: 3, repsMin: 10, repsMax: 15, restSeconds: 90 },
         ],
       },
     ],
@@ -1264,6 +1275,31 @@ async function seedDevData() {
   ]);
   console.log('  ✓ Member2 body tests: 3 created (3site female)');
 
+  // ── Body Tests for owner (3 data points, 7site male) ──────────────────────
+  // Owner: male, born 1980-03-12 → age 46. ~85 kg, targeting 80 kg / 13% BF.
+  // JP 7-site male: density = 1.112 - 0.00043499×sum + 0.00000055×sum² - 0.00028826×age
+  const ownerBodyTests = [
+    { ago: 84, weight: 85.0, chest: 17, abdominal: 25, thigh: 18, tricep: 15, subscapular: 19, suprailiac: 18, midaxillary: 8 },  // sum=120, ~19.5% BF
+    { ago: 42, weight: 84.0, chest: 15, abdominal: 23, thigh: 17, tricep: 14, subscapular: 18, suprailiac: 17, midaxillary: 8 },  // sum=112, ~18.4% BF
+    { ago:  0, weight: 83.0, chest: 14, abdominal: 21, thigh: 16, tricep: 13, subscapular: 17, suprailiac: 16, midaxillary: 8 },  // sum=105, ~17.4% BF
+  ];
+  for (const t of ownerBodyTests) {
+    const sum = t.chest + t.abdominal + t.thigh + t.tricep + t.subscapular + t.suprailiac + t.midaxillary;
+    const age = 46;
+    const density = 1.112 - 0.00043499 * sum + 0.00000055 * sum * sum - 0.00028826 * age;
+    const bfPct  = Math.round(((4.95 / density) - 4.50) * 1000) / 10;
+    const fatMass = Math.round(t.weight * bfPct / 100 * 10) / 10;
+    await BodyTestModel.create({
+      memberId: owner._id, trainerId: owner._id, date: daysAgo(t.ago),
+      age, sex: 'male', weight: t.weight, protocol: '7site',
+      chest: t.chest, abdominal: t.abdominal, thigh: t.thigh,
+      tricep: t.tricep, subscapular: t.subscapular, suprailiac: t.suprailiac, midaxillary: t.midaxillary,
+      bodyFatPct: bfPct, leanMassKg: Math.round((t.weight - fatMass) * 10) / 10, fatMassKg: fatMass,
+      targetWeight: 80, targetBodyFatPct: 13,
+    });
+  }
+  console.log('  ✓ Owner body tests: 3 created (7site male, 84-day history, ~19.5% → 17.4% BF)');
+
   // ── Scheduled Sessions ─────────────────────────────────────────────────────
   // Recurring Monday series: trainer + member
   const seriesId = new mongoose.Types.ObjectId();
@@ -1451,7 +1487,7 @@ async function main() {
     console.log('  • 4 PBs: Bench 72.5 kg | Deadlift 105 kg | Squat 92.5 kg | Pull-Up 10 reps');
     console.log('  • Exercise notes: Bench Press, Deadlift, Squat (3 entries each)');
     console.log('  • Lean Bulk 2800 kcal plan + 14 days nutrition logs');
-    console.log('  • 5 body tests (56-day history)');
+    console.log('  • 5 body tests (56-day history, 3site male)');
     console.log('  • 7 scheduled sessions (4-session Monday series included)');
     console.log('  • 3 injuries: right shoulder (active), lower back + ankle (resolved)');
     console.log('  • 6 check-ins with waist + step count data');
@@ -1460,16 +1496,17 @@ async function main() {
     console.log('  • 3 PBs: Squat 50 kg | Bench 37.5 kg | Deadlift 55 kg');
     console.log('  • Exercise notes: Squat (2 entries)');
     console.log('  • Cutting Plan 1800 kcal + 7 days nutrition logs');
-    console.log('  • 3 body tests (45-day history)');
+    console.log('  • 3 body tests (45-day history, 3site female)');
     console.log('  • 2 injuries: left knee (active), right wrist (resolved)');
     console.log('  • 4 check-ins (via owner)');
+    console.log('\nowner@dev.com:');
+    console.log('  • 3 freestyle sessions: Upper/Lower, 19-day history');
+    console.log('  • 3 body tests (7site male, 84-day history, ~19.5% → 17.4% BF)');
     console.log('\ntrainer@dev.com self-tracking:');
     console.log('  • 8 freestyle sessions: Push/Pull/Legs rotation, 28-day history');
-    console.log('\nowner@dev.com self-tracking:');
-    console.log('  • 3 freestyle sessions: Upper/Lower, 19-day history');
     console.log('\nPlan templates: PPL | Full Body 3-Day | Upper/Lower 4-Day');
-    console.log('Exercises: 7 global + 2 trainer-custom + 1 owner-custom');
-    console.log('Equipment: 7 active/maintenance + 1 retired | 9 condition reports');
+    console.log('Exercises: 7 global + 2 trainer-custom + 1 owner-custom (all with catalog image URLs)');
+    console.log('Equipment: 11 active/maintenance + 1 retired | 11 condition reports (catalog names)');
     console.log('Invite tokens: 1 used + 2 active pending + 1 expired');
   }
 

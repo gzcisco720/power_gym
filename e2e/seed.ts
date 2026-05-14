@@ -619,6 +619,17 @@ export async function seed(): Promise<void> {
     trackCondition: true,
   });
 
+  // dedicated to edit-details test
+  await EquipmentModel.create({
+    name: 'E2E Edit Equipment',
+    status: 'active',
+    brand: 'E2E Brand',
+    quantity: 2,
+    images: [],
+    note: 'E2E original note',
+    trackCondition: false,
+  });
+
   // ── Check-In Config ───────────────────────────────────────────────────────
   // Thursday 7am — used by trainer check-in schedule tests
   await CheckInConfigModel.create({
