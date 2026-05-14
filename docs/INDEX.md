@@ -8,7 +8,8 @@ Central registry of all generated documents. Update this file whenever a new doc
 
 | Topic | File | Status |
 | ----- | ---- | ------ |
-| Phase 1 — Full Feature Summary | [phase-one-summary.md](2026-04-23/phase-one-summary.md) | Complete |
+| Phase 1 — Core Feature Summary | [phase-one-summary.md](2026-04-23/phase-one-summary.md) | Complete |
+| **基础功能里程碑总结（全部 12 域）** | [milestone-summary.md](2026-05-14/milestone-summary.md) | **Complete** |
 | Roadmap & Backlog | [roadmap.md](roadmap.md) | Living |
 | Superseded Doc Archive | [superseded.md](superseded.md) | Permanent |
 
@@ -28,21 +29,15 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Member Hub (Tab 导航) | [member-hub-design.md](2026-04-28/plans/member-hub-design.md) | Approved |
 | Per-Trainer Hub (Owner 视角) | [per-trainer-hub-design.md](2026-04-28/plans/per-trainer-hub-design.md) | Approved |
 | Progress Charts & Analytics | [progress-design.md](2026-04-28/plans/progress-design.md) | Approved |
-| Exercise Thumbnail Hover Preview | [exercise-thumbnail-hover-design.md](2026-05-07/plans/exercise-thumbnail-hover-design.md) | Complete |
 | Owner/Trainer Self-Tracking | [self-tracking-design.md](2026-05-08/plans/self-tracking-design.md) | Approved |
-| Self-Tracking Calendar Popover Refactor | [my-nutrition-refactor-design.md](2026-05-08/plans/my-nutrition-refactor-design.md) | Approved |
+| My Nutrition Calendar Popover Refactor | [my-nutrition-refactor-design.md](2026-05-08/plans/my-nutrition-refactor-design.md) | Approved |
 | Day Complete Confirm + Future Date Lockdown | [day-complete-confirm-design.md](2026-05-08/plans/day-complete-confirm-design.md) | Approved |
 | My Training Cockpit Landing | [my-training-cockpit-design.md](2026-05-08/plans/my-training-cockpit-design.md) | Approved |
 | Training Template Redesign | [training-template-redesign-design.md](2026-05-09/plans/training-template-redesign-design.md) | Approved |
 | Free Day Logging | [free-day-logging-design.md](2026-05-11/plans/free-day-logging-design.md) | Approved |
-| Free Day Logging (Plan) | [free-day-logging-plan.md](2026-05-11/plans/free-day-logging-plan.md) | Complete |
 | My Training Bug Fixes + Calendar | [my-training-fixes-and-calendar.md](2026-05-11/plans/my-training-fixes-and-calendar.md) | Approved |
-| My Training Fixes + Calendar (Plan) | [my-training-fixes-calendar-plan.md](2026-05-11/plans/my-training-fixes-calendar-plan.md) | Complete |
 | Profile & Account Redesign | [profile-account-redesign.md](2026-05-13/plans/profile-account-redesign.md) | Approved |
-| Profile & Account Redesign (Plan) | [profile-account-redesign-plan.md](2026-05-13/plans/profile-account-redesign-plan.md) | In Progress |
-| E2E Email Testing (Plan) | [e2e-email-testing-plan.md](2026-05-14/plans/e2e-email-testing-plan.md) | In Progress |
 | Edit Equipment Dialog | [edit-equipment-design.md](2025-05-14/plans/edit-equipment-design.md) | Approved |
-| Edit Equipment Dialog (Plan) | [edit-equipment-plan.md](2025-05-14/plans/edit-equipment-plan.md) | In Progress |
 
 ---
 
