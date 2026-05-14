@@ -16,7 +16,7 @@ export function MemberGrowthChartClient({ data }: Props) {
   }
 
   return (
-    <ResponsiveContainer width="100%" height={80}>
+    <ResponsiveContainer width="100%" height={140}>
       <BarChart data={data} barSize={20}>
         <XAxis
           dataKey="label"
