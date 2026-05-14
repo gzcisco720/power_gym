@@ -14,12 +14,22 @@ export interface UpsertPBData {
 
 export interface IPersonalBestRepository {
   findByMember(memberId: string): Promise<IPersonalBest[]>;
+  findByMemberIdsSince(memberIds: string[], since: Date): Promise<IPersonalBest[]>;
   upsertIfBetter(data: UpsertPBData): Promise<void>;
 }
 
 export class MongoPersonalBestRepository implements IPersonalBestRepository {
   async findByMember(memberId: string): Promise<IPersonalBest[]> {
     return PersonalBestModel.find({ memberId: new mongoose.Types.ObjectId(memberId) });
+  }
+
+  async findByMemberIdsSince(memberIds: string[], since: Date): Promise<IPersonalBest[]> {
+    return PersonalBestModel.find({
+      memberId: { $in: memberIds.map((id) => new mongoose.Types.ObjectId(id)) },
+      achievedAt: { $gte: since },
+    })
+      .sort({ achievedAt: -1 })
+      .lean();
   }
 
   async upsertIfBetter(data: UpsertPBData): Promise<void> {

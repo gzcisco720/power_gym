@@ -40,6 +40,7 @@ export interface IScheduledSessionRepository {
   findActiveSeriesIds(): Promise<string[]>;
   findLatestInSeries(seriesId: string): Promise<IScheduledSession | null>;
   removeMemberFromFutureSessions(memberId: string): Promise<void>;
+  findUpcomingByMember(memberId: string, limit: number): Promise<IScheduledSession[]>;
 }
 
 function toOid(id: string) {
@@ -176,5 +177,17 @@ export class MongoScheduledSessionRepository implements IScheduledSessionReposit
       { memberIds: { $size: 0 }, date: { $gte: now }, status: 'scheduled' },
       { $set: { status: 'cancelled' } },
     );
+  }
+
+  async findUpcomingByMember(memberId: string, limit: number): Promise<IScheduledSession[]> {
+    const now = new Date();
+    return ScheduledSessionModel.find({
+      memberIds: toOid(memberId),
+      date: { $gte: now },
+      status: 'scheduled',
+    })
+      .sort({ date: 1, startTime: 1 })
+      .limit(limit)
+      .lean();
   }
 }
