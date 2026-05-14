@@ -35,7 +35,7 @@ export function MemberGrowthChartClient({ data }: Props) {
           itemStyle={{ color: '#a5b4fc' }}
           formatter={(v) => [`${v} new`, 'Members']}
         />
-        <Bar dataKey="newCount" radius={[4, 4, 0, 0]}>
+        <Bar dataKey="newCount" radius={[4, 4, 0, 0]} cursor={{ fill: 'rgba(255,255,255,0.04)' }}>
           {data.map((_, i) => (
             <Cell
               key={i}
