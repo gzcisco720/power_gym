@@ -4,6 +4,7 @@ import { MongoUserProfileRepository } from '@/lib/repositories/user-profile.repo
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { PageHeader } from '@/components/shared/page-header';
 import { SettingsTabs } from '@/components/shared/settings-tabs';
+import { SettingsTabPanel } from '@/components/shared/settings-tab-panel';
 import { SecurityTab } from '@/components/settings/security-tab';
 import { OwnerProfileTab } from './_components/profile-tab';
 import { GymInfoTab } from './_components/gym-info-tab';
@@ -34,36 +35,38 @@ export default async function OwnerSettingsPage({
       <PageHeader title="Settings" />
       <SettingsTabs tabs={TABS} basePath="/owner/settings" activeTab={tab} />
       <div className="px-4 sm:px-8 py-7 max-w-lg">
-        {tab === 'profile' && (
-          <OwnerProfileTab
-            firstName={user?.firstName ?? ''}
-            lastName={user?.lastName ?? ''}
-            currentEmail={user?.email ?? ''}
-            mobile={raw?.mobile ?? null}
-            address={raw?.address ?? null}
-            dateOfBirth={raw?.dateOfBirth ? raw.dateOfBirth.toISOString() : null}
-            avatarUrl={raw?.avatarUrl ?? null}
-            certifications={raw?.certifications ?? []}
-          />
-        )}
-        {tab === 'security' && <SecurityTab />}
-        {tab === 'gym-info' && (
-          <GymInfoTab
-            gymInfo={
-              raw?.gymInfo
-                ? {
-                    name: raw.gymInfo.name ?? null,
-                    address: raw.gymInfo.address ?? null,
-                    phone: raw.gymInfo.phone ?? null,
-                    email: raw.gymInfo.email ?? null,
-                    website: raw.gymInfo.website ?? null,
-                    hours: raw.gymInfo.hours ?? null,
-                    description: raw.gymInfo.description ?? null,
-                  }
-                : null
-            }
-          />
-        )}
+        <SettingsTabPanel activeTab={tab}>
+          {tab === 'profile' && (
+            <OwnerProfileTab
+              firstName={user?.firstName ?? ''}
+              lastName={user?.lastName ?? ''}
+              currentEmail={user?.email ?? ''}
+              mobile={raw?.mobile ?? null}
+              address={raw?.address ?? null}
+              dateOfBirth={raw?.dateOfBirth ? raw.dateOfBirth.toISOString() : null}
+              avatarUrl={raw?.avatarUrl ?? null}
+              certifications={raw?.certifications ?? []}
+            />
+          )}
+          {tab === 'security' && <SecurityTab />}
+          {tab === 'gym-info' && (
+            <GymInfoTab
+              gymInfo={
+                raw?.gymInfo
+                  ? {
+                      name: raw.gymInfo.name ?? null,
+                      address: raw.gymInfo.address ?? null,
+                      phone: raw.gymInfo.phone ?? null,
+                      email: raw.gymInfo.email ?? null,
+                      website: raw.gymInfo.website ?? null,
+                      hours: raw.gymInfo.hours ?? null,
+                      description: raw.gymInfo.description ?? null,
+                    }
+                  : null
+              }
+            />
+          )}
+        </SettingsTabPanel>
       </div>
     </div>
   );

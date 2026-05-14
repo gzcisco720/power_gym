@@ -1,7 +1,9 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { SessionEventCard } from './session-event-card';
 import { timeToMinutes } from '@/lib/time';
+import { variants } from '@/lib/animations/variants';
 
 const HOUR_START = 6;
 const HOUR_END = 22;
@@ -119,25 +121,32 @@ export function WeekCalendarGrid({
               );
             })}
 
-            {sessionsByDay[di].map((s) => (
-              <div
-                key={s._id}
-                className="absolute inset-x-0"
-                style={{
-                  top: getTopPx(s.startTime),
-                  height: Math.max(getHeightPx(s.startTime, s.endTime), SLOT_HEIGHT),
-                }}
-              >
-                <SessionEventCard
-                  memberNames={s.memberIds.map((id) => memberMap[id] ?? id)}
-                  startTime={s.startTime}
-                  endTime={s.endTime}
-                  isRecurring={s.seriesId !== null}
-                  trainerColor={trainerColorFallback(s.trainerId, trainerColorMap)}
-                  onClick={() => onSessionClick(s)}
-                />
-              </div>
-            ))}
+            <motion.div
+              variants={variants.staggerContainer}
+              initial="hidden"
+              animate="visible"
+            >
+              {sessionsByDay[di].map((s) => (
+                <motion.div
+                  key={s._id}
+                  variants={variants.staggerItem}
+                  className="absolute inset-x-0"
+                  style={{
+                    top: getTopPx(s.startTime),
+                    height: Math.max(getHeightPx(s.startTime, s.endTime), SLOT_HEIGHT),
+                  }}
+                >
+                  <SessionEventCard
+                    memberNames={s.memberIds.map((id) => memberMap[id] ?? id)}
+                    startTime={s.startTime}
+                    endTime={s.endTime}
+                    isRecurring={s.seriesId !== null}
+                    trainerColor={trainerColorFallback(s.trainerId, trainerColorMap)}
+                    onClick={() => onSessionClick(s)}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
         ))}
       </div>

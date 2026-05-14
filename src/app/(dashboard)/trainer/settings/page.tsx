@@ -4,6 +4,7 @@ import { MongoUserProfileRepository } from '@/lib/repositories/user-profile.repo
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { PageHeader } from '@/components/shared/page-header';
 import { SettingsTabs } from '@/components/shared/settings-tabs';
+import { SettingsTabPanel } from '@/components/shared/settings-tab-panel';
 import { SecurityTab } from '@/components/settings/security-tab';
 import { TrainerProfileTab } from './_components/profile-tab';
 
@@ -32,21 +33,23 @@ export default async function TrainerSettingsPage({
       <PageHeader title="Settings" />
       <SettingsTabs tabs={TABS} basePath="/trainer/settings" activeTab={tab} />
       <div className="px-4 sm:px-8 py-7 max-w-lg">
-        {tab === 'profile' && (
-          <TrainerProfileTab
-            firstName={user?.firstName ?? ''}
-            lastName={user?.lastName ?? ''}
-            mobile={raw?.mobile ?? null}
-            address={raw?.address ?? null}
-            dateOfBirth={raw?.dateOfBirth ? raw.dateOfBirth.toISOString() : null}
-            avatarUrl={raw?.avatarUrl ?? null}
-            bio={raw?.bio ?? null}
-            specializations={raw?.specializations ?? []}
-            certifications={raw?.certifications ?? []}
-            currentEmail={user?.email ?? ''}
-          />
-        )}
-        {tab === 'security' && <SecurityTab />}
+        <SettingsTabPanel activeTab={tab}>
+          {tab === 'profile' && (
+            <TrainerProfileTab
+              firstName={user?.firstName ?? ''}
+              lastName={user?.lastName ?? ''}
+              mobile={raw?.mobile ?? null}
+              address={raw?.address ?? null}
+              dateOfBirth={raw?.dateOfBirth ? raw.dateOfBirth.toISOString() : null}
+              avatarUrl={raw?.avatarUrl ?? null}
+              bio={raw?.bio ?? null}
+              specializations={raw?.specializations ?? []}
+              certifications={raw?.certifications ?? []}
+              currentEmail={user?.email ?? ''}
+            />
+          )}
+          {tab === 'security' && <SecurityTab />}
+        </SettingsTabPanel>
       </div>
     </div>
   );

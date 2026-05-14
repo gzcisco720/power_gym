@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/shared/page-header';
 import { SectionHeader } from '@/components/shared/section-header';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
+import { variants } from '@/lib/animations/variants';
 
 interface ProgressClientProps {
   heatmapData: { date: string }[];
@@ -130,8 +132,14 @@ export function ProgressClient({
                   </div>
                 ))}
               </div>
+              <motion.div
+                className="contents"
+                variants={variants.staggerContainer}
+                initial="hidden"
+                animate="visible"
+              >
               {weeks.map((week) => (
-                <div key={week.weekKey} className="flex flex-col gap-1">
+                <motion.div key={week.weekKey} variants={variants.staggerItem} className="flex flex-col gap-1">
                   <div className="h-3 text-[9px] text-foreground/65 whitespace-nowrap">
                     {week.monthLabel ?? ''}
                   </div>
@@ -147,8 +155,9 @@ export function ProgressClient({
                       }`}
                     />
                   ))}
-                </div>
+                </motion.div>
               ))}
+              </motion.div>
             </div>
           </div>
         </section>
@@ -160,7 +169,12 @@ export function ProgressClient({
               <p className="text-sm text-foreground/65">No exercise history yet.</p>
             </div>
           ) : (
-            <div className="mt-3 rounded-xl bg-card ring-1 ring-foreground/10 p-4 space-y-3">
+            <motion.div
+              className="mt-3 rounded-xl bg-card ring-1 ring-foreground/10 p-4 space-y-3"
+              variants={variants.fadeSlideUp}
+              initial="hidden"
+              animate="visible"
+            >
               <select
                 value={selectedExerciseId}
                 onChange={(e) => setSelectedExerciseId(e.target.value)}
@@ -218,7 +232,7 @@ export function ProgressClient({
                   </div>
                 )}
               </div>
-            </div>
+            </motion.div>
           )}
         </section>
       </div>
