@@ -41,7 +41,7 @@ export default async function TrainerHubLayout({ children, params }: TrainerHubL
             </div>
             <div>
               <div className="text-[16px] font-bold text-foreground leading-tight">{trainer.name}</div>
-              <div className="text-[11px] text-foreground/35 mt-0.5">
+              <div className="text-[11px] text-foreground/65 mt-0.5">
                 {trainer.email}
                 <span className="mx-1.5 text-foreground/20">·</span>
                 Joined {daysSinceJoined} days ago

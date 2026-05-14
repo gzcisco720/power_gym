@@ -61,7 +61,7 @@ export function TrainerHubMembersClient({ members, trainers, currentTrainerId }:
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold text-foreground/85">{member.name}</div>
-                <div className="text-[11px] text-foreground/35 mt-0.5">
+                <div className="text-[11px] text-foreground/65 mt-0.5">
                   {member.streak}d streak · {member.sessionsThisMonth} sessions this month
                 </div>
               </div>

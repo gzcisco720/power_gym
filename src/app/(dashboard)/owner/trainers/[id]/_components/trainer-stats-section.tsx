@@ -64,7 +64,7 @@ export async function TrainerStatsSection({ trainerId }: { trainerId: string }) 
       </div>
       {chartData.length > 0 && (
         <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4">
-          <div className="text-[9px] uppercase tracking-[2px] text-foreground/30 font-semibold mb-3">
+          <div className="text-[9px] uppercase tracking-[2px] text-foreground/65 font-semibold mb-3">
             Sessions — Last 6 Months
           </div>
           <TrainerSessionsChartClient data={chartData} />

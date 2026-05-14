@@ -24,7 +24,8 @@ export default async function TrainerHubMembersPage({
 
   const { id: trainerId } = await params;
   const { page: pageParam } = await searchParams;
-  const page = Math.max(1, parseInt(pageParam ?? '1', 10));
+  const parsed = parseInt(pageParam ?? '1', 10);
+  const page = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 
   await connectDB();
   const userRepo = new MongoUserRepository();
@@ -80,7 +81,7 @@ export default async function TrainerHubMembersPage({
         <TrainerHubMembersTopPanels trainerId={trainerId} />
       </Suspense>
 
-      <div className="text-[9px] uppercase tracking-[2px] text-foreground/30 font-semibold mb-3">
+      <div className="text-[9px] uppercase tracking-[2px] text-foreground/65 font-semibold mb-3">
         All Members ({total})
       </div>
       <TrainerHubMembersClient

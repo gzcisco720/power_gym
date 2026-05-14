@@ -23,7 +23,8 @@ export default async function TrainerHubTrainingPlansPage({
 
   const { id: trainerId } = await params;
   const { page: pageParam } = await searchParams;
-  const page = Math.max(1, parseInt(pageParam ?? '1', 10));
+  const parsed = parseInt(pageParam ?? '1', 10);
+  const page = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 
   await connectDB();
   const repo = new MongoPlanTemplateRepository();
@@ -33,7 +34,7 @@ export default async function TrainerHubTrainingPlansPage({
 
   return (
     <div className="px-4 sm:px-8 py-7">
-      <div className="text-[9px] uppercase tracking-[2px] text-foreground/30 font-semibold mb-3">
+      <div className="text-[9px] uppercase tracking-[2px] text-foreground/65 font-semibold mb-3">
         {total} Training Template{total !== 1 ? 's' : ''}
       </div>
 
