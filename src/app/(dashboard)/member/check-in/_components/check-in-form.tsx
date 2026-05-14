@@ -7,6 +7,10 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { createCheckInAction, getCheckInSignatureAction } from '../actions';
 import { uploadFile } from '@/lib/storage/upload-file';
+import { CheckInAnimation } from '@/components/animations/check-in';
+import { StreakMilestoneAnimation } from '@/components/animations/streak-milestone';
+
+const MILESTONES = [7, 14, 30, 60, 100];
 
 interface Props {
   alreadySubmitted: boolean;
@@ -54,6 +58,11 @@ export function CheckInForm({ alreadySubmitted }: Props) {
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [celebration, setCelebration] = useState<'check-in' | 'milestone' | null>(null);
+  const [celebrationData, setCelebrationData] = useState<{
+    streakDays: number;
+    weekDots: boolean[];
+  } | null>(null);
 
   if (alreadySubmitted || submitted) {
     return (
@@ -110,6 +119,15 @@ export function CheckInForm({ alreadySubmitted }: Props) {
       if (result.error) {
         setError(result.error);
       } else {
+        const streakDays = 0;
+        const todayDow = new Date().getDay();
+        const weekDots = Array.from({ length: 7 }, (_, i) => i === todayDow);
+        if (MILESTONES.includes(streakDays)) {
+          setCelebration('milestone');
+        } else {
+          setCelebration('check-in');
+        }
+        setCelebrationData({ streakDays, weekDots });
         setSubmitted(true);
       }
     });
@@ -254,6 +272,28 @@ export function CheckInForm({ alreadySubmitted }: Props) {
       >
         {isPending ? 'Submitting...' : 'Submit Check-In'}
       </Button>
+
+      {celebration === 'milestone' && celebrationData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="bg-white/[.04] ring-1 ring-white/10 backdrop-blur-md rounded-2xl p-6 w-full max-w-xs mx-4">
+            <StreakMilestoneAnimation
+              days={celebrationData.streakDays}
+              onComplete={() => setCelebration(null)}
+            />
+          </div>
+        </div>
+      )}
+      {celebration === 'check-in' && celebrationData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="bg-white/[.04] ring-1 ring-white/10 backdrop-blur-md rounded-2xl p-6 w-full max-w-xs mx-4">
+            <CheckInAnimation
+              streakDays={celebrationData.streakDays}
+              weekDots={celebrationData.weekDots}
+              onComplete={() => setCelebration(null)}
+            />
+          </div>
+        </div>
+      )}
     </form>
   );
 }
