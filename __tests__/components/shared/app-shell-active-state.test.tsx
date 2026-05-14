@@ -17,7 +17,7 @@ describe('AppShell active state — owner Dashboard exact match', () => {
     );
     const dashboardLinks = screen.getAllByRole('link', { name: 'Dashboard' });
     dashboardLinks.forEach((link) => {
-      expect(link).toHaveClass('bg-white');
+      expect(link).toHaveClass('text-primary-light');
     });
   });
 
@@ -30,11 +30,11 @@ describe('AppShell active state — owner Dashboard exact match', () => {
     );
     const dashboardLinks = screen.getAllByRole('link', { name: 'Dashboard' });
     dashboardLinks.forEach((link) => {
-      expect(link).not.toHaveClass('bg-white');
+      expect(link).not.toHaveClass('text-primary-light');
     });
     const membersLinks = screen.getAllByRole('link', { name: 'Members' });
     membersLinks.forEach((link) => {
-      expect(link).toHaveClass('bg-white');
+      expect(link).toHaveClass('text-primary-light');
     });
   });
 
@@ -47,7 +47,7 @@ describe('AppShell active state — owner Dashboard exact match', () => {
     );
     const dashboardLinks = screen.getAllByRole('link', { name: 'Dashboard' });
     dashboardLinks.forEach((link) => {
-      expect(link).not.toHaveClass('bg-white');
+      expect(link).not.toHaveClass('text-primary-light');
     });
   });
 });

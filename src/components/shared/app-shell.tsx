@@ -122,13 +122,13 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, lo
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-[#161616] px-5 pb-6 pt-6">
+      <div className="border-b border-foreground/[.06] px-5 pb-6 pt-6">
         <div className="text-[11px] font-bold leading-tight tracking-[3px] text-white">
           POWER
           <br />
           GYM
         </div>
-        <div className="mt-1 text-[9px] uppercase tracking-[1px] text-[#777]">
+        <div className="mt-1 text-[9px] uppercase tracking-[1px] text-foreground/40">
           {role} portal
         </div>
       </div>
@@ -136,7 +136,7 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, lo
       <nav className="flex-1 space-y-1 px-2 py-4">
         {groups.map((group) => (
           <div key={group.group} className="mb-2">
-            <div className="px-3 pb-1 pt-2 text-[8px] font-semibold uppercase tracking-[2px] text-[#555]">
+            <div className="px-3 pb-1 pt-2 text-[8px] font-semibold uppercase tracking-[2px] text-foreground/25">
               {group.group}
             </div>
             {group.items.map((item) => (
@@ -147,8 +147,8 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, lo
                 className={cn(
                   'flex items-center rounded-md px-3 py-2 text-[13px] font-medium transition-colors duration-150',
                   isActive(item)
-                    ? 'bg-white text-black'
-                    : 'text-[#666] hover:bg-[#141414] hover:text-[#aaa]'
+                    ? 'bg-primary/15 text-primary-light ring-1 ring-primary/25'
+                    : 'text-foreground/40 hover:bg-white/[.04] hover:text-foreground/70'
                 )}
               >
                 {item.label}
@@ -158,10 +158,10 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, lo
         ))}
       </nav>
 
-      <div className="border-t border-[#161616] px-3 py-3">
+      <div className="border-t border-foreground/[.06] px-3 py-3">
         <Popover>
           <PopoverTrigger
-            className="flex w-full items-center gap-3 rounded-md px-2 py-2 cursor-pointer hover:bg-[#141414] transition-colors"
+            className="flex w-full items-center gap-3 rounded-md px-2 py-2 cursor-pointer hover:bg-white/[.04] transition-colors"
             aria-label="User menu"
           >
             {avatarUrl ? (
@@ -239,14 +239,14 @@ export function AppShell({ role, userName, userEmail = '', avatarUrl = null, chi
 
   return (
     <div className="flex h-screen bg-[#030303]">
-      <aside className="hidden w-[220px] shrink-0 flex-col border-r border-[#161616] bg-[#0a0a0a] lg:flex">
+      <aside className="hidden w-[220px] shrink-0 flex-col border-r border-foreground/[.06] bg-[#0a0a0a] lg:flex">
         <SidebarContent role={role} userName={userName} userInitials={userInitials} userEmail={userEmail} avatarUrl={avatarUrl} logoutSlot={logoutSlot} />
       </aside>
 
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
         <SheetContent
           side="left"
-          className="w-[220px] border-r border-[#161616] bg-[#0a0a0a] p-0"
+          className="w-[220px] border-r border-foreground/[.06] bg-[#0a0a0a] p-0"
         >
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <SidebarContent role={role} userName={userName} userInitials={userInitials} userEmail={userEmail} avatarUrl={avatarUrl} logoutSlot={logoutSlot} />
@@ -254,7 +254,7 @@ export function AppShell({ role, userName, userEmail = '', avatarUrl = null, chi
       </Sheet>
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="flex items-center gap-3 border-b border-[#0f0f0f] px-4 py-3 lg:hidden">
+        <div className="flex items-center gap-3 border-b border-foreground/[.04] px-4 py-3 lg:hidden">
           <button
             onClick={() => setDrawerOpen(true)}
             className="cursor-pointer text-[#888] hover:text-[#aaa] transition-colors"
