@@ -38,6 +38,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | My Training Bug Fixes + Calendar | [my-training-fixes-and-calendar.md](2026-05-11/plans/my-training-fixes-and-calendar.md) | Approved |
 | Profile & Account Redesign | [profile-account-redesign.md](2026-05-13/plans/profile-account-redesign.md) | Approved |
 | Edit Equipment Dialog | [edit-equipment-design.md](2025-05-14/plans/edit-equipment-design.md) | Approved |
+| UI/UX Comprehensive Upgrade | [ui-ux-upgrade-design.md](2026-05-14/plans/ui-ux-upgrade-design.md) | Approved |
 
 ---
 
