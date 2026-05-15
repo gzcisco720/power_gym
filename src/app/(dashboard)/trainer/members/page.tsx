@@ -56,7 +56,6 @@ export default async function TrainerMembersPage() {
       <div className="px-4 sm:px-8 py-7">
         <TrainerMembersClient
           members={memberRows}
-          totalCount={memberRows.length}
           sessionsThisMonth={sessionsThisMonth}
           newThisMonth={newThisMonth}
         />

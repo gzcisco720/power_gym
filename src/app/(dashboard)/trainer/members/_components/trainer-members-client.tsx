@@ -13,12 +13,11 @@ interface MemberRow {
 
 interface Props {
   members: MemberRow[];
-  totalCount: number;
   sessionsThisMonth: number;
   newThisMonth: number;
 }
 
-export function TrainerMembersClient({ members, totalCount, sessionsThisMonth, newThisMonth }: Props) {
+export function TrainerMembersClient({ members, sessionsThisMonth, newThisMonth }: Props) {
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
@@ -32,7 +31,7 @@ export function TrainerMembersClient({ members, totalCount, sessionsThisMonth, n
   return (
     <>
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <StatCard label="Total Members" value={String(totalCount)} accentColor="primary" />
+        <StatCard label="Total Members" value={String(members.length)} accentColor="primary" />
         <StatCard label="Sessions This Month" value={String(sessionsThisMonth)} />
         <StatCard label="New This Month" value={String(newThisMonth)} accentColor={newThisMonth > 0 ? 'success' : undefined} />
       </div>
@@ -53,6 +52,8 @@ export function TrainerMembersClient({ members, totalCount, sessionsThisMonth, n
         />
         {search && (
           <button
+            type="button"
+            aria-label="Clear search"
             onClick={() => setSearch('')}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/30 hover:text-foreground/60 transition-colors"
           >
@@ -62,8 +63,8 @@ export function TrainerMembersClient({ members, totalCount, sessionsThisMonth, n
       </div>
 
       <div className="text-[9px] uppercase tracking-[2px] text-foreground/35 font-semibold mb-3">
-        {filtered.length === totalCount
-          ? `All Members (${totalCount})`
+        {filtered.length === members.length
+          ? `All Members (${members.length})`
           : `${filtered.length} result${filtered.length !== 1 ? 's' : ''}`}
       </div>
 
