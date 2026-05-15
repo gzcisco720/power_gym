@@ -63,12 +63,7 @@ export async function TrainerMyTrainingCard() {
         <div className="text-[9px] uppercase tracking-[2px] text-foreground/30 font-semibold mb-3">My Training</div>
         <div className="flex items-baseline gap-2 mb-1">
           <span
-            className="text-4xl font-extrabold tracking-tighter"
-            style={{
-              background: 'linear-gradient(135deg,#f59e0b,#ef4444)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
+            className="text-4xl font-extrabold tracking-tighter bg-gradient-to-br from-amber-400 to-red-500 bg-clip-text text-transparent"
           >
             {streak}
           </span>
@@ -83,14 +78,13 @@ export async function TrainerMyTrainingCard() {
           {dots.map((dot, i) => (
             <div
               key={i}
-              className="w-[10px] h-[10px] rounded-[2px]"
-              style={{
-                background: dot.active
+              className={`w-[10px] h-[10px] rounded-[2px] ${
+                dot.active
                   ? dot.isToday
-                    ? '#6366f1'
-                    : 'rgba(99,102,241,0.55)'
-                  : 'rgba(255,255,255,0.05)',
-              }}
+                    ? 'bg-primary'
+                    : 'bg-primary/[.55]'
+                  : 'bg-white/[.04]'
+              }`}
             />
           ))}
         </div>

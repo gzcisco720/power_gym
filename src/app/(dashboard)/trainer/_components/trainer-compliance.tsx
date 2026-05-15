@@ -36,16 +36,17 @@ export async function TrainerCompliance() {
       <div className="text-[9px] uppercase tracking-[2px] text-foreground/30 font-semibold mb-3">Member Compliance — 30 days</div>
       <div className="space-y-3">
         {rows.map(({ name, pct }) => {
-          const color = pct >= 80 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#ef4444';
+          const barClass = pct >= 80 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-destructive';
+          const txtClass = pct >= 80 ? 'text-emerald-400' : pct >= 50 ? 'text-amber-400' : 'text-destructive';
           return (
             <div key={name} className="flex items-center gap-3">
               <div className="flex-1 min-w-0">
                 <div className="text-[11px] font-semibold text-foreground truncate">{name}</div>
                 <div className="mt-1 h-[3px] bg-white/[.06] rounded-full overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
+                  <div className={`h-full rounded-full ${barClass}`} style={{ width: `${pct}%` }} />
                 </div>
               </div>
-              <div className="text-[12px] font-bold flex-shrink-0" style={{ color }}>{pct}%</div>
+              <div className={`text-[12px] font-bold flex-shrink-0 ${txtClass}`}>{pct}%</div>
             </div>
           );
         })}
