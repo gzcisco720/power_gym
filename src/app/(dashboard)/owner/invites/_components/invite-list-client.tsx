@@ -48,14 +48,37 @@ function formatDate(isoDate: string): string {
   return new Date(isoDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+function RoleBadge({ role }: { role: 'trainer' | 'member' }) {
+  return (
+    <span className={`text-[9px] font-bold uppercase tracking-[1px] px-2 py-0.5 rounded flex-shrink-0 ${roleBadgeClass[role]}`}>
+      {role}
+    </span>
+  );
+}
+
+function MetaLine({
+  inv,
+  invitedByMap,
+}: {
+  inv: { role: 'trainer' | 'member'; invitedBy?: string };
+  invitedByMap?: Record<string, string>;
+}) {
+  const trainerName = inv.invitedBy && invitedByMap?.[inv.invitedBy];
+  if (inv.role === 'member' && trainerName) {
+    return <div className="text-[10px] text-foreground/65 mt-0.5">Assigned to {trainerName}</div>;
+  }
+  if (trainerName) {
+    return <div className="text-[10px] text-foreground/65 mt-0.5">via {trainerName}</div>;
+  }
+  return null;
+}
+
 export function InviteListClient({ invites, invitedByMap }: Props) {
   const router = useRouter();
   const [revoking, setRevoking] = useState<InviteRow | null>(null);
-  const now = useMemo(() => new Date(), []);
-
-  const pending  = useMemo(() => invites.filter((inv) => !inv.usedAt && new Date(inv.expiresAt) > now), [invites, now]);
+  const pending  = useMemo(() => invites.filter((inv) => !inv.usedAt && new Date(inv.expiresAt) > new Date()), [invites]);
   const accepted = useMemo(() => invites.filter((inv) => !!inv.usedAt), [invites]);
-  const expired  = useMemo(() => invites.filter((inv) => !inv.usedAt && new Date(inv.expiresAt) <= now), [invites, now]);
+  const expired  = useMemo(() => invites.filter((inv) => !inv.usedAt && new Date(inv.expiresAt) <= new Date()), [invites]);
 
   function copyLink(token: string) {
     const url = `${window.location.origin}/register?token=${token}`;
@@ -81,13 +104,14 @@ export function InviteListClient({ invites, invitedByMap }: Props) {
   async function handleRegenerate(id: string) {
     try {
       const res = await fetch(`/api/owner/invites/${id}/resend`, { method: 'POST' });
+      const data = (await res.json()) as { error?: string; inviteUrl?: string };
       if (!res.ok) {
-        const data = (await res.json()) as { error?: string };
         toast.error(data.error ?? 'Failed to regenerate invite');
         return;
       }
-      const data = (await res.json()) as { inviteUrl: string };
-      await navigator.clipboard.writeText(data.inviteUrl).catch(() => undefined);
+      if (data.inviteUrl) {
+        await navigator.clipboard.writeText(data.inviteUrl).catch(() => undefined);
+      }
       toast.success('New link copied to clipboard');
       router.refresh();
     } catch {
@@ -111,25 +135,6 @@ export function InviteListClient({ invites, invitedByMap }: Props) {
     } finally {
       setRevoking(null);
     }
-  }
-
-  function RoleBadge({ role }: { role: 'trainer' | 'member' }) {
-    return (
-      <span className={`text-[9px] font-bold uppercase tracking-[1px] px-2 py-0.5 rounded flex-shrink-0 ${roleBadgeClass[role]}`}>
-        {role}
-      </span>
-    );
-  }
-
-  function MetaLine({ inv }: { inv: InviteRow }) {
-    const trainerName = inv.invitedBy && invitedByMap?.[inv.invitedBy];
-    if (inv.role === 'member' && trainerName) {
-      return <div className="text-[10px] text-foreground/35 mt-0.5">Assigned to {trainerName}</div>;
-    }
-    if (trainerName) {
-      return <div className="text-[10px] text-foreground/35 mt-0.5">via {trainerName}</div>;
-    }
-    return null;
   }
 
   return (
@@ -162,9 +167,9 @@ export function InviteListClient({ invites, invitedByMap }: Props) {
                   <RoleBadge role={inv.role} />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold text-foreground/85 truncate">{inv.recipientEmail}</div>
-                    <MetaLine inv={inv} />
+                    <MetaLine inv={inv} invitedByMap={invitedByMap} />
                   </div>
-                  <span className="text-[10px] text-foreground/35 shrink-0">{expiryLabel(inv.expiresAt)}</span>
+                  <span className="text-[10px] text-foreground/65 shrink-0">{expiryLabel(inv.expiresAt)}</span>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <Button
                       variant="ghost"
@@ -212,7 +217,7 @@ export function InviteListClient({ invites, invitedByMap }: Props) {
                   <RoleBadge role={inv.role} />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold text-foreground/85 truncate">{inv.recipientEmail}</div>
-                    <MetaLine inv={inv} />
+                    <MetaLine inv={inv} invitedByMap={invitedByMap} />
                   </div>
                   <span className="text-[10px] text-emerald-400/70 shrink-0">
                     ✓ Joined {formatDate(inv.usedAt!)}
@@ -242,9 +247,9 @@ export function InviteListClient({ invites, invitedByMap }: Props) {
                   <RoleBadge role={inv.role} />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold text-foreground/50 truncate">{inv.recipientEmail}</div>
-                    <MetaLine inv={inv} />
+                    <MetaLine inv={inv} invitedByMap={invitedByMap} />
                   </div>
-                  <span className="text-[10px] text-foreground/25 shrink-0">Expired {formatDate(inv.expiresAt)}</span>
+                  <span className="text-[10px] text-foreground/65 shrink-0">Expired {formatDate(inv.expiresAt)}</span>
                   <Button
                     variant="ghost"
                     size="sm"
