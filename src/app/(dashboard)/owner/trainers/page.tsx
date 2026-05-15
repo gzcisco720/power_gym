@@ -44,8 +44,10 @@ export default async function OwnerTrainersPage() {
     }),
   );
 
-  const totalMembers = allMembers.length;
   const totalSessionsThisMonth = trainerRows.reduce((sum, t) => sum + t.sessionsThisMonth, 0);
+  const avgMembersPerTrainer = trainerRows.length > 0
+    ? Math.round(allMembers.length / trainerRows.length)
+    : 0;
 
   return (
     <div>
@@ -57,8 +59,8 @@ export default async function OwnerTrainersPage() {
         <TrainerListClient
           trainers={trainerRows}
           allTrainers={trainerRows}
-          totalMembers={totalMembers}
           totalSessionsThisMonth={totalSessionsThisMonth}
+          avgMembersPerTrainer={avgMembersPerTrainer}
         />
       </div>
     </div>

@@ -27,16 +27,16 @@ interface Props {
   members: MemberRow[];
   trainers: TrainerOption[];
   totalCount: number;
-  trainerCount: number;
   unassignedCount: number;
+  newThisMonth: number;
 }
 
 export function MemberListClient({
   members,
   trainers,
   totalCount,
-  trainerCount,
   unassignedCount,
+  newThisMonth,
 }: Props) {
   const [reassigning, setReassigning] = useState<MemberRow | null>(null);
   const [search, setSearch] = useState('');
@@ -76,12 +76,12 @@ export function MemberListClient({
       {/* KPI strip */}
       <div className="grid grid-cols-3 gap-3 mb-6">
         <StatCard label="Total Members" value={String(totalCount)} accentColor="primary" />
-        <StatCard label="Trainers" value={String(trainerCount)} />
         <StatCard
           label="Unassigned"
           value={String(unassignedCount)}
           accentColor={unassignedCount > 0 ? 'achievement' : undefined}
         />
+        <StatCard label="New This Month" value={String(newThisMonth)} accentColor={newThisMonth > 0 ? 'success' : undefined} />
       </div>
 
       {/* Toolbar */}

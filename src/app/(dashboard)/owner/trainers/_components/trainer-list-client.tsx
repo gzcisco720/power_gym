@@ -30,11 +30,11 @@ interface TrainerRow {
 interface Props {
   trainers: TrainerRow[];
   allTrainers: TrainerRow[];
-  totalMembers: number;
   totalSessionsThisMonth: number;
+  avgMembersPerTrainer: number;
 }
 
-export function TrainerListClient({ trainers, allTrainers, totalMembers, totalSessionsThisMonth }: Props) {
+export function TrainerListClient({ trainers, allTrainers, totalSessionsThisMonth, avgMembersPerTrainer }: Props) {
   const router = useRouter();
   const [removing, setRemoving] = useState<string | null>(null);
   const [removeTarget, setRemoveTarget] = useState<TrainerRow | null>(null);
@@ -70,8 +70,8 @@ export function TrainerListClient({ trainers, allTrainers, totalMembers, totalSe
       {/* KPI strip */}
       <div className="grid grid-cols-3 gap-3 mb-6">
         <StatCard label="Total Trainers" value={String(trainers.length)} accentColor="primary" />
-        <StatCard label="Total Members" value={String(totalMembers)} />
         <StatCard label="Sessions / Mo" value={String(totalSessionsThisMonth)} />
+        <StatCard label="Avg Members / Trainer" value={String(avgMembersPerTrainer)} />
       </div>
 
       {/* Section label */}

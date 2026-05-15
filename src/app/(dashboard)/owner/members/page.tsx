@@ -34,6 +34,11 @@ export default async function OwnerMembersPage() {
 
   const unassignedCount = memberRows.filter((m) => !m.trainerId).length;
 
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+  const newThisMonth = memberRows.filter((m) => new Date(m.createdAt) >= startOfMonth).length;
+
   return (
     <div>
       <PageHeader
@@ -45,8 +50,8 @@ export default async function OwnerMembersPage() {
           members={memberRows}
           trainers={trainerOptions}
           totalCount={memberRows.length}
-          trainerCount={trainers.length}
           unassignedCount={unassignedCount}
+          newThisMonth={newThisMonth}
         />
       </div>
     </div>

@@ -19,8 +19,8 @@ const mockTrainers = [
 const defaultProps = {
   trainers: mockTrainers,
   allTrainers: mockTrainers,
-  totalMembers: 5,
   totalSessionsThisMonth: 20,
+  avgMembersPerTrainer: 5,
 };
 
 describe('TrainerListClient', () => {
@@ -36,8 +36,8 @@ describe('TrainerListClient', () => {
   it('renders KPI strip with totals', () => {
     render(<TrainerListClient {...defaultProps} />);
     expect(screen.getByText('Total Trainers')).toBeInTheDocument();
-    expect(screen.getByText('Total Members')).toBeInTheDocument();
     expect(screen.getByText('Sessions / Mo')).toBeInTheDocument();
+    expect(screen.getByText('Avg Members / Trainer')).toBeInTheDocument();
   });
 
   it('renders View Hub link', () => {
