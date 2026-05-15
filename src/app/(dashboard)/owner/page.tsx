@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { Suspense } from 'react';
 import { auth } from '@/lib/auth/auth';
 import { PageHeader } from '@/components/shared/page-header';
@@ -15,18 +14,7 @@ export default async function OwnerDashboardPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Dashboard"
-        subtitle="Gym overview"
-        actions={
-          <Link
-            href="/owner/invites"
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            + Invite Trainer
-          </Link>
-        }
-      />
+      <PageHeader title="Dashboard" subtitle="Gym overview" />
       <div className="px-4 sm:px-8 py-6 space-y-6">
         <Suspense fallback={<DashboardStatsSkeleton />}>
           <DashboardStats />
