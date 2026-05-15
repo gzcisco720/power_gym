@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, within, fireEvent, waitFor } from '@testing-library/react';
 import { TrainerListClient } from '@/app/(dashboard)/owner/trainers/_components/trainer-list-client';
 
 jest.mock('next/navigation', () => ({
@@ -13,32 +13,56 @@ const mockTrainers = [
     createdAt: '2026-01-01T00:00:00.000Z',
     memberCount: 5,
     sessionsThisMonth: 20,
-    members: [
-      { _id: 'm1', name: 'Member One', email: 'm1@gym.com', trainerId: 't1', createdAt: '2026-02-01T00:00:00.000Z' },
-    ],
   },
 ];
 
+const defaultProps = {
+  trainers: mockTrainers,
+  allTrainers: mockTrainers,
+  totalMembers: 5,
+  totalSessionsThisMonth: 20,
+};
+
 describe('TrainerListClient', () => {
-  it('renders trainer name and member count', () => {
-    render(<TrainerListClient trainers={mockTrainers} allTrainers={mockTrainers} />);
+  it('renders trainer name and stats', () => {
+    render(<TrainerListClient {...defaultProps} />);
     expect(screen.getByText('Li Wei')).toBeInTheDocument();
-    expect(screen.getByText('5')).toBeInTheDocument();
+    expect(screen.getAllByText('5').length).toBeGreaterThan(0);
     expect(screen.getByText('members')).toBeInTheDocument();
+    expect(screen.getAllByText('20').length).toBeGreaterThan(0);
+    expect(screen.getByText('sessions')).toBeInTheDocument();
   });
 
-  it('shows members list when Members button clicked', () => {
-    render(<TrainerListClient trainers={mockTrainers} allTrainers={mockTrainers} />);
-    fireEvent.click(screen.getByRole('button', { name: /Members/i }));
-    expect(screen.getByText('Member One')).toBeInTheDocument();
+  it('renders KPI strip with totals', () => {
+    render(<TrainerListClient {...defaultProps} />);
+    expect(screen.getByText('Total Trainers')).toBeInTheDocument();
+    expect(screen.getByText('Total Members')).toBeInTheDocument();
+    expect(screen.getByText('Sessions / Mo')).toBeInTheDocument();
   });
 
-  it('calls DELETE API when Remove button clicked and confirmed', async () => {
-    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({}) });
-    global.confirm = jest.fn().mockReturnValue(true);
+  it('renders View Hub link', () => {
+    render(<TrainerListClient {...defaultProps} />);
+    const link = screen.getByRole('link', { name: /view hub/i });
+    expect(link).toHaveAttribute('href', '/owner/trainers/t1');
+  });
 
-    render(<TrainerListClient trainers={mockTrainers} allTrainers={mockTrainers} />);
+  it('shows remove confirmation dialog when Remove clicked', () => {
+    render(<TrainerListClient {...defaultProps} />);
     fireEvent.click(screen.getByRole('button', { name: /Remove/i }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    const dialog = screen.getByRole('alertdialog');
+    expect(within(dialog).getByRole('heading', { name: /Remove Trainer/i })).toBeInTheDocument();
+    expect(within(dialog).getByText(/Li Wei/)).toBeInTheDocument();
+  });
+
+  it('calls DELETE API when dialog confirmed', async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({}) });
+
+    render(<TrainerListClient {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button', { name: /Remove/i }));
+
+    const confirmBtn = screen.getByRole('button', { name: /Remove Trainer/i });
+    fireEvent.click(confirmBtn);
 
     await waitFor(() =>
       expect(global.fetch).toHaveBeenCalledWith(
@@ -46,5 +70,10 @@ describe('TrainerListClient', () => {
         expect.objectContaining({ method: 'DELETE' }),
       ),
     );
+  });
+
+  it('shows empty state when no trainers', () => {
+    render(<TrainerListClient {...defaultProps} trainers={[]} allTrainers={[]} />);
+    expect(screen.getByText(/no trainers yet/i)).toBeInTheDocument();
   });
 });

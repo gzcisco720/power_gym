@@ -40,16 +40,12 @@ export default async function OwnerTrainersPage() {
         createdAt: trainer.createdAt.toISOString(),
         memberCount: trainerMembers.length,
         sessionsThisMonth,
-        members: trainerMembers.map((m) => ({
-          _id: m._id.toString(),
-          name: m.name,
-          email: m.email,
-          trainerId: m.trainerId?.toString() ?? null,
-          createdAt: m.createdAt.toISOString(),
-        })),
       };
     }),
   );
+
+  const totalMembers = allMembers.length;
+  const totalSessionsThisMonth = trainerRows.reduce((sum, t) => sum + t.sessionsThisMonth, 0);
 
   return (
     <div>
@@ -58,7 +54,12 @@ export default async function OwnerTrainersPage() {
         subtitle={`${trainerRows.length} trainer${trainerRows.length !== 1 ? 's' : ''}`}
       />
       <div className="px-4 sm:px-8 py-7">
-        <TrainerListClient trainers={trainerRows} allTrainers={trainerRows} />
+        <TrainerListClient
+          trainers={trainerRows}
+          allTrainers={trainerRows}
+          totalMembers={totalMembers}
+          totalSessionsThisMonth={totalSessionsThisMonth}
+        />
       </div>
     </div>
   );
