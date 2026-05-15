@@ -83,7 +83,7 @@ export function NutritionTemplateList({ templates, onDelete, basePath = '/traine
             </Link>
             <Link
               href={`${basePath}/new`}
-              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-transparent bg-white px-2.5 text-sm font-semibold text-black hover:bg-white/90 transition-all"
+              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary px-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               <Plus className="h-4 w-4" />
               New Template
@@ -100,7 +100,7 @@ export function NutritionTemplateList({ templates, onDelete, basePath = '/traine
             action={
               <Link
                 href={`${basePath}/new`}
-                className="inline-flex h-8 items-center justify-center rounded-lg border border-transparent bg-white px-2.5 text-sm font-semibold text-black hover:bg-white/90 transition-all"
+                className="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
               >
                 New Template
               </Link>
@@ -124,17 +124,17 @@ export function NutritionTemplateList({ templates, onDelete, basePath = '/traine
                   <Link
                     href={`${basePath}/${template._id}/edit`}
                     aria-label={`Edit ${template.name}`}
-                    className={`block h-full rounded-xl border border-[#141414] border-t-2 ${accent} bg-[#0c0c0c] p-4 pr-11 transition-colors hover:border-[#2a2a2a]`}
+                    className={`block h-full rounded-xl bg-white/[.02] ring-1 ring-white/[.06] border-t-2 ${accent} p-4 pr-11 transition-all hover:ring-white/[.14]`}
                   >
                     <div className="line-clamp-1 text-[14px] font-semibold text-white">
                       {template.name}
                     </div>
                     {template.description ? (
-                      <p className="mt-1 line-clamp-2 min-h-[2.4em] text-[12px] text-[#888]">
+                      <p className="mt-1 line-clamp-2 min-h-[2.4em] text-[12px] text-foreground/45">
                         {template.description}
                       </p>
                     ) : (
-                      <p className="mt-1 min-h-[2.4em] text-[12px] italic text-[#444]">
+                      <p className="mt-1 min-h-[2.4em] text-[12px] italic text-foreground/20">
                         No description
                       </p>
                     )}
@@ -151,11 +151,11 @@ export function NutritionTemplateList({ templates, onDelete, basePath = '/traine
                         ))}
                       </div>
                     ) : (
-                      <div className="mt-3 text-[10px] italic text-[#444]">No day types yet</div>
+                      <div className="mt-3 text-[10px] italic text-foreground/20">No day types yet</div>
                     )}
 
                     {template.avgPerDay && (
-                      <div className="mt-3 grid grid-cols-4 gap-2 border-t border-[#1a1a1a] pt-3 text-center">
+                      <div className="mt-3 grid grid-cols-4 gap-2 border-t border-foreground/[.06] pt-3 text-center">
                         <MacroStat value={template.avgPerDay.kcal} label="kcal/d" color="text-orange-300" />
                         <MacroStat value={template.avgPerDay.protein} suffix="g" label="protein" color="text-rose-300" />
                         <MacroStat value={template.avgPerDay.carbs} suffix="g" label="carbs" color="text-sky-300" />
@@ -168,7 +168,7 @@ export function NutritionTemplateList({ templates, onDelete, basePath = '/traine
                       variant="ghost"
                       size="icon"
                       onClick={() => onDelete(template._id)}
-                      className="absolute right-2 top-2 size-8 text-[#777] hover:bg-[#141414] hover:text-red-400"
+                      className="absolute right-2 top-2 size-8 text-foreground/25 hover:bg-white/[.05] hover:text-red-400"
                       aria-label="Delete"
                     >
                       <Trash2 className="h-4 w-4" />
