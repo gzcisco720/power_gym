@@ -10,7 +10,7 @@ export function TrainerInviteDialogTrigger() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-transparent bg-white px-2.5 text-sm font-semibold text-black hover:bg-white/90 transition-all"
+        className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
       >
         + Invite Member
       </button>
