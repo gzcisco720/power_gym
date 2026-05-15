@@ -45,6 +45,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Per-Trainer Hub Redesign | [per-trainer-hub-redesign.md](2026-05-15/plans/per-trainer-hub-redesign.md) | Approved |
 | Per-Trainer Hub Redesign (Plan) | [per-trainer-hub-redesign-plan.md](2026-05-15/plans/per-trainer-hub-redesign-plan.md) | Complete |
 | Invites Page Redesign (Plan) | [invites-redesign-plan.md](2026-05-15/plans/invites-redesign-plan.md) | Complete |
+| Trainer UI Redesign (Plan) | [trainer-ui-redesign-plan.md](2026-05-15/plans/trainer-ui-redesign-plan.md) | Complete |
 
 ---
 
