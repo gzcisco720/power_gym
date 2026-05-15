@@ -199,8 +199,8 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
   const isLocked = readOnly || log.dayCompleted;
 
   return (
-    <div className="space-y-4 pb-2">
-      <div className="sticky top-0 z-10 bg-background flex items-center justify-between py-2 -mt-2">
+    <div className="flex flex-col min-h-screen">
+      <div className="sticky top-0 z-10 bg-background flex items-center justify-between px-4 sm:px-8 py-5 border-b border-foreground/10">
         <Button
           variant="ghost"
           size="sm"
@@ -233,84 +233,86 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
         </Button>
       </div>
 
-      <MacroSummaryCard macros={macros} />
+      <div className="flex-1 px-4 sm:px-8 py-5 pb-32 max-w-2xl mx-auto w-full space-y-4">
+        <MacroSummaryCard macros={macros} />
 
-      <div className="space-y-3">
-        {log.meals.map((m, i) => (
-          <MealSection
-            key={i}
-            meal={m as unknown as IDailyLogMeal}
-            locked={isLocked}
-            onAddFood={() => setPickerForMeal(i)}
-            onToggleComplete={() => {
-              const next: SelfNutritionLog = {
-                ...log,
-                meals: log.meals.map((mm, j) =>
-                  j === i ? { ...mm, completed: !mm.completed } : mm,
-                ),
-              };
-              void persist(next);
-            }}
-            onRemoveItem={(itemIdx) => {
-              const next: SelfNutritionLog = {
-                ...log,
-                meals: log.meals.map((mm, j) =>
-                  j === i ? { ...mm, items: mm.items.filter((_, k) => k !== itemIdx) } : mm,
-                ),
-              };
-              void persist(next);
-            }}
-          />
-        ))}
-      </div>
+        <div className="space-y-3">
+          {log.meals.map((m, i) => (
+            <MealSection
+              key={i}
+              meal={m as unknown as IDailyLogMeal}
+              locked={isLocked}
+              onAddFood={() => setPickerForMeal(i)}
+              onToggleComplete={() => {
+                const next: SelfNutritionLog = {
+                  ...log,
+                  meals: log.meals.map((mm, j) =>
+                    j === i ? { ...mm, completed: !mm.completed } : mm,
+                  ),
+                };
+                void persist(next);
+              }}
+              onRemoveItem={(itemIdx) => {
+                const next: SelfNutritionLog = {
+                  ...log,
+                  meals: log.meals.map((mm, j) =>
+                    j === i ? { ...mm, items: mm.items.filter((_, k) => k !== itemIdx) } : mm,
+                  ),
+                };
+                void persist(next);
+              }}
+            />
+          ))}
+        </div>
 
-      <FoodPickerDialog
-        open={pickerForMeal !== null}
-        onOpenChange={(o) => {
-          if (!o) setPickerForMeal(null);
-        }}
-        memberId={null}
-        onSelect={(picked) => {
-          if (pickerForMeal === null) return;
-          const item = pickedFoodToItem(picked);
-          const next: SelfNutritionLog = {
-            ...log,
-            meals: log.meals.map((mm, j) =>
-              j === pickerForMeal ? { ...mm, items: [...mm.items, item] } : mm,
-            ),
-          };
-          setPickerForMeal(null);
-          void persist(next);
-        }}
-      />
-
-      {!readOnly && (
-        <SaveDayAsTemplate
-          onSubmit={async ({ name, description }) => {
-            const res = await fetch(`/api/me/nutrition-logs/${date}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                sourceTemplateId: log.sourceTemplateId,
-                sourceTemplateDayTypeName: log.sourceTemplateDayTypeName,
-                dayLabel: log.dayLabel,
-                meals: log.meals,
-                dayCompleted: log.dayCompleted,
-                saveAsTemplate: {
-                  name: name.trim(),
-                  description: description.trim() || undefined,
-                },
-              }),
-            });
-            if (res.ok) {
-              const data = (await res.json()) as { createdTemplateId?: string };
-              if (data.createdTemplateId) toast.success('Saved as template');
-            } else {
-              toast.error('Failed to save template');
-            }
+        <FoodPickerDialog
+          open={pickerForMeal !== null}
+          onOpenChange={(o) => {
+            if (!o) setPickerForMeal(null);
+          }}
+          memberId={null}
+          onSelect={(picked) => {
+            if (pickerForMeal === null) return;
+            const item = pickedFoodToItem(picked);
+            const next: SelfNutritionLog = {
+              ...log,
+              meals: log.meals.map((mm, j) =>
+                j === pickerForMeal ? { ...mm, items: [...mm.items, item] } : mm,
+              ),
+            };
+            setPickerForMeal(null);
+            void persist(next);
           }}
         />
-      )}
+
+        {!readOnly && (
+          <SaveDayAsTemplate
+            onSubmit={async ({ name, description }) => {
+              const res = await fetch(`/api/me/nutrition-logs/${date}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  sourceTemplateId: log.sourceTemplateId,
+                  sourceTemplateDayTypeName: log.sourceTemplateDayTypeName,
+                  dayLabel: log.dayLabel,
+                  meals: log.meals,
+                  dayCompleted: log.dayCompleted,
+                  saveAsTemplate: {
+                    name: name.trim(),
+                    description: description.trim() || undefined,
+                  },
+                }),
+              });
+              if (res.ok) {
+                const data = (await res.json()) as { createdTemplateId?: string };
+                if (data.createdTemplateId) toast.success('Saved as template');
+              } else {
+                toast.error('Failed to save template');
+              }
+            }}
+          />
+        )}
+      </div>
 
       {!readOnly && (
         <DayCompleteBar
