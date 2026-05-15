@@ -11,7 +11,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
     <div className="h-full overflow-x-hidden">
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
-          key={pathname}
+          key={pathname.split('/')[1] ?? pathname}
           initial="pageEnter"
           animate="pageVisible"
           exit="pageExit"
