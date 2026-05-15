@@ -63,7 +63,7 @@ export function TrainerInviteDialog({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md w-full">
         <DialogHeader>
-          <DialogTitle className="text-white text-[15px] font-semibold">Invite Member</DialogTitle>
+          <DialogTitle className="text-foreground text-[15px] font-semibold">Invite Member</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-1">
