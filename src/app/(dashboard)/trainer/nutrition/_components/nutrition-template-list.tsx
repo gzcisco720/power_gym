@@ -126,7 +126,7 @@ export function NutritionTemplateList({ templates, onDelete, basePath = '/traine
                     aria-label={`Edit ${template.name}`}
                     className={`block h-full rounded-xl bg-white/[.02] ring-1 ring-white/[.06] border-t-2 ${accent} p-4 pr-11 transition-all hover:ring-white/[.14]`}
                   >
-                    <div className="line-clamp-1 text-[14px] font-semibold text-white">
+                    <div className="line-clamp-1 text-[14px] font-semibold text-foreground/85">
                       {template.name}
                     </div>
                     {template.description ? (
