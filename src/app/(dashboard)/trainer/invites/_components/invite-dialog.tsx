@@ -81,7 +81,6 @@ export function TrainerInviteDialog({ open, onOpenChange }: Props) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="member@example.com"
-              className=""
             />
           </div>
 

@@ -31,9 +31,9 @@ interface Props {
 
 export function TrainerInviteListClient({ invites }: Props) {
   const router = useRouter();
-  const now = new Date();
   const [revokeTarget, setRevokeTarget] = useState<InviteRow | null>(null);
 
+  const now = new Date();
   const pending = invites.filter((inv) => !inv.usedAt && new Date(inv.expiresAt) > now);
   const accepted = invites.filter((inv) => inv.usedAt !== null);
   const expired = invites.filter((inv) => !inv.usedAt && new Date(inv.expiresAt) <= now);
@@ -44,36 +44,18 @@ export function TrainerInviteListClient({ invites }: Props) {
     toast.success('Link copied to clipboard');
   }
 
-  async function handleResend(id: string) {
+  async function handleResendOrRegenerate(id: string, context: 'resend' | 'regenerate') {
     try {
       const res = await fetch(`/api/trainer/invites/${id}/resend`, { method: 'POST' });
       const data = (await res.json()) as { error?: string; inviteUrl?: string };
       if (!res.ok) {
-        toast.error(data.error ?? 'Failed to resend invite');
+        toast.error(data.error ?? `Failed to ${context} invite`);
         return;
       }
       if (data.inviteUrl) {
         await navigator.clipboard.writeText(data.inviteUrl).catch(() => undefined);
-        toast.success('Invite email resent · link copied');
       }
-      router.refresh();
-    } catch {
-      toast.error('Something went wrong');
-    }
-  }
-
-  async function handleRegenerate(id: string) {
-    try {
-      const res = await fetch(`/api/trainer/invites/${id}/resend`, { method: 'POST' });
-      const data = (await res.json()) as { error?: string; inviteUrl?: string };
-      if (!res.ok) {
-        toast.error(data.error ?? 'Failed to regenerate invite');
-        return;
-      }
-      if (data.inviteUrl) {
-        await navigator.clipboard.writeText(data.inviteUrl).catch(() => undefined);
-        toast.success('New invite link generated · copied');
-      }
+      toast.success(context === 'resend' ? 'Invite email resent · link copied' : 'New invite link generated · copied');
       router.refresh();
     } catch {
       toast.error('Something went wrong');
@@ -83,7 +65,6 @@ export function TrainerInviteListClient({ invites }: Props) {
   async function confirmRevoke() {
     if (!revokeTarget) return;
     const id = revokeTarget._id;
-    setRevokeTarget(null);
     try {
       const res = await fetch(`/api/trainer/invites/${id}`, { method: 'DELETE' });
       if (!res.ok) {
@@ -91,6 +72,7 @@ export function TrainerInviteListClient({ invites }: Props) {
         toast.error(data.error ?? 'Failed to revoke invite');
         return;
       }
+      setRevokeTarget(null);
       toast.success('Invite revoked');
       router.refresh();
     } catch {
@@ -136,7 +118,7 @@ export function TrainerInviteListClient({ invites }: Props) {
                 </div>
                 <div
                   className={`text-[10px] shrink-0 ${
-                    expirySoon(inv.expiresAt) ? 'text-amber-400' : 'text-foreground/35'
+                    expirySoon(inv.expiresAt) ? 'text-amber-400' : 'text-foreground/50'
                   }`}
                 >
                   {daysUntil(inv.expiresAt)}
@@ -151,7 +133,7 @@ export function TrainerInviteListClient({ invites }: Props) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleResend(inv._id)}
+                    onClick={() => handleResendOrRegenerate(inv._id, 'resend')}
                     className="text-[10px] px-2 py-1 rounded-md bg-white/[.04] ring-1 ring-white/[.08] text-foreground/45 hover:text-foreground/70 transition-colors"
                   >
                     Resend
@@ -220,7 +202,7 @@ export function TrainerInviteListClient({ invites }: Props) {
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleRegenerate(inv._id)}
+                  onClick={() => handleResendOrRegenerate(inv._id, 'regenerate')}
                   className="text-[10px] px-2 py-1 rounded-md bg-white/[.04] ring-1 ring-white/[.08] text-foreground/45 hover:text-foreground/70 transition-colors shrink-0"
                 >
                   Regenerate

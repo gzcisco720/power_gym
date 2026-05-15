@@ -18,6 +18,7 @@ export function InviteDialogTrigger({ trainers }: Props) {
   return (
     <>
       <button
+        type="button"
         onClick={() => setOpen(true)}
         className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
       >

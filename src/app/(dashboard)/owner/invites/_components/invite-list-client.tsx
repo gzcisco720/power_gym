@@ -139,7 +139,6 @@ export function InviteListClient({ invites, invitedByMap }: Props) {
 
   return (
     <>
-      {/* KPI strip */}
       <div className="grid grid-cols-3 gap-3 mb-6">
         <StatCard label="Pending" value={String(pending.length)} accentColor="primary" />
         <StatCard label="Accepted" value={String(accepted.length)} accentColor="success" />
@@ -148,7 +147,6 @@ export function InviteListClient({ invites, invitedByMap }: Props) {
 
       <div className="space-y-8">
 
-        {/* Pending */}
         <div>
           <div className="text-[9px] uppercase tracking-[2px] text-primary-light font-semibold mb-3">
             Pending ({pending.length})
@@ -202,7 +200,6 @@ export function InviteListClient({ invites, invitedByMap }: Props) {
           )}
         </div>
 
-        {/* Accepted */}
         {accepted.length > 0 && (
           <div>
             <div className="text-[9px] uppercase tracking-[2px] text-emerald-400 font-semibold mb-3">
@@ -228,7 +225,6 @@ export function InviteListClient({ invites, invitedByMap }: Props) {
           </div>
         )}
 
-        {/* Expired */}
         <div>
           <div className="text-[9px] uppercase tracking-[2px] text-foreground/25 font-semibold mb-3">
             Expired ({expired.length})
@@ -266,7 +262,6 @@ export function InviteListClient({ invites, invitedByMap }: Props) {
 
       </div>
 
-      {/* Revoke AlertDialog */}
       <AlertDialog open={!!revoking} onOpenChange={(open) => !open && setRevoking(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
