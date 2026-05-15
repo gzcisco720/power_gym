@@ -32,6 +32,8 @@ export default async function OwnerMembersPage() {
     name: t.name,
   }));
 
+  const unassignedCount = memberRows.filter((m) => !m.trainerId).length;
+
   return (
     <div>
       <PageHeader
@@ -39,7 +41,13 @@ export default async function OwnerMembersPage() {
         subtitle={`${memberRows.length} member${memberRows.length !== 1 ? 's' : ''} across all trainers`}
       />
       <div className="px-4 sm:px-8 py-7">
-        <MemberListClient members={memberRows} trainers={trainerOptions} />
+        <MemberListClient
+          members={memberRows}
+          trainers={trainerOptions}
+          totalCount={memberRows.length}
+          trainerCount={trainers.length}
+          unassignedCount={unassignedCount}
+        />
       </div>
     </div>
   );
