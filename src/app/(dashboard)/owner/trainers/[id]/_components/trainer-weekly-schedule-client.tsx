@@ -16,7 +16,7 @@ export function TrainerWeeklyScheduleClient({ days, total }: Props) {
 
   if (total === 0) {
     return (
-      <div className="flex items-center justify-center h-16 text-foreground/40 text-sm">
+      <div className="flex items-center justify-center h-36 text-foreground/40 text-sm">
         No sessions scheduled this week
       </div>
     );
@@ -24,15 +24,15 @@ export function TrainerWeeklyScheduleClient({ days, total }: Props) {
 
   return (
     <div>
-      <div className="flex gap-2 items-end h-16">
+      <div className="flex gap-2 items-end h-36">
         {days.map((day) => {
-          const heightPct = day.count === 0 ? 0 : Math.max(12, Math.round((day.count / max) * 100));
+          const heightPct = day.count === 0 ? 0 : Math.max(8, Math.round((day.count / max) * 100));
           return (
             <div key={day.label} className="flex flex-col items-center gap-1 flex-1">
               <span className={`text-[10px] font-bold tabular-nums ${day.count === 0 ? 'text-foreground/20' : day.isToday ? 'text-primary-light' : 'text-foreground/60'}`}>
                 {day.count > 0 ? day.count : ''}
               </span>
-              <div className="w-full bg-white/[.04] rounded-sm overflow-hidden" style={{ height: 36 }}>
+              <div className="w-full bg-white/[.04] rounded-sm overflow-hidden flex-1">
                 {day.count > 0 && (
                   <div
                     className={`w-full rounded-sm transition-all ${day.isToday ? 'bg-primary' : 'bg-primary/35'}`}
@@ -47,7 +47,7 @@ export function TrainerWeeklyScheduleClient({ days, total }: Props) {
           );
         })}
       </div>
-      <div className="mt-2 text-[9px] text-foreground/30 text-right">
+      <div className="mt-2 text-[9px] text-foreground/65 text-right">
         {total} session{total !== 1 ? 's' : ''} total this week
       </div>
     </div>
