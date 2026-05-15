@@ -8,10 +8,5 @@ export default async function MemberNutritionPage() {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  return (
-    <div className="container py-6 max-w-3xl">
-      <h1 className="text-xl font-semibold mb-4">My Nutrition</h1>
-      <DailyNutritionView memberId={session.user.id} initialDate={today} />
-    </div>
-  );
+  return <DailyNutritionView memberId={session.user.id} initialDate={today} />;
 }

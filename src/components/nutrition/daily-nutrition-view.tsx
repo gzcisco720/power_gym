@@ -139,51 +139,66 @@ export function DailyNutritionView({ memberId, initialDate }: Props) {
   }
 
   const dayMacros = aggregateMacros(log.meals);
+  const totalItems = log.meals.reduce((s, m) => s + m.items.length, 0);
 
   return (
-    <div className="space-y-3">
-      <Card className="p-3 flex justify-between items-center">
-        <span className="font-medium text-sm">{log.dayTypeName} · {log.date}</span>
+    <div className="flex flex-col min-h-screen">
+      <div className="sticky top-0 z-10 bg-background flex items-center justify-between px-4 sm:px-8 py-5 border-b border-foreground/10">
+        <div>
+          <div className="text-base font-bold text-foreground">{log.dayTypeName}</div>
+          <div className="text-xs text-foreground/65 mt-0.5">{log.date}</div>
+        </div>
         <DateNav date={date} onChange={setDate} />
-      </Card>
+      </div>
 
-      <MacroSummaryCard macros={dayMacros} />
+      <div className="flex-1 px-4 sm:px-8 py-5 pb-32 max-w-2xl mx-auto w-full space-y-4">
+        <MacroSummaryCard macros={dayMacros} />
 
-      {log.meals.map((m, idx) => (
-        <MealSection
-          key={`${m.name}-${idx}`}
-          meal={m}
-          locked={log.dayCompleted}
-          onAddFood={() => setAddingForMealIdx(idx)}
-          onToggleComplete={() => toggleComplete(idx)}
-          onRemoveItem={(i) => removeItem(idx, i)}
+        <div className="space-y-3">
+          {log.meals.map((m, idx) => (
+            <MealSection
+              key={`${m.name}-${idx}`}
+              meal={m}
+              locked={log.dayCompleted}
+              onAddFood={() => setAddingForMealIdx(idx)}
+              onToggleComplete={() => toggleComplete(idx)}
+              onRemoveItem={(i) => removeItem(idx, i)}
+            />
+          ))}
+        </div>
+
+        {!log.dayCompleted && (
+          <Button variant="outline" className="w-full" onClick={addMeal}>
+            + Add Meal
+          </Button>
+        )}
+
+        <FoodPickerDialog
+          open={addingForMealIdx !== null}
+          onOpenChange={(o) => { if (!o) setAddingForMealIdx(null); }}
+          memberId={memberId}
+          onSelect={(picked) => {
+            if (addingForMealIdx === null) return;
+            addFood(addingForMealIdx, {
+              foodName: picked.foodName,
+              quantityG: picked.quantityG,
+              ...picked.macros,
+            });
+            setAddingForMealIdx(null);
+          }}
         />
-      ))}
+      </div>
 
-      {!log.dayCompleted && (
-        <Button variant="outline" className="w-full" onClick={addMeal}>
-          + Add Meal
-        </Button>
-      )}
-
-      <Button onClick={completeDay} disabled={log.dayCompleted} className="w-full">
-        {log.dayCompleted ? 'Day Completed' : 'Complete Day'}
-      </Button>
-
-      <FoodPickerDialog
-        open={addingForMealIdx !== null}
-        onOpenChange={(o) => { if (!o) setAddingForMealIdx(null); }}
-        memberId={memberId}
-        onSelect={(picked) => {
-          if (addingForMealIdx === null) return;
-          addFood(addingForMealIdx, {
-            foodName: picked.foodName,
-            quantityG: picked.quantityG,
-            ...picked.macros,
-          });
-          setAddingForMealIdx(null);
-        }}
-      />
+      <div className="sticky bottom-0 z-10 border-t border-foreground/10 backdrop-blur-md bg-background/50 px-4 sm:px-8 py-3">
+        <div className="max-w-2xl mx-auto w-full flex items-center justify-between gap-3">
+          <span className="text-xs text-foreground/65">
+            {Math.round(dayMacros.kcal)} kcal · {totalItems} {totalItems === 1 ? 'item' : 'items'} logged
+          </span>
+          <Button onClick={completeDay} disabled={log.dayCompleted} variant={log.dayCompleted ? 'outline' : 'default'}>
+            {log.dayCompleted ? 'Day Completed ✓' : 'Complete Day'}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

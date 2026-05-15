@@ -328,7 +328,7 @@ export function SessionLogger({
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="flex items-center justify-between px-4 sm:px-8 py-5 border-b border-foreground/10">
+      <div className="sticky top-0 z-10 bg-background flex items-center justify-between px-4 sm:px-8 py-5 border-b border-foreground/10">
         <div>
           <button
             onClick={() => router.push(backPath)}
@@ -450,7 +450,7 @@ export function SessionLogger({
         )}
       </motion.div>
 
-      <div className="fixed bottom-0 left-0 right-0 lg:left-[220px] border-t border-foreground/10 bg-background px-4 sm:px-8 py-3">
+      <div className="sticky bottom-0 z-10 border-t border-foreground/10 backdrop-blur-md bg-background/50 px-4 sm:px-8 py-3">
         {isCompleted ? (
           <div className="text-xs text-foreground/65 text-center tabular-nums py-1">
             Completed {completedDateLabel} · {session.sets.length} sets · {staticDuration}
