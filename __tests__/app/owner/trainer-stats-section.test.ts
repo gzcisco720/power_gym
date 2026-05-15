@@ -4,6 +4,7 @@ jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 const mockUserRepo = { findAllMembers: jest.fn() };
 const mockSessionRepo = { countByMemberIdsSince: jest.fn() };
 const mockPlanRepo = { countByCreator: jest.fn() };
+const mockScheduledRepo = { findByDateRange: jest.fn() };
 
 jest.mock('@/lib/repositories/user.repository', () => ({
   MongoUserRepository: jest.fn(() => mockUserRepo),
@@ -14,6 +15,9 @@ jest.mock('@/lib/repositories/workout-session.repository', () => ({
 jest.mock('@/lib/repositories/plan-template.repository', () => ({
   MongoPlanTemplateRepository: jest.fn(() => mockPlanRepo),
 }));
+jest.mock('@/lib/repositories/scheduled-session.repository', () => ({
+  MongoScheduledSessionRepository: jest.fn(() => mockScheduledRepo),
+}));
 
 describe('TrainerStatsSection', () => {
   beforeEach(() => {
@@ -21,6 +25,7 @@ describe('TrainerStatsSection', () => {
     mockUserRepo.findAllMembers.mockResolvedValue([]);
     mockSessionRepo.countByMemberIdsSince.mockResolvedValue(0);
     mockPlanRepo.countByCreator.mockResolvedValue(0);
+    mockScheduledRepo.findByDateRange.mockResolvedValue([]);
   });
 
   it('fetches members for the trainer', async () => {
