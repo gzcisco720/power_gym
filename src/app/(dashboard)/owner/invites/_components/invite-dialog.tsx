@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 
 interface TrainerOption {
   _id: string;
@@ -55,13 +56,12 @@ export function InviteDialog({ open, onOpenChange, trainers }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
+      const data = (await res.json()) as { error?: string; inviteUrl?: string };
       if (!res.ok) {
-        const data = (await res.json()) as { error?: string };
         toast.error(data.error ?? 'Failed to create invite');
         return;
       }
-      const data = (await res.json()) as { inviteUrl: string };
-      setGeneratedUrl(data.inviteUrl);
+      setGeneratedUrl(data.inviteUrl ?? null);
       toast.success('Invite link generated');
       router.refresh();
     } catch {
@@ -73,35 +73,42 @@ export function InviteDialog({ open, onOpenChange, trainers }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="bg-[#0c0c0c] border-[#1a1a1a] text-white max-w-md w-full">
+      <DialogContent className="max-w-md w-full">
         <DialogHeader>
-          <DialogTitle className="text-white text-[15px] font-semibold">New Invite</DialogTitle>
+          <DialogTitle>New Invite</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-1">
+          {/* Role toggle pills */}
           <div className="space-y-1.5">
-            <label
-              htmlFor="invite-role"
-              className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]"
-            >
+            <div className="text-xs font-semibold uppercase tracking-wide text-foreground/65">
               Role
-            </label>
-            <select
-              id="invite-role"
-              value={role}
-              onChange={(e) => setRole(e.target.value as 'trainer' | 'member')}
-              className="w-full rounded-md border border-[#1e1e1e] bg-[#0a0a0a] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white"
-            >
-              <option value="member">Member</option>
-              <option value="trainer">Trainer</option>
-            </select>
+            </div>
+            <div className="flex gap-2">
+              {(['member', 'trainer'] as const).map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => setRole(r)}
+                  className={cn(
+                    'flex-1 h-9 rounded-lg text-sm font-semibold capitalize transition-all',
+                    role === r
+                      ? 'bg-primary/20 ring-1 ring-primary/40 text-primary-light'
+                      : 'bg-white/[.03] ring-1 ring-white/[.08] text-foreground/40 hover:text-foreground/65',
+                  )}
+                >
+                  {r.charAt(0).toUpperCase() + r.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
 
+          {/* Trainer selector (member only) */}
           {role === 'member' && trainers.length > 0 && (
             <div className="space-y-1.5">
               <label
                 htmlFor="invite-trainer"
-                className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]"
+                className="text-xs font-semibold uppercase tracking-wide text-foreground/65"
               >
                 Assign to Trainer
               </label>
@@ -109,21 +116,20 @@ export function InviteDialog({ open, onOpenChange, trainers }: Props) {
                 id="invite-trainer"
                 value={trainerId}
                 onChange={(e) => setTrainerId(e.target.value)}
-                className="w-full rounded-md border border-[#1e1e1e] bg-[#0a0a0a] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white"
+                className="w-full h-9 rounded-lg bg-white/[.03] ring-1 ring-white/[.08] px-3 text-sm text-foreground/80 focus:outline-none focus:ring-white/20 transition-all"
               >
                 {trainers.map((t) => (
-                  <option key={t._id} value={t._id}>
-                    {t.name}
-                  </option>
+                  <option key={t._id} value={t._id}>{t.name}</option>
                 ))}
               </select>
             </div>
           )}
 
+          {/* Email */}
           <div className="space-y-1.5">
             <label
               htmlFor="invite-email"
-              className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]"
+              className="text-xs font-semibold uppercase tracking-wide text-foreground/65"
             >
               Email
             </label>
@@ -134,15 +140,15 @@ export function InviteDialog({ open, onOpenChange, trainers }: Props) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="member@example.com"
-              className="bg-[#0a0a0a] border-[#1e1e1e] text-white focus-visible:ring-white"
             />
           </div>
 
+          {/* Actions */}
           <div className="flex gap-2 pt-1">
             <Button
               type="submit"
               disabled={saving}
-              className="bg-white text-black hover:bg-white/90 font-semibold text-sm disabled:opacity-50"
+              className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 font-semibold text-sm disabled:opacity-50"
             >
               {saving ? 'Generating...' : 'Generate Invite Link'}
             </Button>
@@ -150,7 +156,7 @@ export function InviteDialog({ open, onOpenChange, trainers }: Props) {
               type="button"
               variant="ghost"
               onClick={() => handleOpenChange(false)}
-              className="text-[#777] hover:text-[#aaa] text-sm"
+              className="text-foreground/65 hover:text-foreground/80 text-sm"
             >
               Cancel
             </Button>
@@ -158,18 +164,18 @@ export function InviteDialog({ open, onOpenChange, trainers }: Props) {
         </form>
 
         {generatedUrl && (
-          <div className="border-t border-[#141414] pt-4 space-y-2">
-            <div className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#555]">
+          <div className="border-t border-foreground/[.06] pt-4 space-y-2">
+            <div className="text-[9px] font-semibold uppercase tracking-[1.5px] text-foreground/35">
               Invite Link
             </div>
-            <div className="break-all text-[11px] text-[#888] bg-[#0a0a0a] border border-[#141414] rounded-lg px-3 py-2">
+            <div className="break-all text-[11px] text-foreground/65 bg-white/[.03] ring-1 ring-white/[.07] rounded-lg px-3 py-2">
               {generatedUrl}
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigator.clipboard.writeText(generatedUrl).catch(() => undefined)}
-              className="text-[#777] hover:text-[#aaa] text-xs border border-[#1a1a1a]"
+              className="text-foreground/50 hover:text-foreground/80 text-xs ring-1 ring-white/[.08] hover:ring-white/20"
             >
               Copy Link
             </Button>
