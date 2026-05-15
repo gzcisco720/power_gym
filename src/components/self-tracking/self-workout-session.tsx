@@ -312,7 +312,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="flex items-center justify-between px-4 sm:px-8 py-5 border-b border-foreground/10">
+      <div className="sticky top-0 z-10 bg-background flex items-center justify-between px-4 sm:px-8 py-5 border-b border-foreground/10">
         <div>
           <Link
             href={basePath}

@@ -200,7 +200,7 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
 
   return (
     <div className="space-y-4 pb-2">
-      <div className="flex items-center justify-between">
+      <div className="sticky top-0 z-10 bg-background flex items-center justify-between py-2 -mt-2">
         <Button
           variant="ghost"
           size="sm"
