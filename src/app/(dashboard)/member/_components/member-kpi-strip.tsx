@@ -100,7 +100,7 @@ export async function MemberKpiStrip() {
             ? `${kpi.bfDelta < 0 ? '↓' : '↑'} ${Math.abs(kpi.bfDelta).toFixed(1)}%`
             : undefined
         }
-        valueClass="text-emerald-400"
+        valueClass={kpi.bfImproved ? 'text-emerald-400' : undefined}
         deltaClass={kpi.bfImproved ? 'text-emerald-400' : undefined}
       />
       <KpiCell

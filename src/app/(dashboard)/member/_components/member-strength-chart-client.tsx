@@ -13,28 +13,32 @@ import {
 
 interface ExerciseHistory {
   exerciseName: string;
-  points: { date: string; oneRM: number }[];
+  points: { date: string; ts: number; oneRM: number }[];
 }
 
 interface Props {
   exercises: ExerciseHistory[];
 }
 
-type ChartRow = { date: string } & Record<string, number | string>;
+type ChartRow = { date: string; ts: number } & Record<string, number>;
 
-// Merge per-exercise point arrays into a flat array keyed by date
-function mergePoints(exercises: ExerciseHistory[]): ChartRow[] {
+// Merge per-exercise point arrays into a flat array keyed by date, sorted chronologically
+function mergePoints(exercises: ExerciseHistory[]): Omit<ChartRow, 'ts'>[] {
   const byDate = new Map<string, ChartRow>();
   for (const ex of exercises) {
     for (const p of ex.points) {
-      if (!byDate.has(p.date)) {
-        byDate.set(p.date, { date: p.date });
-      }
-      const row = byDate.get(p.date) as ChartRow;
+      const row = byDate.get(p.date) ?? { date: p.date, ts: p.ts };
       row[ex.exerciseName] = p.oneRM;
+      byDate.set(p.date, row);
     }
   }
-  return Array.from(byDate.values());
+  return Array.from(byDate.values())
+    .sort((a, b) => a.ts - b.ts)
+    .map((row) => {
+      const { ts, ...rest } = row;
+      void ts;
+      return rest;
+    });
 }
 
 const LINE_COLORS = ['#6366f1', '#f59e0b', '#ec4899'] as const;

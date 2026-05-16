@@ -27,6 +27,7 @@ export async function MemberStrengthChart() {
     exerciseName: pb.exerciseName,
     points: (histories[i] ?? []).map((p) => ({
       date: new Date(p.date).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }),
+      ts: new Date(p.date).getTime(),
       oneRM: parseFloat(p.estimatedOneRM.toFixed(1)),
     })),
   }));

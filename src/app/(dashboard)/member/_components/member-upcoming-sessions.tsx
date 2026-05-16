@@ -41,7 +41,7 @@ export async function MemberUpcomingSessions() {
             ? 'bg-primary/15 text-primary ring-1 ring-primary/25'
             : diffDays <= 2
               ? 'bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/25'
-              : 'bg-white/[.05] text-foreground/35 ring-1 ring-white/[.08]';
+              : 'bg-white/[.05] text-foreground/65 ring-1 ring-white/[.08]';
 
           const dayLabel = sessionDate.toLocaleDateString('en-GB', { weekday: 'short' });
           const timeLabel = `${dayLabel} ${s.startTime}`;
