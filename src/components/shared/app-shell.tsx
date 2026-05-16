@@ -12,6 +12,10 @@ import type { UserRole } from '@/types/auth';
 const NAV: Record<UserRole, { group: string; items: { href: string; label: string; exact?: boolean }[] }[]> = {
   member: [
     {
+      group: 'OVERVIEW',
+      items: [{ href: '/member', label: 'Dashboard', exact: true }],
+    },
+    {
       group: 'TRAINING',
       items: [
         { href: '/member/plan', label: 'My Plan' },
