@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { SessionDto } from './types';
 
+const INITIAL_COUNT = 10;
+
 interface Props {
   sessions: SessionDto[];
   defaultOpen?: boolean;
@@ -11,8 +13,12 @@ interface Props {
 
 export function MemberScheduleHistory({ sessions, defaultOpen = false }: Props) {
   const [open, setOpen] = useState(defaultOpen);
+  const [showAll, setShowAll] = useState(false);
 
   if (sessions.length === 0) return null;
+
+  const visible = showAll ? sessions : sessions.slice(0, INITIAL_COUNT);
+  const hiddenCount = sessions.length - INITIAL_COUNT;
 
   return (
     <div className="pt-3 border-t border-foreground/[.06]">
@@ -24,7 +30,7 @@ export function MemberScheduleHistory({ sessions, defaultOpen = false }: Props) 
       </button>
       {open && (
         <div className="mt-3 space-y-3">
-          {sessions.map((s) => {
+          {visible.map((s) => {
             const d = new Date(s.date);
             const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
             const isCancelled = s.status === 'cancelled';
@@ -54,6 +60,14 @@ export function MemberScheduleHistory({ sessions, defaultOpen = false }: Props) 
               </div>
             );
           })}
+          {!showAll && hiddenCount > 0 && (
+            <button
+              onClick={() => setShowAll(true)}
+              className="text-[12px] text-foreground/65 hover:text-foreground/80 transition-colors cursor-pointer"
+            >
+              ▸ Load more ({hiddenCount} more)
+            </button>
+          )}
         </div>
       )}
     </div>

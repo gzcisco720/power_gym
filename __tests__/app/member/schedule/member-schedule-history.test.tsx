@@ -13,6 +13,9 @@ const makeSession = (id: string, status: 'scheduled' | 'cancelled' = 'scheduled'
   isRecurring: false,
 });
 
+const makeSessions = (count: number) =>
+  Array.from({ length: count }, (_, i) => makeSession(`s${i + 1}`));
+
 describe('MemberScheduleHistory', () => {
   it('renders nothing when sessions is empty', () => {
     const { container } = render(<MemberScheduleHistory sessions={[]} />);
@@ -51,5 +54,24 @@ describe('MemberScheduleHistory', () => {
   it('starts expanded when defaultOpen is true', () => {
     render(<MemberScheduleHistory sessions={[makeSession('s1')]} defaultOpen />);
     expect(screen.getByText(/Fri, May 15/i)).toBeInTheDocument();
+  });
+
+  it('shows only first 10 when expanded with more than 10 sessions', () => {
+    render(<MemberScheduleHistory sessions={makeSessions(15)} defaultOpen />);
+    expect(screen.getAllByText(/Fri, May 15/i).length).toBe(10);
+    expect(screen.getByText(/Load more \(5 more\)/)).toBeInTheDocument();
+  });
+
+  it('reveals all sessions after clicking Load More', () => {
+    render(<MemberScheduleHistory sessions={makeSessions(13)} defaultOpen />);
+    expect(screen.getAllByText(/Fri, May 15/i).length).toBe(10);
+    fireEvent.click(screen.getByText(/Load more \(3 more\)/));
+    expect(screen.getAllByText(/Fri, May 15/i).length).toBe(13);
+    expect(screen.queryByText(/Load more/)).not.toBeInTheDocument();
+  });
+
+  it('does not show Load More when 10 or fewer sessions', () => {
+    render(<MemberScheduleHistory sessions={makeSessions(10)} defaultOpen />);
+    expect(screen.queryByText(/Load more/)).not.toBeInTheDocument();
   });
 });
