@@ -49,6 +49,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Member Dashboard Redesign (Design) | [member-dashboard-design.md](2026-05-16/plans/member-dashboard-design.md) | Approved |
 | Member Dashboard Redesign (Plan) | [member-dashboard-plan.md](2026-05-16/plans/member-dashboard-plan.md) | In Progress |
 | Member Schedule Redesign | [member-schedule-redesign.md](2026-05-16/plans/member-schedule-redesign.md) | Approved |
+| Member Schedule Redesign (Plan) | [member-schedule-redesign-plan.md](2026-05-16/plans/member-schedule-redesign-plan.md) | In Progress |
 
 ---
 
