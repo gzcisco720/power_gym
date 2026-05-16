@@ -2,29 +2,16 @@
 
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
 import { createCheckInAction, getCheckInSignatureAction } from '../actions';
 import { uploadFile } from '@/lib/storage/upload-file';
 import { CheckInAnimation } from '@/components/animations/check-in';
 import { StreakMilestoneAnimation } from '@/components/animations/streak-milestone';
+import { CheckInFeelingsSection } from './check-in-feelings-section';
+import { CheckInStatsSection } from './check-in-stats-section';
+import { CheckInDietSection } from './check-in-diet-section';
+import { CheckInPhotosSection } from './check-in-photos-section';
 
 const MILESTONES = [7, 14, 30, 60, 100];
-
-interface Props {
-  alreadySubmitted: boolean;
-}
-
-const RATINGS: { key: keyof RatingFields; label: string }[] = [
-  { key: 'sleepQuality', label: 'Sleep Quality' },
-  { key: 'energy', label: 'Energy' },
-  { key: 'recovery', label: 'Recovery' },
-  { key: 'stress', label: 'Stress' },
-  { key: 'fatigue', label: 'Fatigue' },
-  { key: 'hunger', label: 'Hunger' },
-  { key: 'digestion', label: 'Digestion' },
-];
 
 interface RatingFields {
   sleepQuality: number;
@@ -36,19 +23,30 @@ interface RatingFields {
   digestion: number;
 }
 
+interface StatValues {
+  weight: string;
+  waist: string;
+  steps: string;
+  exerciseMinutes: string;
+  walkRunDistance: string;
+  sleepHours: string;
+}
+
 const DEFAULT_RATINGS: RatingFields = {
   sleepQuality: 5, energy: 5, recovery: 5,
   stress: 5, fatigue: 5, hunger: 5, digestion: 5,
 };
 
+interface Props {
+  alreadySubmitted: boolean;
+}
+
 export function CheckInForm({ alreadySubmitted }: Props) {
   const [ratings, setRatings] = useState<RatingFields>(DEFAULT_RATINGS);
-  const [weight, setWeight] = useState('');
-  const [waist, setWaist] = useState('');
-  const [steps, setSteps] = useState('');
-  const [exerciseMinutes, setExerciseMinutes] = useState('');
-  const [walkRunDistance, setWalkRunDistance] = useState('');
-  const [sleepHours, setSleepHours] = useState('');
+  const [stats, setStats] = useState<StatValues>({
+    weight: '', waist: '', steps: '',
+    exerciseMinutes: '', walkRunDistance: '', sleepHours: '',
+  });
   const [dietDetails, setDietDetails] = useState('');
   const [stuckToDiet, setStuckToDiet] = useState<'yes' | 'no' | 'partial'>('yes');
   const [wellbeing, setWellbeing] = useState('');
@@ -84,7 +82,6 @@ export function CheckInForm({ alreadySubmitted }: Props) {
     try {
       const result = await getCheckInSignatureAction();
       if (result.error) { setError(result.error); return; }
-
       const urls: string[] = [];
       for (const file of files) {
         const url = await uploadFile(file, result.config!);
@@ -104,12 +101,12 @@ export function CheckInForm({ alreadySubmitted }: Props) {
     startTransition(async () => {
       const result = await createCheckInAction({
         ...ratings,
-        weight: weight ? Number(weight) : null,
-        waist: waist ? Number(waist) : null,
-        steps: steps ? Number(steps) : null,
-        exerciseMinutes: exerciseMinutes ? Number(exerciseMinutes) : null,
-        walkRunDistance: walkRunDistance ? Number(walkRunDistance) : null,
-        sleepHours: sleepHours ? Number(sleepHours) : null,
+        weight: stats.weight ? Number(stats.weight) : null,
+        waist: stats.waist ? Number(stats.waist) : null,
+        steps: stats.steps ? Number(stats.steps) : null,
+        exerciseMinutes: stats.exerciseMinutes ? Number(stats.exerciseMinutes) : null,
+        walkRunDistance: stats.walkRunDistance ? Number(stats.walkRunDistance) : null,
+        sleepHours: stats.sleepHours ? Number(stats.sleepHours) : null,
         dietDetails,
         stuckToDiet,
         wellbeing,
@@ -134,130 +131,33 @@ export function CheckInForm({ alreadySubmitted }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      <section>
-        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[.1em] text-foreground/65">
-          Weekly Ratings (1–10)
-        </h3>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          {RATINGS.map(({ key, label }) => (
-            <div key={key}>
-              <div className="mb-1 flex items-center justify-between">
-                <label className="text-[13px] text-foreground/65">{label}</label>
-                <span className="text-[13px] font-semibold text-foreground">{ratings[key]}</span>
-              </div>
-              <input
-                type="range"
-                min={1}
-                max={10}
-                value={ratings[key]}
-                onChange={(e) => setRatings((r) => ({ ...r, [key]: Number(e.target.value) }))}
-                className="w-full accent-primary"
-              />
-            </div>
-          ))}
-        </div>
-      </section>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <CheckInFeelingsSection
+        ratings={ratings}
+        onChange={(key, value) => setRatings((r) => ({ ...r, [key]: value }))}
+      />
 
-      <section>
-        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[.1em] text-foreground/65">
-          Weekly Stats
-        </h3>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          {[
-            { label: 'Weight (kg)', val: weight, set: setWeight },
-            { label: 'Waist (cm)', val: waist, set: setWaist },
-            { label: 'Steps', val: steps, set: setSteps },
-            { label: 'Exercise (min)', val: exerciseMinutes, set: setExerciseMinutes },
-            { label: 'Walk/Run (km)', val: walkRunDistance, set: setWalkRunDistance },
-            { label: 'Sleep (hrs)', val: sleepHours, set: setSleepHours },
-          ].map(({ label, val, set }) => (
-            <div key={label}>
-              <label className="mb-1 block text-[12px] text-foreground/65">{label}</label>
-              <Input
-                type="number"
-                step="any"
-                value={val}
-                onChange={(e) => set(e.target.value)}
-                placeholder="—"
-              />
-            </div>
-          ))}
-        </div>
-      </section>
+      <CheckInStatsSection
+        values={stats}
+        onChange={(field, value) => setStats((s) => ({ ...s, [field]: value }))}
+      />
 
-      <section>
-        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[.1em] text-foreground/65">
-          Diet Adherence
-        </h3>
-        <div className="mb-4 flex gap-2">
-          {(['yes', 'partial', 'no'] as const).map((opt) => (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => setStuckToDiet(opt)}
-              className={cn(
-                'rounded-md border px-4 py-2 text-[12px] font-medium capitalize transition-colors',
-                stuckToDiet === opt
-                  ? 'border-primary bg-primary/15 text-primary-light'
-                  : 'border-foreground/20 text-foreground/65 hover:border-foreground/40 hover:text-foreground/80',
-              )}
-            >
-              {opt}
-            </button>
-          ))}
-        </div>
-        <Textarea
-          value={dietDetails}
-          onChange={(e) => setDietDetails(e.target.value)}
-          placeholder="Describe your diet this week..."
-          rows={3}
-        />
-      </section>
+      <CheckInDietSection
+        stuckToDiet={stuckToDiet}
+        onStuckToDiet={setStuckToDiet}
+        dietDetails={dietDetails}
+        onDietDetails={setDietDetails}
+        wellbeing={wellbeing}
+        onWellbeing={setWellbeing}
+        notes={notes}
+        onNotes={setNotes}
+      />
 
-      <section className="space-y-4">
-        <div>
-          <label className="mb-1 block text-[13px] text-foreground/65">Wellbeing</label>
-          <Textarea
-            value={wellbeing}
-            onChange={(e) => setWellbeing(e.target.value)}
-            placeholder="How are you feeling overall?"
-            rows={3}
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-[13px] text-foreground/65">Notes</label>
-          <Textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Anything else to share?"
-            rows={3}
-          />
-        </div>
-      </section>
-
-      <section>
-        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[.1em] text-foreground/65">
-          Progress Photos <span className="normal-case font-normal text-foreground/40">(max 5)</span>
-        </h3>
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          disabled={photos.length >= 5 || uploadingPhotos}
-          onChange={handlePhotoChange}
-          className="text-[12px] text-foreground/65 file:mr-3 file:rounded-md file:border file:border-foreground/20 file:bg-transparent file:px-3 file:py-1 file:text-[11px] file:text-foreground/65 file:transition-colors file:hover:border-foreground/40 disabled:opacity-50"
-        />
-        {uploadingPhotos && <p className="mt-2 text-[12px] text-foreground/65">Uploading...</p>}
-        {photos.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {photos.map((url, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={i} src={url} alt={`Photo ${i + 1}`} className="h-16 w-16 rounded object-cover ring-1 ring-foreground/[.1]" />
-            ))}
-          </div>
-        )}
-      </section>
+      <CheckInPhotosSection
+        photos={photos}
+        uploading={uploadingPhotos}
+        onFileChange={handlePhotoChange}
+      />
 
       {error && <p className="text-[13px] text-destructive">{error}</p>}
 
