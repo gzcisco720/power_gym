@@ -51,7 +51,7 @@ export async function MemberUpcomingSessions() {
               key={String(s._id)}
               className="flex items-center gap-3 py-2.5 border-b border-white/[.04] last:border-0"
             >
-              <div className="text-[10px] font-bold text-primary min-w-[60px]">{timeLabel}</div>
+              <div className="text-[10px] font-bold text-primary-light min-w-[60px]">{timeLabel}</div>
               <div className="flex-1 min-w-0">
                 <div className="text-[11px] font-semibold text-foreground truncate">
                   {s.memberIds.length > 1 ? `Group (${s.memberIds.length})` : 'Training session'}

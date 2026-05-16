@@ -20,14 +20,18 @@ interface Props {
   exercises: ExerciseHistory[];
 }
 
+type ChartRow = { date: string } & Record<string, number | string>;
+
 // Merge per-exercise point arrays into a flat array keyed by date
-function mergePoints(exercises: ExerciseHistory[]): Record<string, number>[] {
-  const byDate = new Map<string, Record<string, number>>();
+function mergePoints(exercises: ExerciseHistory[]): ChartRow[] {
+  const byDate = new Map<string, ChartRow>();
   for (const ex of exercises) {
     for (const p of ex.points) {
-      const row = byDate.get(p.date) ?? { date: p.date };
+      if (!byDate.has(p.date)) {
+        byDate.set(p.date, { date: p.date });
+      }
+      const row = byDate.get(p.date) as ChartRow;
       row[ex.exerciseName] = p.oneRM;
-      byDate.set(p.date, row);
     }
   }
   return Array.from(byDate.values());

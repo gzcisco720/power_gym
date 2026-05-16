@@ -1,14 +1,12 @@
 import { Suspense } from 'react';
 import { auth } from '@/lib/auth/auth';
-import { PageHeader } from '@/components/shared/page-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MemberHero } from './_components/member-hero';
-import { MemberTodayWorkout } from './_components/member-today-workout';
-import { MemberKeyNumbers } from './_components/member-key-numbers';
-import { MemberNutritionTargets } from './_components/member-nutrition-targets';
+import { MemberKpiStrip } from './_components/member-kpi-strip';
+import { MemberBodyChart } from './_components/member-body-chart';
+import { MemberStrengthChart } from './_components/member-strength-chart';
+import { MemberNutritionToday } from './_components/member-nutrition-today';
 import { MemberUpcomingSessions } from './_components/member-upcoming-sessions';
-import { MemberBodyComposition } from './_components/member-body-composition';
-import { MemberPersonalBests } from './_components/member-personal-bests';
 
 export default async function MemberDashboardPage() {
   const session = await auth();
@@ -16,40 +14,49 @@ export default async function MemberDashboardPage() {
 
   return (
     <div>
-      <PageHeader title="Dashboard" />
-      <div className="px-4 sm:px-8 py-6">
-        <Suspense fallback={<Skeleton className="h-14 mb-4 rounded-xl" />}>
-          <MemberHero />
-        </Suspense>
-        <Suspense fallback={<Skeleton className="h-28 mb-4 rounded-xl" />}>
-          <MemberTodayWorkout />
-        </Suspense>
+      <Suspense fallback={<Skeleton className="h-52 rounded-none" />}>
+        <MemberHero />
+      </Suspense>
+
+      <div className="py-4 space-y-4">
         <Suspense
           fallback={
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-[72px] rounded-xl" />
+            <div className="grid grid-cols-4 gap-px mx-4 sm:mx-8">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-[72px]" />
               ))}
             </div>
           }
         >
-          <MemberKeyNumbers />
+          <MemberKpiStrip />
         </Suspense>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          <Suspense fallback={<Skeleton className="h-40 rounded-xl" />}>
-            <MemberNutritionTargets />
-          </Suspense>
-          <Suspense fallback={<Skeleton className="h-40 rounded-xl" />}>
-            <MemberUpcomingSessions />
-          </Suspense>
+
+        <div className="px-4 sm:px-8">
+          <div className="text-[11px] font-semibold uppercase tracking-[.07em] text-foreground/65 mb-3">
+            Progress
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Suspense fallback={<Skeleton className="h-[164px] rounded-xl" />}>
+              <MemberBodyChart />
+            </Suspense>
+            <Suspense fallback={<Skeleton className="h-[164px] rounded-xl" />}>
+              <MemberStrengthChart />
+            </Suspense>
+          </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Suspense fallback={<Skeleton className="h-48 rounded-xl" />}>
-            <MemberBodyComposition />
-          </Suspense>
-          <Suspense fallback={<Skeleton className="h-48 rounded-xl" />}>
-            <MemberPersonalBests />
-          </Suspense>
+
+        <div className="px-4 sm:px-8">
+          <div className="text-[11px] font-semibold uppercase tracking-[.07em] text-foreground/65 mb-3">
+            Today &amp; Upcoming
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Suspense fallback={<Skeleton className="h-[160px] rounded-xl" />}>
+              <MemberNutritionToday />
+            </Suspense>
+            <Suspense fallback={<Skeleton className="h-[160px] rounded-xl" />}>
+              <MemberUpcomingSessions />
+            </Suspense>
+          </div>
         </div>
       </div>
     </div>
