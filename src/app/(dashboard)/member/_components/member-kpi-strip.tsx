@@ -41,6 +41,7 @@ export function buildKpiData({ sessionsThisMonth, latest, previous, topPb, now }
     sessionsThisMonth,
     weightKg: latest ? latest.weight.toFixed(1) : '—',
     weightDelta,
+    // Dashboard assumes weight loss = improvement; this may need revisiting for members in a bulk phase
     weightImproved: weightDelta !== null && weightDelta < 0,
     bfPct: latest ? latest.bodyFatPct.toFixed(1) : '—',
     bfDelta,
@@ -86,7 +87,7 @@ export async function MemberKpiStrip() {
         label="Weight kg"
         delta={
           kpi.weightDelta !== null
-            ? `${kpi.weightDelta < 0 ? '↓' : '↑'} ${Math.abs(kpi.weightDelta)} vs last`
+            ? `${kpi.weightDelta < 0 ? '↓' : '↑'} ${Math.abs(kpi.weightDelta).toFixed(1)} vs last`
             : undefined
         }
         deltaClass={kpi.weightImproved ? 'text-emerald-400' : undefined}
