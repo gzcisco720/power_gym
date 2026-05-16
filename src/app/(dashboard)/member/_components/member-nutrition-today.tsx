@@ -68,11 +68,11 @@ export async function MemberNutritionToday() {
   const allItems = dayType.meals.flatMap((m) => m.items);
   const macros = computeMacros(allItems);
 
-  const bars = [
-    { label: 'Protein', value: Math.round(macros.protein), unit: 'g', color: 'bg-emerald-500', trackColor: 'bg-emerald-500/15' },
-    { label: 'Carbs', value: Math.round(macros.carbs), unit: 'g', color: 'bg-amber-500', trackColor: 'bg-amber-500/15' },
-    { label: 'Fat', value: Math.round(macros.fat), unit: 'g', color: 'bg-pink-500', trackColor: 'bg-pink-500/15' },
-    { label: 'Calories', value: Math.round(macros.kcal), unit: 'kcal', color: 'bg-foreground/30', trackColor: 'bg-white/[.04]' },
+  const rows = [
+    { label: 'Protein', value: Math.round(macros.protein), unit: 'g', colorClass: 'text-emerald-400' },
+    { label: 'Carbs', value: Math.round(macros.carbs), unit: 'g', colorClass: 'text-amber-400' },
+    { label: 'Fat', value: Math.round(macros.fat), unit: 'g', colorClass: 'text-pink-400' },
+    { label: 'Calories', value: Math.round(macros.kcal), unit: 'kcal', colorClass: 'text-foreground/65' },
   ];
 
   return (
@@ -85,18 +85,13 @@ export async function MemberNutritionToday() {
           {dayType.name}
         </span>
       </div>
-      <div className="space-y-3">
-        {bars.map(({ label, value, unit, color, trackColor }) => (
-          <div key={label}>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] text-foreground/65">{label}</span>
-              <span className="text-[12px] font-bold text-foreground/80">
-                {value} <span className="text-[10px] text-foreground/65 font-normal">{unit}</span>
-              </span>
-            </div>
-            <div className={`h-1.5 rounded-full ${trackColor}`}>
-              <div className={`h-full w-full rounded-full ${color}`} />
-            </div>
+      <div className="space-y-2.5">
+        {rows.map(({ label, value, unit, colorClass }) => (
+          <div key={label} className="flex items-center justify-between">
+            <span className="text-[10px] text-foreground/65 uppercase tracking-[.05em]">{label}</span>
+            <span className={`text-[14px] font-bold ${colorClass}`}>
+              {value} <span className="text-[10px] text-foreground/65 font-normal">{unit}</span>
+            </span>
           </div>
         ))}
       </div>

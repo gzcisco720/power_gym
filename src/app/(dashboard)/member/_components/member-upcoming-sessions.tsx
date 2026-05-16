@@ -13,10 +13,10 @@ export async function MemberUpcomingSessions() {
   if (sessions.length === 0) {
     return (
       <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4">
-        <div className="text-[9px] uppercase tracking-[2px] text-foreground/30 font-semibold mb-3">
+        <div className="text-[9px] uppercase tracking-[2px] text-foreground/65 font-semibold mb-3">
           Upcoming Sessions
         </div>
-        <p className="text-[11px] text-foreground/40 text-center py-2">No sessions scheduled</p>
+        <p className="text-[11px] text-foreground/65 text-center py-2">No sessions scheduled</p>
       </div>
     );
   }
@@ -26,7 +26,7 @@ export async function MemberUpcomingSessions() {
 
   return (
     <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4">
-      <div className="text-[9px] uppercase tracking-[2px] text-foreground/30 font-semibold mb-3">
+      <div className="text-[9px] uppercase tracking-[2px] text-foreground/65 font-semibold mb-3">
         Upcoming Sessions
       </div>
       <div className="space-y-0">
