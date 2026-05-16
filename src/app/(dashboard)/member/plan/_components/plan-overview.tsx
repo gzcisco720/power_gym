@@ -150,7 +150,7 @@ export function PlanOverview({
   return (
     <div className="flex flex-col min-h-screen">
       {activePrompt && (
-        <div className="px-4 sm:px-8 pt-4">
+        <div className="px-4 sm:px-8 py-4">
           <ActiveSessionPrompt
             dayName={activePrompt.dayName}
             startedAtIso={activePrompt.startedAtIso}
