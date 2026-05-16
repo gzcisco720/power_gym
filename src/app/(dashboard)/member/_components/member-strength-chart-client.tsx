@@ -30,9 +30,7 @@ function mergePoints(exercises: ExerciseHistory[]): Record<string, number>[] {
       byDate.set(p.date, row);
     }
   }
-  return Array.from(byDate.values()).sort((a, b) =>
-    String(a.date).localeCompare(String(b.date)),
-  );
+  return Array.from(byDate.values());
 }
 
 const LINE_COLORS = ['#6366f1', '#f59e0b', '#ec4899'] as const;
