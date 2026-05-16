@@ -21,24 +21,24 @@ describe('MemberScheduleTimeline', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('shows "即将到来" when heroIsToday is false', () => {
+  it('shows "Upcoming" when heroIsToday is false', () => {
     render(
       <MemberScheduleTimeline
         sessions={[makeSession('s1', '2026-05-24T12:00:00.000Z')]}
         heroIsToday={false}
       />,
     );
-    expect(screen.getByText('即将到来')).toBeInTheDocument();
+    expect(screen.getByText('Upcoming')).toBeInTheDocument();
   });
 
-  it('shows "接下来" when heroIsToday is true', () => {
+  it('shows "Coming Up" when heroIsToday is true', () => {
     render(
       <MemberScheduleTimeline
         sessions={[makeSession('s1', '2026-05-24T12:00:00.000Z')]}
         heroIsToday={true}
       />,
     );
-    expect(screen.getByText('接下来')).toBeInTheDocument();
+    expect(screen.getByText('Coming Up')).toBeInTheDocument();
   });
 
   it('renders each session date and time', () => {

@@ -39,7 +39,7 @@ export function MemberScheduleHero({ session }: Props) {
     >
       <div className="flex items-start justify-between mb-3">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-primary-light">
-          {isToday ? '今天的课' : '下一次课'}
+          {isToday ? "Today's Session" : 'Next Session'}
         </span>
         <span
           className={cn(
@@ -49,7 +49,7 @@ export function MemberScheduleHero({ session }: Props) {
               : 'bg-primary/[.12] text-primary-light',
           )}
         >
-          {isToday ? '今天' : `还有 ${days} 天`}
+          {isToday ? 'Today' : `in ${days} day${days === 1 ? '' : 's'}`}
         </span>
       </div>
       <div className="text-[18px] font-bold text-foreground">{dateLabel}</div>
@@ -61,7 +61,7 @@ export function MemberScheduleHero({ session }: Props) {
       </div>
       {session.isRecurring && (
         <span className="inline-block mt-3 text-[10px] bg-primary/[.12] text-primary-light rounded px-2 py-0.5 border border-primary/[.16]">
-          ↺ 每周固定
+          ↺ Recurring
         </span>
       )}
     </div>

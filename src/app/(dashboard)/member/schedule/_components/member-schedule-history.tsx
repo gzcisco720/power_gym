@@ -20,7 +20,7 @@ export function MemberScheduleHistory({ sessions, defaultOpen = false }: Props) 
         onClick={() => setOpen((v) => !v)}
         className="text-[12px] text-foreground/65 hover:text-foreground/80 transition-colors cursor-pointer"
       >
-        {open ? '▾ 隐藏历史记录' : `▸ 历史记录（${sessions.length} 条）`}
+        {open ? '▾ Hide history' : `▸ Show history (${sessions.length})`}
       </button>
       {open && (
         <div className="mt-3 space-y-3">
@@ -47,7 +47,7 @@ export function MemberScheduleHistory({ sessions, defaultOpen = false }: Props) 
                     )}
                   >
                     {isCancelled
-                      ? '已取消'
+                      ? 'Cancelled'
                       : `${s.startTime} – ${s.endTime} · ${s.trainerName}`}
                   </div>
                 </div>

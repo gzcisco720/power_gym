@@ -12,7 +12,7 @@ export function MemberScheduleTimeline({ sessions, heroIsToday }: Props) {
   return (
     <div>
       <div className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65 mb-3">
-        {heroIsToday ? '接下来' : '即将到来'}
+        {heroIsToday ? 'Coming Up' : 'Upcoming'}
       </div>
       <div>
         {sessions.map((s, i) => {

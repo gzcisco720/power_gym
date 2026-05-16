@@ -56,16 +56,16 @@ describe('MemberScheduleHero', () => {
     expect(screen.getByText(/Coach Mike/)).toBeInTheDocument();
   });
 
-  it('shows "还有 N 天" badge for a future session', () => {
+  it('shows "in N days" badge for a future session', () => {
     render(<MemberScheduleHero session={makeSession()} />);
-    expect(screen.getByText('还有 2 天')).toBeInTheDocument();
-    expect(screen.getByText('下一次课')).toBeInTheDocument();
+    expect(screen.getByText('in 2 days')).toBeInTheDocument();
+    expect(screen.getByText('Next Session')).toBeInTheDocument();
   });
 
-  it('shows "今天" badge when session is today', () => {
+  it('shows "Today" badge when session is today', () => {
     render(<MemberScheduleHero session={makeSession({ date: '2026-05-20T12:00:00.000Z' })} />);
-    expect(screen.getByText('今天')).toBeInTheDocument();
-    expect(screen.getByText('今天的课')).toBeInTheDocument();
+    expect(screen.getByText('Today')).toBeInTheDocument();
+    expect(screen.getByText("Today's Session")).toBeInTheDocument();
   });
 
   it('shows "1-on-1" for memberCount 1', () => {
@@ -80,11 +80,11 @@ describe('MemberScheduleHero', () => {
 
   it('shows recurring badge when isRecurring is true', () => {
     render(<MemberScheduleHero session={makeSession({ isRecurring: true })} />);
-    expect(screen.getByText(/↺/)).toBeInTheDocument();
+    expect(screen.getByText(/↺ Recurring/)).toBeInTheDocument();
   });
 
   it('does not show recurring badge when isRecurring is false', () => {
     render(<MemberScheduleHero session={makeSession({ isRecurring: false })} />);
-    expect(screen.queryByText(/↺/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/↺ Recurring/)).not.toBeInTheDocument();
   });
 });

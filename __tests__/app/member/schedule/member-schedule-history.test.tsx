@@ -21,7 +21,7 @@ describe('MemberScheduleHistory', () => {
 
   it('shows toggle button with count', () => {
     render(<MemberScheduleHistory sessions={[makeSession('s1'), makeSession('s2')]} />);
-    expect(screen.getByText(/历史记录（2 条）/)).toBeInTheDocument();
+    expect(screen.getByText(/Show history \(2\)/)).toBeInTheDocument();
   });
 
   it('is collapsed by default — sessions not visible', () => {
@@ -31,22 +31,21 @@ describe('MemberScheduleHistory', () => {
 
   it('expands when toggle is clicked', () => {
     render(<MemberScheduleHistory sessions={[makeSession('s1')]} />);
-    fireEvent.click(screen.getByText(/历史记录（1 条）/));
+    fireEvent.click(screen.getByText(/Show history \(1\)/));
     expect(screen.getByText(/Fri, May 15/i)).toBeInTheDocument();
   });
 
   it('collapses again on second click', () => {
     render(<MemberScheduleHistory sessions={[makeSession('s1')]} />);
-    const toggle = screen.getByText(/历史记录（1 条）/);
-    fireEvent.click(toggle);
-    fireEvent.click(screen.getByText(/隐藏历史记录/));
+    fireEvent.click(screen.getByText(/Show history \(1\)/));
+    fireEvent.click(screen.getByText(/Hide history/));
     expect(screen.queryByText(/May 15/)).not.toBeInTheDocument();
   });
 
-  it('shows "已取消" for cancelled sessions when expanded', () => {
+  it('shows "Cancelled" for cancelled sessions when expanded', () => {
     render(<MemberScheduleHistory sessions={[makeSession('s1', 'cancelled')]} />);
-    fireEvent.click(screen.getByText(/历史记录（1 条）/));
-    expect(screen.getByText('已取消')).toBeInTheDocument();
+    fireEvent.click(screen.getByText(/Show history \(1\)/));
+    expect(screen.getByText('Cancelled')).toBeInTheDocument();
   });
 
   it('starts expanded when defaultOpen is true', () => {
