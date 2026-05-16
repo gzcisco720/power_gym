@@ -20,7 +20,7 @@ export default async function MemberCheckInPage() {
   return (
     <div>
       <PageHeader title="Weekly Check-In" subtitle="Log your progress for this week" />
-      <div className="px-4 sm:px-8 py-7 max-w-2xl">
+      <div className="px-4 sm:px-8 py-7 max-w-2xl mx-auto">
         <CheckInForm alreadySubmitted={alreadySubmitted} />
       </div>
     </div>
