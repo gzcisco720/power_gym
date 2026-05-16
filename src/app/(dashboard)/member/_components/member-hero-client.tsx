@@ -12,7 +12,7 @@ export function MemberHeroClient({ greeting, dateLabel }: Props) {
   return (
     <motion.div initial="hidden" animate="visible" variants={variants.fadeSlideUp}>
       <h2 className="text-[20px] font-extrabold tracking-tight text-foreground">{greeting}</h2>
-      <p className="text-[11px] text-foreground/40 mt-0.5">{dateLabel}</p>
+      <p className="text-[11px] text-foreground/65 mt-0.5">{dateLabel}</p>
     </motion.div>
   );
 }

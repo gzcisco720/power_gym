@@ -75,7 +75,7 @@ export async function MemberHero() {
               >
                 {streak}
               </div>
-              <div className="text-[9px] text-foreground/35 uppercase tracking-[.07em] mt-0.5">
+              <div className="text-[9px] text-foreground/65 uppercase tracking-[.07em] mt-0.5">
                 day streak 🔥
               </div>
             </div>
@@ -96,23 +96,24 @@ export async function MemberHero() {
                 {shown.map((e) => (
                   <span
                     key={e.exerciseName}
-                    className="text-[9px] bg-white/[.06] text-foreground/50 ring-1 ring-white/[.08] rounded px-2 py-0.5"
+                    className="text-[9px] bg-white/[.06] text-foreground/65 ring-1 ring-white/[.08] rounded px-2 py-0.5"
                   >
                     {e.exerciseName}
                   </span>
                 ))}
                 {overflow > 0 && (
-                  <span className="text-[9px] bg-white/[.06] text-foreground/40 ring-1 ring-white/[.08] rounded px-2 py-0.5">
+                  <span className="text-[9px] bg-white/[.06] text-foreground/65 ring-1 ring-white/[.08] rounded px-2 py-0.5">
                     +{overflow} more
                   </span>
                 )}
               </div>
-              <div className="text-[11px] text-foreground/35 mt-2">
+              <div className="text-[11px] text-foreground/65 mt-2">
                 {day.exercises.length} exercises · {totalSets} sets · ~{duration} min
               </div>
             </div>
             <Link
               href="/member/plan"
+              aria-label="Start today's workout"
               className="flex-shrink-0 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-[13px] font-bold rounded-xl px-4 py-2.5 hover:opacity-90 transition-opacity shadow-lg shadow-primary/[.25]"
             >
               Start →
@@ -120,7 +121,7 @@ export async function MemberHero() {
           </div>
         ) : (
           <div className="bg-white/[.02] ring-1 ring-foreground/[.06] rounded-2xl p-4 text-center">
-            <p className="text-[12px] text-foreground/40">
+            <p className="text-[12px] text-foreground/65">
               Your trainer hasn&apos;t assigned a plan yet
             </p>
           </div>
