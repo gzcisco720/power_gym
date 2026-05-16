@@ -187,7 +187,7 @@ export function PlanOverview({
               key={day.dayNumber}
               onClick={() => setActiveDay(day.dayNumber)}
               className={cn(
-                'flex flex-col items-center text-center py-3 px-5 shrink-0 border-b-2 transition-colors',
+                'flex flex-col items-center text-center py-3 px-5 shrink-0 border-b-2 transition-colors cursor-pointer',
                 activeDay === day.dayNumber
                   ? 'border-primary text-foreground'
                   : 'border-transparent text-foreground/40 hover:text-foreground/65',
