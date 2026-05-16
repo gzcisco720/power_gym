@@ -46,6 +46,8 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Per-Trainer Hub Redesign (Plan) | [per-trainer-hub-redesign-plan.md](2026-05-15/plans/per-trainer-hub-redesign-plan.md) | Complete |
 | Invites Page Redesign (Plan) | [invites-redesign-plan.md](2026-05-15/plans/invites-redesign-plan.md) | Complete |
 | Trainer UI Redesign (Plan) | [trainer-ui-redesign-plan.md](2026-05-15/plans/trainer-ui-redesign-plan.md) | Complete |
+| Member Dashboard Redesign (Design) | [member-dashboard-design.md](2026-05-16/plans/member-dashboard-design.md) | Approved |
+| Member Dashboard Redesign (Plan) | [member-dashboard-plan.md](2026-05-16/plans/member-dashboard-plan.md) | In Progress |
 
 ---
 

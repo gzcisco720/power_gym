@@ -126,7 +126,7 @@ export function MemberProfileTab(props: Props) {
                 onClick={handleEmailSave}
                 disabled={savingEmail || !newEmail}
                 size="sm"
-                className="bg-white text-black hover:bg-white/90 font-semibold disabled:opacity-50 cursor-pointer"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold disabled:opacity-50 cursor-pointer"
               >
                 {savingEmail ? 'Saving...' : 'Save'}
               </Button>
@@ -189,7 +189,7 @@ export function MemberProfileTab(props: Props) {
       </div>
 
       <div className="sticky bottom-0 -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 bg-background/95 backdrop-blur-sm border-t border-border/60 flex justify-end">
-        <Button type="submit" disabled={saving} className="bg-white text-black hover:bg-white/90 font-semibold disabled:opacity-50 cursor-pointer">
+        <Button type="submit" disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold disabled:opacity-50 cursor-pointer">
           {saving ? 'Saving...' : 'Save Profile'}
         </Button>
       </div>

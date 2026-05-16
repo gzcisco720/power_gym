@@ -66,9 +66,9 @@ export function CheckInForm({ alreadySubmitted }: Props) {
 
   if (alreadySubmitted || submitted) {
     return (
-      <div className="rounded-lg border border-[#1a1a1a] bg-[#0d0d0d] p-6 text-center">
-        <p className="text-[#888]">You&apos;ve already submitted your check-in this week.</p>
-        <p className="mt-1 text-[12px] text-[#555]">Check back next week.</p>
+      <div className="bg-white/[.02] ring-1 ring-foreground/[.06] rounded-xl p-6 text-center">
+        <p className="text-foreground/65">You&apos;ve already submitted your check-in this week.</p>
+        <p className="mt-1 text-[12px] text-foreground/40">Check back next week.</p>
       </div>
     );
   }
@@ -136,15 +136,15 @@ export function CheckInForm({ alreadySubmitted }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <section>
-        <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-[1.5px] text-[#555]">
+        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[.1em] text-foreground/65">
           Weekly Ratings (1–10)
         </h3>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           {RATINGS.map(({ key, label }) => (
             <div key={key}>
               <div className="mb-1 flex items-center justify-between">
-                <label className="text-[13px] text-[#888]">{label}</label>
-                <span className="text-[13px] font-semibold text-white">{ratings[key]}</span>
+                <label className="text-[13px] text-foreground/65">{label}</label>
+                <span className="text-[13px] font-semibold text-foreground">{ratings[key]}</span>
               </div>
               <input
                 type="range"
@@ -152,7 +152,7 @@ export function CheckInForm({ alreadySubmitted }: Props) {
                 max={10}
                 value={ratings[key]}
                 onChange={(e) => setRatings((r) => ({ ...r, [key]: Number(e.target.value) }))}
-                className="w-full accent-white"
+                className="w-full accent-primary"
               />
             </div>
           ))}
@@ -160,7 +160,7 @@ export function CheckInForm({ alreadySubmitted }: Props) {
       </section>
 
       <section>
-        <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-[1.5px] text-[#555]">
+        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[.1em] text-foreground/65">
           Weekly Stats
         </h3>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -173,13 +173,12 @@ export function CheckInForm({ alreadySubmitted }: Props) {
             { label: 'Sleep (hrs)', val: sleepHours, set: setSleepHours },
           ].map(({ label, val, set }) => (
             <div key={label}>
-              <label className="mb-1 block text-[12px] text-[#666]">{label}</label>
+              <label className="mb-1 block text-[12px] text-foreground/65">{label}</label>
               <Input
                 type="number"
                 step="any"
                 value={val}
                 onChange={(e) => set(e.target.value)}
-                className="border-[#1a1a1a] bg-[#0d0d0d] text-white placeholder:text-[#333]"
                 placeholder="—"
               />
             </div>
@@ -188,7 +187,7 @@ export function CheckInForm({ alreadySubmitted }: Props) {
       </section>
 
       <section>
-        <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-[1.5px] text-[#555]">
+        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[.1em] text-foreground/65">
           Diet Adherence
         </h3>
         <div className="mb-4 flex gap-2">
@@ -200,8 +199,8 @@ export function CheckInForm({ alreadySubmitted }: Props) {
               className={cn(
                 'rounded-md border px-4 py-2 text-[12px] font-medium capitalize transition-colors',
                 stuckToDiet === opt
-                  ? 'border-white bg-white text-black'
-                  : 'border-[#222] text-[#666] hover:border-[#444] hover:text-[#999]',
+                  ? 'border-primary bg-primary/15 text-primary-light'
+                  : 'border-foreground/20 text-foreground/65 hover:border-foreground/40 hover:text-foreground/80',
               )}
             >
               {opt}
@@ -212,37 +211,34 @@ export function CheckInForm({ alreadySubmitted }: Props) {
           value={dietDetails}
           onChange={(e) => setDietDetails(e.target.value)}
           placeholder="Describe your diet this week..."
-          className="border-[#1a1a1a] bg-[#0d0d0d] text-white placeholder:text-[#333]"
           rows={3}
         />
       </section>
 
       <section className="space-y-4">
         <div>
-          <label className="mb-1 block text-[13px] text-[#888]">Wellbeing</label>
+          <label className="mb-1 block text-[13px] text-foreground/65">Wellbeing</label>
           <Textarea
             value={wellbeing}
             onChange={(e) => setWellbeing(e.target.value)}
             placeholder="How are you feeling overall?"
-            className="border-[#1a1a1a] bg-[#0d0d0d] text-white placeholder:text-[#333]"
             rows={3}
           />
         </div>
         <div>
-          <label className="mb-1 block text-[13px] text-[#888]">Notes</label>
+          <label className="mb-1 block text-[13px] text-foreground/65">Notes</label>
           <Textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Anything else to share?"
-            className="border-[#1a1a1a] bg-[#0d0d0d] text-white placeholder:text-[#333]"
             rows={3}
           />
         </div>
       </section>
 
       <section>
-        <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-[1.5px] text-[#555]">
-          Progress Photos (max 5)
+        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[.1em] text-foreground/65">
+          Progress Photos <span className="normal-case font-normal text-foreground/40">(max 5)</span>
         </h3>
         <input
           type="file"
@@ -250,25 +246,25 @@ export function CheckInForm({ alreadySubmitted }: Props) {
           multiple
           disabled={photos.length >= 5 || uploadingPhotos}
           onChange={handlePhotoChange}
-          className="text-[13px] text-[#888] file:mr-4 file:rounded-md file:border file:border-[#222] file:bg-transparent file:px-3 file:py-1 file:text-[12px] file:text-[#888] disabled:opacity-50"
+          className="text-[12px] text-foreground/65 file:mr-3 file:rounded-md file:border file:border-foreground/20 file:bg-transparent file:px-3 file:py-1 file:text-[11px] file:text-foreground/65 file:transition-colors file:hover:border-foreground/40 disabled:opacity-50"
         />
-        {uploadingPhotos && <p className="mt-2 text-[12px] text-[#555]">Uploading...</p>}
+        {uploadingPhotos && <p className="mt-2 text-[12px] text-foreground/65">Uploading...</p>}
         {photos.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
             {photos.map((url, i) => (
               // eslint-disable-next-line @next/next/no-img-element
-              <img key={i} src={url} alt={`Photo ${i + 1}`} className="h-16 w-16 rounded object-cover" />
+              <img key={i} src={url} alt={`Photo ${i + 1}`} className="h-16 w-16 rounded object-cover ring-1 ring-foreground/[.1]" />
             ))}
           </div>
         )}
       </section>
 
-      {error && <p className="text-[13px] text-red-400">{error}</p>}
+      {error && <p className="text-[13px] text-destructive">{error}</p>}
 
       <Button
         type="submit"
         disabled={isPending || uploadingPhotos}
-        className="w-full bg-white font-semibold text-black hover:bg-white/90 disabled:opacity-50"
+        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold disabled:opacity-50"
       >
         {isPending ? 'Submitting...' : 'Submit Check-In'}
       </Button>

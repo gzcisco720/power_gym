@@ -13,9 +13,5 @@ export default async function MemberBodyTestsPage() {
   const tests = await repo.findByMember(session.user.id);
   const plain = JSON.parse(JSON.stringify(tests)) as ComponentProps<typeof BodyTestViewer>['tests'];
 
-  return (
-    <div className="container mx-auto py-8 max-w-2xl">
-<BodyTestViewer tests={plain} />
-    </div>
-  );
+  return <BodyTestViewer tests={plain} />;
 }

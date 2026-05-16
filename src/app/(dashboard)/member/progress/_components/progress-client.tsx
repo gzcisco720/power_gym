@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { PageHeader } from '@/components/shared/page-header';
 import { SectionHeader } from '@/components/shared/section-header';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 import { variants } from '@/lib/animations/variants';
@@ -110,7 +109,11 @@ export function ProgressClient({
 
   return (
     <div>
-      {title && <PageHeader title={title} />}
+      {title && (
+        <div className="px-4 sm:px-8 pt-6 pb-2">
+          <h1 className="text-[20px] font-bold text-foreground">{title}</h1>
+        </div>
+      )}
       <div className="space-y-8 py-6">
         <section className="px-4 sm:px-8">
           <div className="flex items-baseline justify-between">
