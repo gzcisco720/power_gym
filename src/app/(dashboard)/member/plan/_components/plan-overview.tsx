@@ -148,7 +148,7 @@ export function PlanOverview({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col min-h-screen">
       {activePrompt && (
         <div className="px-4 sm:px-8 pt-4">
           <ActiveSessionPrompt
@@ -161,36 +161,39 @@ export function PlanOverview({
           />
         </div>
       )}
-      <div className="px-4 sm:px-8 pt-6 pb-3 border-b border-[#0f0f0f]">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-[10px] font-semibold uppercase tracking-[2px] text-[#555] mb-0.5">Training Plan</div>
-            <div className="text-[18px] font-bold text-white">{plan.name}</div>
+
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-background border-b border-foreground/10 px-4 sm:px-8 py-4 flex items-center justify-between">
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-[.1em] text-foreground/40 mb-0.5">
+            Training Plan
           </div>
-          <a
-            href={`${sessionBasePath}/calendar`}
-            className="flex items-center gap-1.5 text-[11px] text-[#555] hover:text-[#888] border border-[#1e1e1e] rounded-lg px-3 py-1.5 transition-colors"
-          >
-            <CalendarDays className="h-3.5 w-3.5" />
-            <span>Calendar</span>
-          </a>
+          <div className="text-[18px] font-bold text-foreground">{plan.name}</div>
         </div>
+        <a
+          href={`${sessionBasePath}/calendar`}
+          className="flex items-center gap-1.5 text-[11px] text-foreground/65 hover:text-foreground/80 bg-white/[.03] ring-1 ring-foreground/[.08] hover:ring-foreground/[.15] rounded-lg px-3 py-1.5 transition-colors"
+        >
+          <CalendarDays className="h-3.5 w-3.5" />
+          <span>Calendar</span>
+        </a>
       </div>
 
-      <div className="border-b border-[#0f0f0f] overflow-x-auto scrollbar-none">
+      {/* Day tabs */}
+      <div className="border-b border-foreground/[.06] overflow-x-auto scrollbar-none">
         <div className="flex min-w-max px-4 sm:px-8">
           {plan.days.map((day) => (
             <button
               key={day.dayNumber}
               onClick={() => setActiveDay(day.dayNumber)}
               className={cn(
-                'flex flex-col items-start py-3 pr-6 text-left shrink-0 border-b-2 transition-colors',
+                'flex flex-col items-center text-center py-3 px-5 shrink-0 border-b-2 transition-colors',
                 activeDay === day.dayNumber
-                  ? 'border-white text-white'
-                  : 'border-transparent text-[#555] hover:text-[#888]',
+                  ? 'border-primary text-foreground'
+                  : 'border-transparent text-foreground/40 hover:text-foreground/65',
               )}
             >
-              <span className="text-[9px] font-semibold uppercase tracking-[1.5px]">
+              <span className="text-[9px] font-semibold uppercase tracking-[.1em]">
                 Day {day.dayNumber}
               </span>
               <span className="text-[12px] font-medium mt-0.5">{day.name}</span>
@@ -199,9 +202,10 @@ export function PlanOverview({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-5 pb-24 space-y-3">
+      {/* Exercise list */}
+      <div className="flex-1 px-4 sm:px-8 py-5 pb-32 space-y-3">
         {exerciseGroups.length === 0 && (
-          <p className="text-[12px] text-[#555]">No exercises in this day.</p>
+          <p className="text-[12px] text-foreground/40">No exercises in this day.</p>
         )}
 
         {exerciseGroups.map((group) => {
@@ -209,16 +213,21 @@ export function PlanOverview({
           if (group.type === 'standalone') {
             const ex = group.exercise;
             return (
-              <div key={groupKey} className="flex items-center gap-3 rounded-xl bg-[#0c0c0c] border border-[#141414] p-3">
+              <div
+                key={groupKey}
+                className="flex items-center gap-3 rounded-xl bg-white/[.02] ring-1 ring-foreground/[.06] p-3"
+              >
                 <ExerciseThumbnail imageUrl={ex.imageUrl} name={ex.exerciseName} size={44} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <ExerciseBadge label={ex.label} />
-                    <span className="text-[13px] font-semibold text-white truncate">{ex.exerciseName}</span>
+                    <span className="text-[13px] font-semibold text-foreground truncate">{ex.exerciseName}</span>
                   </div>
                   <div className="flex gap-2">
-                    <span className="text-[10px] text-[#555] bg-[#141414] rounded px-2 py-0.5">Sets: {ex.sets}</span>
-                    <span className="text-[10px] text-[#555] bg-[#141414] rounded px-2 py-0.5">
+                    <span className="text-[10px] text-foreground/65 bg-white/[.04] rounded px-2 py-0.5">
+                      Sets: {ex.sets}
+                    </span>
+                    <span className="text-[10px] text-foreground/65 bg-white/[.04] rounded px-2 py-0.5">
                       {ex.repsMin === ex.repsMax ? `${ex.repsMin} reps` : `${ex.repsMin}–${ex.repsMax} reps`}
                     </span>
                   </div>
@@ -227,25 +236,28 @@ export function PlanOverview({
             );
           }
 
-          // Superset group
           return (
-            <div key={groupKey} className="rounded-xl border border-[#2a2a2a] overflow-hidden">
-              <div className="flex justify-center py-1.5 bg-[#111]">
-                <span className="text-[9px] font-bold uppercase tracking-[2px] text-[#666]">Superset</span>
+            <div key={groupKey} className="rounded-xl ring-1 ring-foreground/[.08] overflow-hidden">
+              <div className="flex justify-center py-1.5 bg-white/[.03]">
+                <span className="text-[9px] font-bold uppercase tracking-[.12em] text-foreground/40">
+                  Superset
+                </span>
               </div>
               {group.exercises.map((ex, j) => (
                 <div key={ex.exerciseId}>
-                  {j > 0 && <div className="h-px bg-[#141414]" />}
-                  <div className="flex items-center gap-3 bg-[#0c0c0c] p-3">
+                  {j > 0 && <div className="h-px bg-foreground/[.05]" />}
+                  <div className="flex items-center gap-3 bg-white/[.02] p-3">
                     <ExerciseThumbnail imageUrl={ex.imageUrl} name={ex.exerciseName} size={40} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <ExerciseBadge label={ex.label} />
-                        <span className="text-[12px] font-semibold text-white truncate">{ex.exerciseName}</span>
+                        <span className="text-[12px] font-semibold text-foreground truncate">{ex.exerciseName}</span>
                       </div>
                       <div className="flex gap-2">
-                        <span className="text-[10px] text-[#555] bg-[#141414] rounded px-2 py-0.5">Sets: {ex.sets}</span>
-                        <span className="text-[10px] text-[#555] bg-[#141414] rounded px-2 py-0.5">
+                        <span className="text-[10px] text-foreground/65 bg-white/[.04] rounded px-2 py-0.5">
+                          Sets: {ex.sets}
+                        </span>
+                        <span className="text-[10px] text-foreground/65 bg-white/[.04] rounded px-2 py-0.5">
                           {ex.repsMin === ex.repsMax ? `${ex.repsMin} reps` : `${ex.repsMin}–${ex.repsMax} reps`}
                         </span>
                       </div>
@@ -258,11 +270,12 @@ export function PlanOverview({
         })}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 lg:left-[220px] border-t border-[#0f0f0f] bg-[#050505] px-4 sm:px-8 py-3">
+      {/* Footer */}
+      <div className="sticky bottom-0 z-10 border-t border-foreground/10 backdrop-blur-md bg-background/50 px-4 sm:px-8 py-3">
         <button
           disabled={starting}
           onClick={() => startSession(activeDay)}
-          className="flex w-full items-center justify-center rounded-xl bg-white px-4 py-3 text-[13px] font-bold text-black hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex w-full items-center justify-center rounded-xl bg-primary text-primary-foreground px-4 py-3 text-[13px] font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {starting ? 'Starting…' : 'Log This Workout'}
         </button>
