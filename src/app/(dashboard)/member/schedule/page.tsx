@@ -16,7 +16,9 @@ export default async function MemberSchedulePage() {
   const all = await repo.findByMember(session.user.id ?? '');
   const now = new Date();
   const upcoming = all.filter((s) => s.date >= now && s.status === 'scheduled');
-  const history = all.filter((s) => s.date < now || s.status === 'cancelled');
+  const history = all
+    .filter((s) => s.date < now || s.status === 'cancelled')
+    .reverse();
 
   const trainerIds = [...new Set(all.map((s) => s.trainerId.toString()))];
   const trainerDocs = await Promise.all(trainerIds.map((id) => userRepo.findById(id)));

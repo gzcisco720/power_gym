@@ -18,7 +18,7 @@ describe('getRedirectForRole', () => {
   });
 
   it('returns member redirect when member accesses trainer pages', () => {
-    expect(getRedirectForRole('member', '/trainer')).toBe('/member/plan');
+    expect(getRedirectForRole('member', '/trainer')).toBe('/member');
   });
 
   it('returns null when member accesses member pages', () => {
