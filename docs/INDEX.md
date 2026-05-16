@@ -51,6 +51,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Member Schedule Redesign | [member-schedule-redesign.md](2026-05-16/plans/member-schedule-redesign.md) | Approved |
 | Member Schedule Redesign (Plan) | [member-schedule-redesign-plan.md](2026-05-16/plans/member-schedule-redesign-plan.md) | Complete |
 | Check-In UI Refactor | [check-in-ui-refactor.md](2026-05-16/plans/check-in-ui-refactor.md) | Approved |
+| Check-In UI Refactor (Plan) | [check-in-ui-refactor-plan.md](2026-05-16/plans/check-in-ui-refactor-plan.md) | In Progress |
 
 ---
 
