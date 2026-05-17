@@ -20,7 +20,7 @@ export function SettingsTabs({ tabs, basePath, activeTab }: Props) {
           key={tab.value}
           href={`${basePath}?tab=${tab.value}`}
           className={cn(
-            'pb-3 pt-1 px-1 text-[13px] font-medium border-b-2 transition-colors',
+            'pb-3 pt-3 px-1 text-[13px] font-medium border-b-2 transition-colors',
             activeTab === tab.value
               ? 'border-white text-white'
               : 'border-transparent text-foreground/50 hover:text-foreground/80',
