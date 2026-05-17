@@ -64,8 +64,8 @@ export function GymInfoTab({ gymInfo }: Props) {
         <label htmlFor="gymDescription" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">Description</label>
         <Textarea id="gymDescription" name="gymDescription" defaultValue={gymInfo?.description ?? ''} rows={3} className="bg-card border-foreground/10 text-foreground" />
       </div>
-      <div className="sticky bottom-0 -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 bg-background/95 backdrop-blur-sm border-t border-border/60 flex justify-end">
-        <Button type="submit" disabled={saving} className="bg-white text-black hover:bg-white/90 font-semibold disabled:opacity-50 cursor-pointer">
+      <div className="flex justify-end pt-2">
+        <Button type="submit" disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold disabled:opacity-50 cursor-pointer">
           {saving ? 'Saving...' : 'Save Gym Info'}
         </Button>
       </div>

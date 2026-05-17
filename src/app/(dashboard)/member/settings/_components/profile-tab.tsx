@@ -188,7 +188,7 @@ export function MemberProfileTab(props: Props) {
         </select>
       </div>
 
-      <div className="sticky bottom-0 -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 bg-background/95 backdrop-blur-sm border-t border-border/60 flex justify-end">
+      <div className="flex justify-end pt-2">
         <Button type="submit" disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold disabled:opacity-50 cursor-pointer">
           {saving ? 'Saving...' : 'Save Profile'}
         </Button>
