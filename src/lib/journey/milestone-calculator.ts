@@ -1,0 +1,134 @@
+import type { MilestoneTag } from '@/lib/types/journey';
+
+export interface BodyTestSnapshot {
+  date: Date;
+  bodyFatPct: number;
+  weight: number;
+  leanMassKg: number;
+  targetBodyFatPct: number | null;
+  targetWeight: number | null;
+}
+
+export interface MilestoneTrigger {
+  type: 'goal_reached' | 'significant_change' | 'personal_best' | 'time_milestone' | 'checkin_streak';
+  label: string;
+  color: MilestoneTag['color'];
+}
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const SEVEN_DAYS_MS = 7 * MS_PER_DAY;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const FOURTEEN_DAYS_MS = 14 * MS_PER_DAY;
+const TIME_ANNIVERSARIES_MONTHS = [3, 6, 12];
+const STREAK_THRESHOLDS = [30, 60, 100];
+
+function addMonths(date: Date, months: number): Date {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + months);
+  return d;
+}
+
+export function evaluateMilestone(
+  index: number,
+  tests: BodyTestSnapshot[],
+  checkInDates: Date[],         // all check-in dates, sorted ascending
+): MilestoneTrigger[] {
+  const triggers: MilestoneTrigger[] = [];
+  const test = tests[index];
+  const prev = index > 0 ? tests[index - 1] : null;
+  const earlier = tests.slice(0, index);
+
+  // ── Time milestone ──────────────────────────────────────────
+  if (index === 0) {
+    triggers.push({ type: 'time_milestone', label: '开始旅程', color: 'indigo' });
+  } else {
+    const firstDate = tests[0].date;
+    for (const months of TIME_ANNIVERSARIES_MONTHS) {
+      const anniversary = addMonths(firstDate, months);
+      if (Math.abs(test.date.getTime() - anniversary.getTime()) <= SEVEN_DAYS_MS) {
+        triggers.push({ type: 'time_milestone', label: `${months === 12 ? '1年' : `${months}个月`}里程碑`, color: 'indigo' });
+        break;
+      }
+    }
+  }
+
+  // ── Goal reached ────────────────────────────────────────────
+  if (test.targetBodyFatPct !== null && test.bodyFatPct <= test.targetBodyFatPct) {
+    const alreadyReached = earlier.some(
+      t => t.targetBodyFatPct !== null && t.bodyFatPct <= t.targetBodyFatPct,
+    );
+    if (!alreadyReached) {
+      triggers.push({ type: 'goal_reached', label: '🎯 目标体脂达成', color: 'gold' });
+    }
+  }
+  if (test.targetWeight !== null && test.weight <= test.targetWeight) {
+    const alreadyReached = earlier.some(
+      t => t.targetWeight !== null && t.weight <= t.targetWeight,
+    );
+    if (!alreadyReached) {
+      triggers.push({ type: 'goal_reached', label: '🎯 目标体重达成', color: 'gold' });
+    }
+  }
+
+  // ── Significant change ──────────────────────────────────────
+  if (prev) {
+    if (prev.bodyFatPct - test.bodyFatPct >= 1.0) {
+      triggers.push({ type: 'significant_change', label: `⬇ 体脂 −${(prev.bodyFatPct - test.bodyFatPct).toFixed(1)}%`, color: 'green' });
+    }
+    if (Math.abs(test.weight - prev.weight) >= 2.0) {
+      triggers.push({ type: 'significant_change', label: `体重变化 ${Math.abs(test.weight - prev.weight).toFixed(1)} kg`, color: 'green' });
+    }
+  }
+
+  // ── Personal best ───────────────────────────────────────────
+  const lowestBf = earlier.length > 0 ? Math.min(...earlier.map(t => t.bodyFatPct)) : Infinity;
+  if (test.bodyFatPct < lowestBf) {
+    triggers.push({ type: 'personal_best', label: '🥇 个人最低体脂', color: 'indigo' });
+  }
+  const highestLean = earlier.length > 0 ? Math.max(...earlier.map(t => t.leanMassKg)) : -Infinity;
+  if (test.leanMassKg > highestLean) {
+    triggers.push({ type: 'personal_best', label: '🏅 最高瘦体质量', color: 'indigo' });
+  }
+
+  // ── Check-in streak ─────────────────────────────────────────
+  // Fire when the Nth check-in (index N-1) falls within ±7 days of the test.
+  const streakDates = STREAK_THRESHOLDS
+    .filter(n => checkInDates.length >= n)
+    .map(n => ({ count: n, date: checkInDates[n - 1] }));
+  const matchingStreak = streakDates
+    .filter(({ date }) => Math.abs(date.getTime() - test.date.getTime()) <= SEVEN_DAYS_MS)
+    .sort((a, b) => b.count - a.count)[0];
+  if (matchingStreak) {
+    triggers.push({ type: 'checkin_streak', label: `✅ ${matchingStreak.count}次打卡达成`, color: 'green' });
+  }
+
+  return triggers;
+}
+
+const EMOJI_PRIORITY: MilestoneTrigger['type'][] = [
+  'goal_reached', 'time_milestone', 'personal_best', 'significant_change', 'checkin_streak',
+];
+
+export function selectEmoji(triggers: MilestoneTrigger[]): string {
+  const map: Record<MilestoneTrigger['type'], string> = {
+    goal_reached: '🏆',
+    time_milestone: '🌟',
+    personal_best: '🥇',
+    significant_change: '⬇️',
+    checkin_streak: '✅',
+  };
+  const top = EMOJI_PRIORITY.find(p => triggers.some(t => t.type === p));
+  return top ? map[top] : '⭐';
+}
+
+export function buildMilestoneTitle(triggers: MilestoneTrigger[]): string {
+  const top = EMOJI_PRIORITY.find(p => triggers.some(t => t.type === p));
+  switch (top) {
+    case 'goal_reached': return '达成目标';
+    case 'time_milestone': return triggers.find(t => t.type === 'time_milestone')!.label;
+    case 'personal_best': return '创下个人纪录';
+    case 'significant_change': return '显著进步';
+    case 'checkin_streak': return triggers.find(t => t.type === 'checkin_streak')!.label;
+    default: return '里程碑时刻';
+  }
+}
