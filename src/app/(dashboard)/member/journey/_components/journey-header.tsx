@@ -43,19 +43,19 @@ export default function JourneyHeader({ summary }: Props) {
       {hasComparison && (
         <div className="flex gap-0 border-t border-primary/15 pt-3">
           <div className="flex-1">
-            <p className="text-[9px] font-bold uppercase tracking-wider text-foreground/40 mb-1">起点</p>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-foreground/65 mb-1">起点</p>
             <p className="text-foreground text-sm font-bold">{summary.firstBodyFatPct}%</p>
             <p className="text-foreground/65 text-[10px]">
               {summary.firstWeight} kg · {formatDate(summary.firstTestDate)}
             </p>
           </div>
           <div className="flex-1 border-l border-primary/15 pl-3 ml-3">
-            <p className="text-[9px] font-bold uppercase tracking-wider text-foreground/40 mb-1">现在</p>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-foreground/65 mb-1">现在</p>
             <p className="text-primary-light text-sm font-bold">{summary.latestBodyFatPct}%</p>
             <p className="text-foreground/65 text-[10px]">{summary.latestWeight} kg</p>
           </div>
           <div className="flex-1 border-l border-primary/15 pl-3 ml-3">
-            <p className="text-[9px] font-bold uppercase tracking-wider text-foreground/40 mb-1">瘦体质量</p>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-foreground/65 mb-1">瘦体质量</p>
             <p className={`text-sm font-bold ${summary.leanMassDeltaKg >= 0 ? 'text-emerald-400' : 'text-destructive'}`}>
               {formatDelta(summary.leanMassDeltaKg)} kg
             </p>

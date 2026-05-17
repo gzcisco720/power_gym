@@ -34,6 +34,7 @@ export default function JourneyClient({ memberId }: Props) {
     const url = new URL(`/api/members/${memberId}/journey`, window.location.origin);
     if (cursor) url.searchParams.set('cursor', cursor);
     const res = await fetch(url.toString());
+    if (!res.ok) return { items: [], nextCursor: null, summary: null };
     return res.json() as Promise<JourneyResponse>;
   }, [memberId]);
 
@@ -125,7 +126,7 @@ export default function JourneyClient({ memberId }: Props) {
       )}
 
       {!nextCursor && !isLoading && items.length > 0 && (
-        <p className="text-center text-foreground/35 text-xs py-4">· 已显示全部记录 ·</p>
+        <p className="text-center text-foreground/65 text-xs py-4">· 已显示全部记录 ·</p>
       )}
     </div>
   );

@@ -18,6 +18,7 @@ export default function MilestoneCard({ item, isLast }: Props) {
   if (!milestone) return null;
 
   const date = new Date(bodyTest.date).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' });
+  const hasLeanMassPB = milestone.tags.some(t => t.label.includes('最高瘦体质量'));
 
   return (
     <div className="flex items-stretch gap-3">
@@ -57,7 +58,7 @@ export default function MilestoneCard({ item, isLast }: Props) {
               <p className="text-primary-light/50 text-[9px] uppercase tracking-wider mb-0.5">体脂</p>
               <p className="text-foreground text-sm font-bold">{bodyTest.bodyFatPct}%</p>
               {bodyTest.deltaBodyFatPct !== null && (
-                <p className={`text-[10px] mt-0.5 ${bodyTest.deltaBodyFatPct < 0 ? 'text-emerald-400' : 'text-foreground/40'}`}>
+                <p className={`text-[10px] mt-0.5 ${bodyTest.deltaBodyFatPct < 0 ? 'text-emerald-400' : 'text-foreground/65'}`}>
                   {bodyTest.deltaBodyFatPct < 0 ? '' : '+'}{bodyTest.deltaBodyFatPct.toFixed(1)}% vs 上次
                 </p>
               )}
@@ -66,7 +67,7 @@ export default function MilestoneCard({ item, isLast }: Props) {
               <p className="text-primary-light/50 text-[9px] uppercase tracking-wider mb-0.5">体重</p>
               <p className="text-foreground text-sm font-bold">{bodyTest.weight} kg</p>
               {bodyTest.deltaWeight !== null && (
-                <p className={`text-[10px] mt-0.5 ${bodyTest.deltaWeight < 0 ? 'text-emerald-400' : 'text-foreground/40'}`}>
+                <p className={`text-[10px] mt-0.5 ${bodyTest.deltaWeight < 0 ? 'text-emerald-400' : 'text-foreground/65'}`}>
                   {bodyTest.deltaWeight > 0 ? '+' : ''}{bodyTest.deltaWeight.toFixed(1)} kg
                 </p>
               )}
@@ -74,7 +75,9 @@ export default function MilestoneCard({ item, isLast }: Props) {
             <div className="flex-1 border-l border-primary/15 pl-2.5 ml-2.5">
               <p className="text-primary-light/50 text-[9px] uppercase tracking-wider mb-0.5">瘦体质量</p>
               <p className="text-foreground text-sm font-bold">{bodyTest.leanMassKg.toFixed(1)} kg</p>
-              <p className="text-primary-light/50 text-[10px] mt-0.5">历史最高</p>
+              {hasLeanMassPB && (
+                <p className="text-primary-light/50 text-[10px] mt-0.5">历史最高</p>
+              )}
             </div>
           </div>
 

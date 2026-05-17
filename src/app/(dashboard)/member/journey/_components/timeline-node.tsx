@@ -27,14 +27,14 @@ export default function TimelineNode({ item, isLast }: Props) {
       <div className="flex-1 min-w-0 pb-2">
         <div className="flex items-center gap-2.5 bg-card rounded-lg border border-foreground/[0.06] px-3 py-2">
           <div className="flex-1 min-w-0">
-            <p className="text-foreground/35 text-[10px] mb-0.5">
+            <p className="text-foreground/65 text-[10px] mb-0.5">
               {date} · 第{bodyTest.testNumber}次
             </p>
             <p className="text-foreground/90 text-xs font-semibold">
               体脂 {bodyTest.bodyFatPct}% · {bodyTest.weight} kg
             </p>
             {bfDelta !== null && (
-              <p className={`text-[10px] mt-0.5 ${isImprovement ? 'text-emerald-400' : 'text-foreground/40'}`}>
+              <p className={`text-[10px] mt-0.5 ${isImprovement ? 'text-emerald-400' : 'text-foreground/65'}`}>
                 {isImprovement ? '↓' : '↑'} {Math.abs(bfDelta).toFixed(1)}% · 瘦体质量 {bodyTest.leanMassKg.toFixed(1)} kg
               </p>
             )}
