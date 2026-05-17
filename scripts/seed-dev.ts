@@ -1243,13 +1243,19 @@ async function seedDevData() {
   ]);
   console.log('  ✓ Member2 nutrition logs: 7 days created');
 
-  // ── Body Tests for member (5 data points, 3site male) ─────────────────────
+  // ── Body Tests for member (9 data points, 3site male, 6-month history) ──────
+  // Target BF 18.5% / weight 78kg — both reached on the "today" test,
+  // triggering goal_reached. JP 3-site: density = 1.10938 - 0.0008267s + 0.0000016s² - 0.0002574×age
   const memberBodyTests = [
-    { ago: 56, weight: 82, chest: 26, abdominal: 32, thigh: 20 },
-    { ago: 42, weight: 81, chest: 25, abdominal: 30, thigh: 19 },
-    { ago: 28, weight: 80, chest: 23, abdominal: 28, thigh: 18 },
-    { ago: 14, weight: 79, chest: 22, abdominal: 26, thigh: 17 },
-    { ago: 0,  weight: 78, chest: 21, abdominal: 24, thigh: 16 },
+    { ago: 182, weight: 87, chest: 31, abdominal: 38, thigh: 24 }, // ~26.3% BF — first test
+    { ago: 154, weight: 85, chest: 29, abdominal: 36, thigh: 23 }, // ~25.1% BF — significant drop
+    { ago: 112, weight: 84, chest: 27, abdominal: 34, thigh: 22 }, // ~24.3% BF — near 3-month mark
+    { ago:  84, weight: 83, chest: 27, abdominal: 34, thigh: 21 }, // ~23.6% BF
+    { ago:  56, weight: 82, chest: 26, abdominal: 32, thigh: 20 }, // ~22.6% BF — significant drop
+    { ago:  42, weight: 81, chest: 25, abdominal: 30, thigh: 19 }, // ~21.5% BF
+    { ago:  28, weight: 80, chest: 23, abdominal: 28, thigh: 18 }, // ~20.2% BF
+    { ago:  14, weight: 79, chest: 22, abdominal: 26, thigh: 17 }, // ~19.2% BF
+    { ago:   0, weight: 78, chest: 21, abdominal: 24, thigh: 16 }, // ~18.0% BF — goal reached, ~6-month milestone
   ];
   for (const { ago, weight, chest, abdominal, thigh } of memberBodyTests) {
     const sum = chest + abdominal + thigh;
@@ -1262,10 +1268,10 @@ async function seedDevData() {
       age, sex: 'male', weight, protocol: '3site',
       chest, abdominal, thigh,
       bodyFatPct: bfPct, leanMassKg: Math.round((weight - fatMass) * 10) / 10, fatMassKg: fatMass,
-      targetWeight: 75, targetBodyFatPct: 12,
+      targetWeight: 78, targetBodyFatPct: 18.5,
     });
   }
-  console.log('  ✓ Member body tests: 5 created (3site male)');
+  console.log('  ✓ Member body tests: 9 created (3site male, 6-month history, ~26% → 18% BF)');
 
   // ── Body Tests for member2 (3 data points, 3site female) ──────────────────
   await BodyTestModel.create([
@@ -1359,6 +1365,45 @@ async function seedDevData() {
     CheckInConfigModel.create({ memberId: member2._id, trainerId: owner._id,   dayOfWeek: 0, hour: 8, minute: 30, active: true, reminderSentAt: null }), // Sunday 08:30
   ]);
   console.log('  ✓ Check-in configs: member (Thu 07:00) + member2 (Sun 08:30)');
+
+  // ── Historical check-ins for member (journey seed: 20 weeks, weeks 7–26 ago) ─
+  // Offset +2 days so dates don't overlap with body test dates (body tests are at 9am).
+  const historicalCheckIns: { weekAgo: number; w: number; photos: string[] }[] = [
+    { weekAgo: 26, w: 87.0, photos: ['https://picsum.photos/seed/dev-ci-26a/400/600', 'https://picsum.photos/seed/dev-ci-26b/400/600'] },
+    { weekAgo: 25, w: 86.5, photos: [] },
+    { weekAgo: 24, w: 86.0, photos: ['https://picsum.photos/seed/dev-ci-24a/400/600'] },
+    { weekAgo: 23, w: 85.5, photos: [] },
+    { weekAgo: 22, w: 85.0, photos: [] },
+    { weekAgo: 21, w: 84.5, photos: ['https://picsum.photos/seed/dev-ci-21a/400/600'] },
+    { weekAgo: 20, w: 84.0, photos: [] },
+    { weekAgo: 19, w: 83.5, photos: [] },
+    { weekAgo: 18, w: 83.0, photos: ['https://picsum.photos/seed/dev-ci-18a/400/600', 'https://picsum.photos/seed/dev-ci-18b/400/600'] },
+    { weekAgo: 17, w: 82.5, photos: [] },
+    { weekAgo: 16, w: 82.0, photos: [] },
+    { weekAgo: 15, w: 81.5, photos: ['https://picsum.photos/seed/dev-ci-15a/400/600'] },
+    { weekAgo: 14, w: 81.0, photos: [] },
+    { weekAgo: 13, w: 80.5, photos: [] },
+    { weekAgo: 12, w: 80.0, photos: ['https://picsum.photos/seed/dev-ci-12a/400/600'] },
+    { weekAgo: 11, w: 79.5, photos: [] },
+    { weekAgo: 10, w: 79.0, photos: [] },
+    { weekAgo:  9, w: 78.5, photos: ['https://picsum.photos/seed/dev-ci-9a/400/600', 'https://picsum.photos/seed/dev-ci-9b/400/600'] },
+    { weekAgo:  8, w: 78.3, photos: [] },
+    { weekAgo:  7, w: 78.1, photos: ['https://picsum.photos/seed/dev-ci-7a/400/600'] },
+  ];
+  for (const c of historicalCheckIns) {
+    await CheckInModel.create({
+      memberId: member._id, trainerId: trainer._id,
+      submittedAt: daysAgo(c.weekAgo * 7 + 2),
+      sleepQuality: 6, stress: 5, fatigue: 5, hunger: 6,
+      recovery: 7, energy: 7, digestion: 7,
+      weight: c.w, waist: null, steps: 8000, exerciseMinutes: 45,
+      walkRunDistance: null, sleepHours: 7.0,
+      dietDetails: 'Followed the plan', stuckToDiet: 'yes' as const,
+      wellbeing: 'Feeling good', notes: '',
+      photos: c.photos,
+    });
+  }
+  console.log('  ✓ Member historical check-ins: 20 created (weeks 7–26 ago, 8 with photos)');
 
   // ── Check-In History for member (6 weeks) ─────────────────────────────────
   const memberCheckIns = [
