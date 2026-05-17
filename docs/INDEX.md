@@ -52,6 +52,8 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Member Schedule Redesign (Plan) | [member-schedule-redesign-plan.md](2026-05-16/plans/member-schedule-redesign-plan.md) | Complete |
 | Check-In UI Refactor | [check-in-ui-refactor.md](2026-05-16/plans/check-in-ui-refactor.md) | Approved |
 | Check-In UI Refactor (Plan) | [check-in-ui-refactor-plan.md](2026-05-16/plans/check-in-ui-refactor-plan.md) | Complete |
+| Journey Page (Member Milestone Timeline) | [journey-page-design.md](2026-05-17/plans/journey-page-design.md) | Approved |
+| Journey Page (Plan) | [journey-page-plan.md](2026-05-17/plans/journey-page-plan.md) | Complete |
 
 ---
 
