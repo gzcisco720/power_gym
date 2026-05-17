@@ -1407,12 +1407,12 @@ async function seedDevData() {
 
   // ── Check-In History for member (6 weeks) ─────────────────────────────────
   const memberCheckIns = [
-    { ago: 42, sleep: 6, stress: 6, fatigue: 6, hunger: 5, recovery: 5, energy: 6, digestion: 7, weight: 82.0, waist: 87, steps: null,  exMin: null, sleepHrs: 6.5, diet: 'partial' as const, dietDetails: 'Hit protein but went over on carbs most days', wellbeing: 'A bit tired from work stress', notes: 'Work has been hectic, trying to keep up with training' },
-    { ago: 35, sleep: 7, stress: 5, fatigue: 5, hunger: 6, recovery: 7, energy: 7, digestion: 7, weight: 81.5, waist: 86, steps: 7200,  exMin: 45,   sleepHrs: 7.0, diet: 'yes'     as const, dietDetails: 'Followed plan closely, meals prepped Sunday',       wellbeing: 'Feeling better this week',           notes: 'Upped calories slightly' },
-    { ago: 28, sleep: 8, stress: 4, fatigue: 4, hunger: 6, recovery: 8, energy: 8, digestion: 8, weight: 80.5, waist: 85, steps: 9500,  exMin: 60,   sleepHrs: 7.5, diet: 'yes'     as const, dietDetails: 'Nailed every meal, very consistent',                wellbeing: 'Great energy, training is going well', notes: 'No issues this week, everything clicking' },
-    { ago: 21, sleep: 7, stress: 5, fatigue: 5, hunger: 7, recovery: 7, energy: 7, digestion: 8, weight: 80.0, waist: 84, steps: 8800,  exMin: 55,   sleepHrs: 7.0, diet: 'yes'     as const, dietDetails: 'Stuck to plan, had one cheat meal Saturday',        wellbeing: 'Consistent week',                     notes: 'Squat PB this week' },
-    { ago: 14, sleep: 6, stress: 7, fatigue: 7, hunger: 5, recovery: 6, energy: 6, digestion: 6, weight: 79.5, waist: null,steps: null, exMin: null, sleepHrs: 6.0, diet: 'no'      as const, dietDetails: 'Ate out most days, could not track macros',         wellbeing: 'Tough week, travel for work',          notes: 'Missed 2 sessions, shoulder flared up' },
-    { ago: 7,  sleep: 8, stress: 3, fatigue: 3, hunger: 7, recovery: 9, energy: 9, digestion: 8, weight: 78.0, waist: 83, steps: 11000, exMin: 65,   sleepHrs: 8.0, diet: 'yes'     as const, dietDetails: 'Perfect adherence, hit all targets',                wellbeing: 'Best week in months, feeling strong',  notes: 'Everything dialed in, ready to push harder' },
+    { ago: 42, sleep: 6, stress: 6, fatigue: 6, hunger: 5, recovery: 5, energy: 6, digestion: 7, weight: 82.0, waist: 87, steps: null,  exMin: null, sleepHrs: 6.5, diet: 'partial' as const, dietDetails: 'Hit protein but went over on carbs most days', wellbeing: 'A bit tired from work stress', notes: 'Work has been hectic, trying to keep up with training', photos: ['https://picsum.photos/seed/dev-ci-42a/400/600'] },
+    { ago: 35, sleep: 7, stress: 5, fatigue: 5, hunger: 6, recovery: 7, energy: 7, digestion: 7, weight: 81.5, waist: 86, steps: 7200,  exMin: 45,   sleepHrs: 7.0, diet: 'yes'     as const, dietDetails: 'Followed plan closely, meals prepped Sunday',       wellbeing: 'Feeling better this week',           notes: 'Upped calories slightly',                              photos: ['https://picsum.photos/seed/dev-ci-35a/400/600'] },
+    { ago: 28, sleep: 8, stress: 4, fatigue: 4, hunger: 6, recovery: 8, energy: 8, digestion: 8, weight: 80.5, waist: 85, steps: 9500,  exMin: 60,   sleepHrs: 7.5, diet: 'yes'     as const, dietDetails: 'Nailed every meal, very consistent',                wellbeing: 'Great energy, training is going well', notes: 'No issues this week, everything clicking',             photos: ['https://picsum.photos/seed/dev-ci-28a/400/600', 'https://picsum.photos/seed/dev-ci-28b/400/600'] },
+    { ago: 21, sleep: 7, stress: 5, fatigue: 5, hunger: 7, recovery: 7, energy: 7, digestion: 8, weight: 80.0, waist: 84, steps: 8800,  exMin: 55,   sleepHrs: 7.0, diet: 'yes'     as const, dietDetails: 'Stuck to plan, had one cheat meal Saturday',        wellbeing: 'Consistent week',                     notes: 'Squat PB this week',                                   photos: [] },
+    { ago: 14, sleep: 6, stress: 7, fatigue: 7, hunger: 5, recovery: 6, energy: 6, digestion: 6, weight: 79.5, waist: null,steps: null, exMin: null, sleepHrs: 6.0, diet: 'no'      as const, dietDetails: 'Ate out most days, could not track macros',         wellbeing: 'Tough week, travel for work',          notes: 'Missed 2 sessions, shoulder flared up',                photos: ['https://picsum.photos/seed/dev-ci-14a/400/600'] },
+    { ago: 7,  sleep: 8, stress: 3, fatigue: 3, hunger: 7, recovery: 9, energy: 9, digestion: 8, weight: 78.0, waist: 83, steps: 11000, exMin: 65,   sleepHrs: 8.0, diet: 'yes'     as const, dietDetails: 'Perfect adherence, hit all targets',                wellbeing: 'Best week in months, feeling strong',  notes: 'Everything dialed in, ready to push harder',           photos: ['https://picsum.photos/seed/dev-ci-7a/400/600', 'https://picsum.photos/seed/dev-ci-7b/400/600'] },
   ];
   for (const c of memberCheckIns) {
     await CheckInModel.create({
@@ -1422,10 +1422,10 @@ async function seedDevData() {
       weight: c.weight, waist: c.waist, steps: c.steps, exerciseMinutes: c.exMin,
       walkRunDistance: null, sleepHours: c.sleepHrs,
       dietDetails: c.dietDetails, stuckToDiet: c.diet,
-      wellbeing: c.wellbeing, notes: c.notes, photos: [],
+      wellbeing: c.wellbeing, notes: c.notes, photos: c.photos,
     });
   }
-  console.log('  ✓ Member check-ins: 6 created (with waist + steps data)');
+  console.log('  ✓ Member check-ins: 6 created (with waist + steps data, 5 with photos)');
 
   // ── Check-In History for member2 (4 check-ins via owner) ──────────────────
   const member2CheckIns = [
