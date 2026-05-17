@@ -31,6 +31,7 @@ export interface ICheckInRepository {
   findById(checkInId: string, memberId: string): Promise<ICheckIn | null>;
   hasCheckInThisWeek(memberId: string, weekStart: Date): Promise<boolean>;
   countSince(since: Date): Promise<number>;
+  findPhotosForMember(memberId: string): Promise<{ submittedAt: Date; photos: string[] }[]>;
 }
 
 export class MongoCheckInRepository implements ICheckInRepository {
@@ -66,5 +67,12 @@ export class MongoCheckInRepository implements ICheckInRepository {
 
   async countSince(since: Date): Promise<number> {
     return CheckInModel.countDocuments({ submittedAt: { $gte: since } });
+  }
+
+  async findPhotosForMember(memberId: string): Promise<{ submittedAt: Date; photos: string[] }[]> {
+    return CheckInModel.find(
+      { memberId: new mongoose.Types.ObjectId(memberId) },
+      { submittedAt: 1, photos: 1, _id: 0 },
+    ).sort({ submittedAt: 1 }).lean();
   }
 }

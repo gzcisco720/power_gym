@@ -30,6 +30,7 @@ export interface IBodyTestRepository {
   findByMember(memberId: string): Promise<IBodyTest[]>;
   deleteById(testId: string, trainerId: string): Promise<void>;
   findLatestByMember(memberId: string): Promise<IBodyTest | null>;
+  findAllByMemberAscending(memberId: string): Promise<IBodyTest[]>;
 }
 
 export class MongoBodyTestRepository implements IBodyTestRepository {
@@ -58,5 +59,9 @@ export class MongoBodyTestRepository implements IBodyTestRepository {
       memberId: new mongoose.Types.ObjectId(memberId),
     })
       .sort({ date: -1 });
+  }
+
+  async findAllByMemberAscending(memberId: string): Promise<IBodyTest[]> {
+    return BodyTestModel.find({ memberId: new mongoose.Types.ObjectId(memberId) }).sort({ date: 1 });
   }
 }
