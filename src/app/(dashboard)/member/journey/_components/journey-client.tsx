@@ -89,8 +89,8 @@ export default function JourneyClient({ memberId }: Props) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
         <span className="text-4xl">🏋️</span>
-        <p className="text-foreground font-semibold">还没有体测记录</p>
-        <p className="text-foreground/65 text-sm">请联系你的教练安排第一次体测</p>
+        <p className="text-foreground font-semibold">No body tests recorded yet</p>
+        <p className="text-foreground/65 text-sm">Ask your trainer to schedule your first body test</p>
       </div>
     );
   }
@@ -126,7 +126,7 @@ export default function JourneyClient({ memberId }: Props) {
       )}
 
       {!nextCursor && !isLoading && items.length > 0 && (
-        <p className="text-center text-foreground/65 text-xs py-4">· 已显示全部记录 ·</p>
+        <p className="text-center text-foreground/65 text-xs py-4">· All records shown ·</p>
       )}
     </div>
   );

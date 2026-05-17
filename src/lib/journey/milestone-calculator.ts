@@ -38,13 +38,13 @@ export function evaluateMilestone(
 
   // ── Time milestone ──────────────────────────────────────────
   if (index === 0) {
-    triggers.push({ type: 'time_milestone', label: '开始旅程', color: 'indigo' });
+    triggers.push({ type: 'time_milestone', label: 'Journey begins', color: 'indigo' });
   } else {
     const firstDate = tests[0].date;
     for (const months of TIME_ANNIVERSARIES_MONTHS) {
       const anniversary = addMonths(firstDate, months);
       if (Math.abs(test.date.getTime() - anniversary.getTime()) <= SEVEN_DAYS_MS) {
-        triggers.push({ type: 'time_milestone', label: `${months === 12 ? '1年' : `${months}个月`}里程碑`, color: 'indigo' });
+        triggers.push({ type: 'time_milestone', label: `${months === 12 ? '1-year' : `${months}-month`} milestone`, color: 'indigo' });
         break;
       }
     }
@@ -56,7 +56,7 @@ export function evaluateMilestone(
       t => t.targetBodyFatPct !== null && t.bodyFatPct <= t.targetBodyFatPct,
     );
     if (!alreadyReached) {
-      triggers.push({ type: 'goal_reached', label: '🎯 目标体脂达成', color: 'gold' });
+      triggers.push({ type: 'goal_reached', label: '🎯 Body fat goal reached', color: 'gold' });
     }
   }
   if (test.targetWeight !== null && test.weight <= test.targetWeight) {
@@ -64,28 +64,28 @@ export function evaluateMilestone(
       t => t.targetWeight !== null && t.weight <= t.targetWeight,
     );
     if (!alreadyReached) {
-      triggers.push({ type: 'goal_reached', label: '🎯 目标体重达成', color: 'gold' });
+      triggers.push({ type: 'goal_reached', label: '🎯 Weight goal reached', color: 'gold' });
     }
   }
 
   // ── Significant change ──────────────────────────────────────
   if (prev) {
     if (prev.bodyFatPct - test.bodyFatPct >= 1.0) {
-      triggers.push({ type: 'significant_change', label: `⬇ 体脂 −${(prev.bodyFatPct - test.bodyFatPct).toFixed(1)}%`, color: 'green' });
+      triggers.push({ type: 'significant_change', label: `⬇ Body fat −${(prev.bodyFatPct - test.bodyFatPct).toFixed(1)}%`, color: 'green' });
     }
     if (Math.abs(test.weight - prev.weight) >= 2.0) {
-      triggers.push({ type: 'significant_change', label: `体重变化 ${Math.abs(test.weight - prev.weight).toFixed(1)} kg`, color: 'green' });
+      triggers.push({ type: 'significant_change', label: `Weight change ${Math.abs(test.weight - prev.weight).toFixed(1)} kg`, color: 'green' });
     }
   }
 
   // ── Personal best ───────────────────────────────────────────
   const lowestBf = earlier.length > 0 ? Math.min(...earlier.map(t => t.bodyFatPct)) : Infinity;
   if (test.bodyFatPct < lowestBf) {
-    triggers.push({ type: 'personal_best', label: '🥇 个人最低体脂', color: 'indigo' });
+    triggers.push({ type: 'personal_best', label: '🥇 All-time low body fat', color: 'indigo' });
   }
   const highestLean = earlier.length > 0 ? Math.max(...earlier.map(t => t.leanMassKg)) : -Infinity;
   if (test.leanMassKg > highestLean) {
-    triggers.push({ type: 'personal_best', label: '🏅 最高瘦体质量', color: 'indigo' });
+    triggers.push({ type: 'personal_best', label: '🏅 All-time high lean mass', color: 'indigo' });
   }
 
   // ── Check-in streak ─────────────────────────────────────────
@@ -97,7 +97,7 @@ export function evaluateMilestone(
     .filter(({ date }) => Math.abs(date.getTime() - test.date.getTime()) <= SEVEN_DAYS_MS)
     .sort((a, b) => b.count - a.count)[0];
   if (matchingStreak) {
-    triggers.push({ type: 'checkin_streak', label: `✅ ${matchingStreak.count}次打卡达成`, color: 'green' });
+    triggers.push({ type: 'checkin_streak', label: `✅ ${matchingStreak.count} check-in streak`, color: 'green' });
   }
 
   return triggers;
@@ -122,11 +122,11 @@ export function selectEmoji(triggers: MilestoneTrigger[]): string {
 export function buildMilestoneTitle(triggers: MilestoneTrigger[]): string {
   const top = EMOJI_PRIORITY.find(p => triggers.some(t => t.type === p));
   switch (top) {
-    case 'goal_reached': return '达成目标';
+    case 'goal_reached': return 'Goal achieved';
     case 'time_milestone': return triggers.find(t => t.type === 'time_milestone')!.label;
-    case 'personal_best': return '创下个人纪录';
-    case 'significant_change': return '显著进步';
+    case 'personal_best': return 'New personal record';
+    case 'significant_change': return 'Significant progress';
     case 'checkin_streak': return triggers.find(t => t.type === 'checkin_streak')!.label;
-    default: return '里程碑时刻';
+    default: return 'Milestone';
   }
 }

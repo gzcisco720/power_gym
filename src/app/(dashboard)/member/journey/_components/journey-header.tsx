@@ -6,7 +6,7 @@ interface Props {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' });
+  return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
 }
 
 function formatDelta(value: number) {
@@ -24,9 +24,9 @@ export default function JourneyHeader({ summary }: Props) {
     <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 to-primary/[0.03] p-4 shadow-[0_4px_24px_rgba(99,102,241,0.1)]">
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h1 className="text-foreground text-xl font-bold leading-tight">我的旅程</h1>
+          <h1 className="text-foreground text-xl font-bold leading-tight">My Journey</h1>
           <p className="text-foreground/65 text-xs mt-0.5">
-            {summary.totalTests} 次体测 · 开始于 {formatDate(summary.firstTestDate)}
+            {summary.totalTests} tests · started {formatDate(summary.firstTestDate)}
           </p>
         </div>
         {bfDelta !== null && (
@@ -35,7 +35,7 @@ export default function JourneyHeader({ summary }: Props) {
               ? 'bg-emerald-500/10 text-emerald-400'
               : 'bg-destructive/10 text-destructive'
           }`}>
-            {bfDelta < 0 ? '↓' : '↑'} {Math.abs(bfDelta)}% 体脂
+            {bfDelta < 0 ? '↓' : '↑'} {Math.abs(bfDelta)}% body fat
           </span>
         )}
       </div>
@@ -43,19 +43,19 @@ export default function JourneyHeader({ summary }: Props) {
       {hasComparison && (
         <div className="flex gap-0 border-t border-primary/15 pt-3">
           <div className="flex-1">
-            <p className="text-[9px] font-bold uppercase tracking-wider text-foreground/65 mb-1">起点</p>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-foreground/65 mb-1">Start</p>
             <p className="text-foreground text-sm font-bold">{summary.firstBodyFatPct}%</p>
             <p className="text-foreground/65 text-[10px]">
               {summary.firstWeight} kg · {formatDate(summary.firstTestDate)}
             </p>
           </div>
           <div className="flex-1 border-l border-primary/15 pl-3 ml-3">
-            <p className="text-[9px] font-bold uppercase tracking-wider text-foreground/65 mb-1">现在</p>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-foreground/65 mb-1">Now</p>
             <p className="text-primary-light text-sm font-bold">{summary.latestBodyFatPct}%</p>
             <p className="text-foreground/65 text-[10px]">{summary.latestWeight} kg</p>
           </div>
           <div className="flex-1 border-l border-primary/15 pl-3 ml-3">
-            <p className="text-[9px] font-bold uppercase tracking-wider text-foreground/65 mb-1">瘦体质量</p>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-foreground/65 mb-1">Lean Mass</p>
             <p className={`text-sm font-bold ${summary.leanMassDeltaKg >= 0 ? 'text-emerald-400' : 'text-destructive'}`}>
               {formatDelta(summary.leanMassDeltaKg)} kg
             </p>

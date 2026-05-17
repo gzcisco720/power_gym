@@ -156,10 +156,10 @@ describe('selectEmoji', () => {
 describe('buildMilestoneTitle', () => {
   it('returns goal title when goal_reached present', () => {
     const title = buildMilestoneTitle([{ type: 'goal_reached', label: '目标达成', color: 'gold' }]);
-    expect(title).toBe('达成目标');
+    expect(title).toBe('Goal achieved');
   });
   it('uses label for time_milestone', () => {
-    const title = buildMilestoneTitle([{ type: 'time_milestone', label: '3个月里程碑', color: 'indigo' }]);
-    expect(title).toBe('3个月里程碑');
+    const title = buildMilestoneTitle([{ type: 'time_milestone', label: '3-month milestone', color: 'indigo' }]);
+    expect(title).toBe('3-month milestone');
   });
 });

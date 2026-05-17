@@ -13,7 +13,7 @@ export default function TimelineNode({ item, isLast }: Props) {
   const bfDelta = bodyTest.deltaBodyFatPct;
   const isImprovement = bfDelta !== null && bfDelta < 0;
 
-  const date = new Date(bodyTest.date).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' });
+  const date = new Date(bodyTest.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
 
   return (
     <div className="flex items-stretch gap-3">
@@ -28,14 +28,14 @@ export default function TimelineNode({ item, isLast }: Props) {
         <div className="flex items-center gap-2.5 bg-card rounded-lg border border-foreground/[0.06] px-3 py-2">
           <div className="flex-1 min-w-0">
             <p className="text-foreground/65 text-[10px] mb-0.5">
-              {date} · 第{bodyTest.testNumber}次
+              {date} · Test #{bodyTest.testNumber}
             </p>
             <p className="text-foreground/90 text-xs font-semibold">
-              体脂 {bodyTest.bodyFatPct}% · {bodyTest.weight} kg
+              Body fat {bodyTest.bodyFatPct}% · {bodyTest.weight} kg
             </p>
             {bfDelta !== null && (
               <p className={`text-[10px] mt-0.5 ${isImprovement ? 'text-emerald-400' : 'text-foreground/65'}`}>
-                {isImprovement ? '↓' : '↑'} {Math.abs(bfDelta).toFixed(1)}% · 瘦体质量 {bodyTest.leanMassKg.toFixed(1)} kg
+                {isImprovement ? '↓' : '↑'} {Math.abs(bfDelta).toFixed(1)}% · Lean mass {bodyTest.leanMassKg.toFixed(1)} kg
               </p>
             )}
           </div>
@@ -45,7 +45,7 @@ export default function TimelineNode({ item, isLast }: Props) {
             {item.checkInPhoto ? (
               <Image
                 src={item.checkInPhoto}
-                alt="打卡照片"
+                alt="Check-in photo"
                 width={36}
                 height={36}
                 className="w-full h-full object-cover"

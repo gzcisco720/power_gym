@@ -18,6 +18,12 @@ TDD mechanics (Red-Green-Refactor cadence, stop points) are governed by the **`s
 
 ---
 
+## Language
+
+**The UI language is English.** All user-facing strings — navigation labels, page titles, headings, placeholder text, button labels, notifications, and empty states — must be written in English. Do not use any other language in the UI.
+
+---
+
 ## Project Overview
 
 POWER_GYM is a gym management web application built with Next.js. It supports three user roles (owner, trainer, member) and provides workout plan management, nutrition plan management, body composition testing, and performance tracking.

@@ -17,8 +17,8 @@ export default function MilestoneCard({ item, isLast }: Props) {
   const { bodyTest, milestone } = item;
   if (!milestone) return null;
 
-  const date = new Date(bodyTest.date).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' });
-  const hasLeanMassPB = milestone.tags.some(t => t.label.includes('最高瘦体质量'));
+  const date = new Date(bodyTest.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  const hasLeanMassPB = milestone.tags.some(t => t.label.includes('All-time high lean mass'));
 
   return (
     <div className="flex items-stretch gap-3">
@@ -55,16 +55,16 @@ export default function MilestoneCard({ item, isLast }: Props) {
           {/* Stats row */}
           <div className="flex mb-3">
             <div className="flex-1">
-              <p className="text-primary-light/50 text-[9px] uppercase tracking-wider mb-0.5">体脂</p>
+              <p className="text-primary-light/50 text-[9px] uppercase tracking-wider mb-0.5">Body Fat</p>
               <p className="text-foreground text-sm font-bold">{bodyTest.bodyFatPct}%</p>
               {bodyTest.deltaBodyFatPct !== null && (
                 <p className={`text-[10px] mt-0.5 ${bodyTest.deltaBodyFatPct < 0 ? 'text-emerald-400' : 'text-foreground/65'}`}>
-                  {bodyTest.deltaBodyFatPct < 0 ? '' : '+'}{bodyTest.deltaBodyFatPct.toFixed(1)}% vs 上次
+                  {bodyTest.deltaBodyFatPct < 0 ? '' : '+'}{bodyTest.deltaBodyFatPct.toFixed(1)}% vs last
                 </p>
               )}
             </div>
             <div className="flex-1 border-l border-primary/15 pl-2.5 ml-2.5">
-              <p className="text-primary-light/50 text-[9px] uppercase tracking-wider mb-0.5">体重</p>
+              <p className="text-primary-light/50 text-[9px] uppercase tracking-wider mb-0.5">Weight</p>
               <p className="text-foreground text-sm font-bold">{bodyTest.weight} kg</p>
               {bodyTest.deltaWeight !== null && (
                 <p className={`text-[10px] mt-0.5 ${bodyTest.deltaWeight < 0 ? 'text-emerald-400' : 'text-foreground/65'}`}>
@@ -73,10 +73,10 @@ export default function MilestoneCard({ item, isLast }: Props) {
               )}
             </div>
             <div className="flex-1 border-l border-primary/15 pl-2.5 ml-2.5">
-              <p className="text-primary-light/50 text-[9px] uppercase tracking-wider mb-0.5">瘦体质量</p>
+              <p className="text-primary-light/50 text-[9px] uppercase tracking-wider mb-0.5">Lean Mass</p>
               <p className="text-foreground text-sm font-bold">{bodyTest.leanMassKg.toFixed(1)} kg</p>
               {hasLeanMassPB && (
-                <p className="text-primary-light/50 text-[10px] mt-0.5">历史最高</p>
+                <p className="text-primary-light/50 text-[10px] mt-0.5">All-time high</p>
               )}
             </div>
           </div>
@@ -89,7 +89,7 @@ export default function MilestoneCard({ item, isLast }: Props) {
                   {milestone.photos[i] ? (
                     <Image
                       src={milestone.photos[i]}
-                      alt={`里程碑照片 ${i + 1}`}
+                      alt={`Milestone photo ${i + 1}`}
                       width={100}
                       height={56}
                       className="w-full h-full object-cover"
