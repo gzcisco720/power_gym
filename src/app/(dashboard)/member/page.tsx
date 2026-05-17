@@ -4,7 +4,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MemberHero } from './_components/member-hero';
 import { MemberKpiStrip } from './_components/member-kpi-strip';
 import { MemberBodyChart } from './_components/member-body-chart';
-import { MemberStrengthChart } from './_components/member-strength-chart';
+import { MemberHeatmap } from './_components/member-heatmap';
+import { MemberStrengthSelector } from './_components/member-strength-selector';
 import { MemberNutritionToday } from './_components/member-nutrition-today';
 import { MemberUpcomingSessions } from './_components/member-upcoming-sessions';
 
@@ -31,16 +32,17 @@ export default async function MemberDashboardPage() {
           <MemberKpiStrip />
         </Suspense>
 
-        <div className="px-4 sm:px-8">
-          <div className="text-[11px] font-semibold uppercase tracking-[.07em] text-foreground/65 mb-3">
-            Progress
-          </div>
+        <div className="px-4 sm:px-8 space-y-3">
+          <Suspense fallback={<Skeleton className="h-[100px] rounded-xl" />}>
+            <MemberHeatmap />
+          </Suspense>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Suspense fallback={<Skeleton className="h-[164px] rounded-xl" />}>
               <MemberBodyChart />
             </Suspense>
             <Suspense fallback={<Skeleton className="h-[164px] rounded-xl" />}>
-              <MemberStrengthChart />
+              <MemberStrengthSelector />
             </Suspense>
           </div>
         </div>
