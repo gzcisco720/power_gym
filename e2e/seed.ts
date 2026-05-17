@@ -434,6 +434,87 @@ export async function seed(): Promise<void> {
   });
 
   // ── Body Tests ────────────────────────────────────────────────────────────
+  // ── Journey seed: 4 historical body tests spread over 6 months ───────────
+  const daysAgo = (n: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    d.setHours(9, 0, 0, 0);
+    return d;
+  };
+
+  // Test 1 of 6: 6 months ago — first ever test (journey start milestone)
+  await BodyTestModel.create({
+    memberId: member._id,
+    trainerId: trainer._id,
+    date: daysAgo(182),
+    age: 30,
+    sex: 'male',
+    weight: 82.0,
+    protocol: '7site',
+    chest: 24, midaxillary: 18, tricep: 18, subscapular: 22,
+    abdominal: 30, suprailiac: 22, thigh: 20,
+    bodyFatPct: 24.5,
+    leanMassKg: 61.9,
+    fatMassKg: 20.1,
+    targetWeight: 76.0,
+    targetBodyFatPct: 19.5,
+  });
+
+  // Test 2 of 6: 5 months ago — significant drop (1.5%), personal best
+  await BodyTestModel.create({
+    memberId: member._id,
+    trainerId: trainer._id,
+    date: daysAgo(152),
+    age: 30,
+    sex: 'male',
+    weight: 80.5,
+    protocol: '7site',
+    chest: 22, midaxillary: 17, tricep: 17, subscapular: 21,
+    abdominal: 28, suprailiac: 20, thigh: 19,
+    bodyFatPct: 23.0,
+    leanMassKg: 62.0,
+    fatMassKg: 18.5,
+    targetWeight: 76.0,
+    targetBodyFatPct: 19.5,
+  });
+
+  // Test 3 of 6: 3 months after start (~90 days ago) — time milestone (3 months), significant drop
+  await BodyTestModel.create({
+    memberId: member._id,
+    trainerId: trainer._id,
+    date: daysAgo(91),
+    age: 30,
+    sex: 'male',
+    weight: 79.0,
+    protocol: '7site',
+    chest: 20, midaxillary: 16, tricep: 16, subscapular: 20,
+    abdominal: 26, suprailiac: 18, thigh: 18,
+    bodyFatPct: 21.5,
+    leanMassKg: 62.0,
+    fatMassKg: 17.0,
+    targetWeight: 76.0,
+    targetBodyFatPct: 19.5,
+  });
+
+  // Test 4 of 6: 60 days ago — goal reached! (first time BF ≤ 19.5%)
+  await BodyTestModel.create({
+    memberId: member._id,
+    trainerId: trainer._id,
+    date: daysAgo(60),
+    age: 30,
+    sex: 'male',
+    weight: 77.5,
+    protocol: '7site',
+    chest: 18, midaxillary: 15, tricep: 15, subscapular: 19,
+    abdominal: 24, suprailiac: 17, thigh: 17,
+    bodyFatPct: 19.2,
+    leanMassKg: 62.7,
+    fatMassKg: 14.8,
+    targetWeight: 76.0,
+    targetBodyFatPct: 19.5,
+  });
+  // (existing 30-days-ago and today tests stay as-is)
+
   // Older test — 30 days ago (used by member body-tests history test)
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -669,4 +750,63 @@ export async function seed(): Promise<void> {
     notes: '',
     photos: [],
   });
+
+  // ── Journey seed: historical weekly check-ins with photos ─────────────────
+  const weekAgo = (n: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() - n * 7 - 3); // offset 3 days so they don't clash with body test dates
+    d.setHours(20, 0, 0, 0);
+    return d;
+  };
+
+  const checkInPhotos = [
+    ['https://picsum.photos/seed/gym-ci-1a/400/600', 'https://picsum.photos/seed/gym-ci-1b/400/600'],
+    [],
+    ['https://picsum.photos/seed/gym-ci-3a/400/600'],
+    [],
+    ['https://picsum.photos/seed/gym-ci-5a/400/600', 'https://picsum.photos/seed/gym-ci-5b/400/600'],
+    [],
+    [],
+    ['https://picsum.photos/seed/gym-ci-8a/400/600'],
+    [],
+    ['https://picsum.photos/seed/gym-ci-10a/400/600'],
+    [],
+    [],
+    ['https://picsum.photos/seed/gym-ci-13a/400/600', 'https://picsum.photos/seed/gym-ci-13b/400/600'],
+    [],
+    ['https://picsum.photos/seed/gym-ci-15a/400/600'],
+    [],
+    [],
+    ['https://picsum.photos/seed/gym-ci-18a/400/600'],
+    [],
+    ['https://picsum.photos/seed/gym-ci-20a/400/600', 'https://picsum.photos/seed/gym-ci-20b/400/600'],
+  ];
+
+  const stuckOptions: Array<'yes' | 'no' | 'partial'> = ['yes', 'partial', 'yes', 'yes', 'partial', 'yes', 'yes', 'no', 'yes', 'yes', 'yes', 'partial', 'yes', 'yes', 'yes', 'yes', 'partial', 'yes', 'yes', 'yes'];
+
+  for (let i = 0; i < 20; i++) {
+    await CheckInModel.create({
+      memberId: member._id,
+      trainerId: trainer._id,
+      submittedAt: weekAgo(20 - i), // oldest first: 20 weeks ago to 1 week ago (gaps possible)
+      sleepQuality: 6 + Math.floor(i / 5),
+      stress: 5 - Math.floor(i / 7),
+      fatigue: 5 - Math.floor(i / 7),
+      hunger: 6,
+      recovery: 6 + Math.floor(i / 6),
+      energy: 6 + Math.floor(i / 5),
+      digestion: 7,
+      weight: parseFloat((82.0 - i * 0.4).toFixed(1)),
+      waist: null,
+      steps: 8000 + i * 200,
+      exerciseMinutes: 45,
+      walkRunDistance: null,
+      sleepHours: 7.0 + (i % 3) * 0.5,
+      dietDetails: 'Followed the plan',
+      stuckToDiet: stuckOptions[i],
+      wellbeing: 'Feeling good',
+      notes: '',
+      photos: checkInPhotos[i],
+    });
+  }
 }
