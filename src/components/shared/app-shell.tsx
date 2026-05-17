@@ -25,7 +25,7 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
     {
       group: 'HEALTH',
       items: [
-        { href: '/member/nutrition', label: 'Nutrition' },
+        { href: '/member/nutrition', label: 'My Nutrition' },
         { href: '/member/body-tests', label: 'Body Tests' },
         { href: '/member/check-in', label: 'Check-In' },
       ],
@@ -33,12 +33,19 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
   ],
   trainer: [
     {
+      group: 'OVERVIEW',
+      items: [{ href: '/trainer', label: 'Dashboard', exact: true }],
+    },
+    {
       group: 'MEMBERS',
       items: [
         { href: '/trainer/members', label: 'Members' },
         { href: '/trainer/invites', label: 'Invites' },
-        { href: '/trainer/calendar', label: 'Calendar' },
       ],
+    },
+    {
+      group: 'SCHEDULE',
+      items: [{ href: '/trainer/calendar', label: 'Calendar' }],
     },
     {
       group: 'TEMPLATES',
@@ -87,7 +94,7 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
       items: [
         { href: '/owner/my-training', label: 'My Training' },
         { href: '/owner/my-nutrition', label: 'My Nutrition' },
-        { href: '/owner/my-body-tests', label: 'Body Tests' },
+        { href: '/owner/my-body-tests', label: 'My Body Tests' },
       ],
     },
   ],
