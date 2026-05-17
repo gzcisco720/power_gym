@@ -14,19 +14,19 @@ export function AchievementCards({ achievements }: Props) {
         icon: '🏆',
         title: `Lost ${weightLost} kg`,
         subtitle: `${weightFirst} → ${weightLatest} kg in ${totalCheckIns} weeks`,
-        style: 'bg-[rgba(99,102,241,0.08)] border-[rgba(99,102,241,0.2)]',
+        style: 'bg-primary/[0.08] border-primary/20',
       },
     currentStreak >= 2 && {
       icon: '🔥',
       title: `${currentStreak}-week streak`,
       subtitle: `${totalCheckIns} check-ins, never missed a week`,
-      style: 'bg-[rgba(52,211,153,0.07)] border-[rgba(52,211,153,0.18)]',
+      style: 'bg-emerald-400/[0.07] border-emerald-400/[0.18]',
     },
     dietStreak >= 2 && {
       icon: '🥗',
       title: `${dietStreak} on-track in a row`,
       subtitle: 'Best diet consistency streak',
-      style: 'bg-[rgba(251,191,36,0.07)] border-[rgba(251,191,36,0.18)]',
+      style: 'bg-amber-400/[0.07] border-amber-400/[0.18]',
     },
   ].filter(Boolean) as Array<{
     icon: string;
@@ -37,10 +37,10 @@ export function AchievementCards({ achievements }: Props) {
 
   if (cards.length === 0) return null;
 
-  const gridCols = Math.min(cards.length, 3);
+  const colsClass = ['', 'sm:grid-cols-1', 'sm:grid-cols-2', 'sm:grid-cols-3'][Math.min(cards.length, 3)];
 
   return (
-    <div className={`grid gap-3 mb-5 grid-cols-1 sm:grid-cols-${gridCols}`}>
+    <div className={`grid gap-3 mb-5 grid-cols-1 ${colsClass}`}>
       {cards.map((card) => (
         <div
           key={card.title}
