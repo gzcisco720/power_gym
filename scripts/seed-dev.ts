@@ -1243,19 +1243,24 @@ async function seedDevData() {
   ]);
   console.log('  ✓ Member2 nutrition logs: 7 days created');
 
-  // ── Body Tests for member (9 data points, 3site male, 6-month history) ──────
-  // Target BF 18.5% / weight 78kg — both reached on the "today" test,
-  // triggering goal_reached. JP 3-site: density = 1.10938 - 0.0008267s + 0.0000016s² - 0.0002574×age
+  // ── Body Tests for member (12 data points, 3site male, 6-month history) ─────
+  // Target BF 18.5% / weight 78kg — both reached on the "today" test.
+  // 3 plateau tests (marked "regular node") have BF above the previous all-time low
+  // and <1% change from prior test — they render as plain timeline nodes, not milestones.
+  // JP 3-site: density = 1.10938 - 0.0008267s + 0.0000016s² - 0.0002574×age
   const memberBodyTests = [
-    { ago: 182, weight: 87, chest: 31, abdominal: 38, thigh: 24 }, // ~26.3% BF — first test
+    { ago: 182, weight: 87, chest: 31, abdominal: 38, thigh: 24 }, // ~26.4% BF — first test
     { ago: 154, weight: 85, chest: 29, abdominal: 36, thigh: 23 }, // ~25.1% BF — significant drop
-    { ago: 112, weight: 84, chest: 27, abdominal: 34, thigh: 22 }, // ~24.3% BF — near 3-month mark
+    { ago: 133, weight: 85, chest: 29, abdominal: 36, thigh: 24 }, // ~25.4% BF — plateau (regular node)
+    { ago: 112, weight: 84, chest: 27, abdominal: 34, thigh: 22 }, // ~24.3% BF — 3-month milestone
     { ago:  84, weight: 83, chest: 27, abdominal: 34, thigh: 21 }, // ~23.6% BF
+    { ago:  70, weight: 83, chest: 27, abdominal: 35, thigh: 22 }, // ~24.1% BF — plateau (regular node)
     { ago:  56, weight: 82, chest: 26, abdominal: 32, thigh: 20 }, // ~22.6% BF — significant drop
+    { ago:  49, weight: 82, chest: 26, abdominal: 32, thigh: 21 }, // ~23.1% BF — travel week (regular node)
     { ago:  42, weight: 81, chest: 25, abdominal: 30, thigh: 19 }, // ~21.5% BF
     { ago:  28, weight: 80, chest: 23, abdominal: 28, thigh: 18 }, // ~20.2% BF
     { ago:  14, weight: 79, chest: 22, abdominal: 26, thigh: 17 }, // ~19.2% BF
-    { ago:   0, weight: 78, chest: 21, abdominal: 24, thigh: 16 }, // ~18.0% BF — goal reached, ~6-month milestone
+    { ago:   0, weight: 78, chest: 21, abdominal: 24, thigh: 16 }, // ~18.0% BF — goal reached, 6-month milestone
   ];
   for (const { ago, weight, chest, abdominal, thigh } of memberBodyTests) {
     const sum = chest + abdominal + thigh;
@@ -1271,7 +1276,7 @@ async function seedDevData() {
       targetWeight: 78, targetBodyFatPct: 18.5,
     });
   }
-  console.log('  ✓ Member body tests: 9 created (3site male, 6-month history, ~26% → 18% BF)');
+  console.log('  ✓ Member body tests: 12 created (3site male, 6-month history, ~26% → 18% BF, 3 plateau nodes)');
 
   // ── Body Tests for member2 (3 data points, 3site female) ──────────────────
   await BodyTestModel.create([
