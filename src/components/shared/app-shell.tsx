@@ -28,6 +28,7 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
         { href: '/member/nutrition', label: 'My Nutrition' },
         { href: '/member/body-tests', label: 'Body Tests' },
         { href: '/member/check-in', label: 'Check-In' },
+        { href: '/member/journey', label: '旅程' },
       ],
     },
   ],
