@@ -13,7 +13,7 @@ describe('AppShell', () => {
       </AppShell>
     );
     expect(screen.getByText('My Training')).toBeInTheDocument();
-    expect(screen.getByText('Nutrition')).toBeInTheDocument();
+    expect(screen.getByText('My Nutrition')).toBeInTheDocument();
     expect(screen.getByText('Body Tests')).toBeInTheDocument();
     expect(screen.queryByText('Plan Templates')).not.toBeInTheDocument();
   });
