@@ -63,7 +63,14 @@ export function getWeekStart(date: Date): Date {
 }
 
 export function avgWellnessScore(c: CheckInRecord): number {
-  const sum = c.sleepQuality + c.energy + c.recovery + c.stress + c.fatigue + c.hunger + c.digestion;
+  const sum =
+    c.sleepQuality +
+    c.energy +
+    c.recovery +
+    (10 - c.stress) +
+    (10 - c.fatigue) +
+    c.hunger +
+    c.digestion;
   return Math.round((sum / 7) * 10) / 10;
 }
 

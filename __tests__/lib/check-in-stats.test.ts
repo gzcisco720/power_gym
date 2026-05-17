@@ -34,10 +34,25 @@ const oldest: CheckInRecord = {
 // sorted newest first (as findByMember returns)
 const checkIns = [base, older, oldest];
 
+describe('getWeekStart', () => {
+  it('returns Sunday of the week for a mid-week date', () => {
+    // 2026-05-13 (Wednesday) → 2026-05-10 (Sunday)
+    const d = getWeekStart(new Date('2026-05-13T14:00:00Z'));
+    expect(d.getUTCDay()).toBe(0); // Sunday
+    expect(d.toISOString().startsWith('2026-05-10')).toBe(true);
+  });
+
+  it('returns same day when input is already Sunday midnight UTC', () => {
+    const d = getWeekStart(new Date('2026-05-10T00:00:00Z'));
+    expect(d.toISOString().startsWith('2026-05-10')).toBe(true);
+  });
+});
+
 describe('avgWellnessScore', () => {
-  it('averages all 7 fields', () => {
-    // (8+9+9+3+3+7+8)/7 = 47/7 ≈ 6.7
-    expect(avgWellnessScore(base)).toBe(6.7);
+  it('averages all 7 fields with stress and fatigue inverted', () => {
+    // base: sleep=8, energy=9, recovery=9, stress=3(→7), fatigue=3(→7), hunger=7, digestion=8
+    // sum = 8+9+9+7+7+7+8 = 55, avg = 55/7 ≈ 7.857 → 7.9
+    expect(avgWellnessScore(base)).toBe(7.9);
   });
 });
 
@@ -122,6 +137,6 @@ describe('computeHeatmap', () => {
     expect(last.hasCheckIn).toBe(false); // not submitted yet this week
     const prevWeek = cells[cells.length - 2]; // May 10
     expect(prevWeek.hasCheckIn).toBe(true);
-    expect(prevWeek.avgWellness).toBe(6.7);
+    expect(prevWeek.avgWellness).toBe(7.9);
   });
 });
