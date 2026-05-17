@@ -70,7 +70,7 @@ export function CompareCard({ checkInsWithPhotos }: Props) {
                   alt=""
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute bottom-0 inset-x-0 py-1 px-1.5 bg-black/60 text-[9px] text-foreground/55 text-center">
+                <div className="absolute bottom-0 inset-x-0 py-1 px-1.5 bg-background/80 text-[9px] text-foreground/55 text-center">
                   {format(new Date(checkIn.submittedAt), 'd MMM')}
                   {checkIn.weight ? ` · ${checkIn.weight} kg` : ''}
                 </div>
