@@ -50,6 +50,16 @@ describe('GET /api/members/[memberId]/journey', () => {
     expect(res.status).toBe(403);
   });
 
+  it('returns 403 when owner tries to access this member-only endpoint', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'o1', role: 'owner' } } as never);
+    const { GET } = await import('@/app/api/members/[memberId]/journey/route');
+    const res = await GET(
+      new Request('http://localhost/api/members/m1/journey'),
+      { params: Promise.resolve({ memberId: 'm1' }) } as RouteContext,
+    );
+    expect(res.status).toBe(403);
+  });
+
   it('returns empty items and null summary when member has no body tests', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
     mockBodyTestRepo.findAllByMemberAscending.mockResolvedValue([]);

@@ -17,8 +17,6 @@ export interface MilestoneTrigger {
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const SEVEN_DAYS_MS = 7 * MS_PER_DAY;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const FOURTEEN_DAYS_MS = 14 * MS_PER_DAY;
 const TIME_ANNIVERSARIES_MONTHS = [3, 6, 12];
 const STREAK_THRESHOLDS = [30, 60, 100];
 

@@ -23,7 +23,8 @@ export async function GET(req: Request, { params }: RouteContext) {
 
   const url = new URL(req.url);
   const cursor = url.searchParams.get('cursor');
-  const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '10', 10), 50);
+  const parsed = parseInt(url.searchParams.get('limit') ?? '10', 10);
+  const limit = Math.max(1, Math.min(Number.isFinite(parsed) ? parsed : 10, 50));
 
   await connectDB();
 
@@ -74,6 +75,9 @@ export async function GET(req: Request, { params }: RouteContext) {
   let descTests = [...allTests].reverse();
   if (cursor) {
     const cursorTime = new Date(cursor).getTime();
+    if (!Number.isFinite(cursorTime)) {
+      return new Response(null, { status: 400 });
+    }
     descTests = descTests.filter(t => t.date.getTime() < cursorTime);
   }
   const pageSlice = descTests.slice(0, limit);
