@@ -27,19 +27,27 @@ export default async function LoginPage({
 
       {/* Form */}
       <div className="relative z-10 w-full max-w-sm">
-        {/* Logo + gym name block */}
+        {/* Logo + gym name block, or "Sign in" fallback */}
         <div className="flex flex-col items-center mb-10">
-          {branding.loginLogoUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={branding.loginLogoUrl}
-              alt={gymName}
-              className="max-w-[200px] max-h-[120px] object-contain mb-5"
-            />
+          {branding.loginLogoUrl || branding.name ? (
+            <>
+              {branding.loginLogoUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={branding.loginLogoUrl}
+                  alt={gymName}
+                  className="max-w-[200px] max-h-[120px] object-contain mb-5"
+                />
+              )}
+              {branding.name && (
+                <div className="text-[11px] font-bold tracking-[5px] text-white uppercase">
+                  {branding.name}
+                </div>
+              )}
+            </>
+          ) : (
+            <h1 className="text-[28px] font-bold tracking-[-0.5px] text-white">Sign in</h1>
           )}
-          <div className="text-[11px] font-bold tracking-[5px] text-white uppercase">
-            {gymName}
-          </div>
         </div>
 
         {error === 'CredentialsSignin' && (
