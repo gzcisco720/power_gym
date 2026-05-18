@@ -60,6 +60,8 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Gym Branding (Plan) | [gym-branding-plan.md](2026-05-18/plans/gym-branding-plan.md) | Complete |
 | Logo Crop (Design) | [logo-crop-design.md](2026-05-18/plans/logo-crop-design.md) | Approved |
 | Logo Crop (Plan) | [logo-crop-plan.md](2026-05-18/plans/logo-crop-plan.md) | Complete |
+| Member My Training (Design) | [member-my-training-design.md](2026-05-18/plans/member-my-training-design.md) | Approved |
+| Member My Training (Plan) | [member-my-training-plan.md](2026-05-18/plans/member-my-training-plan.md) | Complete |
 
 ---
 
