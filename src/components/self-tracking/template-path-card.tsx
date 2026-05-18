@@ -105,9 +105,13 @@ export function TemplatePathCard({ templates, basePath }: Props) {
             From Template
           </span>
         </div>
-        <p className="text-sm text-foreground/65 mb-4 flex-1">
-          Create a training template to log structured workouts.
-        </p>
+        <div className="flex-1 flex flex-col items-center justify-center text-center gap-1.5 py-4">
+          <span className="text-3xl opacity-35">🗂️</span>
+          <p className="text-sm text-foreground/65">No templates yet.</p>
+          <p className="text-xs text-foreground/40">
+            Create a training template to log structured workouts.
+          </p>
+        </div>
         <Button
           variant="outline"
           onClick={() => router.push(basePath.replace('/my-training', '/plans/new'))}

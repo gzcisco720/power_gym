@@ -67,8 +67,9 @@ const multiDayTemplate = {
 
 describe('TemplatePathCard', () => {
   describe('empty state (no templates)', () => {
-    it('renders empty state with Create Template button when templates array is empty', () => {
+    it('renders unified empty state with icon title and create button', () => {
       render(<TemplatePathCard templates={[]} basePath="/trainer/my-training" />);
+      expect(screen.getByText('No templates yet.')).toBeInTheDocument();
       expect(screen.getByText(/create a training template/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /\+ create template/i })).toBeInTheDocument();
     });
