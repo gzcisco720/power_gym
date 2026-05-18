@@ -69,11 +69,13 @@ export async function updateGymInfoAction(
   const website = (formData.get('gymWebsite') as string | null)?.trim() || null;
   const hours = (formData.get('gymHours') as string | null)?.trim() || null;
   const description = (formData.get('gymDescription') as string | null)?.trim() || null;
+  const logoUrl = (formData.get('logoUrl') as string | null) || null;
+  const loginBgUrl = (formData.get('loginBgUrl') as string | null) || null;
 
   try {
     await connectDB();
     await new MongoUserProfileRepository().upsert(session.user.id, {
-      gymInfo: { name, address, phone, email, website, hours, description },
+      gymInfo: { name, address, phone, email, website, hours, description, logoUrl, loginBgUrl },
     });
     return { error: '' };
   } catch {
