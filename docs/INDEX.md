@@ -57,7 +57,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Check-In Dashboard Redesign (Design) | [check-in-dashboard-design.md](2026-05-17/plans/check-in-dashboard-design.md) | Approved |
 | Check-In Dashboard Redesign (Plan) | [check-in-dashboard-plan.md](2026-05-17/plans/check-in-dashboard-plan.md) | Complete |
 | Gym Branding (Logo + Login BG) | [gym-branding-design.md](2026-05-18/plans/gym-branding-design.md) | Approved |
-| Gym Branding (Plan) | [gym-branding-plan.md](2026-05-18/plans/gym-branding-plan.md) | In Progress |
+| Gym Branding (Plan) | [gym-branding-plan.md](2026-05-18/plans/gym-branding-plan.md) | Complete |
 
 ---
 
