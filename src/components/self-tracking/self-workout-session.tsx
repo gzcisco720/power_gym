@@ -254,15 +254,19 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
       setInputErrors(errors);
       return;
     }
-    const hasAnyData = log.sets.some((set, i) => {
-      if (deletedIndices.has(i)) return false;
-      const input = inputs[i] ?? { weight: '', reps: '' };
-      const isBw = bwOverrides[set.exerciseId.toString()] ?? set.isBodyweight;
-      return input.reps.trim() !== '' || (!isBw && input.weight.trim() !== '');
-    });
-    if (!hasAnyData) {
-      toast.error('Fill in at least one set before completing.');
-      return;
+    // Only block if there are non-deleted sets and none have any data filled
+    const nonDeletedCount = log.sets.filter((_, i) => !deletedIndices.has(i)).length;
+    if (nonDeletedCount > 0) {
+      const hasAnyData = log.sets.some((set, i) => {
+        if (deletedIndices.has(i)) return false;
+        const input = inputs[i] ?? { weight: '', reps: '' };
+        const isBw = bwOverrides[set.exerciseId.toString()] ?? set.isBodyweight;
+        return input.reps.trim() !== '' || (!isBw && input.weight.trim() !== '');
+      });
+      if (!hasAnyData) {
+        toast.error('Fill in at least one set before completing.');
+        return;
+      }
     }
     setInputErrors({});
 
