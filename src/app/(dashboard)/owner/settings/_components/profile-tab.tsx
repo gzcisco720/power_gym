@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export function OwnerProfileTab(props: Props) {
+  const router = useRouter();
   const [avatarUrl, setAvatarUrl] = useState(props.avatarUrl);
   const [saving, setSaving] = useState(false);
   const [editingEmail, setEditingEmail] = useState(false);
@@ -57,7 +59,7 @@ export function OwnerProfileTab(props: Props) {
     const result = await updateOwnerProfileAction({ error: '' }, formData);
     setSaving(false);
     if (result.error) toast.error(result.error);
-    else toast.success('Profile saved');
+    else { toast.success('Profile saved'); router.refresh(); }
   }
 
   return (
