@@ -93,18 +93,6 @@ function buildGroups(log: ISelfWorkoutLog): Group[] {
   return groups;
 }
 
-function toLoggingSets(exSets: SetWithIndex[]): LoggingSetInput[] {
-  return exSets.map((s) => ({
-    setNumber: s.setNumber,
-    prescribedRepsMin: s.prescribedRepsMin ?? 0,
-    prescribedRepsMax: s.prescribedRepsMax ?? 0,
-    actualWeight: s.actualWeight,
-    actualReps: s.actualReps,
-    completedAt: s.completedAt instanceof Date ? s.completedAt.toISOString() : (s.completedAt ?? null),
-    globalIndex: s.globalIndex,
-  }));
-}
-
 function useElapsedTimer(startedAtIso: string | null) {
   const [elapsed, setElapsed] = useState(0);
   useEffect(() => {
@@ -136,7 +124,10 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [inputs, setInputs] = useState<{ weight: string; reps: string }[]>([]);
   const [bwOverrides, setBwOverrides] = useState<Record<string, boolean>>({});
+  const [deletedIndices, setDeletedIndices] = useState<Set<number>>(new Set());
+  const [inputErrors, setInputErrors] = useState<Record<number, { weight?: boolean; reps?: boolean }>>({});
   const [availableExercises, setAvailableExercises] = useState<ExerciseOption[]>([]);
+  const [savingSets, setSavingSets] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -146,7 +137,10 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
         if (cancelled) return;
         setLog(d);
         if (d) {
-          setInputs(d.sets.map(() => ({ weight: '', reps: '' })));
+          setInputs(d.sets.map((s) => ({
+            weight: s.actualWeight !== null ? String(s.actualWeight) : '',
+            reps: s.actualReps !== null ? String(s.actualReps) : '',
+          })));
           const map: Record<string, boolean> = {};
           d.sets.forEach((s) => {
             map[s.exerciseId.toString()] = s.isBodyweight;
@@ -214,31 +208,113 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
       next[globalIndex] = { ...next[globalIndex], [field]: value };
       return next;
     });
+    setInputErrors((prev) => {
+      if (!prev[globalIndex]?.[field]) return prev;
+      const next = { ...prev };
+      next[globalIndex] = { ...next[globalIndex], [field]: undefined };
+      if (!next[globalIndex].weight && !next[globalIndex].reps) delete next[globalIndex];
+      return next;
+    });
   }
 
-  async function logSet(globalIndex: number) {
-    if (!log) return;
-    const set = log.sets[globalIndex];
-    const exId = set.exerciseId.toString();
-    const isBw = bwOverrides[exId] ?? set.isBodyweight;
-    const i = inputs[globalIndex] ?? { weight: '', reps: '' };
-    const weight = isBw
-      ? null
-      : i.weight === ''
-        ? null
-        : parseFloat(i.weight);
-    const reps = i.reps === '' ? null : parseInt(i.reps, 10);
-    const res = await fetch(`/api/me/workout-logs/${logId}/sets/${globalIndex}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ actualWeight: weight, actualReps: reps }),
+  function deleteSet(globalIndex: number) {
+    setDeletedIndices((prev) => new Set([...prev, globalIndex]));
+    setInputs((prev) => {
+      const next = [...prev];
+      next[globalIndex] = { weight: '', reps: '' };
+      return next;
     });
-    if (res.status === 404) {
-      toast.error('This session was ended on another device.');
-      router.push(basePath);
+    setInputErrors((prev) => {
+      const next = { ...prev };
+      delete next[globalIndex];
+      return next;
+    });
+  }
+
+  function validateInputs(): Record<number, { weight?: boolean; reps?: boolean }> {
+    if (!log) return {};
+    const errors: Record<number, { weight?: boolean; reps?: boolean }> = {};
+    log.sets.forEach((set, i) => {
+      if (deletedIndices.has(i)) return;
+      const input = inputs[i] ?? { weight: '', reps: '' };
+      const isBw = bwOverrides[set.exerciseId.toString()] ?? set.isBodyweight;
+      if (isBw) return;
+      const weightFilled = input.weight.trim() !== '';
+      const repsFilled = input.reps.trim() !== '';
+      if (weightFilled && !repsFilled) errors[i] = { reps: true };
+      else if (!weightFilled && repsFilled) errors[i] = { weight: true };
+    });
+    return errors;
+  }
+
+  async function handleFinishClick() {
+    if (!log) return;
+    const errors = validateInputs();
+    if (Object.keys(errors).length > 0) {
+      setInputErrors(errors);
       return;
     }
-    if (res.ok) syncLog((await res.json()) as ISelfWorkoutLog);
+    const hasAnyData = log.sets.some((set, i) => {
+      if (deletedIndices.has(i)) return false;
+      const input = inputs[i] ?? { weight: '', reps: '' };
+      const isBw = bwOverrides[set.exerciseId.toString()] ?? set.isBodyweight;
+      return input.reps.trim() !== '' || (!isBw && input.weight.trim() !== '');
+    });
+    if (!hasAnyData) {
+      toast.error('Fill in at least one set before completing.');
+      return;
+    }
+    setInputErrors({});
+
+    // Batch-PATCH filled sets before opening the dialog
+    const setsToSave: { index: number; weight: number | null; reps: number | null }[] = [];
+    log.sets.forEach((set, i) => {
+      if (deletedIndices.has(i)) return;
+      const input = inputs[i] ?? { weight: '', reps: '' };
+      const isBw = bwOverrides[set.exerciseId.toString()] ?? set.isBodyweight;
+      const repsFilled = input.reps.trim() !== '';
+      const weightFilled = !isBw && input.weight.trim() !== '';
+      if (!repsFilled && !weightFilled) return;
+      if (isBw && !repsFilled) return;
+      setsToSave.push({
+        index: i,
+        weight: isBw ? null : parseFloat(input.weight) || null,
+        reps: parseInt(input.reps, 10) || null,
+      });
+    });
+
+    if (setsToSave.length > 0) {
+      setSavingSets(true);
+      try {
+        const results = await Promise.all(
+          setsToSave.map(({ index, weight, reps }) =>
+            fetch(`/api/me/workout-logs/${logId}/sets/${index}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ actualWeight: weight, actualReps: reps }),
+            }),
+          ),
+        );
+        for (const res of results) {
+          if (!res.ok) {
+            if (res.status === 404) {
+              toast.error('This session was ended on another device.');
+              router.push(basePath);
+              return;
+            }
+            toast.error('Failed to save sets');
+            return;
+          }
+        }
+      } catch {
+        toast.error('Something went wrong');
+        return;
+      } finally {
+        setSavingSets(false);
+      }
+    }
+
+    setCompleteOpen(true);
   }
 
   async function addSet(exerciseId: string) {
@@ -307,6 +383,29 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
 
   useDirtyInputGuard(inputs, log?.sets ?? []);
 
+  function toLoggingSets(exSets: SetWithIndex[]): LoggingSetInput[] {
+    return exSets
+      .filter((s) => !deletedIndices.has(s.globalIndex))
+      .map((s) => ({
+        setNumber: s.setNumber,
+        prescribedRepsMin: s.prescribedRepsMin ?? 0,
+        prescribedRepsMax: s.prescribedRepsMax ?? 0,
+        actualWeight: s.actualWeight,
+        actualReps: s.actualReps,
+        completedAt: s.completedAt instanceof Date ? s.completedAt.toISOString() : (s.completedAt ?? null),
+        globalIndex: s.globalIndex,
+      }));
+  }
+
+  // Count sets that have at least reps filled (for the progress display)
+  const filledSetCount = log
+    ? log.sets.filter((_, i) => {
+        if (deletedIndices.has(i)) return false;
+        return (inputs[i]?.reps ?? '').trim() !== '';
+      }).length
+    : 0;
+  const totalSetCount = log ? log.sets.length - deletedIndices.size : 0;
+
   if (loading) return <div className="p-6 text-foreground/65 text-sm">Loading…</div>;
   if (!log) return <div className="p-6 text-foreground/65 text-sm">Workout not found.</div>;
 
@@ -360,12 +459,13 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
                   inputs={inputs}
                   bwOverride={bwOverrides[group.exerciseId]}
                   onInputChange={updateInput}
-                  onLogSet={(idx) => void logSet(idx)}
+                  onDeleteSet={deleteSet}
                   onAddSet={() => void addSet(group.exerciseId)}
                   onBwToggle={(next) =>
                     setBwOverrides((prev) => ({ ...prev, [group.exerciseId]: next }))
                   }
                   readOnly={isCompleted}
+                  inputErrors={inputErrors}
                 />
               </motion.div>
             );
@@ -381,9 +481,10 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
                   loggingSets: toLoggingSets(m.sets),
                   inputs,
                   bwOverride: bwOverrides[m.exerciseId],
+                  inputErrors,
                 }))}
                 onInputChange={(_, idx, field, value) => updateInput(idx, field, value)}
-                onLogSet={(_, idx) => void logSet(idx)}
+                onDeleteSet={(_, idx) => deleteSet(idx)}
                 onAddSet={(exId) => void addSet(exId)}
                 onBwToggle={(exId, next) =>
                   setBwOverrides((prev) => ({ ...prev, [exId]: next }))
@@ -408,9 +509,9 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
       <div className="sticky bottom-0 z-10 border-t border-foreground/10 backdrop-blur-md bg-background/50 px-4 sm:px-8 py-3">
         <div className="max-w-2xl mx-auto w-full flex items-center justify-between gap-3">
           <span className="text-xs text-foreground/65 tabular-nums">
-            {log.sets.length === 0
+            {totalSetCount === 0
               ? 'No sets yet'
-              : `${log.sets.filter((s) => s.completedAt != null).length} / ${log.sets.length} sets logged`}
+              : `${filledSetCount} / ${totalSetCount} sets filled`}
           </span>
           {isCompleted ? (
             <span className="text-xs text-foreground/65 tabular-nums">
@@ -418,7 +519,9 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
               {log.rpe != null ? ` · RPE ${log.rpe}` : ''}
             </span>
           ) : (
-            <Button onClick={() => setCompleteOpen(true)}>Finish</Button>
+            <Button onClick={() => void handleFinishClick()} disabled={savingSets}>
+              {savingSets ? 'Saving…' : 'Finish'}
+            </Button>
           )}
         </div>
       </div>

@@ -101,7 +101,141 @@ describe('ExerciseRow (edit mode)', () => {
   });
 });
 
-describe('logging mode — readOnly', () => {
+describe('ExerciseRow logging mode — active (not readOnly)', () => {
+  const loggingRow: ExerciseRowData = {
+    exerciseId: 'ex2',
+    exerciseName: 'Bench Press',
+    imageUrl: null,
+    isBodyweight: false,
+    groupId: 'ex2',
+    isSuperset: false,
+    sets: 2,
+    repsMin: 8,
+    repsMax: 10,
+    restSeconds: 90,
+  };
+
+  const twoSets: LoggingSetInput[] = [
+    {
+      setNumber: 1,
+      prescribedRepsMin: 8,
+      prescribedRepsMax: 10,
+      actualWeight: null,
+      actualReps: null,
+      completedAt: null,
+      globalIndex: 0,
+    },
+    {
+      setNumber: 2,
+      prescribedRepsMin: 8,
+      prescribedRepsMax: 10,
+      actualWeight: null,
+      actualReps: null,
+      completedAt: null,
+      globalIndex: 1,
+    },
+  ];
+
+  const noopCallbacks = {
+    onInputChange: jest.fn(),
+    onDeleteSet: jest.fn(),
+    onAddSet: jest.fn(),
+    onBwToggle: jest.fn(),
+  };
+
+  beforeEach(() => jest.clearAllMocks());
+
+  it('shows a delete (×) button for each set instead of a complete button', () => {
+    render(
+      <ExerciseRow
+        mode="logging"
+        row={loggingRow}
+        label="A"
+        loggingSets={twoSets}
+        inputs={[{ weight: '', reps: '' }, { weight: '', reps: '' }]}
+        readOnly={false}
+        {...noopCallbacks}
+      />,
+    );
+    expect(screen.getByRole('button', { name: /delete set 1/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /delete set 2/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /complete set/i })).not.toBeInTheDocument();
+  });
+
+  it('calls onDeleteSet with globalIndex when × is clicked', () => {
+    const onDeleteSet = jest.fn();
+    render(
+      <ExerciseRow
+        mode="logging"
+        row={loggingRow}
+        label="A"
+        loggingSets={twoSets}
+        inputs={[{ weight: '', reps: '' }, { weight: '', reps: '' }]}
+        readOnly={false}
+        {...noopCallbacks}
+        onDeleteSet={onDeleteSet}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /delete set 2/i }));
+    expect(onDeleteSet).toHaveBeenCalledWith(1); // globalIndex of set 2
+  });
+
+  it('shows red ring on weight input when inputErrors has weight:true for that set', () => {
+    render(
+      <ExerciseRow
+        mode="logging"
+        row={loggingRow}
+        label="A"
+        loggingSets={twoSets}
+        inputs={[{ weight: '', reps: '10' }, { weight: '', reps: '' }]}
+        readOnly={false}
+        inputErrors={{ 0: { weight: true } }}
+        {...noopCallbacks}
+      />,
+    );
+    const weightInput = screen.getByLabelText(/set 1 weight/i);
+    expect(weightInput.className).toMatch(/ring-destructive/);
+  });
+
+  it('shows red ring on reps input when inputErrors has reps:true for that set', () => {
+    render(
+      <ExerciseRow
+        mode="logging"
+        row={loggingRow}
+        label="A"
+        loggingSets={twoSets}
+        inputs={[{ weight: '80', reps: '' }, { weight: '', reps: '' }]}
+        readOnly={false}
+        inputErrors={{ 0: { reps: true } }}
+        {...noopCallbacks}
+      />,
+    );
+    const repsInput = screen.getByLabelText(/set 1 reps/i);
+    expect(repsInput.className).toMatch(/ring-destructive/);
+  });
+
+  it('shows all sets as editable input rows regardless of completedAt', () => {
+    const mixedSets: LoggingSetInput[] = [
+      { ...twoSets[0], completedAt: '2024-01-01T10:00:00Z', actualWeight: 80, actualReps: 9 },
+      twoSets[1],
+    ];
+    render(
+      <ExerciseRow
+        mode="logging"
+        row={loggingRow}
+        label="A"
+        loggingSets={mixedSets}
+        inputs={[{ weight: '80', reps: '9' }, { weight: '', reps: '' }]}
+        readOnly={false}
+        {...noopCallbacks}
+      />,
+    );
+    // Both sets show kg inputs (not just the incomplete one)
+    expect(screen.getAllByPlaceholderText('kg')).toHaveLength(2);
+  });
+});
+
+describe('ExerciseRow logging mode — readOnly', () => {
   const loggingRow: ExerciseRowData = {
     exerciseId: 'ex2',
     exerciseName: 'Bench Press',
@@ -138,7 +272,7 @@ describe('logging mode — readOnly', () => {
 
   const loggingCallbacks = {
     onInputChange: jest.fn(),
-    onLogSet: jest.fn(),
+    onDeleteSet: jest.fn(),
     onAddSet: jest.fn(),
     onBwToggle: jest.fn(),
   };
@@ -172,11 +306,30 @@ describe('logging mode — readOnly', () => {
       expect(screen.queryByText(/\+ add set/i)).not.toBeInTheDocument();
     });
 
+    it('only shows sets with completedAt !== null (filters skipped sets)', () => {
+      const mixedSets: LoggingSetInput[] = [
+        { ...completedSets[0] },                              // completedAt set
+        { ...completedSets[1], completedAt: null },           // skipped
+      ];
+      render(
+        <ExerciseRow
+          mode="logging"
+          row={loggingRow}
+          label="A"
+          loggingSets={mixedSets}
+          inputs={[]}
+          readOnly={true}
+          {...loggingCallbacks}
+        />,
+      );
+      // Only the completed set should show
+      expect(screen.getByText(/80 kg × 9 reps/i)).toBeInTheDocument();
+      expect(screen.queryByText(/set 2/i)).not.toBeInTheDocument();
+    });
+
     it('completed sets show their logged values', () => {
       renderLogging(true);
-      // Set 1: weight=80 × reps=9
       expect(screen.getByText(/80 kg × 9 reps/i)).toBeInTheDocument();
-      // Set 2: weight=null, reps=null → shows "–"
       expect(screen.getByText('–')).toBeInTheDocument();
     });
   });

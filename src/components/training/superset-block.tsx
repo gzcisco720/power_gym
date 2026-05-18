@@ -27,7 +27,7 @@ export interface SupersetLoggingMember {
   loggingSets: LoggingSetInput[];
   inputs: { weight: string; reps: string }[];
   bwOverride?: boolean;
-  pendingSetIndex?: number | null;
+  inputErrors?: Record<number, { weight?: boolean; reps?: boolean }>;
   isAddingSet?: boolean;
 }
 
@@ -60,7 +60,7 @@ interface LoggingProps extends BaseProps {
     field: 'weight' | 'reps',
     value: string,
   ) => void;
-  onLogSet: (memberExerciseId: string, globalIndex: number) => void;
+  onDeleteSet: (memberExerciseId: string, globalIndex: number) => void;
   onAddSet: (memberExerciseId: string) => void;
   onBwToggle: (memberExerciseId: string, next: boolean) => void;
   readOnly?: boolean;
@@ -178,7 +178,7 @@ export function SupersetBlock(props: Props) {
   }
 
   if (props.mode === 'logging') {
-    const { loggingMembers, onInputChange, onLogSet, onAddSet, onBwToggle, readOnly } = props;
+    const { loggingMembers, onInputChange, onDeleteSet, onAddSet, onBwToggle, readOnly } = props;
     return (
       <div className="rounded-lg bg-card ring-1 ring-foreground/25 overflow-hidden">
         <div className="px-3 py-1.5 bg-muted/40 flex items-center justify-center">
@@ -199,11 +199,11 @@ export function SupersetBlock(props: Props) {
               onInputChange={(idx, field, value) =>
                 onInputChange(m.row.exerciseId, idx, field, value)
               }
-              onLogSet={(idx) => onLogSet(m.row.exerciseId, idx)}
+              onDeleteSet={(idx) => onDeleteSet(m.row.exerciseId, idx)}
               onAddSet={() => onAddSet(m.row.exerciseId)}
               onBwToggle={(next) => onBwToggle(m.row.exerciseId, next)}
               readOnly={readOnly}
-              pendingSetIndex={m.pendingSetIndex}
+              inputErrors={m.inputErrors}
               isAddingSet={m.isAddingSet}
             />
           </Fragment>

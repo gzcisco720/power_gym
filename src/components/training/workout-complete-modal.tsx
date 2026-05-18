@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { WorkoutCompleteAnimation } from '@/components/animations/workout-complete';
@@ -15,12 +15,13 @@ export function WorkoutCompleteModal({ onConfirm, onCancel, isLoading }: Workout
   const [rpe, setRpe] = useState<number>(5);
   const [note, setNote] = useState('');
   const [showAnimation, setShowAnimation] = useState(true);
+  const handleAnimationComplete = useCallback(() => setShowAnimation(false), []);
 
   if (showAnimation) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
         <div className="w-full max-w-md rounded-2xl bg-white/[.04] ring-1 ring-white/10 backdrop-blur-md p-6">
-          <WorkoutCompleteAnimation onComplete={() => setShowAnimation(false)} />
+          <WorkoutCompleteAnimation onComplete={handleAnimationComplete} />
         </div>
       </div>
     );

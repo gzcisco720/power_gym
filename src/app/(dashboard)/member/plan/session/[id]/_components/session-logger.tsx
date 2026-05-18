@@ -144,7 +144,10 @@ export function SessionLogger({
     : '';
   const [session, setSession] = useState(initialSession);
   const [inputs, setInputs] = useState<{ weight: string; reps: string }[]>(
-    initialSession.sets.map(() => ({ weight: '', reps: '' })),
+    initialSession.sets.map((s) => ({
+      weight: s.actualWeight !== null ? String(s.actualWeight) : '',
+      reps: s.actualReps !== null ? String(s.actualReps) : '',
+    })),
   );
   const [bwOverrides, setBwOverrides] = useState<Record<string, boolean>>(() => {
     const map: Record<string, boolean> = {};
@@ -153,7 +156,8 @@ export function SessionLogger({
     });
     return map;
   });
-  const [loggingSetIndex, setLoggingSetIndex] = useState<number | null>(null);
+  const [deletedIndices, setDeletedIndices] = useState<Set<number>>(new Set());
+  const [inputErrors, setInputErrors] = useState<Record<number, { weight?: boolean; reps?: boolean }>>({});
   const [addingSetFor, setAddingSetFor] = useState<string | null>(null);
   const [addingExercise, setAddingExercise] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -186,39 +190,63 @@ export function SessionLogger({
       next[index] = { ...next[index], [field]: value };
       return next;
     });
+    // Clear error for this field when user starts correcting it
+    setInputErrors((prev) => {
+      if (!prev[index]?.[field]) return prev;
+      const next = { ...prev };
+      next[index] = { ...next[index], [field]: undefined };
+      if (!next[index].weight && !next[index].reps) delete next[index];
+      return next;
+    });
   }
 
-  async function logSet(setIndex: number) {
-    setLoggingSetIndex(setIndex);
-    const input = inputs[setIndex];
-    const set = session.sets[setIndex];
-    const isBodyweight = bwOverrides[set.exerciseId] ?? set.isBodyweight;
-    try {
-      const res = await fetch(`/api/sessions/${session._id}/sets/${setIndex}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          actualWeight: isBodyweight ? null : parseFloat(input.weight) || null,
-          actualReps: parseInt(input.reps, 10) || null,
-        }),
-      });
-      if (res.status === 404) {
-        toast.error('This session was ended on another device.');
-        router.push(backPath);
-        return;
-      }
-      if (!res.ok) {
-        const data = (await res.json()) as { error?: string };
-        toast.error(data.error ?? 'Failed to log set');
-        return;
-      }
-      const updated = (await res.json()) as Session;
-      syncInputsToSession(updated);
-    } catch {
-      toast.error('Something went wrong');
-    } finally {
-      setLoggingSetIndex(null);
+  function deleteSet(globalIndex: number) {
+    setDeletedIndices((prev) => new Set([...prev, globalIndex]));
+    setInputs((prev) => {
+      const next = [...prev];
+      next[globalIndex] = { weight: '', reps: '' };
+      return next;
+    });
+    setInputErrors((prev) => {
+      const next = { ...prev };
+      delete next[globalIndex];
+      return next;
+    });
+  }
+
+  function validateInputs(): Record<number, { weight?: boolean; reps?: boolean }> {
+    const errors: Record<number, { weight?: boolean; reps?: boolean }> = {};
+    session.sets.forEach((set, i) => {
+      if (deletedIndices.has(i)) return;
+      const input = inputs[i] ?? { weight: '', reps: '' };
+      const isBw = bwOverrides[set.exerciseId] ?? set.isBodyweight;
+      if (isBw) return; // BW only needs reps; empty reps means skip, no error
+      const weightFilled = input.weight.trim() !== '';
+      const repsFilled = input.reps.trim() !== '';
+      if (weightFilled && !repsFilled) errors[i] = { reps: true };
+      else if (!weightFilled && repsFilled) errors[i] = { weight: true };
+    });
+    return errors;
+  }
+
+  function handleCompleteWorkoutClick() {
+    const errors = validateInputs();
+    if (Object.keys(errors).length > 0) {
+      setInputErrors(errors);
+      return;
     }
+    const hasAnyData = session.sets.some((set, i) => {
+      if (deletedIndices.has(i)) return false;
+      const input = inputs[i] ?? { weight: '', reps: '' };
+      const isBw = bwOverrides[set.exerciseId] ?? set.isBodyweight;
+      return input.reps.trim() !== '' || (!isBw && input.weight.trim() !== '');
+    });
+    if (!hasAnyData) {
+      toast.error('Fill in at least one set before completing.');
+      return;
+    }
+    setInputErrors({});
+    setShowCompleteModal(true);
   }
 
   async function addSet(exerciseId: string) {
@@ -290,7 +318,43 @@ export function SessionLogger({
   async function completeSession(rpe: number | null, memberNote: string | null) {
     setCompleting(true);
     setShowCompleteModal(false);
+
+    // Collect all sets that have data to save
+    const setsToSave: { index: number; weight: number | null; reps: number | null }[] = [];
+    session.sets.forEach((set, i) => {
+      if (deletedIndices.has(i)) return;
+      const input = inputs[i] ?? { weight: '', reps: '' };
+      const isBw = bwOverrides[set.exerciseId] ?? set.isBodyweight;
+      const repsFilled = input.reps.trim() !== '';
+      const weightFilled = !isBw && input.weight.trim() !== '';
+      if (!repsFilled && !weightFilled) return; // skip fully empty sets
+      setsToSave.push({
+        index: i,
+        weight: isBw ? null : parseFloat(input.weight) || null,
+        reps: parseInt(input.reps, 10) || null,
+      });
+    });
+
     try {
+      const patchResults = await Promise.all(
+        setsToSave.map(({ index, weight, reps }) =>
+          fetch(`/api/sessions/${session._id}/sets/${index}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ actualWeight: weight, actualReps: reps }),
+          }),
+        ),
+      );
+
+      for (const res of patchResults) {
+        if (!res.ok) {
+          const data = (await res.json()) as { error?: string };
+          toast.error(data.error ?? 'Failed to save sets');
+          setCompleting(false);
+          return;
+        }
+      }
+
       const res = await fetch(`/api/sessions/${session._id}/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -315,15 +379,17 @@ export function SessionLogger({
   useDirtyInputGuard(inputs, session.sets);
 
   function toLoggingSets(exSets: (SessionSet & { globalIndex: number })[]) {
-    return exSets.map((s) => ({
-      setNumber: s.setNumber,
-      prescribedRepsMin: s.prescribedRepsMin,
-      prescribedRepsMax: s.prescribedRepsMax,
-      actualWeight: s.actualWeight,
-      actualReps: s.actualReps,
-      completedAt: s.completedAt,
-      globalIndex: s.globalIndex,
-    }));
+    return exSets
+      .filter((s) => !deletedIndices.has(s.globalIndex))
+      .map((s) => ({
+        setNumber: s.setNumber,
+        prescribedRepsMin: s.prescribedRepsMin,
+        prescribedRepsMax: s.prescribedRepsMax,
+        actualWeight: s.actualWeight,
+        actualReps: s.actualReps,
+        completedAt: s.completedAt,
+        globalIndex: s.globalIndex,
+      }));
   }
 
   return (
@@ -379,13 +445,13 @@ export function SessionLogger({
                   inputs={inputs}
                   bwOverride={bwOverrides[ex.exerciseId]}
                   onInputChange={updateInput}
-                  onLogSet={(idx) => void logSet(idx)}
+                  onDeleteSet={deleteSet}
                   onAddSet={() => void addSet(ex.exerciseId)}
                   onBwToggle={(next) =>
                     setBwOverrides((prev) => ({ ...prev, [ex.exerciseId]: next }))
                   }
                   readOnly={isCompleted}
-                  pendingSetIndex={loggingSetIndex}
+                  inputErrors={inputErrors}
                   isAddingSet={addingSetFor === ex.exerciseId}
                 />
                 {mode === 'trainer' && loggedForMember && (
@@ -423,11 +489,11 @@ export function SessionLogger({
                   loggingSets: toLoggingSets(exSets),
                   inputs,
                   bwOverride: bwOverrides[exercise.exerciseId],
-                  pendingSetIndex: loggingSetIndex,
+                  inputErrors,
                   isAddingSet: addingSetFor === exercise.exerciseId,
                 }))}
                 onInputChange={(_, idx, field, value) => updateInput(idx, field, value)}
-                onLogSet={(_, idx) => void logSet(idx)}
+                onDeleteSet={(_, idx) => deleteSet(idx)}
                 onAddSet={(exId) => void addSet(exId)}
                 onBwToggle={(exId, next) =>
                   setBwOverrides((prev) => ({ ...prev, [exId]: next }))
@@ -458,7 +524,7 @@ export function SessionLogger({
           </div>
         ) : (
           <Button
-            onClick={() => setShowCompleteModal(true)}
+            onClick={handleCompleteWorkoutClick}
             disabled={completing}
             className="w-full text-sm font-bold py-3 h-auto rounded-xl"
           >

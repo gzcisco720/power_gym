@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -20,6 +20,7 @@ export function CompleteWorkoutDialog({ open, onOpenChange, logId, onCompleted }
   const [save, setSave] = useState<{ name: string; description: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showAnimation, setShowAnimation] = useState(true);
+  const handleAnimationComplete = useCallback(() => setShowAnimation(false), []);
 
   const canSubmit = save === null || save.name.trim() !== '';
 
@@ -59,7 +60,7 @@ export function CompleteWorkoutDialog({ open, onOpenChange, logId, onCompleted }
           <DialogTitle>Finish workout</DialogTitle>
         </DialogHeader>
         {showAnimation ? (
-          <WorkoutCompleteAnimation onComplete={() => setShowAnimation(false)} />
+          <WorkoutCompleteAnimation onComplete={handleAnimationComplete} />
         ) : (
           <>
             <div className="space-y-3">

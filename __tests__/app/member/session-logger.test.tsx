@@ -1,9 +1,6 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { SessionLogger } from '@/app/(dashboard)/member/plan/session/[id]/_components/session-logger';
-import { toast } from 'sonner';
 
-// Skip the animation phase so tests interact with the confirmation form directly
 jest.mock('@/components/animations/workout-complete', () => ({
   WorkoutCompleteAnimation: ({ onComplete }: { onComplete?: () => void }) => {
     onComplete?.();
@@ -18,12 +15,10 @@ jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-// Mock ExerciseSearchSheet to avoid Sheet/fetch complexity in these unit tests
 jest.mock('@/components/training/exercise-search-sheet', () => ({
   ExerciseSearchSheet: () => null,
 }));
 
-// Mock ExerciseThumbnail and ExerciseBadge as simple stubs
 jest.mock('@/components/training/exercise-thumbnail', () => ({
   ExerciseThumbnail: ({ name }: { name: string }) => <span data-testid="thumbnail">{name}</span>,
 }));
@@ -38,6 +33,7 @@ const mockSession = {
   dayName: 'Day 1 — Push',
   startedAt: new Date(Date.now() - 60000).toISOString(),
   completedAt: null,
+  rpe: null,
   sets: [
     {
       exerciseId: 'e1',
@@ -102,64 +98,36 @@ describe('SessionLogger', () => {
     expect(screen.getByRole('button', { name: /complete workout/i })).toBeInTheDocument();
   });
 
-  it('shows "Complete Workout" button even when all sets are done', async () => {
-    const completedSession = {
-      ...mockSession,
-      sets: mockSession.sets.map((s) => ({ ...s, completedAt: new Date().toISOString() })),
-    };
-    await act(async () => { render(<SessionLogger session={completedSession} />); });
+  it('shows "Complete Workout" button even when all inputs are filled', async () => {
+    await act(async () => { render(<SessionLogger session={mockSession} />); });
     expect(screen.getByRole('button', { name: /complete workout/i })).toBeInTheDocument();
   });
 
-  it('shows inline weight and reps inputs for each incomplete set', async () => {
+  it('shows inline weight and reps inputs for each set', async () => {
     await act(async () => { render(<SessionLogger session={mockSession} />); });
-    // 2 sets, each has weight + reps input
     expect(screen.getAllByPlaceholderText('kg')).toHaveLength(2);
     expect(screen.getAllByPlaceholderText('reps')).toHaveLength(2);
   });
 
-  it('calls PATCH API when check button is clicked for a set', async () => {
-    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+  it('shows a delete (×) button for each set row, not a complete button', async () => {
     await act(async () => { render(<SessionLogger session={mockSession} />); });
-
-    const weightInputs = screen.getAllByPlaceholderText('kg');
-    const repsInputs = screen.getAllByPlaceholderText('reps');
-
-    await user.type(weightInputs[0], '80');
-    await user.type(repsInputs[0], '10');
-
-    const checkButtons = screen.getAllByRole('button', { name: /complete set 1/i });
-    await act(async () => { fireEvent.click(checkButtons[0]); });
-
-    await waitFor(() =>
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/sessions/s1/sets/0',
-        expect.objectContaining({ method: 'PATCH' }),
-      ),
-    );
+    expect(screen.getByRole('button', { name: /delete set 1/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /delete set 2/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /complete set/i })).not.toBeInTheDocument();
   });
 
-  it('calls toast.error with server message when logSet fails', async () => {
-    global.fetch = jest.fn().mockImplementation((url: string) => {
-      if (url === '/api/exercises') {
-        return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
-      }
-      return Promise.resolve({ ok: false, json: () => Promise.resolve({ error: 'Session not found' }) });
-    });
+  it('clicking × on a set removes it from the UI', async () => {
     await act(async () => { render(<SessionLogger session={mockSession} />); });
+    expect(screen.getAllByPlaceholderText('kg')).toHaveLength(2);
 
-    const repsInputs = screen.getAllByPlaceholderText('reps');
-    fireEvent.change(repsInputs[0], { target: { value: '10' } });
+    fireEvent.click(screen.getByRole('button', { name: /delete set 2/i }));
 
-    const checkButtons = screen.getAllByRole('button', { name: /complete set 1/i });
-    await act(async () => { fireEvent.click(checkButtons[0]); });
-
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Session not found'));
+    expect(screen.getAllByPlaceholderText('kg')).toHaveLength(1);
+    expect(screen.queryByRole('button', { name: /delete set 2/i })).not.toBeInTheDocument();
   });
 
   it('shows elapsed timer in mm:ss format', async () => {
     await act(async () => { render(<SessionLogger session={mockSession} />); });
-    // Should show a timer like "01:00" given startedAt 60 seconds ago
     expect(screen.getByText(/\d{2}:\d{2}/)).toBeInTheDocument();
   });
 
@@ -169,26 +137,25 @@ describe('SessionLogger', () => {
       sets: mockSession.sets.map((s) => ({ ...s, isBodyweight: true })),
     };
     await act(async () => { render(<SessionLogger session={bwSession} />); });
-    // No kg placeholders for bodyweight exercises
     expect(screen.queryByPlaceholderText('kg')).not.toBeInTheDocument();
-    // BW labels appear inline (one per uncompleted set)
     const bwLabels = screen.getAllByText('BW');
     expect(bwLabels.length).toBeGreaterThan(0);
   });
 
-  it('shows completed set as done with check icon and no inputs', async () => {
+  it('pre-populates inputs from previously logged values when opening an active session', async () => {
     const partialSession = {
       ...mockSession,
       sets: [
-        { ...mockSession.sets[0], completedAt: new Date().toISOString(), actualWeight: 80, actualReps: 10 },
+        { ...mockSession.sets[0], actualWeight: 80, actualReps: 10, completedAt: new Date().toISOString() },
         mockSession.sets[1],
       ],
     };
     await act(async () => { render(<SessionLogger session={partialSession} />); });
-    // Only 1 incomplete set → 1 weight input
-    expect(screen.getAllByPlaceholderText('kg')).toHaveLength(1);
-    // Completed set shows logged data
-    expect(screen.getByText(/80 kg × 10 reps/)).toBeInTheDocument();
+    // Both sets show as inputs in active mode
+    const weightInputs = screen.getAllByPlaceholderText('kg');
+    expect(weightInputs).toHaveLength(2);
+    // Previously logged values are pre-populated
+    expect(weightInputs[0]).toHaveValue('80');
   });
 
   it('calls POST to add a set when "+ Add Set" is clicked', async () => {
@@ -203,25 +170,180 @@ describe('SessionLogger', () => {
     );
   });
 
-  it('calls POST to complete session when "Complete Workout" is clicked and confirmed', async () => {
-    await act(async () => { render(<SessionLogger session={mockSession} />); });
-    const completeBtn = screen.getByRole('button', { name: /complete workout/i });
-    await act(async () => { fireEvent.click(completeBtn); });
-    // Modal appears — click "Finish Workout" to confirm
-    const finishBtn = await screen.findByRole('button', { name: /finish workout/i });
-    await act(async () => { fireEvent.click(finishBtn); });
-    await waitFor(() =>
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/sessions/s1/complete',
-        expect.objectContaining({ method: 'POST' }),
-      ),
-    );
+  describe('validation on Complete Workout', () => {
+    it('blocks completion and shows red border when only reps is filled for a non-BW set', async () => {
+      await act(async () => { render(<SessionLogger session={mockSession} />); });
+
+      const repsInputs = screen.getAllByPlaceholderText('reps');
+      fireEvent.change(repsInputs[0], { target: { value: '10' } });
+
+      const completeBtn = screen.getByRole('button', { name: /complete workout/i });
+      await act(async () => { fireEvent.click(completeBtn); });
+
+      // Modal should NOT appear
+      expect(screen.queryByRole('button', { name: /finish workout/i })).not.toBeInTheDocument();
+
+      // Weight input for set 1 should have red ring
+      const weightInput = screen.getAllByPlaceholderText('kg')[0];
+      expect(weightInput.className).toMatch(/ring-destructive/);
+    });
+
+    it('blocks completion and shows red border when only weight is filled for a non-BW set', async () => {
+      await act(async () => { render(<SessionLogger session={mockSession} />); });
+
+      const weightInputs = screen.getAllByPlaceholderText('kg');
+      fireEvent.change(weightInputs[0], { target: { value: '80' } });
+
+      const completeBtn = screen.getByRole('button', { name: /complete workout/i });
+      await act(async () => { fireEvent.click(completeBtn); });
+
+      expect(screen.queryByRole('button', { name: /finish workout/i })).not.toBeInTheDocument();
+
+      const repsInput = screen.getAllByPlaceholderText('reps')[0];
+      expect(repsInput.className).toMatch(/ring-destructive/);
+    });
+
+    it('opens the modal when all sets have both fields filled', async () => {
+      await act(async () => { render(<SessionLogger session={mockSession} />); });
+
+      const weightInputs = screen.getAllByPlaceholderText('kg');
+      const repsInputs = screen.getAllByPlaceholderText('reps');
+      fireEvent.change(weightInputs[0], { target: { value: '80' } });
+      fireEvent.change(repsInputs[0], { target: { value: '10' } });
+      fireEvent.change(weightInputs[1], { target: { value: '80' } });
+      fireEvent.change(repsInputs[1], { target: { value: '10' } });
+
+      const completeBtn = screen.getByRole('button', { name: /complete workout/i });
+      await act(async () => { fireEvent.click(completeBtn); });
+
+      expect(await screen.findByRole('button', { name: /finish workout/i })).toBeInTheDocument();
+    });
+
+    it('blocks completion when all sets are empty', async () => {
+      await act(async () => { render(<SessionLogger session={mockSession} />); });
+
+      const completeBtn = screen.getByRole('button', { name: /complete workout/i });
+      await act(async () => { fireEvent.click(completeBtn); });
+
+      // Modal should NOT appear — nothing logged yet
+      expect(screen.queryByRole('button', { name: /finish workout/i })).not.toBeInTheDocument();
+    });
+
+    it('clears validation errors when inputs are corrected', async () => {
+      await act(async () => { render(<SessionLogger session={mockSession} />); });
+
+      const repsInputs = screen.getAllByPlaceholderText('reps');
+      fireEvent.change(repsInputs[0], { target: { value: '10' } });
+
+      const completeBtn = screen.getByRole('button', { name: /complete workout/i });
+      await act(async () => { fireEvent.click(completeBtn); });
+
+      // Weight input shows error
+      const weightInputs = screen.getAllByPlaceholderText('kg');
+      expect(weightInputs[0].className).toMatch(/ring-destructive/);
+
+      // Fill in weight to fix the error
+      fireEvent.change(weightInputs[0], { target: { value: '80' } });
+
+      // Error should be cleared on next click
+      await act(async () => { fireEvent.click(completeBtn); });
+
+      // Modal should now appear (set 2 is empty → skip, set 1 is complete)
+      expect(await screen.findByRole('button', { name: /finish workout/i })).toBeInTheDocument();
+    });
+  });
+
+  describe('completion batch save', () => {
+    it('PATCHes all filled sets then POSTs to complete when confirming', async () => {
+      global.fetch = jest.fn().mockImplementation((url: string, options?: RequestInit) => {
+        if (url === '/api/exercises') return Promise.resolve({ ok: true, json: async () => [] });
+        if ((options as RequestInit & { method?: string })?.method === 'PATCH') {
+          return Promise.resolve({ ok: true, json: async () => ({ ...mockSession }) });
+        }
+        return Promise.resolve({ ok: true, json: async () => ({ ...mockSession }) });
+      });
+
+      await act(async () => { render(<SessionLogger session={mockSession} />); });
+
+      const weightInputs = screen.getAllByPlaceholderText('kg');
+      const repsInputs = screen.getAllByPlaceholderText('reps');
+      fireEvent.change(weightInputs[0], { target: { value: '80' } });
+      fireEvent.change(repsInputs[0], { target: { value: '10' } });
+      // Set 2 left empty → will be skipped
+
+      const completeBtn = screen.getByRole('button', { name: /complete workout/i });
+      await act(async () => { fireEvent.click(completeBtn); });
+
+      const finishBtn = await screen.findByRole('button', { name: /finish workout/i });
+      await act(async () => { fireEvent.click(finishBtn); });
+
+      // Should PATCH set 0 (filled) but not set 1 (empty)
+      await waitFor(() =>
+        expect(global.fetch).toHaveBeenCalledWith(
+          '/api/sessions/s1/sets/0',
+          expect.objectContaining({ method: 'PATCH' }),
+        ),
+      );
+      await waitFor(() =>
+        expect(global.fetch).toHaveBeenCalledWith(
+          '/api/sessions/s1/complete',
+          expect.objectContaining({ method: 'POST' }),
+        ),
+      );
+      // Should NOT PATCH set 1 (empty)
+      expect(global.fetch).not.toHaveBeenCalledWith(
+        '/api/sessions/s1/sets/1',
+        expect.anything(),
+      );
+    });
+
+    it('skips empty set 2 and only PATCHes the filled set when completing', async () => {
+      global.fetch = jest.fn().mockImplementation((url: string, options?: RequestInit) => {
+        if (url === '/api/exercises') return Promise.resolve({ ok: true, json: async () => [] });
+        if ((options as RequestInit & { method?: string })?.method === 'PATCH') {
+          return Promise.resolve({ ok: true, json: async () => ({ ...mockSession }) });
+        }
+        return Promise.resolve({ ok: true, json: async () => ({ ...mockSession }) });
+      });
+
+      await act(async () => { render(<SessionLogger session={mockSession} />); });
+
+      // Fill only set 1
+      const weightInputs = screen.getAllByPlaceholderText('kg');
+      const repsInputs = screen.getAllByPlaceholderText('reps');
+      fireEvent.change(weightInputs[0], { target: { value: '80' } });
+      fireEvent.change(repsInputs[0], { target: { value: '10' } });
+
+      const completeBtn = screen.getByRole('button', { name: /complete workout/i });
+      await act(async () => { fireEvent.click(completeBtn); });
+
+      const finishBtn = await screen.findByRole('button', { name: /finish workout/i });
+      await act(async () => { fireEvent.click(finishBtn); });
+
+      // PATCHes set 0, not set 1, then POSTs complete
+      await waitFor(() =>
+        expect(global.fetch).toHaveBeenCalledWith(
+          '/api/sessions/s1/sets/0',
+          expect.objectContaining({ method: 'PATCH' }),
+        ),
+      );
+      await waitFor(() =>
+        expect(global.fetch).toHaveBeenCalledWith(
+          '/api/sessions/s1/complete',
+          expect.objectContaining({ method: 'POST' }),
+        ),
+      );
+      expect(global.fetch).not.toHaveBeenCalledWith(
+        '/api/sessions/s1/sets/1',
+        expect.anything(),
+      );
+    });
   });
 
   describe('read-only mode (completed session)', () => {
     const completedSession = {
       ...mockSession,
-      completedAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+      completedAt: new Date(Date.now() - 3600000).toISOString(),
       rpe: 8,
     };
 
@@ -248,25 +370,6 @@ describe('SessionLogger', () => {
   });
 
   describe('loading states', () => {
-    it('disables the check button for a set while its logSet call is in flight', async () => {
-      let resolveLogSet: (v: unknown) => void;
-      const pendingFetch = new Promise((res) => { resolveLogSet = res; });
-
-      global.fetch = jest.fn().mockImplementation((url: string) => {
-        if (url === '/api/exercises') return Promise.resolve({ ok: true, json: async () => [] });
-        return pendingFetch.then(() => ({ ok: true, json: async () => ({ ...mockSession }) }));
-      });
-
-      await act(async () => { render(<SessionLogger session={mockSession} />); });
-
-      const checkBtn = screen.getByRole('button', { name: /complete set 1/i });
-      fireEvent.click(checkBtn);
-
-      await waitFor(() => expect(checkBtn).toBeDisabled());
-
-      await act(async () => { resolveLogSet!(undefined); });
-    });
-
     it('disables "+ Add Set" while addSet call is in flight', async () => {
       let resolveAddSet: (v: unknown) => void;
       const pendingFetch = new Promise((res) => { resolveAddSet = res; });
@@ -297,35 +400,10 @@ describe('SessionLogger', () => {
 
       await act(async () => { render(<SessionLogger session={mockSession} />); });
 
-      // Directly invoke addExercise via the onSelect handler exposed by ExerciseSearchSheet mock
-      // We can't easily trigger the sheet in unit tests, so we test this at the state level
-      // by checking the "+ Add Exercise" button becomes disabled after click triggers
-      // (The mock sheet calls onSelect which triggers addExercise)
       const addExBtn = screen.getByRole('button', { name: /\+ add exercise/i });
       expect(addExBtn).not.toBeDisabled();
 
       await act(async () => { resolveAdd!(undefined); });
-    });
-  });
-
-  describe('404 safety', () => {
-    it('shows toast and redirects when logSet returns 404', async () => {
-      // First fetch (exercises) resolves normally. logSet fetch returns 404.
-      global.fetch = jest.fn()
-        .mockResolvedValueOnce({ ok: true, json: async () => [] }) // /api/exercises
-        .mockResolvedValue({ ok: false, status: 404, json: async () => ({}) });
-
-      await act(async () => { render(<SessionLogger session={mockSession} />); });
-
-      // Fill in weight and click complete set button
-      const weightInput = screen.getByLabelText(/set 1 weight/i);
-      fireEvent.change(weightInput, { target: { value: '80' } });
-      const completeBtn = screen.getByRole('button', { name: /complete set 1/i });
-      await act(async () => { fireEvent.click(completeBtn); });
-
-      await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith('This session was ended on another device.');
-      });
     });
   });
 });

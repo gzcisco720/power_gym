@@ -80,4 +80,32 @@ describe('DayAlreadyLoggedDialog', () => {
     const link = screen.getByRole('link', { name: /view session/i });
     expect(link).toHaveAttribute('href', '/member/plan/session/abc123');
   });
+
+  describe('delete previous log option', () => {
+    it('does NOT show delete button when onDeleteLog is not provided', () => {
+      render(<DayAlreadyLoggedDialog {...defaultProps} />);
+      expect(screen.queryByRole('button', { name: /delete previous log/i })).not.toBeInTheDocument();
+    });
+
+    it('shows delete button when onDeleteLog is provided', () => {
+      render(<DayAlreadyLoggedDialog {...defaultProps} onDeleteLog={jest.fn()} />);
+      expect(screen.getByRole('button', { name: /delete previous log/i })).toBeInTheDocument();
+    });
+
+    it('calls onDeleteLog when delete button is clicked', async () => {
+      const onDeleteLog = jest.fn().mockResolvedValue(undefined);
+      render(<DayAlreadyLoggedDialog {...defaultProps} onDeleteLog={onDeleteLog} />);
+      fireEvent.click(screen.getByRole('button', { name: /delete previous log/i }));
+      expect(onDeleteLog).toHaveBeenCalledTimes(1);
+    });
+
+    it('disables delete button while onDeleteLog is in flight', async () => {
+      let resolve: () => void;
+      const onDeleteLog = jest.fn().mockReturnValue(new Promise<void>((r) => { resolve = r; }));
+      render(<DayAlreadyLoggedDialog {...defaultProps} onDeleteLog={onDeleteLog} />);
+      fireEvent.click(screen.getByRole('button', { name: /delete previous log/i }));
+      expect(screen.getByRole('button', { name: /deleting/i })).toBeDisabled();
+      resolve!();
+    });
+  });
 });

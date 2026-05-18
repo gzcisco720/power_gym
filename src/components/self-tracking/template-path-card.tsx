@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { ActiveSessionConflictDialog } from './active-session-conflict-dialog';
 import { DayAlreadyLoggedDialog } from './day-already-logged-dialog';
@@ -213,6 +214,12 @@ export function TemplatePathCard({ templates, basePath }: Props) {
           sessionId={dayAlreadyLogged._id}
           basePath={basePath}
           onClose={() => setDayAlreadyLogged(null)}
+          onDeleteLog={async () => {
+            const res = await fetch(`/api/me/workout-logs/${dayAlreadyLogged._id}`, { method: 'DELETE' });
+            if (!res.ok) { toast.error('Failed to delete log. Please try again.'); return; }
+            setDayAlreadyLogged(null);
+            toast.success('Previous log deleted. You can now re-log.');
+          }}
         />
       )}
     </>
