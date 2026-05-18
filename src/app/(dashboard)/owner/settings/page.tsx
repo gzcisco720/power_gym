@@ -61,6 +61,8 @@ export default async function OwnerSettingsPage({
                       website: raw.gymInfo.website ?? null,
                       hours: raw.gymInfo.hours ?? null,
                       description: raw.gymInfo.description ?? null,
+                      logoUrl: raw.gymInfo.logoUrl ?? null,
+                      loginBgUrl: raw.gymInfo.loginBgUrl ?? null,
                     }
                   : null
               }
