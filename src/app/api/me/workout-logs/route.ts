@@ -1,7 +1,6 @@
 import { connectDB } from '@/lib/db/connect';
 import { requireSelfTrackingRole } from '@/lib/auth/self-tracking-access';
 import { MongoSelfWorkoutLogRepository } from '@/lib/repositories/self-workout-log.repository';
-import { MongoPlanTemplateRepository } from '@/lib/repositories/plan-template.repository';
 import type { ISelfWorkoutSet } from '@/lib/db/models/self-workout-log.model';
 
 interface PostBody {
@@ -23,12 +22,6 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   await connectDB();
-
-  if (body.sourceTemplateId) {
-    const tplRepo = new MongoPlanTemplateRepository();
-    const tpl = await tplRepo.findById(body.sourceTemplateId);
-    if (!tpl) return Response.json({ error: 'Template not found' }, { status: 404 });
-  }
 
   const repo = new MongoSelfWorkoutLogRepository();
   const activeLog = await repo.findActive(guard.userId);

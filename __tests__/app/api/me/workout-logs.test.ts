@@ -3,18 +3,13 @@ jest.mock('@/lib/auth/self-tracking-access', () => ({ requireSelfTrackingRole: j
 jest.mock('@/lib/repositories/self-workout-log.repository', () => ({
   MongoSelfWorkoutLogRepository: jest.fn(),
 }));
-jest.mock('@/lib/repositories/plan-template.repository', () => ({
-  MongoPlanTemplateRepository: jest.fn(),
-}));
 
 import { POST, GET } from '@/app/api/me/workout-logs/route';
 import { requireSelfTrackingRole } from '@/lib/auth/self-tracking-access';
 import { MongoSelfWorkoutLogRepository } from '@/lib/repositories/self-workout-log.repository';
-import { MongoPlanTemplateRepository } from '@/lib/repositories/plan-template.repository';
 
 const mockGuard = jest.mocked(requireSelfTrackingRole);
 const mockSelfRepo = jest.mocked(MongoSelfWorkoutLogRepository);
-const mockTplRepo = jest.mocked(MongoPlanTemplateRepository);
 
 const USER = '507f1f77bcf86cd799439011';
 
@@ -113,29 +108,6 @@ describe('/api/me/workout-logs', () => {
         new Request('http://x', { method: 'POST', body: JSON.stringify({ plannedSets: [] }) }),
       );
       expect(res.status).toBe(400);
-    });
-
-    it('returns 404 when sourceTemplateId given but template not found', async () => {
-      mockGuard.mockResolvedValue({ ok: true, userId: USER, role: 'trainer' });
-      const findById = jest.fn().mockResolvedValue(null);
-      mockTplRepo.mockImplementation(() => ({ findById } as unknown as MongoPlanTemplateRepository));
-      const findActive = jest.fn().mockResolvedValue(null);
-      const findCompletedToday = jest.fn().mockResolvedValue(null);
-      mockSelfRepo.mockImplementation(
-        () => ({ findActive, findCompletedToday } as unknown as MongoSelfWorkoutLogRepository),
-      );
-      const res = await POST(
-        new Request('http://x', {
-          method: 'POST',
-          body: JSON.stringify({
-            dayName: 'Push Day',
-            sourceTemplateId: '507f1f77bcf86cd799439040',
-            sourceTemplateDayNumber: 1,
-            plannedSets: [],
-          }),
-        }),
-      );
-      expect(res.status).toBe(404);
     });
 
     it('returns 409 DAY_ALREADY_LOGGED when a completed log exists today', async () => {
