@@ -20,7 +20,6 @@ export default async function LoginPage({
   ]);
 
   const gymName = branding.name ?? 'POWER GYM';
-  const fallbackInitial = gymName.trim().charAt(0).toUpperCase();
 
   return (
     <main className="relative flex min-h-screen items-center justify-center px-4">
@@ -37,37 +36,32 @@ export default async function LoginPage({
       ) : (
         <div className="absolute inset-0 bg-[#030303]" />
       )}
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/60" />
+      {branding.loginBgUrl && <div className="absolute inset-0 bg-black/60" />}
 
       {/* Form */}
-      <div className="relative z-10 w-full max-w-sm space-y-8">
-        <div>
-          <div className="flex items-center gap-3 mb-3">
-            {branding.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={branding.logoUrl}
-                alt="Gym logo"
-                className="h-10 w-10 rounded-full object-cover border border-white/20"
-              />
-            ) : (
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-[15px] font-bold text-white">
-                {fallbackInitial}
-              </div>
-            )}
-            <div className="text-[11px] font-bold tracking-[3px] text-white">{gymName}</div>
+      <div className="relative z-10 w-full max-w-sm">
+        {/* Logo + gym name block */}
+        <div className="flex flex-col items-center mb-10">
+          {branding.loginLogoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={branding.loginLogoUrl}
+              alt={gymName}
+              className="max-w-[200px] max-h-[120px] object-contain mb-5"
+            />
+          )}
+          <div className="text-[11px] font-bold tracking-[5px] text-white uppercase mb-2">
+            {gymName}
           </div>
-          <h1 className="text-[24px] font-bold tracking-[-0.5px] text-white">Sign in</h1>
-          <p className="mt-1 text-[13px] text-[#888]">Enter your credentials to continue.</p>
+          <p className="text-[12px] text-white/40">Sign in to your account</p>
         </div>
 
         {error === 'CredentialsSignin' && (
-          <p className="text-[13px] text-red-400">Invalid email or password.</p>
+          <p className="mb-4 text-[13px] text-red-400">Invalid email or password.</p>
         )}
 
         {message === 'password-reset' && (
-          <p className="text-[13px] text-green-400">Password reset successfully. Please sign in.</p>
+          <p className="mb-4 text-[13px] text-green-400">Password reset successfully. Please sign in.</p>
         )}
 
         <form

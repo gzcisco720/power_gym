@@ -20,6 +20,7 @@ interface GymInfo {
   description: string | null;
   logoUrl: string | null;
   loginBgUrl: string | null;
+  loginLogoUrl: string | null;
 }
 
 interface Props {
@@ -39,11 +40,14 @@ export function GymInfoTab({ gymInfo }: Props) {
   const [saving, setSaving] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(gymInfo?.logoUrl ?? null);
   const [loginBgUrl, setLoginBgUrl] = useState<string | null>(gymInfo?.loginBgUrl ?? null);
+  const [loginLogoUrl, setLoginLogoUrl] = useState<string | null>(gymInfo?.loginLogoUrl ?? null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingBg, setUploadingBg] = useState(false);
+  const [uploadingLoginLogo, setUploadingLoginLogo] = useState(false);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bgInputRef = useRef<HTMLInputElement>(null);
+  const loginLogoInputRef = useRef<HTMLInputElement>(null);
 
   const gymName = gymInfo?.name ?? '';
   const fallbackInitial = gymName.trim().charAt(0).toUpperCase() || 'G';
@@ -94,6 +98,22 @@ export function GymInfoTab({ gymInfo }: Props) {
     }
   }
 
+  async function handleLoginLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingLoginLogo(true);
+    try {
+      const config = await getGymAssetSignatureAction('gym-login-logos');
+      const url = await uploadFile(file, config);
+      setLoginLogoUrl(url);
+    } catch {
+      toast.error('Failed to upload login logo');
+    } finally {
+      setUploadingLoginLogo(false);
+      if (loginLogoInputRef.current) loginLogoInputRef.current.value = '';
+    }
+  }
+
   const fieldValues: Record<string, string | null | undefined> = {
     gymName: gymInfo?.name,
     gymAddress: gymInfo?.address,
@@ -109,6 +129,7 @@ export function GymInfoTab({ gymInfo }: Props) {
     const formData = new FormData(e.currentTarget);
     if (logoUrl) formData.set('logoUrl', logoUrl);
     if (loginBgUrl) formData.set('loginBgUrl', loginBgUrl);
+    if (loginLogoUrl) formData.set('loginLogoUrl', loginLogoUrl);
     const result = await updateGymInfoAction({ error: '' }, formData);
     setSaving(false);
     if (result.error) toast.error(result.error);
@@ -130,9 +151,9 @@ export function GymInfoTab({ gymInfo }: Props) {
         <div className="space-y-3">
           <p className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">Gym Branding</p>
           <div className="grid grid-cols-2 gap-4">
-            {/* Logo upload */}
+            {/* Sidebar logo upload */}
             <div className="space-y-2">
-              <p className="text-xs text-foreground/65">Logo</p>
+              <p className="text-xs text-foreground/65">Sidebar Logo</p>
               <button
                 type="button"
                 onClick={() => logoInputRef.current?.click()}
@@ -153,7 +174,7 @@ export function GymInfoTab({ gymInfo }: Props) {
               <p className="text-[10px] text-foreground/40">200×200px recommended</p>
             </div>
 
-            {/* Background upload */}
+            {/* Login background upload */}
             <div className="space-y-2">
               <p className="text-xs text-foreground/65">Login Background</p>
               <button
@@ -176,8 +197,33 @@ export function GymInfoTab({ gymInfo }: Props) {
               <p className="text-[10px] text-foreground/40">1920×1080px recommended</p>
             </div>
           </div>
+
+          {/* Login logo upload — full width row */}
+          <div className="space-y-2">
+            <p className="text-xs text-foreground/65">Login Logo <span className="text-foreground/35">(displayed above login form)</span></p>
+            <button
+              type="button"
+              onClick={() => loginLogoInputRef.current?.click()}
+              disabled={uploadingLoginLogo}
+              aria-label="Upload login logo"
+              className="relative flex h-16 w-full items-center justify-center rounded-md border border-foreground/10 overflow-hidden bg-muted hover:opacity-80 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+            >
+              {loginLogoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={loginLogoUrl} alt="Login logo" className="max-h-full max-w-full object-contain px-4" />
+              ) : (
+                <span className="text-[11px] text-foreground/40">No image</span>
+              )}
+              {uploadingLoginLogo && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-[10px] text-white">uploading...</div>
+              )}
+            </button>
+            <p className="text-[10px] text-foreground/40">PNG with transparent bg recommended · any size</p>
+          </div>
+
           <input ref={logoInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleLogoChange} aria-hidden="true" />
           <input ref={bgInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleBgChange} aria-hidden="true" />
+          <input ref={loginLogoInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml" className="hidden" onChange={handleLoginLogoChange} aria-hidden="true" />
         </div>
 
         {GYM_FIELDS.map(({ id, label, placeholder }) => (

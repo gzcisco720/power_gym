@@ -5,6 +5,7 @@ jest.mock('@/lib/db/queries/gym-branding', () => ({
     name: 'Iron Club',
     logoUrl: 'https://cdn.example.com/logo.png',
     loginBgUrl: 'https://cdn.example.com/bg.jpg',
+    loginLogoUrl: 'https://cdn.example.com/login-logo.png',
   }),
 }));
 jest.mock('@/lib/auth/auth', () => ({ auth: jest.fn().mockResolvedValue(null), signIn: jest.fn() }));
@@ -33,9 +34,9 @@ describe('LoginPage branding', () => {
     expect(bg).toBeInTheDocument();
   });
 
-  it('renders gym logo img when logoUrl is set', async () => {
+  it('renders login logo img when loginLogoUrl is set', async () => {
     const Page = await LoginPage({ searchParams: Promise.resolve({}) });
     render(Page);
-    expect(screen.getByAltText('Gym logo')).toHaveAttribute('src', 'https://cdn.example.com/logo.png');
+    expect(screen.getByAltText('Iron Club')).toHaveAttribute('src', 'https://cdn.example.com/login-logo.png');
   });
 });

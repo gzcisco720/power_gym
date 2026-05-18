@@ -10,6 +10,7 @@ export interface IGymInfo {
   description: string | null;
   logoUrl: string | null;
   loginBgUrl: string | null;
+  loginLogoUrl: string | null;
 }
 
 export interface IUserProfile extends Document {
@@ -45,6 +46,7 @@ const GymInfoSchema = new Schema<IGymInfo>(
     description: { type: String, default: null, trim: true },
     logoUrl: { type: String, default: null, trim: true },
     loginBgUrl: { type: String, default: null, trim: true },
+    loginLogoUrl: { type: String, default: null, trim: true },
   },
   { _id: false },
 );

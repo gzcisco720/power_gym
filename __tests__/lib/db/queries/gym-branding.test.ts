@@ -37,6 +37,7 @@ describe('getGymBranding', () => {
       name: 'Iron Club',
       logoUrl: 'https://cdn.example.com/logo.png',
       loginBgUrl: 'https://cdn.example.com/bg.jpg',
+      loginLogoUrl: null,
     });
   });
 
@@ -45,7 +46,7 @@ describe('getGymBranding', () => {
 
     const result = await getGymBranding();
 
-    expect(result).toEqual({ name: null, logoUrl: null, loginBgUrl: null });
+    expect(result).toEqual({ name: null, logoUrl: null, loginBgUrl: null, loginLogoUrl: null });
   });
 
   it('returns null fields when gymInfo is null', async () => {
@@ -54,6 +55,6 @@ describe('getGymBranding', () => {
 
     const result = await getGymBranding();
 
-    expect(result).toEqual({ name: null, logoUrl: null, loginBgUrl: null });
+    expect(result).toEqual({ name: null, logoUrl: null, loginBgUrl: null, loginLogoUrl: null });
   });
 });
