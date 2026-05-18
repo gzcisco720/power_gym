@@ -55,7 +55,8 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Journey Page (Member Milestone Timeline) | [journey-page-design.md](2026-05-17/plans/journey-page-design.md) | Approved |
 | Journey Page (Plan) | [journey-page-plan.md](2026-05-17/plans/journey-page-plan.md) | Complete |
 | Check-In Dashboard Redesign (Design) | [check-in-dashboard-design.md](2026-05-17/plans/check-in-dashboard-design.md) | Approved |
-| Check-In Dashboard Redesign (Plan) | [check-in-dashboard-plan.md](2026-05-17/plans/check-in-dashboard-plan.md) | In Progress |
+| Check-In Dashboard Redesign (Plan) | [check-in-dashboard-plan.md](2026-05-17/plans/check-in-dashboard-plan.md) | Complete |
+| Gym Branding (Logo + Login BG) | [gym-branding-design.md](2026-05-18/plans/gym-branding-design.md) | Approved |
 
 ---
 
