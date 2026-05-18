@@ -107,10 +107,11 @@ interface SidebarContentProps {
   userInitials: string;
   userEmail: string;
   avatarUrl: string | null;
+  gymBranding?: { name: string | null; logoUrl: string | null };
   logoutSlot?: React.ReactNode;
 }
 
-function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, logoutSlot }: SidebarContentProps) {
+function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, gymBranding, logoutSlot }: SidebarContentProps) {
   const pathname = usePathname();
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const groups = NAV[role] ?? [];
@@ -134,13 +135,27 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, lo
   return (
     <div className="flex h-full flex-col">
       <div className="border-b border-foreground/[.06] px-5 pb-6 pt-6">
-        <div className="text-[11px] font-bold leading-tight tracking-[3px] text-white">
-          POWER
-          <br />
-          GYM
-        </div>
-        <div className="mt-1 text-[9px] uppercase tracking-[1px] text-foreground/40">
-          {role} portal
+        <div className="flex items-center gap-3">
+          {gymBranding?.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={gymBranding.logoUrl}
+              alt="Gym logo"
+              className="h-9 w-9 shrink-0 rounded-full object-cover border border-foreground/10"
+            />
+          ) : (
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-[14px] font-bold text-white">
+              {(gymBranding?.name ?? 'P').trim().charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div className="min-w-0">
+            <div className="text-[11px] font-bold tracking-[2px] text-white truncate">
+              {gymBranding?.name ?? 'POWER GYM'}
+            </div>
+            <div className="text-[9px] uppercase tracking-[1px] text-foreground/40">
+              {role} portal
+            </div>
+          </div>
         </div>
       </div>
 
@@ -240,18 +255,20 @@ interface AppShellProps {
   userName: string;
   userEmail?: string;
   avatarUrl?: string | null;
+  gymBranding?: { name: string | null; logoUrl: string | null };
   children: React.ReactNode;
   logoutSlot?: React.ReactNode;
 }
 
-export function AppShell({ role, userName, userEmail = '', avatarUrl = null, children, logoutSlot }: AppShellProps) {
+export function AppShell({ role, userName, userEmail = '', avatarUrl = null, gymBranding, children, logoutSlot }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const userInitials = initials(userName);
+  const gymDisplayName = gymBranding?.name ?? 'POWER GYM';
 
   return (
     <div className="flex h-screen bg-[#030303]">
       <aside className="hidden w-[220px] shrink-0 flex-col border-r border-foreground/[.06] bg-[#0a0a0a] lg:flex">
-        <SidebarContent role={role} userName={userName} userInitials={userInitials} userEmail={userEmail} avatarUrl={avatarUrl} logoutSlot={logoutSlot} />
+        <SidebarContent role={role} userName={userName} userInitials={userInitials} userEmail={userEmail} avatarUrl={avatarUrl} gymBranding={gymBranding} logoutSlot={logoutSlot} />
       </aside>
 
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
@@ -260,7 +277,7 @@ export function AppShell({ role, userName, userEmail = '', avatarUrl = null, chi
           className="w-[220px] border-r border-foreground/[.06] bg-[#0a0a0a] p-0"
         >
           <SheetTitle className="sr-only">Navigation</SheetTitle>
-          <SidebarContent role={role} userName={userName} userInitials={userInitials} userEmail={userEmail} avatarUrl={avatarUrl} logoutSlot={logoutSlot} />
+          <SidebarContent role={role} userName={userName} userInitials={userInitials} userEmail={userEmail} avatarUrl={avatarUrl} gymBranding={gymBranding} logoutSlot={logoutSlot} />
         </SheetContent>
       </Sheet>
 
@@ -273,7 +290,7 @@ export function AppShell({ role, userName, userEmail = '', avatarUrl = null, chi
           >
             <Menu className="h-5 w-5" />
           </button>
-          <span className="text-[11px] font-bold tracking-[3px] text-white">POWER GYM</span>
+          <span className="text-[11px] font-bold tracking-[3px] text-white">{gymDisplayName}</span>
         </div>
 
         <main className="flex-1 overflow-y-auto bg-[#050505]">{children}</main>
