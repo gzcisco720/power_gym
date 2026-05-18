@@ -91,7 +91,7 @@ export function WeekCalendarGrid({
         ))}
       </div>
 
-      <div className="flex flex-1" style={{ height: totalHeight }}>
+      <div className="flex shrink-0" style={{ height: totalHeight }}>
         <div className="w-14 flex-shrink-0 relative">
           {hours.map((h) => (
             <div
