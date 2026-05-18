@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { GymInfoTab } from '@/app/(dashboard)/owner/settings/_components/gym-info-tab';
 
 jest.mock('@/lib/actions/get-gym-asset-signature', () => ({
@@ -7,6 +7,16 @@ jest.mock('@/lib/actions/get-gym-asset-signature', () => ({
 jest.mock('@/lib/storage/upload-file', () => ({
   uploadFile: jest.fn(),
 }));
+
+jest.mock('@/components/settings/logo-crop-dialog', () => ({
+  LogoCropDialog: ({ open }: { open: boolean }) =>
+    open ? <div data-testid="logo-crop-dialog">crop</div> : null,
+}));
+
+beforeEach(() => {
+  global.URL.createObjectURL = jest.fn().mockReturnValue('blob:fake-object-url');
+  global.URL.revokeObjectURL = jest.fn();
+});
 
 describe('GymInfoTab branding section', () => {
   it('renders the Logo upload button', () => {
@@ -32,5 +42,19 @@ describe('GymInfoTab branding section', () => {
     );
     const img = screen.getByAltText('Gym logo');
     expect(img).toHaveAttribute('src', 'https://cdn.example.com/logo.png');
+  });
+
+  it('shows crop dialog after a logo file is selected', () => {
+    render(<GymInfoTab gymInfo={null} />);
+
+    // Find the logo file input (first hidden file input)
+    const inputs = document.querySelectorAll('input[type="file"]');
+    const logoInput = inputs[0] as HTMLInputElement;
+
+    const file = new File(['content'], 'logo.png', { type: 'image/png' });
+    Object.defineProperty(logoInput, 'files', { value: [file], configurable: true });
+    fireEvent.change(logoInput);
+
+    expect(screen.getByTestId('logo-crop-dialog')).toBeInTheDocument();
   });
 });
