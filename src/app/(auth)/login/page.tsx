@@ -37,10 +37,9 @@ export default async function LoginPage({
               className="max-w-[200px] max-h-[120px] object-contain mb-5"
             />
           )}
-          <div className="text-[11px] font-bold tracking-[5px] text-white uppercase mb-2">
+          <div className="text-[11px] font-bold tracking-[5px] text-white uppercase">
             {gymName}
           </div>
-          <p className="text-[12px] text-white/40">Sign in to your account</p>
         </div>
 
         {error === 'CredentialsSignin' && (
