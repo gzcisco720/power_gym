@@ -1,11 +1,14 @@
 /** @jest-environment node */
 
 describe('GymInfoSchema branding fields', () => {
-  it('has logoUrl and loginBgUrl paths with null defaults', async () => {
+  it('accepts and stores logoUrl and loginBgUrl values', async () => {
     const { UserProfileModel } = await import('@/lib/db/models/user-profile.model');
-    const gymInfoPaths = (UserProfileModel.schema.path('gymInfo') as any).schema.paths;
-    expect(gymInfoPaths).toHaveProperty('logoUrl');
-    expect(gymInfoPaths).toHaveProperty('loginBgUrl');
+    const doc = new UserProfileModel({
+      userId: '000000000000000000000001',
+      gymInfo: { name: 'Test Gym', logoUrl: 'https://cdn.example.com/logo.png', loginBgUrl: 'https://cdn.example.com/bg.jpg' },
+    });
+    expect(doc.gymInfo?.logoUrl).toBe('https://cdn.example.com/logo.png');
+    expect(doc.gymInfo?.loginBgUrl).toBe('https://cdn.example.com/bg.jpg');
   });
 
   it('defaults logoUrl and loginBgUrl to null', async () => {
