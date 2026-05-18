@@ -42,6 +42,7 @@ export function GymInfoTab({ gymInfo }: Props) {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingLoginLogo, setUploadingLoginLogo] = useState(false);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [loginLogoCropSrc, setLoginLogoCropSrc] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const loginLogoInputRef = useRef<HTMLInputElement>(null);
 
@@ -78,20 +79,34 @@ export function GymInfoTab({ gymInfo }: Props) {
     setCropSrc(null);
   }
 
-  async function handleLoginLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleLoginLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    const objectUrl = URL.createObjectURL(file);
+    setLoginLogoCropSrc(objectUrl);
+    if (loginLogoInputRef.current) loginLogoInputRef.current.value = '';
+  }
+
+  async function handleLoginLogoCropApply(blob: Blob) {
+    if (!loginLogoCropSrc) return;
+    URL.revokeObjectURL(loginLogoCropSrc);
+    setLoginLogoCropSrc(null);
     setUploadingLoginLogo(true);
     try {
       const config = await getGymAssetSignatureAction('gym-login-logos');
+      const file = new File([blob], 'login-logo.webp', { type: 'image/webp' });
       const url = await uploadFile(file, config);
       setLoginLogoUrl(url);
     } catch {
       toast.error('Failed to upload login logo');
     } finally {
       setUploadingLoginLogo(false);
-      if (loginLogoInputRef.current) loginLogoInputRef.current.value = '';
     }
+  }
+
+  function handleLoginLogoCropCancel() {
+    if (loginLogoCropSrc) URL.revokeObjectURL(loginLogoCropSrc);
+    setLoginLogoCropSrc(null);
   }
 
   const fieldValues: Record<string, string | null | undefined> = {
@@ -123,6 +138,17 @@ export function GymInfoTab({ gymInfo }: Props) {
           imageSrc={cropSrc}
           onApply={handleCropApply}
           onCancel={handleCropCancel}
+        />
+      )}
+      {loginLogoCropSrc !== null && (
+        <LogoCropDialog
+          open
+          imageSrc={loginLogoCropSrc}
+          title="Crop Login Logo"
+          aspect={2}
+          cropShape="rect"
+          onApply={handleLoginLogoCropApply}
+          onCancel={handleLoginLogoCropCancel}
         />
       )}
       <form onSubmit={handleSubmit} className="space-y-5">

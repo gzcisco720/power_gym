@@ -15,16 +15,31 @@ import { cropImageToBlob } from '@/lib/image/crop-image';
 interface Props {
   open: boolean;
   imageSrc: string;
+  title?: string;
+  aspect?: number;
+  cropShape?: 'round' | 'rect';
   onApply: (blob: Blob) => void;
   onCancel: () => void;
 }
 
-export function LogoCropDialog({ open, imageSrc, onApply, onCancel }: Props) {
+export function LogoCropDialog({
+  open,
+  imageSrc,
+  title = 'Crop Logo',
+  aspect = 1,
+  cropShape = 'round',
+  onApply,
+  onCancel,
+}: Props) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [applying, setApplying] = useState(false);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  // preview canvas dimensions follow the aspect ratio
+  const previewW = cropShape === 'rect' ? 54 : 36;
+  const previewH = cropShape === 'rect' ? Math.round(54 / aspect) : 36;
 
   function handleCropComplete(_croppedArea: Area, pixelArea: Area) {
     setCroppedAreaPixels(pixelArea);
@@ -55,15 +70,15 @@ export function LogoCropDialog({ open, imageSrc, onApply, onCancel }: Props) {
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
       <DialogContent className="max-w-sm p-0 overflow-hidden gap-0">
         <DialogHeader className="px-4 pt-4 pb-3 border-b border-foreground/[.06]">
-          <DialogTitle>Crop Logo</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <div className="relative h-64 bg-black">
           <Cropper
             image={imageSrc}
             crop={crop}
             zoom={zoom}
-            aspect={1}
-            cropShape="round"
+            aspect={aspect}
+            cropShape={cropShape}
             showGrid={false}
             onCropChange={setCrop}
             onZoomChange={setZoom}
@@ -74,18 +89,13 @@ export function LogoCropDialog({ open, imageSrc, onApply, onCancel }: Props) {
           <div className="flex items-center gap-2 mr-auto">
             <canvas
               ref={previewCanvasRef}
-              width={36}
-              height={36}
-              className="rounded-full border border-foreground/10 bg-muted shrink-0"
+              width={previewW}
+              height={previewH}
+              className={cropShape === 'round' ? 'rounded-full border border-foreground/10 bg-muted shrink-0' : 'rounded border border-foreground/10 bg-muted shrink-0'}
             />
             <span className="text-xs text-foreground/40">Preview</span>
           </div>
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onCancel}
-            className="text-foreground/65"
-          >
+          <Button type="button" variant="ghost" onClick={onCancel} className="text-foreground/65">
             Cancel
           </Button>
           <Button
