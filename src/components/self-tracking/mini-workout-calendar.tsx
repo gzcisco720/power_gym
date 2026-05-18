@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SelfWorkoutCalendar } from './self-workout-calendar';
 
-type BasePath = '/owner/my-training' | '/trainer/my-training';
+type BasePath = '/owner/my-training' | '/trainer/my-training' | '/member/my-training';
 
 interface SelfLog {
   _id: string;

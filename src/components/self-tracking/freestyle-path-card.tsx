@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ActiveSessionConflictDialog } from './active-session-conflict-dialog';
 import { DayAlreadyLoggedDialog } from './day-already-logged-dialog';
 
-type BasePath = '/trainer/my-training' | '/owner/my-training';
+type BasePath = '/trainer/my-training' | '/owner/my-training' | '/member/my-training';
 
 interface TopSet {
   exerciseName: string;

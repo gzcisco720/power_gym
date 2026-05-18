@@ -6,7 +6,7 @@ import { ActiveSessionConflictDialog } from './active-session-conflict-dialog';
 import { DayAlreadyLoggedDialog } from './day-already-logged-dialog';
 import type { ISelfWorkoutSet } from '@/lib/db/models/self-workout-log.model';
 
-type BasePath = '/trainer/my-training' | '/owner/my-training';
+type BasePath = '/trainer/my-training' | '/owner/my-training' | '/member/my-training';
 
 export interface UserTemplateExercise {
   groupId: string;

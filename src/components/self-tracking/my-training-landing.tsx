@@ -16,7 +16,7 @@ import { PathCardsGrid, PathCardItem } from './path-cards-grid';
 import type { ISelfWorkoutLog } from '@/lib/db/models/self-workout-log.model';
 import type { IPlanTemplate } from '@/lib/db/models/plan-template.model';
 
-type BasePath = '/trainer/my-training' | '/owner/my-training';
+type BasePath = '/trainer/my-training' | '/owner/my-training' | '/member/my-training';
 
 export async function MyTrainingLanding({ basePath }: { basePath: BasePath }) {
   const session = await auth();

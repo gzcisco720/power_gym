@@ -13,7 +13,7 @@ interface Props {
   open: boolean;
   dayName: string;
   sessionId: string;
-  basePath: '/owner/my-training' | '/trainer/my-training' | '/member/plan';
+  basePath: '/owner/my-training' | '/trainer/my-training' | '/member/plan' | '/member/my-training';
   onClose: () => void;
 }
 

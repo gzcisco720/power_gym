@@ -5,7 +5,7 @@ import { Calendar } from 'lucide-react';
 import { WorkoutCalendarPopover } from './workout-calendar-popover';
 
 interface Props {
-  basePath: '/owner/my-training' | '/trainer/my-training';
+  basePath: '/owner/my-training' | '/trainer/my-training' | '/member/my-training';
 }
 
 export function WorkoutCalendarHeaderTrigger({ basePath }: Props) {
