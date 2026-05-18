@@ -58,4 +58,14 @@ describe('AppShell', () => {
     // Sheet is opened — just verify the button is present and clickable
     expect(menuButton).toBeInTheDocument();
   });
+
+  it('member My Training nav link points to /member/my-training', () => {
+    render(
+      <AppShell role="member" userName="Eric Gong">
+        <div>page content</div>
+      </AppShell>
+    );
+    const link = screen.getByRole('link', { name: 'My Training' });
+    expect(link).toHaveAttribute('href', '/member/my-training');
+  });
 });
