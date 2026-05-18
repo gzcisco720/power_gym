@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ActiveSessionConflictDialog } from './active-session-conflict-dialog';
 import { DayAlreadyLoggedDialog } from './day-already-logged-dialog';
-import type { ISelfWorkoutSet } from '@/lib/db/models/self-workout-log.model';
+import { buildPlannedSets } from './build-planned-sets';
 
 type BasePath = '/member/my-training';
 
@@ -186,23 +186,5 @@ export function MemberPlanPathCard({ plan, basePath }: Props) {
         />
       )}
     </>
-  );
-}
-
-function buildPlannedSets(day: MemberPlanDay): ISelfWorkoutSet[] {
-  return day.exercises.flatMap((ex) =>
-    Array.from({ length: ex.sets }, (_, i) => ({
-      exerciseId: ex.exerciseId as unknown as ISelfWorkoutSet['exerciseId'],
-      exerciseName: ex.exerciseName,
-      groupId: ex.groupId,
-      isSuperset: ex.isSuperset,
-      isBodyweight: ex.isBodyweight,
-      setNumber: i + 1,
-      prescribedRepsMin: ex.repsMin,
-      prescribedRepsMax: ex.repsMax,
-      actualWeight: null,
-      actualReps: null,
-      completedAt: null,
-    })),
   );
 }
