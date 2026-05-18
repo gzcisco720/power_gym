@@ -1,4 +1,5 @@
 import { getGymAssetSignatureAction } from '@/lib/actions/get-gym-asset-signature';
+import { auth } from '@/lib/auth/auth';
 
 jest.mock('@/lib/auth/auth', () => ({
   auth: jest.fn().mockResolvedValue({ user: { id: 'user1' } }),
@@ -27,8 +28,7 @@ describe('getGymAssetSignatureAction', () => {
   });
 
   it('throws when user is not authenticated', async () => {
-    const { auth } = require('@/lib/auth/auth');
-    auth.mockResolvedValueOnce(null);
+    jest.mocked(auth).mockResolvedValueOnce(null);
 
     await expect(getGymAssetSignatureAction('gym-logos')).rejects.toThrow(
       'Unauthorized',
