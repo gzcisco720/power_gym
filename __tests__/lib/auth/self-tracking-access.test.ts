@@ -17,12 +17,13 @@ describe('requireSelfTrackingRole', () => {
     }
   });
 
-  it('returns 403 response when role is member', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'u1', role: 'member' } } as never);
+  it('returns ok with userId for member', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'u3', role: 'member' } } as never);
     const result = await requireSelfTrackingRole();
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.response.status).toBe(403);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.userId).toBe('u3');
+      expect(result.role).toBe('member');
     }
   });
 
