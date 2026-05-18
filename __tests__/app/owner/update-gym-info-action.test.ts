@@ -4,7 +4,7 @@ jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 const mockUpsert = jest.fn().mockResolvedValue({});
 
 jest.mock('@/lib/auth/auth', () => ({
-  auth: jest.fn().mockResolvedValue({ user: { id: 'user1' } }),
+  auth: jest.fn().mockResolvedValue({ user: { id: 'user1', role: 'owner' } }),
 }));
 
 jest.mock('@/lib/repositories/user-profile.repository', () => ({

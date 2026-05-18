@@ -60,7 +60,7 @@ export async function updateGymInfoAction(
   formData: FormData,
 ): Promise<GymInfoState> {
   const session = await auth();
-  if (!session?.user) return { error: 'Unauthorized' };
+  if (!session?.user || session.user.role !== 'owner') return { error: 'Unauthorized' };
 
   const name = (formData.get('gymName') as string | null)?.trim() || null;
   const address = (formData.get('gymAddress') as string | null)?.trim() || null;

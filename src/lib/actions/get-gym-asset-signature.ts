@@ -8,7 +8,7 @@ export async function getGymAssetSignatureAction(
   folder: 'gym-logos' | 'gym-backgrounds',
 ): Promise<UploadConfig> {
   const session = await auth();
-  if (!session?.user) throw new Error('Unauthorized');
+  if (!session?.user || session.user.role !== 'owner') throw new Error('Unauthorized');
 
   const provider = process.env.UPLOAD_PROVIDER;
 

@@ -2,7 +2,7 @@ import { getGymAssetSignatureAction } from '@/lib/actions/get-gym-asset-signatur
 import { auth } from '@/lib/auth/auth';
 
 jest.mock('@/lib/auth/auth', () => ({
-  auth: jest.fn().mockResolvedValue({ user: { id: 'user1' } }),
+  auth: jest.fn().mockResolvedValue({ user: { id: 'user1', role: 'owner' } }),
 }));
 
 describe('getGymAssetSignatureAction', () => {
