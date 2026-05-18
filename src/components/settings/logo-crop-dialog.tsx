@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cropImageToBlob } from '@/lib/image/crop-image';
@@ -71,13 +70,13 @@ export function LogoCropDialog({ open, imageSrc, onApply, onCancel }: Props) {
             onCropComplete={handleCropComplete}
           />
         </div>
-        <DialogFooter className="px-4 py-3 border-t border-foreground/[.06] flex items-center gap-3">
+        <div className="flex items-center gap-3 px-4 py-3 border-t border-foreground/[.06]">
           <div className="flex items-center gap-2 mr-auto">
             <canvas
               ref={previewCanvasRef}
-              width={40}
-              height={40}
-              className="rounded-full border border-foreground/10 bg-muted"
+              width={36}
+              height={36}
+              className="rounded-full border border-foreground/10 bg-muted shrink-0"
             />
             <span className="text-xs text-foreground/40">Preview</span>
           </div>
@@ -97,7 +96,7 @@ export function LogoCropDialog({ open, imageSrc, onApply, onCancel }: Props) {
           >
             {applying ? 'Applying...' : 'Apply'}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

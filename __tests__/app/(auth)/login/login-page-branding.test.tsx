@@ -4,7 +4,6 @@ jest.mock('@/lib/db/queries/gym-branding', () => ({
   getGymBranding: jest.fn().mockResolvedValue({
     name: 'Iron Club',
     logoUrl: 'https://cdn.example.com/logo.png',
-    loginBgUrl: 'https://cdn.example.com/bg.jpg',
     loginLogoUrl: 'https://cdn.example.com/login-logo.png',
   }),
 }));
@@ -25,13 +24,6 @@ describe('LoginPage branding', () => {
     const Page = await LoginPage({ searchParams: Promise.resolve({}) });
     render(Page);
     expect(screen.getByText('Iron Club')).toBeInTheDocument();
-  });
-
-  it('renders background image element when loginBgUrl is set', async () => {
-    const Page = await LoginPage({ searchParams: Promise.resolve({}) });
-    render(Page);
-    const bg = screen.getByTestId('login-bg');
-    expect(bg).toBeInTheDocument();
   });
 
   it('renders login logo img when loginLogoUrl is set', async () => {

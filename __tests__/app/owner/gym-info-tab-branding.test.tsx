@@ -24,9 +24,9 @@ describe('GymInfoTab branding section', () => {
     expect(screen.getByRole('button', { name: /upload logo/i })).toBeInTheDocument();
   });
 
-  it('renders the Background upload button', () => {
+  it('renders the Login Logo upload button', () => {
     render(<GymInfoTab gymInfo={null} />);
-    expect(screen.getByRole('button', { name: /upload background/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /upload login logo/i })).toBeInTheDocument();
   });
 
   it('shows existing logo preview when logoUrl is provided', () => {
@@ -36,7 +36,7 @@ describe('GymInfoTab branding section', () => {
           name: 'Iron Club', address: null, phone: null, email: null,
           website: null, hours: null, description: null,
           logoUrl: 'https://cdn.example.com/logo.png',
-          loginBgUrl: null,
+          loginLogoUrl: null,
         }}
       />,
     );
@@ -47,7 +47,6 @@ describe('GymInfoTab branding section', () => {
   it('shows crop dialog after a logo file is selected', () => {
     render(<GymInfoTab gymInfo={null} />);
 
-    // Find the logo file input (first hidden file input)
     const inputs = document.querySelectorAll('input[type="file"]');
     const logoInput = inputs[0] as HTMLInputElement;
 

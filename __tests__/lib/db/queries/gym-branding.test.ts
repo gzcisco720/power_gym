@@ -27,7 +27,7 @@ describe('getGymBranding', () => {
       gymInfo: {
         name: 'Iron Club',
         logoUrl: 'https://cdn.example.com/logo.png',
-        loginBgUrl: 'https://cdn.example.com/bg.jpg',
+        loginLogoUrl: 'https://cdn.example.com/login-logo.png',
       },
     };
 
@@ -36,8 +36,7 @@ describe('getGymBranding', () => {
     expect(result).toEqual({
       name: 'Iron Club',
       logoUrl: 'https://cdn.example.com/logo.png',
-      loginBgUrl: 'https://cdn.example.com/bg.jpg',
-      loginLogoUrl: null,
+      loginLogoUrl: 'https://cdn.example.com/login-logo.png',
     });
   });
 
@@ -46,7 +45,7 @@ describe('getGymBranding', () => {
 
     const result = await getGymBranding();
 
-    expect(result).toEqual({ name: null, logoUrl: null, loginBgUrl: null, loginLogoUrl: null });
+    expect(result).toEqual({ name: null, logoUrl: null, loginLogoUrl: null });
   });
 
   it('returns null fields when gymInfo is null', async () => {
@@ -55,6 +54,6 @@ describe('getGymBranding', () => {
 
     const result = await getGymBranding();
 
-    expect(result).toEqual({ name: null, logoUrl: null, loginBgUrl: null, loginLogoUrl: null });
+    expect(result).toEqual({ name: null, logoUrl: null, loginLogoUrl: null });
   });
 });

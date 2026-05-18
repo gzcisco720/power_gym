@@ -19,11 +19,11 @@ describe('updateGymInfoAction', () => {
     mockUpsert.mockResolvedValue({});
   });
 
-  it('persists logoUrl and loginBgUrl when provided', async () => {
+  it('persists logoUrl and loginLogoUrl when provided', async () => {
     const fd = new FormData();
     fd.append('gymName', 'Iron Club');
     fd.append('logoUrl', 'https://cdn.example.com/logo.png');
-    fd.append('loginBgUrl', 'https://cdn.example.com/bg.jpg');
+    fd.append('loginLogoUrl', 'https://cdn.example.com/login-logo.png');
 
     const result = await updateGymInfoAction({ error: '' }, fd);
 
@@ -33,7 +33,7 @@ describe('updateGymInfoAction', () => {
       expect.objectContaining({
         gymInfo: expect.objectContaining({
           logoUrl: 'https://cdn.example.com/logo.png',
-          loginBgUrl: 'https://cdn.example.com/bg.jpg',
+          loginLogoUrl: 'https://cdn.example.com/login-logo.png',
         }),
       }),
     );
@@ -48,7 +48,7 @@ describe('updateGymInfoAction', () => {
     expect(mockUpsert).toHaveBeenCalledWith(
       'user1',
       expect.objectContaining({
-        gymInfo: expect.objectContaining({ logoUrl: null, loginBgUrl: null }),
+        gymInfo: expect.objectContaining({ logoUrl: null, loginLogoUrl: null }),
       }),
     );
   });

@@ -5,7 +5,7 @@ import type { UploadConfig } from '@/lib/storage/types';
 import crypto from 'crypto';
 
 export async function getGymAssetSignatureAction(
-  folder: 'gym-logos' | 'gym-backgrounds' | 'gym-login-logos',
+  folder: 'gym-logos' | 'gym-login-logos',
 ): Promise<UploadConfig> {
   const session = await auth();
   if (!session?.user || session.user.role !== 'owner') throw new Error('Unauthorized');

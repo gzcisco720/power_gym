@@ -141,10 +141,10 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, gy
             <img
               src={gymBranding.logoUrl}
               alt="Gym logo"
-              className="h-9 w-9 shrink-0 rounded-full object-cover border border-foreground/10"
+              className="h-12 w-12 shrink-0 rounded-full object-cover border border-foreground/10"
             />
           ) : (
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-[14px] font-bold text-white">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-[17px] font-bold text-white">
               {(gymBranding?.name ?? 'P').trim().charAt(0).toUpperCase()}
             </div>
           )}

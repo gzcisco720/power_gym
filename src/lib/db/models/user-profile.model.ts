@@ -9,7 +9,6 @@ export interface IGymInfo {
   hours: string | null;
   description: string | null;
   logoUrl: string | null;
-  loginBgUrl: string | null;
   loginLogoUrl: string | null;
 }
 
@@ -45,7 +44,6 @@ const GymInfoSchema = new Schema<IGymInfo>(
     hours: { type: String, default: null, trim: true },
     description: { type: String, default: null, trim: true },
     logoUrl: { type: String, default: null, trim: true },
-    loginBgUrl: { type: String, default: null, trim: true },
     loginLogoUrl: { type: String, default: null, trim: true },
   },
   { _id: false },

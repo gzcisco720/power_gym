@@ -23,20 +23,7 @@ export default async function LoginPage({
 
   return (
     <main className="relative flex min-h-screen items-center justify-center px-4">
-      {/* Background */}
-      {branding.loginBgUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          data-testid="login-bg"
-          src={branding.loginBgUrl}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      ) : (
-        <div className="absolute inset-0 bg-[#030303]" />
-      )}
-      {branding.loginBgUrl && <div className="absolute inset-0 bg-black/60" />}
+      <div className="absolute inset-0 bg-[#030303]" />
 
       {/* Form */}
       <div className="relative z-10 w-full max-w-sm">
