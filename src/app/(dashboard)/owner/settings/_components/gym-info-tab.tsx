@@ -145,7 +145,7 @@ export function GymInfoTab({ gymInfo }: Props) {
           open
           imageSrc={loginLogoCropSrc}
           title="Crop Login Logo"
-          aspect={2}
+          aspect={1}
           cropShape="rect"
           onApply={handleLoginLogoCropApply}
           onCancel={handleLoginLogoCropCancel}
