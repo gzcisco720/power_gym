@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { connectDB } from '@/lib/db/connect';
 import { MongoUserProfileRepository } from '@/lib/repositories/user-profile.repository';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
+import { getGymBranding } from '@/lib/db/queries/gym-branding';
 import { AppShell } from '@/components/shared/app-shell';
 import { PageTransition } from '@/components/shared/page-transition';
 import { LogoutButton } from '@/components/shared/logout-button';
@@ -13,9 +14,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!session?.user) redirect('/login');
 
   await connectDB();
-  const [profile, user] = await Promise.all([
+  const [profile, user, gymBranding] = await Promise.all([
     new MongoUserProfileRepository().findByUserId(session.user.id),
     new MongoUserRepository().findById(session.user.id),
+    getGymBranding(),
   ]);
 
   const firstName = user?.firstName ?? session.user.firstName ?? '';
@@ -27,6 +29,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       userName={`${firstName} ${lastName}`.trim() || 'User'}
       userEmail={user?.email ?? session.user.email ?? ''}
       avatarUrl={profile?.avatarUrl ?? null}
+      gymBranding={gymBranding}
       logoutSlot={<LogoutButton />}
     >
       <PageTransition>{children}</PageTransition>
