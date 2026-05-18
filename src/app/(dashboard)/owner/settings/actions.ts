@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
 import { MongoUserProfileRepository } from '@/lib/repositories/user-profile.repository';
@@ -77,6 +78,7 @@ export async function updateGymInfoAction(
     await new MongoUserProfileRepository().upsert(session.user.id, {
       gymInfo: { name, address, phone, email, website, hours, description, logoUrl, loginLogoUrl },
     });
+    revalidatePath('/login');
     return { error: '' };
   } catch {
     return { error: 'Failed to save gym info' };
