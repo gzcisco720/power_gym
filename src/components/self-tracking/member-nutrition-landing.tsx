@@ -14,6 +14,7 @@ import { PathCardsGrid, PathCardItem } from './path-cards-grid';
 import { PageHeader } from '@/components/shared/page-header';
 import type { ISelfNutritionLog } from '@/lib/db/models/self-nutrition-log.model';
 import type { IMemberNutritionPlan } from '@/lib/db/models/member-nutrition-plan.model';
+import type { IDayType } from '@/lib/db/models/nutrition-template.model';
 
 export async function MemberNutritionLanding() {
   const session = await auth();
@@ -90,15 +91,21 @@ export async function MemberNutritionLanding() {
             <MemberNutritionPlanPathCard plan={plan} basePath="/member/nutrition" />
           </PathCardItem>
           <PathCardItem>
-            {lastFreestyleLog ? (
+            {!lastFreestyleLog && <NutritionFreestylePathCard state="empty" basePath="/member/nutrition" />}
+            {lastFreestyleLog && state === 'full' && (
               <NutritionFreestylePathCard
-                state={state === 'full' ? 'full' : 'light'}
+                state="full"
                 lastFreestyle={toLastFreestyle(lastFreestyleLog)}
-                {...(state === 'full' ? { daysThisWeek: countDaysThisWeek(recent) } : {})}
+                daysThisWeek={countDaysThisWeek(recent)}
                 basePath="/member/nutrition"
               />
-            ) : (
-              <NutritionFreestylePathCard state="empty" basePath="/member/nutrition" />
+            )}
+            {lastFreestyleLog && state !== 'full' && (
+              <NutritionFreestylePathCard
+                state="light"
+                lastFreestyle={toLastFreestyle(lastFreestyleLog)}
+                basePath="/member/nutrition"
+              />
             )}
           </PathCardItem>
         </PathCardsGrid>
@@ -109,6 +116,19 @@ export async function MemberNutritionLanding() {
   );
 }
 
+function computeDayTypeTargets(dt: IDayType) {
+  let kcal = 0, protein = 0, carbs = 0, fat = 0;
+  for (const m of dt.meals) {
+    for (const i of m.items) {
+      kcal += i.kcal;
+      protein += i.protein;
+      carbs += i.carbs;
+      fat += i.fat;
+    }
+  }
+  return { targetKcal: Math.round(kcal), targetProtein: Math.round(protein), targetCarbs: Math.round(carbs), targetFat: Math.round(fat) };
+}
+
 function toPlanCard(plan: IMemberNutritionPlan, trainerName: string): MemberNutritionPlan {
   return {
     _id: plan._id.toString(),
@@ -116,10 +136,7 @@ function toPlanCard(plan: IMemberNutritionPlan, trainerName: string): MemberNutr
     assignedByName: trainerName,
     dayTypes: plan.dayTypes.map((dt) => ({
       name: dt.name,
-      targetKcal: dt.targetKcal,
-      targetProtein: dt.targetProtein,
-      targetCarbs: dt.targetCarbs,
-      targetFat: dt.targetFat,
+      ...computeDayTypeTargets(dt),
     })),
   };
 }

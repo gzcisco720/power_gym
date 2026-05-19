@@ -24,7 +24,7 @@ import { CompleteWorkoutDialog } from './complete-workout-dialog';
 
 interface Props {
   logId: string;
-  basePath: '/owner/my-training' | '/trainer/my-training';
+  basePath: '/owner/my-training' | '/trainer/my-training' | '/member/my-training';
 }
 
 interface SetWithIndex extends ISelfWorkoutSet {

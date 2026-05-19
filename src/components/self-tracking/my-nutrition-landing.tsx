@@ -86,15 +86,21 @@ export async function MyNutritionLanding({ basePath }: { basePath: BasePath }) {
             />
           </PathCardItem>
           <PathCardItem>
-            {lastFreestyleLog ? (
+            {!lastFreestyleLog && <NutritionFreestylePathCard state="empty" basePath={basePath} />}
+            {lastFreestyleLog && state === 'full' && (
               <NutritionFreestylePathCard
-                state={state === 'full' ? 'full' : 'light'}
+                state="full"
                 lastFreestyle={toLastFreestyle(lastFreestyleLog)}
-                {...(state === 'full' ? { daysThisWeek: countDaysThisWeek(recent) } : {})}
+                daysThisWeek={countDaysThisWeek(recent)}
                 basePath={basePath}
               />
-            ) : (
-              <NutritionFreestylePathCard state="empty" basePath={basePath} />
+            )}
+            {lastFreestyleLog && state !== 'full' && (
+              <NutritionFreestylePathCard
+                state="light"
+                lastFreestyle={toLastFreestyle(lastFreestyleLog)}
+                basePath={basePath}
+              />
             )}
           </PathCardItem>
         </PathCardsGrid>

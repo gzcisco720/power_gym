@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { SelfWeekCalendarGrid, type SelfCalendarLog } from './self-week-calendar-grid';
 
-type BasePath = '/owner/my-training' | '/trainer/my-training' | '/member/plan';
+type BasePath = '/owner/my-training' | '/trainer/my-training' | '/member/plan' | '/member/my-training';
 
 interface Props {
   basePath: BasePath;
