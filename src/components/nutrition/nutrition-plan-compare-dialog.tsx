@@ -52,13 +52,14 @@ export function NutritionPlanCompareDialog({
         </p>
 
         <div className="space-y-2">
-          <p className="text-[11px] uppercase tracking-widest font-semibold text-foreground/40">
+          <p className="text-[11px] uppercase tracking-wider font-semibold text-foreground/65">
             Compare with plan day
           </p>
           <div className="flex flex-wrap gap-2">
             {planDayTypes.map((dt) => (
               <button
                 key={dt.name}
+                type="button"
                 onClick={() => setSelected(dt)}
                 className={`px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-colors ${
                   selected?.name === dt.name
@@ -108,7 +109,7 @@ export function NutritionPlanCompareDialog({
           </div>
         )}
 
-        <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
           Done
         </Button>
       </DialogContent>
@@ -142,7 +143,7 @@ function CompareRow({
           / {target}
           {unit}
         </span>
-        <span className={diff > 0 ? 'text-destructive' : 'text-foreground/35'}>
+        <span className={diff > 0 ? 'text-destructive' : diff < 0 ? 'text-foreground/65' : 'text-emerald-400'}>
           {fmt(diff, unit)}
         </span>
       </div>

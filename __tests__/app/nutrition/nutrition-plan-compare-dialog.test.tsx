@@ -29,6 +29,14 @@ it('shows diff values when a day type is selected', () => {
   expect(screen.getByText('−22g')).toBeInTheDocument(); // protein diff
 });
 
+it('shows non-destructive styling for under-target diff', () => {
+  render(<NutritionPlanCompareDialog {...baseProps} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Training Day' }));
+  // protein: logged 148g vs target 170g → under target → should NOT be text-destructive
+  const diffEl = screen.getByText('−22g');
+  expect(diffEl).not.toHaveClass('text-destructive');
+});
+
 it('calls onOpenChange(false) when Done is clicked', () => {
   const onOpenChange = jest.fn();
   render(<NutritionPlanCompareDialog {...baseProps} onOpenChange={onOpenChange} />);
