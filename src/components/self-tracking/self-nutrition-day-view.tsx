@@ -127,8 +127,6 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
       if (cancelled) return;
       const data = res.ok ? ((await res.json()) as SelfNutritionLog | null) : null;
 
-      if (cancelled) return;
-
       if (data) {
         setLog(data);
         return;
