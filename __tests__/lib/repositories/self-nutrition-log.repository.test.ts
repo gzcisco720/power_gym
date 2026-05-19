@@ -143,4 +143,14 @@ describe('MongoSelfNutritionLogRepository', () => {
     expect(limitFn).toHaveBeenCalledWith(3);
     expect(result).toEqual(logs);
   });
+
+  it('findRecent clamps limit 0 to 1', async () => {
+    const limitFn = jest.fn().mockResolvedValue([]);
+    const sortFn = jest.fn().mockReturnValue({ limit: limitFn });
+    mockModel.find.mockReturnValue({ sort: sortFn });
+
+    await repo.findRecent(USER_A, 0);
+
+    expect(limitFn).toHaveBeenCalledWith(1);
+  });
 });
