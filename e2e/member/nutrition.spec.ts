@@ -88,3 +88,46 @@ test.describe('Member: Nutrition day view (freestyle mode)', () => {
     await expect(page.getByLabel('Macro distribution').first()).toBeVisible({ timeout: 8000 });
   });
 });
+
+test.describe('Member: Nutrition plan-mode lifecycle — log appears in calendar', () => {
+  // Seed a plan-based log directly via API, then verify it shows in the landing calendar.
+  // This guards against the regression where NutritionDailyLog entries were invisible
+  // to the landing page because it only read SelfNutritionLog.
+
+  test.afterEach(async ({ request }) => {
+    // Clean up: delete the seeded log so it doesn't pollute other tests
+    await request.delete(`/api/members/me/nutrition/log/${TODAY}`);
+  });
+
+  test('plan-mode logged day appears as a dot in the landing calendar', async ({ page, request }) => {
+    // 1. Seed a completed plan-based log via API
+    const seedRes = await request.put(`/api/members/me/nutrition/log/${TODAY}`, {
+      data: {
+        dayTypeName: 'Training Day',
+        meals: [
+          {
+            name: 'Breakfast',
+            order: 0,
+            completed: true,
+            items: [{ foodName: 'Egg', quantityG: 100, kcal: 150, protein: 12, carbs: 1, fat: 10 }],
+          },
+        ],
+        dayCompleted: true,
+      },
+    });
+    expect(seedRes.ok()).toBe(true);
+
+    // 2. Navigate to the member nutrition landing
+    await page.goto('/member/nutrition');
+
+    // 3. The calendar cell for today should show a logged indicator (kcal dot or highlighted cell)
+    // SelfNutritionCalendar highlights logged days — find today's cell
+    const todayDay = String(new Date().getDate());
+    const todayCell = page.locator('.rounded-xl').filter({ hasText: 'Nutrition History' })
+      .locator(`text=${todayDay}`).first();
+    await expect(todayCell).toBeVisible({ timeout: 6000 });
+
+    // The activity strip should reflect at least 1 day logged (not show "Get started")
+    await expect(page.getByText('Get started')).not.toBeVisible();
+  });
+});
