@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { NutritionTemplatePathCard } from '@/components/self-tracking/nutrition-template-path-card';
 
+const mockPush = jest.fn();
 jest.mock('next/navigation', () => ({
-  useRouter: () => ({ push: jest.fn() }),
+  useRouter: () => ({ push: mockPush }),
 }));
 
 const templates = [
@@ -35,4 +36,13 @@ it('auto-expands when only one template', () => {
 it('shows Log button for each day type when expanded', () => {
   render(<NutritionTemplatePathCard templates={templates} basePath="/owner/my-nutrition" />);
   expect(screen.getAllByRole('button', { name: /log/i })).toHaveLength(2);
+});
+
+it('Log button navigates with dayTypeName param', () => {
+  mockPush.mockClear();
+  render(<NutritionTemplatePathCard templates={templates} basePath="/owner/my-nutrition" />);
+  const logButtons = screen.getAllByRole('button', { name: /log/i });
+  fireEvent.click(logButtons[0]);
+  expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('dayTypeName=Training%20Day'));
+  expect(mockPush).not.toHaveBeenCalledWith(expect.stringContaining('dayType=Training'));
 });

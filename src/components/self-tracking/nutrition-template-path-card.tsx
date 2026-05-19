@@ -26,8 +26,7 @@ interface Props {
 }
 
 function todayISO(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return new Date().toISOString().slice(0, 10);
 }
 
 export function NutritionTemplatePathCard({ templates, basePath }: Props) {
@@ -45,7 +44,7 @@ export function NutritionTemplatePathCard({ templates, basePath }: Props) {
         <div className="flex-1 flex flex-col items-center justify-center text-center gap-1.5 py-4">
           <span className="text-3xl opacity-30">🥗</span>
           <p className="text-sm text-foreground/65">No templates yet.</p>
-          <p className="text-xs text-foreground/40">Create a nutrition template to log structured days.</p>
+          <p className="text-xs text-foreground/65">Create a nutrition template to log structured days.</p>
         </div>
         <Button
           variant="outline"
@@ -74,6 +73,7 @@ export function NutritionTemplatePathCard({ templates, basePath }: Props) {
             <div key={tpl._id} className="rounded-lg ring-1 ring-foreground/10 overflow-hidden">
               <button
                 type="button"
+                aria-expanded={isExpanded}
                 onClick={() => setExpandedId(isExpanded ? null : tpl._id)}
                 className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-foreground/5 transition-colors"
               >
@@ -94,7 +94,7 @@ export function NutritionTemplatePathCard({ templates, basePath }: Props) {
                     >
                       <div className="min-w-0 flex-1">
                         <span className="text-[12px] font-medium">{dt.name}</span>
-                        <span className="text-[10px] text-foreground/50 ml-2">
+                        <span className="text-[10px] text-foreground/65 ml-2">
                           {dt.targetKcal} kcal · P {dt.targetProtein}g · C {dt.targetCarbs}g · F {dt.targetFat}g
                         </span>
                       </div>
@@ -104,7 +104,7 @@ export function NutritionTemplatePathCard({ templates, basePath }: Props) {
                         type="button"
                         onClick={() =>
                           router.push(
-                            `${basePath}/day?date=${todayISO()}&templateId=${tpl._id}&dayType=${encodeURIComponent(dt.name)}`,
+                            `${basePath}/day?date=${todayISO()}&templateId=${tpl._id}&dayTypeName=${encodeURIComponent(dt.name)}`,
                           )
                         }
                         className="h-6 px-2 text-[11px] shrink-0 text-primary-light hover:text-primary-light hover:bg-primary/10"
