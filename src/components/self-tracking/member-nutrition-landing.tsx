@@ -14,6 +14,7 @@ import { NutritionCalendarHeaderTrigger } from './nutrition-calendar-header-trig
 import { PathCardsGrid, PathCardItem } from './path-cards-grid';
 import { PageHeader } from '@/components/shared/page-header';
 import { computeDayTypeTargets } from '@/lib/nutrition/compute-day-type-targets';
+import { resolveDayType } from '@/lib/nutrition/schedule';
 import type { ISelfNutritionLog } from '@/lib/db/models/self-nutrition-log.model';
 import type { IMemberNutritionPlan } from '@/lib/db/models/member-nutrition-plan.model';
 
@@ -41,6 +42,29 @@ export async function MemberNutritionLanding() {
     const trainer = await userRepo.findById(activePlan.assignedById.toString());
     if (trainer?.name) trainerName = trainer.name;
   }
+
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const todayDayTypeName: string | null = activePlan
+    ? resolveDayType(
+        activePlan.schedule,
+        todayISO,
+        activePlan.assignedAt.toISOString().slice(0, 10),
+      )
+    : null;
+
+  const todayFreestyleLog = await logRepo.findByDate(userId, todayISO);
+  const todayFreestyleLogSummary =
+    todayFreestyleLog != null
+      ? {
+          kcal: Math.round(
+            todayFreestyleLog.meals.reduce(
+              (s, m) => s + m.items.reduce((si, i) => si + i.kcal, 0),
+              0,
+            ),
+          ),
+          dayCompleted: todayFreestyleLog.dayCompleted,
+        }
+      : null;
 
   // Merge freestyle + plan-based log dates for activity tracking
   const planLogDates = new Set(planMonthLogs.map((l) => l.date));
@@ -99,16 +123,23 @@ export async function MemberNutritionLanding() {
 
         <PathCardsGrid>
           <PathCardItem>
-            <MemberNutritionPlanPathCard plan={plan} basePath="/member/nutrition" />
+            <MemberNutritionPlanPathCard plan={plan} todayDayTypeName={todayDayTypeName} basePath="/member/nutrition" />
           </PathCardItem>
           <PathCardItem>
-            {!lastFreestyleLog && <NutritionFreestylePathCard state="empty" basePath="/member/nutrition" />}
+            {!lastFreestyleLog && (
+              <NutritionFreestylePathCard
+                state="empty"
+                basePath="/member/nutrition"
+                todayLog={todayFreestyleLogSummary}
+              />
+            )}
             {lastFreestyleLog && state === 'full' && (
               <NutritionFreestylePathCard
                 state="full"
                 lastFreestyle={toLastFreestyle(lastFreestyleLog)}
                 daysThisWeek={countDaysThisWeek(recent)}
                 basePath="/member/nutrition"
+                todayLog={todayFreestyleLogSummary}
               />
             )}
             {lastFreestyleLog && state !== 'full' && (
@@ -116,6 +147,7 @@ export async function MemberNutritionLanding() {
                 state="light"
                 lastFreestyle={toLastFreestyle(lastFreestyleLog)}
                 basePath="/member/nutrition"
+                todayLog={todayFreestyleLogSummary}
               />
             )}
           </PathCardItem>
