@@ -92,3 +92,26 @@ it('owner/trainer state=full is unaffected when no todayLog prop', () => {
   );
   expect(screen.getByText(/5× this week/i)).toBeInTheDocument();
 });
+
+it('shows Continue Today log button for owner when incomplete log today', () => {
+  render(
+    <NutritionFreestylePathCard
+      state="empty"
+      basePath="/owner/my-nutrition"
+      todayLog={{ kcal: 900, dayCompleted: false }}
+    />,
+  );
+  expect(screen.getByRole('button', { name: /continue today/i })).toBeInTheDocument();
+});
+
+it('shows View Today log button for owner when completed log today', () => {
+  render(
+    <NutritionFreestylePathCard
+      state="empty"
+      basePath="/owner/my-nutrition"
+      todayLog={{ kcal: 2000, dayCompleted: true }}
+    />,
+  );
+  expect(screen.getByRole('button', { name: /view today/i })).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /log today/i })).not.toBeInTheDocument();
+});

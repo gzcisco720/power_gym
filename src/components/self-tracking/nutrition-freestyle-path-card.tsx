@@ -33,17 +33,17 @@ function freestyleDayPath(basePath: BasePath): string {
   if (basePath === '/member/nutrition') {
     return `/member/nutrition/day?date=${todayISO()}&mode=free`;
   }
-  return `${basePath}/day?date=${todayISO()}`;
+  // noNav=1 tells the day page to suppress date navigation (today-only)
+  return `${basePath}/day?date=${todayISO()}&noNav=1`;
 }
 
 export function NutritionFreestylePathCard(props: Props) {
   const router = useRouter();
 
-  const isMember = props.basePath === '/member/nutrition';
   const todayLog = props.todayLog;
 
-  const memberTodayCTA =
-    isMember && todayLog != null ? (
+  const todayCTA =
+    todayLog != null ? (
       <div className="mt-auto flex flex-col gap-2">
         <div className="text-[11px] text-foreground/65">
           Today · {todayLog.kcal.toLocaleString()} kcal
@@ -70,7 +70,7 @@ export function NutritionFreestylePathCard(props: Props) {
           <p className="text-sm text-foreground/65">No freestyle logs yet.</p>
           <p className="text-xs text-foreground/65">Log any day without a template.</p>
         </div>
-        {memberTodayCTA ?? (
+        {todayCTA ?? (
           <Button variant="outline" type="button" onClick={() => router.push(freestyleDayPath(props.basePath))}>
             Log Today
           </Button>
@@ -103,7 +103,7 @@ export function NutritionFreestylePathCard(props: Props) {
           {props.daysThisWeek}× this week
         </p>
       )}
-      {memberTodayCTA ?? (
+      {todayCTA ?? (
         <Button
           variant="outline"
           type="button"
