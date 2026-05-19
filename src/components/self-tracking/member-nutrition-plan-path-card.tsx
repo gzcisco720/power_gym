@@ -18,13 +18,15 @@ export interface MemberNutritionPlan {
 
 interface Props {
   plan: MemberNutritionPlan | null;
+  basePath?: '/member/nutrition';
 }
 
 function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export function MemberNutritionPlanPathCard({ plan }: Props) {
+export function MemberNutritionPlanPathCard({ plan, basePath = '/member/nutrition' }: Props) {
   const router = useRouter();
 
   if (!plan) {
@@ -34,7 +36,7 @@ export function MemberNutritionPlanPathCard({ plan }: Props) {
           My Plan
         </span>
         <div className="flex-1 flex flex-col items-center justify-center text-center gap-1.5 py-4">
-          <span className="text-3xl opacity-30">📋</span>
+          <span className="text-3xl opacity-35">📋</span>
           <p className="text-sm text-foreground/65">No nutrition plan assigned yet.</p>
           <p className="text-xs text-foreground/65">Ask your trainer to assign a plan.</p>
         </div>
@@ -71,7 +73,7 @@ export function MemberNutritionPlanPathCard({ plan }: Props) {
               type="button"
               onClick={() =>
                 router.push(
-                  `/member/nutrition/day?date=${todayISO()}&mode=plan&dayTypeName=${encodeURIComponent(dt.name)}`,
+                  `${basePath}/day?date=${todayISO()}&mode=plan&dayTypeName=${encodeURIComponent(dt.name)}`,
                 )
               }
               className="h-6 px-2 text-[11px] shrink-0 text-primary-light hover:bg-primary/10"
