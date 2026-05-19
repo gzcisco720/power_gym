@@ -33,8 +33,9 @@ describe('PATCH /api/members/[memberId]/injuries/[id]', () => {
     expect(res.status).toBe(401);
   });
 
-  it('returns 403 when member patches fields other than memberNotes', async () => {
+  it('returns 403 when member patches disallowed fields (e.g. title)', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    mockInjuryRepo.findById.mockResolvedValue({ memberId: { toString: () => 'm1' }, createdByRole: 'member' });
     const { PATCH } = await import('@/app/api/members/[memberId]/injuries/[id]/route');
     const res = await PATCH(
       new Request('http://localhost/', {
@@ -50,7 +51,7 @@ describe('PATCH /api/members/[memberId]/injuries/[id]', () => {
   it('allows member to patch only memberNotes on own record', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
     const updated = { _id: 'i1', memberNotes: 'Hurts when bending' };
-    mockInjuryRepo.findById.mockResolvedValue({ memberId: { toString: () => 'm1' } });
+    mockInjuryRepo.findById.mockResolvedValue({ memberId: { toString: () => 'm1' }, createdByRole: 'member' });
     mockInjuryRepo.update.mockResolvedValue(updated);
     const { PATCH } = await import('@/app/api/members/[memberId]/injuries/[id]/route');
     const res = await PATCH(
@@ -67,7 +68,7 @@ describe('PATCH /api/members/[memberId]/injuries/[id]', () => {
 
   it('returns 403 when member patches another member\'s record', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
-    mockInjuryRepo.findById.mockResolvedValue({ memberId: { toString: () => 'm2' } });
+    mockInjuryRepo.findById.mockResolvedValue({ memberId: { toString: () => 'm2' }, createdByRole: 'member' });
     const { PATCH } = await import('@/app/api/members/[memberId]/injuries/[id]/route');
     const res = await PATCH(
       new Request('http://localhost/', {
@@ -110,7 +111,7 @@ describe('PATCH /api/members/[memberId]/injuries/[id]', () => {
       makeParams('m1', 'i1'),
     );
     expect(res.status).toBe(200);
-    expect(mockInjuryRepo.update).toHaveBeenCalledWith('i1', { status: 'resolved' });
+    expect(mockInjuryRepo.update).toHaveBeenCalledWith('i1', expect.objectContaining({ status: 'resolved' }));
   });
 
   it('returns 403 when trainer patches member of different trainer', async () => {
@@ -149,8 +150,12 @@ describe('DELETE /api/members/[memberId]/injuries/[id]', () => {
     expect(res.status).toBe(401);
   });
 
-  it('returns 403 when member tries to delete', async () => {
+  it('returns 403 when member tries to delete a trainer-created injury', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    mockInjuryRepo.findById.mockResolvedValue({
+      memberId: { toString: () => 'm1' },
+      createdByRole: 'trainer',
+    });
     const { DELETE } = await import('@/app/api/members/[memberId]/injuries/[id]/route');
     const res = await DELETE(new Request('http://localhost/'), makeParams('m1', 'i1'));
     expect(res.status).toBe(403);
@@ -179,6 +184,74 @@ describe('DELETE /api/members/[memberId]/injuries/[id]', () => {
     mockInjuryRepo.deleteById.mockResolvedValue(undefined);
     const { DELETE } = await import('@/app/api/members/[memberId]/injuries/[id]/route');
     const res = await DELETE(new Request('http://localhost/'), makeParams('m1', 'i1'));
+    expect(res.status).toBe(204);
+  });
+});
+
+describe('PATCH — member updates own injury (createdByRole=member)', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('allows member to update pain scores and status on own injury', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    mockInjuryRepo.findById.mockResolvedValue({
+      memberId: { toString: () => 'm1' },
+      createdByRole: 'member',
+    });
+    mockInjuryRepo.update.mockResolvedValue({ _id: 'i1', status: 'resolved' });
+    const { PATCH } = await import('@/app/api/members/[memberId]/injuries/[id]/route');
+    const res = await PATCH(
+      new Request('http://localhost/', {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'resolved', painAtRest: 0, resolvedAt: new Date().toISOString() }),
+      }),
+      makeParams('m1', 'i1'),
+    );
+    expect(res.status).toBe(200);
+  });
+
+  it('blocks member from setting trainerNotes on own injury', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    mockInjuryRepo.findById.mockResolvedValue({
+      memberId: { toString: () => 'm1' },
+      createdByRole: 'member',
+    });
+    const { PATCH } = await import('@/app/api/members/[memberId]/injuries/[id]/route');
+    const res = await PATCH(
+      new Request('http://localhost/', {
+        method: 'PATCH',
+        body: JSON.stringify({ trainerNotes: 'hacked' }),
+      }),
+      makeParams('m1', 'i1'),
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it('blocks member from deleting trainer-created injury', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    mockInjuryRepo.findById.mockResolvedValue({
+      memberId: { toString: () => 'm1' },
+      createdByRole: 'trainer',
+    });
+    const { DELETE } = await import('@/app/api/members/[memberId]/injuries/[id]/route');
+    const res = await DELETE(
+      new Request('http://localhost/'),
+      makeParams('m1', 'i1'),
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it('allows member to delete own (member-created) injury', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    mockInjuryRepo.findById.mockResolvedValue({
+      memberId: { toString: () => 'm1' },
+      createdByRole: 'member',
+    });
+    mockInjuryRepo.deleteById.mockResolvedValue(undefined);
+    const { DELETE } = await import('@/app/api/members/[memberId]/injuries/[id]/route');
+    const res = await DELETE(
+      new Request('http://localhost/'),
+      makeParams('m1', 'i1'),
+    );
     expect(res.status).toBe(204);
   });
 });

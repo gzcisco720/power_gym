@@ -93,12 +93,12 @@ describe('POST /api/members/[memberId]/injuries', () => {
     expect(res.status).toBe(401);
   });
 
-  it('returns 403 when member tries to POST', async () => {
+  it('returns 403 when member tries to POST for a different memberId', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
     const { POST } = await import('@/app/api/members/[memberId]/injuries/route');
     const res = await POST(
       new Request('http://localhost/', { method: 'POST', body: JSON.stringify({ title: 'x' }) }),
-      makeParams('m1'),
+      makeParams('m2'),
     );
     expect(res.status).toBe(403);
   });
@@ -147,5 +147,31 @@ describe('POST /api/members/[memberId]/injuries', () => {
       makeParams('m1'),
     );
     expect(res.status).toBe(400);
+  });
+});
+
+describe('POST /api/members/[memberId]/injuries — member self-report', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('returns 403 when member tries to create for a different memberId', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    const { POST } = await import('@/app/api/members/[memberId]/injuries/route');
+    const res = await POST(
+      new Request('http://localhost/', { method: 'POST', body: JSON.stringify({ title: 'Knee pain' }) }),
+      makeParams('m2'),
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it('returns 201 when member creates injury for themselves', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    mockInjuryRepo.create.mockResolvedValue({ _id: 'i1', title: 'Knee pain', createdByRole: 'member' });
+    const { POST } = await import('@/app/api/members/[memberId]/injuries/route');
+    const res = await POST(
+      new Request('http://localhost/', { method: 'POST', body: JSON.stringify({ title: 'Knee pain' }) }),
+      makeParams('m1'),
+    );
+    expect(res.status).toBe(201);
+    expect(mockInjuryRepo.create).toHaveBeenCalledWith(expect.objectContaining({ createdByRole: 'member' }));
   });
 });
