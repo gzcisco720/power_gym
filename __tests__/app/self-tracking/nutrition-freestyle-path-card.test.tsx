@@ -115,3 +115,57 @@ it('shows View Today log button for owner when completed log today', () => {
   expect(screen.getByRole('button', { name: /view today/i })).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: /log today/i })).not.toBeInTheDocument();
 });
+
+it('member: shows View Today log button when plan is done for today and no freestyle log', () => {
+  render(
+    <NutritionFreestylePathCard
+      state="empty"
+      basePath="/member/nutrition"
+      todayLog={null}
+      planDoneToday={true}
+    />,
+  );
+  expect(screen.queryByRole('button', { name: /log today/i })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /view today/i })).toBeInTheDocument();
+  expect(screen.getByText(/plan completed for today/i)).toBeInTheDocument();
+});
+
+it('member: planDoneToday=true in light state shows View Today instead of Log Today (Freestyle)', () => {
+  render(
+    <NutritionFreestylePathCard
+      state="light"
+      lastFreestyle={{ dateLabel: 'Mon', kcal: 2087, protein: 162, carbs: 228, fat: 58 }}
+      basePath="/member/nutrition"
+      todayLog={null}
+      planDoneToday={true}
+    />,
+  );
+  expect(screen.queryByRole('button', { name: /log today/i })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /view today/i })).toBeInTheDocument();
+});
+
+it('member: todayLog takes precedence over planDoneToday — shows Continue when freestyle in progress', () => {
+  render(
+    <NutritionFreestylePathCard
+      state="empty"
+      basePath="/member/nutrition"
+      todayLog={{ kcal: 500, dayCompleted: false }}
+      planDoneToday={true}
+    />,
+  );
+  expect(screen.getByRole('button', { name: /continue today/i })).toBeInTheDocument();
+  expect(screen.queryByText(/plan completed for today/i)).not.toBeInTheDocument();
+});
+
+it('owner/trainer: planDoneToday has no effect — still shows Log Today', () => {
+  render(
+    <NutritionFreestylePathCard
+      state="empty"
+      basePath="/owner/my-nutrition"
+      todayLog={null}
+      planDoneToday={true}
+    />,
+  );
+  // owner/trainer should not be affected by planDoneToday
+  expect(screen.getByRole('button', { name: /log today/i })).toBeInTheDocument();
+});

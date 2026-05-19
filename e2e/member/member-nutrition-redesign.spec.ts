@@ -302,3 +302,118 @@ test.describe('Member: Nutrition full daily lifecycle', () => {
     await expect(page.getByText(/freestyle/i).first()).toBeVisible({ timeout: 6000 });
   });
 });
+
+// ── Plan done blocks freestyle new log ────────────────────────────────────────
+//
+// Regression guard for: member completes plan log today → freestyle card must
+// show "View Today's Log" (→ plan readonly) instead of "Log Today".
+// Background: MemberNutritionLanding now checks planMonthLogs for today's
+// completion and passes planDoneToday=true to NutritionFreestylePathCard.
+
+test.describe('Member: Plan done today blocks freestyle new log', () => {
+  type APICtx = import('@playwright/test').APIRequestContext;
+
+  async function getMemberId(request: APICtx): Promise<string | null> {
+    const res = await request.get('/api/auth/session');
+    if (!res.ok()) return null;
+    const data = (await res.json()) as { user?: { id?: string } };
+    return data.user?.id ?? null;
+  }
+
+  async function getTodayScheduledPlanLog(
+    request: APICtx,
+    memberId: string,
+  ): Promise<{ dayTypeName: string; meals: unknown[] } | null> {
+    const res = await request.get(`/api/members/${memberId}/nutrition/log/${TODAY}`);
+    if (!res.ok()) return null;
+    const data = (await res.json()) as { dayTypeName?: string; meals?: unknown[] } | null;
+    if (!data?.dayTypeName) return null;
+    return { dayTypeName: data.dayTypeName, meals: data.meals ?? [] };
+  }
+
+  async function seedCompletedPlanLog(
+    request: APICtx,
+    memberId: string,
+    planLog: { dayTypeName: string; meals: unknown[] },
+  ): Promise<void> {
+    const res = await request.put(`/api/members/${memberId}/nutrition/log/${TODAY}`, {
+      data: { dayTypeName: planLog.dayTypeName, meals: planLog.meals, dayCompleted: true },
+    });
+    // 403 means already completed — that's a valid "plan done" state too
+    expect(res.ok() || res.status() === 403).toBe(true);
+  }
+
+  async function deletePlanLog(request: APICtx, memberId: string): Promise<void> {
+    await request.delete(`/api/members/${memberId}/nutrition/log/${TODAY}`);
+  }
+
+  test.afterEach(async ({ request }) => {
+    const memberId = await getMemberId(request);
+    if (memberId) await deletePlanLog(request, memberId);
+    await deleteTodayFreestyleLog(request);
+  });
+
+  test('freestyle card shows "View Today\'s Log" — not "Log Today" — when plan is completed for today', async ({ page, request }) => {
+    const memberId = await getMemberId(request);
+    if (!memberId) { test.skip(); return; }
+
+    const planLog = await getTodayScheduledPlanLog(request, memberId);
+    if (!planLog) { test.skip(); return; }  // today is not scheduled in this test member's plan
+
+    await deleteTodayFreestyleLog(request);
+    await seedCompletedPlanLog(request, memberId, planLog);
+
+    await page.goto('/member/nutrition');
+    await page.waitForLoadState('networkidle');
+
+    const freestyleCard = page.getByText('Freestyle').locator('../..');
+
+    // Must show "View Today's Log" with "Plan completed for today." label
+    await expect(freestyleCard.first().getByRole('button', { name: /view today/i })).toBeVisible({ timeout: 8000 });
+    await expect(freestyleCard.first().getByText(/plan completed for today/i)).toBeVisible();
+
+    // "Log Today" must NOT be present inside the freestyle card
+    await expect(freestyleCard.first().getByRole('button', { name: /^log today$/i })).not.toBeVisible();
+  });
+
+  test('"View Today\'s Log" on freestyle card (plan done) navigates to plan mode day view', async ({ page, request }) => {
+    const memberId = await getMemberId(request);
+    if (!memberId) { test.skip(); return; }
+
+    const planLog = await getTodayScheduledPlanLog(request, memberId);
+    if (!planLog) { test.skip(); return; }
+
+    await deleteTodayFreestyleLog(request);
+    await seedCompletedPlanLog(request, memberId, planLog);
+
+    await page.goto('/member/nutrition');
+    await page.waitForLoadState('networkidle');
+
+    const freestyleCard = page.getByText('Freestyle').locator('../..');
+    await freestyleCard.first().getByRole('button', { name: /view today/i }).click();
+
+    // Must go to plan mode (readonly completed plan log)
+    await expect(page).toHaveURL(/\/member\/nutrition\/day.*mode=plan/, { timeout: 5000 });
+  });
+
+  test('freestyle log CTA takes precedence over plan-done when freestyle also exists', async ({ page, request }) => {
+    const memberId = await getMemberId(request);
+    if (!memberId) { test.skip(); return; }
+
+    const planLog = await getTodayScheduledPlanLog(request, memberId);
+    if (!planLog) { test.skip(); return; }
+
+    // Both plan (completed) and freestyle (completed) exist today
+    await seedTodayFreestyleLog(request, { dayCompleted: true, kcal: 1200 });
+    await seedCompletedPlanLog(request, memberId, planLog);
+
+    await page.goto('/member/nutrition');
+    await page.waitForLoadState('networkidle');
+
+    // todayLog (freestyle) takes precedence — freestyle "View Today's Log" is shown
+    await expect(page.getByRole('button', { name: /view today/i })).toBeVisible({ timeout: 8000 });
+
+    // "Plan completed for today." label must NOT show — superseded by freestyle CTA
+    await expect(page.getByText(/plan completed for today/i)).not.toBeVisible();
+  });
+});

@@ -88,6 +88,24 @@ export async function GET(req: Request, { params }: RouteContext): Promise<Respo
   });
 }
 
+export async function DELETE(_req: Request, { params }: RouteContext): Promise<Response> {
+  const session = await auth();
+  if (!session?.user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const role = session.user.role as UserRole;
+  const { memberId, date } = await params;
+  if (!DATE_RE.test(date)) return Response.json({ error: 'Invalid date' }, { status: 400 });
+  if (role !== 'member' || session.user.id !== memberId) {
+    return Response.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  await connectDB();
+  const logRepo = new MongoNutritionDailyLogRepository();
+  const ok = await logRepo.delete(memberId, date);
+  if (!ok) return Response.json({ error: 'Not found' }, { status: 404 });
+  return new Response(null, { status: 204 });
+}
+
 export async function PUT(req: Request, { params }: RouteContext): Promise<Response> {
   const session = await auth();
   if (!session?.user) return Response.json({ error: 'Unauthorized' }, { status: 401 });

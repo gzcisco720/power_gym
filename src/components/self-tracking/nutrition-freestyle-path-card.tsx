@@ -20,9 +20,9 @@ interface TodayLog {
 }
 
 type Props =
-  | { state: 'empty'; basePath: BasePath; todayLog?: TodayLog | null }
-  | { state: 'light'; lastFreestyle: LastFreestyle; basePath: BasePath; todayLog?: TodayLog | null }
-  | { state: 'full'; lastFreestyle: LastFreestyle; daysThisWeek: number; basePath: BasePath; todayLog?: TodayLog | null };
+  | { state: 'empty'; basePath: BasePath; todayLog?: TodayLog | null; planDoneToday?: boolean }
+  | { state: 'light'; lastFreestyle: LastFreestyle; basePath: BasePath; todayLog?: TodayLog | null; planDoneToday?: boolean }
+  | { state: 'full'; lastFreestyle: LastFreestyle; daysThisWeek: number; basePath: BasePath; todayLog?: TodayLog | null; planDoneToday?: boolean };
 
 function todayISO(): string {
   const d = new Date();
@@ -41,6 +41,8 @@ export function NutritionFreestylePathCard(props: Props) {
   const router = useRouter();
 
   const todayLog = props.todayLog;
+  const isMember = props.basePath === '/member/nutrition';
+  const planDoneToday = isMember && !!props.planDoneToday;
 
   const todayCTA =
     todayLog != null ? (
@@ -71,9 +73,22 @@ export function NutritionFreestylePathCard(props: Props) {
           <p className="text-xs text-foreground/65">Log any day without a template.</p>
         </div>
         {todayCTA ?? (
-          <Button variant="outline" type="button" onClick={() => router.push(freestyleDayPath(props.basePath))}>
-            Log Today
-          </Button>
+          planDoneToday ? (
+            <div className="mt-auto flex flex-col gap-2">
+              <div className="text-[11px] text-foreground/65">Plan completed for today.</div>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => router.push(`/member/nutrition/day?date=${todayISO()}&mode=plan`)}
+              >
+                View Today&apos;s Log
+              </Button>
+            </div>
+          ) : (
+            <Button variant="outline" type="button" onClick={() => router.push(freestyleDayPath(props.basePath))}>
+              Log Today
+            </Button>
+          )
         )}
       </div>
     );
@@ -104,14 +119,27 @@ export function NutritionFreestylePathCard(props: Props) {
         </p>
       )}
       {todayCTA ?? (
-        <Button
-          variant="outline"
-          type="button"
-          className="mt-auto"
-          onClick={() => router.push(freestyleDayPath(props.basePath))}
-        >
-          Log Today (Freestyle)
-        </Button>
+        planDoneToday ? (
+          <div className="mt-auto flex flex-col gap-2">
+            <div className="text-[11px] text-foreground/65">Plan completed for today.</div>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => router.push(`/member/nutrition/day?date=${todayISO()}&mode=plan`)}
+            >
+              View Today&apos;s Log
+            </Button>
+          </div>
+        ) : (
+          <Button
+            variant="outline"
+            type="button"
+            className="mt-auto"
+            onClick={() => router.push(freestyleDayPath(props.basePath))}
+          >
+            Log Today (Freestyle)
+          </Button>
+        )
       )}
     </div>
   );

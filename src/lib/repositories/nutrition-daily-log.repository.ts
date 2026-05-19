@@ -13,6 +13,7 @@ export interface INutritionDailyLogRepository {
   findByDate(memberId: string, date: string): Promise<INutritionDailyLog | null>;
   upsert(memberId: string, date: string, data: UpsertDailyLogData): Promise<INutritionDailyLog>;
   findByMemberMonth(memberId: string, year: number, month: number): Promise<INutritionDailyLog[]>;
+  delete(memberId: string, date: string): Promise<boolean>;
 }
 
 export class MongoNutritionDailyLogRepository implements INutritionDailyLogRepository {
@@ -31,6 +32,14 @@ export class MongoNutritionDailyLogRepository implements INutritionDailyLogRepos
       memberId: new mongoose.Types.ObjectId(memberId),
       date: { $gte: start, $lt: end },
     }).sort({ date: 1 });
+  }
+
+  async delete(memberId: string, date: string): Promise<boolean> {
+    const result = await NutritionDailyLogModel.findOneAndDelete({
+      memberId: new mongoose.Types.ObjectId(memberId),
+      date,
+    });
+    return result !== null;
   }
 
   async upsert(memberId: string, date: string, data: UpsertDailyLogData): Promise<INutritionDailyLog> {

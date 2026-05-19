@@ -66,6 +66,8 @@ export async function MemberNutritionLanding() {
         }
       : null;
 
+  const todayPlanDone = planMonthLogs.some((l) => l.date === todayISO && l.dayCompleted);
+
   // Merge freestyle + plan-based log dates for activity tracking
   const planLogDates = new Set(planMonthLogs.map((l) => l.date));
   const allMonthDates = new Set([...monthLogs.map((l) => l.date), ...planLogDates]);
@@ -131,6 +133,7 @@ export async function MemberNutritionLanding() {
                 state="empty"
                 basePath="/member/nutrition"
                 todayLog={todayFreestyleLogSummary}
+                planDoneToday={todayPlanDone}
               />
             )}
             {lastFreestyleLog && state === 'full' && (
@@ -140,6 +143,7 @@ export async function MemberNutritionLanding() {
                 daysThisWeek={countDaysThisWeek(recent)}
                 basePath="/member/nutrition"
                 todayLog={todayFreestyleLogSummary}
+                planDoneToday={todayPlanDone}
               />
             )}
             {lastFreestyleLog && state !== 'full' && (
@@ -148,6 +152,7 @@ export async function MemberNutritionLanding() {
                 lastFreestyle={toLastFreestyle(lastFreestyleLog)}
                 basePath="/member/nutrition"
                 todayLog={todayFreestyleLogSummary}
+                planDoneToday={todayPlanDone}
               />
             )}
           </PathCardItem>
