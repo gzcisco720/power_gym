@@ -11,7 +11,7 @@ interface Props {
   initialDayTypeName?: string;
 }
 
-export function SelfNutritionDayViewWithRouter({ initialDate, basePath }: Props) {
+export function SelfNutritionDayViewWithRouter({ initialDate, basePath, initialTemplateId, initialDayTypeName }: Props) {
   const router = useRouter();
   const onDateChange = useCallback(
     (d: string) => {
@@ -24,6 +24,8 @@ export function SelfNutritionDayViewWithRouter({ initialDate, basePath }: Props)
       key={initialDate}
       initialDate={initialDate}
       onDateChange={onDateChange}
+      initialTemplateId={initialTemplateId}
+      initialDayTypeName={initialDayTypeName}
     />
   );
 }
