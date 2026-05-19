@@ -52,7 +52,7 @@ const MemberInjurySchema = new Schema<IMemberInjury>(
     doctorRestrictions: { type: String, default: null },
     rehabilitationStatus: { type: String, enum: ['not_started', 'in_progress', 'cleared'], default: null },
     resolvedAt: { type: Date, default: null },
-    createdByRole: { type: String, enum: ['trainer', 'member'], default: 'trainer', required: true },
+    createdByRole: { type: String, enum: ['trainer', 'member'], default: 'trainer' },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 );
