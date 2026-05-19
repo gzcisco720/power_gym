@@ -180,9 +180,7 @@ test.describe('Member: Freestyle day view — no date navigation', () => {
     await expect(page.getByText(TODAY)).toBeVisible();
 
     // Calendar popover trigger must NOT exist
-    const calendarTrigger = page.getByRole('button').filter({ hasText: new RegExp(TODAY) });
-    // It should either not exist, or if it does appear it should be the plain text (not a button)
-    // The real check: the aria-label "Open calendar" button must not be visible
+    // The aria-label "Open calendar" button must not be visible
     await expect(page.locator('button[aria-label*="Open calendar"]')).not.toBeVisible();
   });
 

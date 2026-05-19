@@ -64,6 +64,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Member My Training (Plan) | [member-my-training-plan.md](2026-05-18/plans/member-my-training-plan.md) | Complete |
 | Nutrition Enhancement (Design) | [nutrition-enhancement-design.md](2026-05-19/plans/nutrition-enhancement-design.md) | Approved |
 | Nutrition Enhancement (Plan) | [nutrition-enhancement-plan.md](2026-05-19/plans/nutrition-enhancement-plan.md) | Complete |
+| Member Nutrition UX Redesign (Plan) | [member-nutrition-ux-redesign-plan.md](2026-05-19/plans/member-nutrition-ux-redesign-plan.md) | Complete |
 
 ---
 
