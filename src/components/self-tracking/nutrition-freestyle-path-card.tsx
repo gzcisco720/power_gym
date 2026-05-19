@@ -14,10 +14,15 @@ interface LastFreestyle {
   fat: number;
 }
 
+interface TodayLog {
+  kcal: number;
+  dayCompleted: boolean;
+}
+
 type Props =
-  | { state: 'empty'; basePath: BasePath }
-  | { state: 'light'; lastFreestyle: LastFreestyle; basePath: BasePath }
-  | { state: 'full'; lastFreestyle: LastFreestyle; daysThisWeek: number; basePath: BasePath };
+  | { state: 'empty'; basePath: BasePath; todayLog?: TodayLog | null }
+  | { state: 'light'; lastFreestyle: LastFreestyle; basePath: BasePath; todayLog?: TodayLog | null }
+  | { state: 'full'; lastFreestyle: LastFreestyle; daysThisWeek: number; basePath: BasePath; todayLog?: TodayLog | null };
 
 function todayISO(): string {
   const d = new Date();
@@ -34,6 +39,26 @@ function freestyleDayPath(basePath: BasePath): string {
 export function NutritionFreestylePathCard(props: Props) {
   const router = useRouter();
 
+  const isMember = props.basePath === '/member/nutrition';
+  const todayLog = props.todayLog;
+
+  const memberTodayCTA =
+    isMember && todayLog != null ? (
+      <div className="mt-auto flex flex-col gap-2">
+        <div className="text-[11px] text-foreground/65">
+          Today · {todayLog.kcal.toLocaleString()} kcal
+          {todayLog.dayCompleted && ' · completed'}
+        </div>
+        <Button
+          variant="outline"
+          type="button"
+          onClick={() => router.push(freestyleDayPath(props.basePath))}
+        >
+          {todayLog.dayCompleted ? "View Today's Log" : "Continue Today's Log"}
+        </Button>
+      </div>
+    ) : null;
+
   if (props.state === 'empty') {
     return (
       <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 flex flex-col">
@@ -45,9 +70,11 @@ export function NutritionFreestylePathCard(props: Props) {
           <p className="text-sm text-foreground/65">No freestyle logs yet.</p>
           <p className="text-xs text-foreground/65">Log any day without a template.</p>
         </div>
-        <Button variant="outline" type="button" onClick={() => router.push(freestyleDayPath(props.basePath))}>
-          Log Today
-        </Button>
+        {memberTodayCTA ?? (
+          <Button variant="outline" type="button" onClick={() => router.push(freestyleDayPath(props.basePath))}>
+            Log Today
+          </Button>
+        )}
       </div>
     );
   }
@@ -76,14 +103,16 @@ export function NutritionFreestylePathCard(props: Props) {
           {props.daysThisWeek}× this week
         </p>
       )}
-      <Button
-        variant="outline"
-        type="button"
-        className="mt-auto"
-        onClick={() => router.push(freestyleDayPath(props.basePath))}
-      >
-        Log Today (Freestyle)
-      </Button>
+      {memberTodayCTA ?? (
+        <Button
+          variant="outline"
+          type="button"
+          className="mt-auto"
+          onClick={() => router.push(freestyleDayPath(props.basePath))}
+        >
+          Log Today (Freestyle)
+        </Button>
+      )}
     </div>
   );
 }

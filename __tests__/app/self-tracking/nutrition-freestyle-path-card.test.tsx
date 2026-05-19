@@ -30,3 +30,51 @@ it('shows weekly frequency in full state', () => {
   );
   expect(screen.getByText(/5× this week/i)).toBeInTheDocument();
 });
+
+it('shows Log Today when member has no log today (todayLog=null)', () => {
+  render(
+    <NutritionFreestylePathCard
+      state="empty"
+      basePath="/member/nutrition"
+      todayLog={null}
+    />,
+  );
+  expect(screen.getByRole('button', { name: /log today/i })).toBeInTheDocument();
+});
+
+it('shows Continue Today log button when member has incomplete log today', () => {
+  render(
+    <NutritionFreestylePathCard
+      state="empty"
+      basePath="/member/nutrition"
+      todayLog={{ kcal: 800, dayCompleted: false }}
+    />,
+  );
+  expect(screen.getByRole('button', { name: /continue today/i })).toBeInTheDocument();
+  expect(screen.getByText(/800/)).toBeInTheDocument();
+});
+
+it('shows View Today log button when member has completed log today', () => {
+  render(
+    <NutritionFreestylePathCard
+      state="empty"
+      basePath="/member/nutrition"
+      todayLog={{ kcal: 2100, dayCompleted: true }}
+    />,
+  );
+  expect(screen.getByRole('button', { name: /view today/i })).toBeInTheDocument();
+  // "Log Today" must NOT appear — prevents re-logging
+  expect(screen.queryByRole('button', { name: /^log today$/i })).not.toBeInTheDocument();
+});
+
+it('owner/trainer state=full is unaffected when no todayLog prop', () => {
+  render(
+    <NutritionFreestylePathCard
+      state="full"
+      lastFreestyle={{ dateLabel: 'Mon', kcal: 2087, protein: 162, carbs: 228, fat: 58 }}
+      daysThisWeek={5}
+      basePath="/owner/my-nutrition"
+    />,
+  );
+  expect(screen.getByText(/5× this week/i)).toBeInTheDocument();
+});
