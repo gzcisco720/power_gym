@@ -50,6 +50,8 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Logo Crop (Design) | [logo-crop-design.md](2026-05-18/plans/logo-crop-design.md) | Approved |
 | Member My Training (Design) | [member-my-training-design.md](2026-05-18/plans/member-my-training-design.md) | Approved |
 | Nutrition Enhancement (Design) | [nutrition-enhancement-design.md](2026-05-19/plans/nutrition-enhancement-design.md) | Approved |
+| Member Health Profile (Design) | [member-health-profile-design.md](2026-05-19/plans/member-health-profile-design.md) | Approved |
+| Health Profile Module A — Data Layer | [health-module-a-data-layer.md](2026-05-19/plans/health-module-a-data-layer.md) | In Progress |
 
 ---
 
