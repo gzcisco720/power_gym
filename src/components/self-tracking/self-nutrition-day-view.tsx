@@ -16,6 +16,8 @@ import type { IDailyLogMeal } from '@/lib/db/models/nutrition-daily-log.model';
 import type { ISelfMeal, ISelfMealItem } from '@/lib/db/models/self-nutrition-log.model';
 import type { MacroSnapshot } from '@/lib/nutrition/macros';
 import type { PickedFood } from '@/components/nutrition/food-picker';
+import { NutritionPlanCompareDialog } from '@/components/nutrition/nutrition-plan-compare-dialog';
+import type { PlanDayType } from '@/components/nutrition/nutrition-plan-compare-dialog';
 
 const OPTIONAL_MACRO_KEYS = [
   'fiber', 'sugar', 'salt', 'saturated', 'polyunsaturated', 'monounsaturated',
@@ -42,6 +44,9 @@ interface Props {
   initialDate: string;
   readOnly?: boolean;
   onDateChange?: (date: string) => void;
+  initialTemplateId?: string;
+  initialDayTypeName?: string;
+  planDayTypes?: PlanDayType[];
 }
 
 function aggregate(meals: ISelfMeal[]): MacroSnapshot {
@@ -93,7 +98,7 @@ function pickedFoodToItem(picked: PickedFood): ISelfMealItem {
   return item;
 }
 
-export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChange }: Props) {
+export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChange, initialTemplateId, initialDayTypeName, planDayTypes }: Props) {
   // initialDate is intentionally used only as the initial value for date state.
   // The parent supplies a `key` prop to force remount when URL date changes.
   const [date, setDateInternal] = useState(initialDate);
@@ -107,6 +112,7 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
     carbsG: number;
     fatG: number;
   } | null>(null);
+  const [compareOpen, setCompareOpen] = useState(false);
 
   function setDate(next: string): void {
     setDateInternal(next);
@@ -120,23 +126,54 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
       const res = await fetch(`/api/me/nutrition-logs/${date}`);
       if (cancelled) return;
       const data = res.ok ? ((await res.json()) as SelfNutritionLog | null) : null;
-      setLog(
-        data ?? {
+
+      if (cancelled) return;
+
+      if (data) {
+        setLog(data);
+        return;
+      }
+
+      // No existing log — check if we should init from template
+      if (initialTemplateId && initialDayTypeName) {
+        const tplRes = await fetch(`/api/nutrition-templates/${initialTemplateId}`);
+        if (!cancelled && tplRes.ok) {
+          const tpl = (await tplRes.json()) as {
+            dayTypes: Array<{ name: string; meals: ISelfMeal[] }>;
+          };
+          const dayType = tpl.dayTypes.find((dt) => dt.name === initialDayTypeName);
+          if (dayType) {
+            setLog({
+              date,
+              sourceTemplateId: initialTemplateId,
+              sourceTemplateDayTypeName: initialDayTypeName,
+              dayLabel: initialDayTypeName,
+              meals: dayType.meals.map((m) => ({ ...m, completed: false })),
+              dayCompleted: false,
+            });
+            return;
+          }
+        }
+      }
+
+      // Fallback to freestyle defaults
+      if (!cancelled) {
+        setLog({
           date,
           sourceTemplateId: null,
           sourceTemplateDayTypeName: null,
           dayLabel: 'Freestyle',
           meals: DEFAULT_MEALS,
           dayCompleted: false,
-        },
-      );
+        });
+      }
     }
 
     void load();
     return () => {
       cancelled = true;
     };
-  }, [date]);
+  }, [date, initialTemplateId, initialDayTypeName]);
 
   const macros = useMemo(
     () => (log ? aggregate(log.meals) : { kcal: 0, protein: 0, carbs: 0, fat: 0 }),
@@ -342,10 +379,28 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
               proteinG={celebrationMacros.proteinG}
               carbsG={celebrationMacros.carbsG}
               fatG={celebrationMacros.fatG}
-              onComplete={() => setCelebrationMacros(null)}
+              onComplete={() => {
+                setCelebrationMacros(null);
+                if (planDayTypes && planDayTypes.length > 0) {
+                  setCompareOpen(true);
+                }
+              }}
             />
           </div>
         </div>
+      )}
+
+      {planDayTypes && planDayTypes.length > 0 && log && (
+        <NutritionPlanCompareDialog
+          open={compareOpen}
+          onOpenChange={setCompareOpen}
+          date={date}
+          loggedKcal={Math.round(macros.kcal)}
+          loggedProtein={Math.round(macros.protein)}
+          loggedCarbs={Math.round(macros.carbs)}
+          loggedFat={Math.round(macros.fat)}
+          planDayTypes={planDayTypes}
+        />
       )}
     </div>
   );
