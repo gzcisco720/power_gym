@@ -12,9 +12,9 @@ import { MiniNutritionCalendar } from './mini-nutrition-calendar';
 import { NutritionCalendarHeaderTrigger } from './nutrition-calendar-header-trigger';
 import { PathCardsGrid, PathCardItem } from './path-cards-grid';
 import { PageHeader } from '@/components/shared/page-header';
+import { computeDayTypeTargets } from '@/lib/nutrition/compute-day-type-targets';
 import type { ISelfNutritionLog } from '@/lib/db/models/self-nutrition-log.model';
 import type { IMemberNutritionPlan } from '@/lib/db/models/member-nutrition-plan.model';
-import type { IDayType } from '@/lib/db/models/nutrition-template.model';
 
 export async function MemberNutritionLanding() {
   const session = await auth();
@@ -114,19 +114,6 @@ export async function MemberNutritionLanding() {
       </div>
     </div>
   );
-}
-
-function computeDayTypeTargets(dt: IDayType) {
-  let kcal = 0, protein = 0, carbs = 0, fat = 0;
-  for (const m of dt.meals) {
-    for (const i of m.items) {
-      kcal += i.kcal;
-      protein += i.protein;
-      carbs += i.carbs;
-      fat += i.fat;
-    }
-  }
-  return { targetKcal: Math.round(kcal), targetProtein: Math.round(protein), targetCarbs: Math.round(carbs), targetFat: Math.round(fat) };
 }
 
 function toPlanCard(plan: IMemberNutritionPlan, trainerName: string): MemberNutritionPlan {

@@ -4,31 +4,12 @@ import { connectDB } from '@/lib/db/connect';
 import { MongoMemberNutritionPlanRepository } from '@/lib/repositories/member-nutrition-plan.repository';
 import { MemberNutritionDayClient } from './_components/member-nutrition-day-client';
 import type { PlanDayType } from '@/components/nutrition/nutrition-plan-compare-dialog';
-import type { IDayType } from '@/lib/db/models/nutrition-template.model';
+import { computeDayTypeTargets } from '@/lib/nutrition/compute-day-type-targets';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 interface PageProps {
   searchParams: Promise<{ date?: string; mode?: string; dayTypeName?: string }>;
-}
-
-function computeTargets(dt: IDayType): PlanDayType {
-  let kcal = 0, protein = 0, carbs = 0, fat = 0;
-  for (const meal of dt.meals) {
-    for (const item of meal.items) {
-      kcal += item.kcal;
-      protein += item.protein;
-      carbs += item.carbs;
-      fat += item.fat;
-    }
-  }
-  return {
-    name: dt.name,
-    targetKcal: Math.round(kcal),
-    targetProtein: Math.round(protein),
-    targetCarbs: Math.round(carbs),
-    targetFat: Math.round(fat),
-  };
 }
 
 export default async function MemberNutritionDayPage({ searchParams }: PageProps) {
@@ -44,7 +25,9 @@ export default async function MemberNutritionDayPage({ searchParams }: PageProps
   const planRepo = new MongoMemberNutritionPlanRepository();
   const plan = await planRepo.findActive(session.user.id);
 
-  const planDayTypes: PlanDayType[] = plan ? plan.dayTypes.map(computeTargets) : [];
+  const planDayTypes: PlanDayType[] = plan
+    ? plan.dayTypes.map((dt) => ({ name: dt.name, ...computeDayTypeTargets(dt) }))
+    : [];
 
   return (
     <MemberNutritionDayClient

@@ -11,6 +11,7 @@ import { MiniNutritionCalendar } from './mini-nutrition-calendar';
 import { NutritionCalendarHeaderTrigger } from './nutrition-calendar-header-trigger';
 import { PathCardsGrid, PathCardItem } from './path-cards-grid';
 import { PageHeader } from '@/components/shared/page-header';
+import { computeDayTypeTargets } from '@/lib/nutrition/compute-day-type-targets';
 import type { ISelfNutritionLog } from '@/lib/db/models/self-nutrition-log.model';
 import type { INutritionTemplate } from '@/lib/db/models/nutrition-template.model';
 
@@ -141,28 +142,10 @@ function toCardTemplates(templates: INutritionTemplate[]): NutritionTemplate[] {
   return templates.map((t) => ({
     _id: t._id.toString(),
     name: t.name,
-    dayTypes: t.dayTypes.map((dt) => {
-      const totals = dt.meals.reduce(
-        (acc, m) =>
-          m.items.reduce(
-            (a, i) => ({
-              kcal: a.kcal + i.kcal,
-              protein: a.protein + i.protein,
-              carbs: a.carbs + i.carbs,
-              fat: a.fat + i.fat,
-            }),
-            acc,
-          ),
-        { kcal: 0, protein: 0, carbs: 0, fat: 0 },
-      );
-      return {
-        name: dt.name,
-        targetKcal: Math.round(totals.kcal),
-        targetProtein: Math.round(totals.protein),
-        targetCarbs: Math.round(totals.carbs),
-        targetFat: Math.round(totals.fat),
-      };
-    }),
+    dayTypes: t.dayTypes.map((dt) => ({
+      name: dt.name,
+      ...computeDayTypeTargets(dt),
+    })),
   }));
 }
 
