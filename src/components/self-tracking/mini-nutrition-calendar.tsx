@@ -18,7 +18,9 @@ interface Props { basePath: BasePath; }
 function toEntries(logs: RawLog[]): NutritionDayEntry[] {
   return logs.map((l) => ({
     date: l.date,
-    kcal: l.meals.reduce((s, m) => s + m.items.reduce((si, i) => si + i.kcal, 0), 0),
+    kcal: l.meals
+      .filter((m) => m.completed)
+      .reduce((s, m) => s + m.items.reduce((si, i) => si + i.kcal, 0), 0),
     dayLabel: l.dayLabel,
     dayCompleted: l.dayCompleted,
   }));
