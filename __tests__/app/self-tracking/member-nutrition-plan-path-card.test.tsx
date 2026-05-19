@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react';
+import { useRouter } from 'next/navigation';
 import { MemberNutritionPlanPathCard } from '@/components/self-tracking/member-nutrition-plan-path-card';
 
-jest.mock('next/navigation', () => ({ useRouter: () => ({ push: jest.fn() }) }));
+jest.mock('next/navigation', () => ({ useRouter: jest.fn(() => ({ push: jest.fn() })) }));
 
 const plan = {
   _id: 'plan1',
@@ -33,7 +34,7 @@ it('shows all day types with Log buttons', () => {
 
 it('Log button navigates with correct params', () => {
   const pushMock = jest.fn();
-  jest.spyOn(require('next/navigation'), 'useRouter').mockReturnValue({ push: pushMock });
+  jest.mocked(useRouter).mockReturnValue({ push: pushMock } as ReturnType<typeof useRouter>);
   render(<MemberNutritionPlanPathCard plan={plan} />);
   screen.getAllByRole('button', { name: /log/i })[0].click();
   expect(pushMock).toHaveBeenCalledWith(expect.stringContaining('mode=plan'));
