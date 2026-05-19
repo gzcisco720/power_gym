@@ -107,7 +107,7 @@ test.describe('Member: My Health page', () => {
     }
   });
 
-  test('end medication via confirm dialog', async ({ page, request }) => {
+  test('end medication via confirm dialog', async ({ page }) => {
     await page.goto('/member/health');
     await expect(page.getByText('E2E End Medication')).toBeVisible();
 
