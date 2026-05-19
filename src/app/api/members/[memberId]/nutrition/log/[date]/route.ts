@@ -58,7 +58,7 @@ export async function GET(req: Request, { params }: RouteContext): Promise<Respo
   const plan = await planRepo.findActive(memberId);
   if (!plan) return Response.json(null);
 
-  // NEW: honour explicit dayTypeName param (used when member picks a day type from landing)
+  // NEW: honour explicit dayTypeName param (used when caller picks an explicit day type (e.g. from landing page))
   const url = new URL(req.url);
   const explicitDayType = url.searchParams.get('dayTypeName');
 
@@ -66,7 +66,12 @@ export async function GET(req: Request, { params }: RouteContext): Promise<Respo
   const dayTypeName = explicitDayType ?? resolveDayType(plan.schedule, date, startDateISO);
   if (!dayTypeName) return Response.json(null);
   const dayType = plan.dayTypes.find((d) => d.name === dayTypeName);
-  if (!dayType) return Response.json(null);
+  if (!dayType) {
+    if (explicitDayType) {
+      return Response.json({ error: 'Day type not found' }, { status: 400 });
+    }
+    return Response.json(null);
+  }
 
   return Response.json({
     memberId,

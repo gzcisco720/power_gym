@@ -83,6 +83,25 @@ describe('GET /api/members/[memberId]/nutrition/log/[date]', () => {
     expect(data.meals[0].name).toBe('Lunch');
   });
 
+  it('returns 400 when explicit dayTypeName matches no plan day type', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    mockLogRepo.findByDate.mockResolvedValue(null);
+    mockPlanRepo.findActive.mockResolvedValue({
+      _id: 'np1',
+      assignedAt: new Date('2026-05-01'),
+      schedule: { weeklyPattern: [], calendarOverrides: [], iterate: true },
+      dayTypes: [{ name: 'Training Day', meals: [] }],
+    });
+    const { GET } = await import('@/app/api/members/[memberId]/nutrition/log/[date]/route');
+    const res = await GET(
+      new Request('http://localhost/?dayTypeName=NonExistent'),
+      makeParams('m1', '2026-05-06'),
+    );
+    expect(res.status).toBe(400);
+    const data = (await res.json()) as { error: string };
+    expect(data.error).toBe('Day type not found');
+  });
+
   it('returns null log when no plan and no log', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
     mockLogRepo.findByDate.mockResolvedValue(null);
