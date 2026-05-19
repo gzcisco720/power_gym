@@ -7,13 +7,15 @@ import { SelfNutritionDayView } from '@/components/self-tracking/self-nutrition-
 interface Props {
   initialDate: string;
   basePath: '/owner/my-nutrition' | '/trainer/my-nutrition';
+  initialTemplateId?: string;
+  initialDayTypeName?: string;
 }
 
 export function SelfNutritionDayViewWithRouter({ initialDate, basePath }: Props) {
   const router = useRouter();
   const onDateChange = useCallback(
     (d: string) => {
-      router.push(`${basePath}?date=${d}`, { scroll: false });
+      router.push(`${basePath}/day?date=${d}`, { scroll: false });
     },
     [router, basePath],
   );
