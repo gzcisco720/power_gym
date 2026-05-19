@@ -12,6 +12,7 @@ import { BodyTestModel } from '../src/lib/db/models/body-test.model';
 import { InviteTokenModel } from '../src/lib/db/models/invite-token.model';
 import { ScheduledSessionModel } from '../src/lib/db/models/scheduled-session.model';
 import { MemberInjuryModel } from '../src/lib/db/models/member-injury.model';
+import { MemberMedicationModel } from '../src/lib/db/models/member-medication.model';
 import { EquipmentModel } from '../src/lib/db/models/equipment.model';
 import { CheckInConfigModel } from '../src/lib/db/models/check-in-config.model';
 import { CheckInModel } from '../src/lib/db/models/check-in.model';
@@ -655,6 +656,7 @@ export async function seed(): Promise<void> {
     trainerNotes: null,
     memberNotes: null,
     affectedMovements: 'Avoid squats, lunges',
+    createdByRole: 'trainer',
   });
 
   // dedicated to resolve test — resolved by that spec only
@@ -666,6 +668,27 @@ export async function seed(): Promise<void> {
     trainerNotes: null,
     memberNotes: null,
     affectedMovements: null,
+    createdByRole: 'trainer',
+  });
+
+  // ── Member Medications (for E2E) ──────────────────────────────────────────
+  await MemberMedicationModel.create({
+    memberId: member._id,
+    name: 'Metoprolol 25mg',
+    purpose: 'High blood pressure',
+    duration: 'long_term',
+    startDate: new Date('2026-01-01'),
+    status: 'active',
+  });
+
+  // dedicated to end-medication test — ended by that spec only
+  await MemberMedicationModel.create({
+    memberId: member._id,
+    name: 'E2E End Medication',
+    purpose: 'Test medication',
+    duration: 'short_term',
+    startDate: new Date('2026-04-01'),
+    status: 'active',
   });
 
   // ── Equipment ─────────────────────────────────────────────────────────────
