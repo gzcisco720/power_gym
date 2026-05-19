@@ -41,6 +41,7 @@ export function MemberNutritionDayClient({ memberId, initialDate, mode, forceDay
       initialDate={initialDate}
       forceDayType={forceDayType}
       planDayTypes={planDayTypes}
+      onDateChange={onDateChange}
     />
   );
 }

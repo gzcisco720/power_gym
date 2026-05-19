@@ -28,6 +28,7 @@ interface Props {
   initialDate: string;
   forceDayType?: string;
   planDayTypes?: PlanDayType[];
+  onDateChange?: (date: string) => void;
 }
 
 const OPTIONAL_MACRO_KEYS = [
@@ -62,8 +63,13 @@ function shiftDate(iso: string, days: number): string {
 
 const todayISO = (): string => new Date().toISOString().slice(0, 10);
 
-export function DailyNutritionView({ memberId, initialDate, forceDayType, planDayTypes }: Props) {
+export function DailyNutritionView({ memberId, initialDate, forceDayType, planDayTypes, onDateChange }: Props) {
   const [date, setDate] = useState(initialDate);
+
+  function handleDateChange(next: string): void {
+    setDate(next);
+    onDateChange?.(next);
+  }
   const [log, setLog] = useState<DailyLog | null>(null);
   const [loading, setLoading] = useState(true);
   const [addingForMealIdx, setAddingForMealIdx] = useState<number | null>(null);
@@ -170,7 +176,7 @@ export function DailyNutritionView({ memberId, initialDate, forceDayType, planDa
     return (
       <Card className="p-6 space-y-3 text-center text-muted-foreground">
         <p>Your trainer hasn&apos;t scheduled today yet.</p>
-        <DateNav date={date} onChange={setDate} />
+        <DateNav date={date} onChange={handleDateChange} />
       </Card>
     );
   }
@@ -185,7 +191,7 @@ export function DailyNutritionView({ memberId, initialDate, forceDayType, planDa
           <div className="text-base font-bold text-foreground">{log.dayTypeName}</div>
           <div className="text-xs text-foreground/65 mt-0.5">{log.date}</div>
         </div>
-        <DateNav date={date} onChange={setDate} />
+        <DateNav date={date} onChange={handleDateChange} />
       </div>
 
       <div className="flex-1 px-4 sm:px-8 py-5 pb-32 max-w-2xl mx-auto w-full space-y-4">
