@@ -47,6 +47,7 @@ interface Props {
   initialTemplateId?: string;
   initialDayTypeName?: string;
   planDayTypes?: PlanDayType[];
+  noDateNav?: boolean;
 }
 
 function aggregate(meals: ISelfMeal[]): MacroSnapshot {
@@ -98,7 +99,7 @@ function pickedFoodToItem(picked: PickedFood): ISelfMealItem {
   return item;
 }
 
-export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChange, initialTemplateId, initialDayTypeName, planDayTypes }: Props) {
+export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChange, initialTemplateId, initialDayTypeName, planDayTypes, noDateNav = false }: Props) {
   // initialDate is intentionally used only as the initial value for date state.
   // The parent supplies a `key` prop to force remount when URL date changes.
   const [date, setDateInternal] = useState(initialDate);
@@ -236,36 +237,42 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
   return (
     <div className="flex flex-col min-h-screen">
       <div className="sticky top-0 z-10 bg-background flex items-center justify-between px-4 sm:px-8 py-5 border-b border-foreground/10">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setDate(shiftDate(date, -1))}
-          disabled={readOnly}
-        >
-          ← {shiftDate(date, -1)}
-        </Button>
-        <NutritionCalendarPopover
-          onSelect={(d) => setDate(d)}
-          selectedDate={date}
-          trigger={
-            <button
-              className="inline-flex items-center gap-1 text-sm font-semibold hover:underline"
+        {noDateNav ? (
+          <div className="w-full text-center text-sm font-semibold">{date}</div>
+        ) : (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setDate(shiftDate(date, -1))}
               disabled={readOnly}
-              aria-label={`Open calendar (${date})`}
             >
-              {date}
-              <ChevronDown className="h-3 w-3 text-foreground/65" />
-            </button>
-          }
-        />
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setDate(nextDate)}
-          disabled={readOnly || !canGoNext}
-        >
-          {nextDate} →
-        </Button>
+              ← {shiftDate(date, -1)}
+            </Button>
+            <NutritionCalendarPopover
+              onSelect={(d) => setDate(d)}
+              selectedDate={date}
+              trigger={
+                <button
+                  className="inline-flex items-center gap-1 text-sm font-semibold hover:underline"
+                  disabled={readOnly}
+                  aria-label={`Open calendar (${date})`}
+                >
+                  {date}
+                  <ChevronDown className="h-3 w-3 text-foreground/65" />
+                </button>
+              }
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setDate(nextDate)}
+              disabled={readOnly || !canGoNext}
+            >
+              {nextDate} →
+            </Button>
+          </>
+        )}
       </div>
 
       <div className="flex-1 px-4 sm:px-8 py-5 pb-32 max-w-2xl mx-auto w-full space-y-4">
