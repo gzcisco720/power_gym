@@ -1,6 +1,10 @@
 import { connectDB } from '@/lib/db/connect';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
-import { MemberGrowthChartClient } from './member-growth-chart-client';
+import dynamic from 'next/dynamic';
+const MemberGrowthChartClient = dynamic(
+  () => import('./member-growth-chart-client').then((m) => m.MemberGrowthChartClient),
+  { ssr: false },
+);
 
 export async function MemberGrowthChart() {
   await connectDB();

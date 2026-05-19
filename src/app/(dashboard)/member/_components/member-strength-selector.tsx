@@ -1,7 +1,11 @@
 import { auth } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
 import { MongoWorkoutSessionRepository } from '@/lib/repositories/workout-session.repository';
-import { MemberStrengthSelectorClient } from './member-strength-selector-client';
+import dynamic from 'next/dynamic';
+const MemberStrengthSelectorClient = dynamic(
+  () => import('./member-strength-selector-client').then((m) => m.MemberStrengthSelectorClient),
+  { ssr: false },
+);
 
 export async function MemberStrengthSelector() {
   const session = await auth();

@@ -5,7 +5,11 @@ import { MongoPlanTemplateRepository } from '@/lib/repositories/plan-template.re
 import { MongoPersonalBestRepository } from '@/lib/repositories/personal-best.repository';
 import { MongoScheduledSessionRepository } from '@/lib/repositories/scheduled-session.repository';
 import { StatCard } from '@/components/shared/stat-card';
-import { TrainerSessionsChartClient } from './trainer-sessions-chart-client';
+import dynamic from 'next/dynamic';
+const TrainerSessionsChartClient = dynamic(
+  () => import('./trainer-sessions-chart-client').then((m) => m.TrainerSessionsChartClient),
+  { ssr: false },
+);
 import { TrainerWeeklyScheduleClient } from './trainer-weekly-schedule-client';
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;

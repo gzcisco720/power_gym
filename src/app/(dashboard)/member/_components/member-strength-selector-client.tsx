@@ -85,7 +85,7 @@ export function MemberStrengthSelectorClient({ exercises, memberId }: Props) {
           </p>
         ) : (
           <div className="h-52">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={208}>
               <LineChart data={chartData}>
                 <XAxis
                   dataKey="date"
