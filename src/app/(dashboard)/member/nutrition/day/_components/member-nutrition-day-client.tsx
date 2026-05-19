@@ -18,11 +18,10 @@ export function MemberNutritionDayClient({ memberId, initialDate, mode, forceDay
   const router = useRouter();
   const onDateChange = useCallback(
     (d: string) => {
-      // Navigate without locking mode so the server resolves the right view for that date.
-      // (Preserving mode would show an empty freestyle view on days that only have plan logs.)
-      router.push(`/member/nutrition/day?date=${d}`, { scroll: false });
+      const params = new URLSearchParams({ date: d, mode });
+      router.push(`/member/nutrition/day?${params.toString()}`, { scroll: false });
     },
-    [router],
+    [router, mode],
   );
 
   if (mode === 'free') {

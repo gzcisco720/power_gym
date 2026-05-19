@@ -46,7 +46,7 @@ function planLogToEntry(l: RawPlanLog): NutritionDayEntry {
 function mergeEntries(self: NutritionDayEntry[], plan: NutritionDayEntry[]): NutritionDayEntry[] {
   const map = new Map<string, NutritionDayEntry>();
   for (const e of plan) map.set(e.date, e);
-  // Freestyle logs override plan logs for same date
+  // Freestyle logs override plan logs for same date (more specific user action)
   for (const e of self) map.set(e.date, e);
   return Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date));
 }
@@ -57,8 +57,6 @@ export function MiniNutritionCalendar({ basePath, memberId }: Props) {
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [entries, setEntries] = useState<NutritionDayEntry[]>([]);
-  // Track which dates have freestyle logs so we can navigate to the right mode
-  const [freestyleDates, setFreestyleDates] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -74,7 +72,6 @@ export function MiniNutritionCalendar({ basePath, memberId }: Props) {
       }
 
       if (!cancelled) {
-        setFreestyleDates(new Set(selfData.map((l) => l.date)));
         setEntries(mergeEntries(selfData.map(selfLogToEntry), planData.map(planLogToEntry)));
       }
     }
@@ -84,10 +81,8 @@ export function MiniNutritionCalendar({ basePath, memberId }: Props) {
   }, [year, month, memberId]);
 
   function dayPath(date: string): string {
-    if (basePath !== '/member/nutrition') return `${basePath}/day?date=${date}`;
-    // For member: go to freestyle if a freestyle log exists for that date, otherwise plan
-    const mode = freestyleDates.has(date) ? 'free' : 'plan';
-    return `/member/nutrition/day?date=${date}&mode=${mode}`;
+    if (basePath === '/member/nutrition') return `/member/nutrition/day?date=${date}`;
+    return `${basePath}/day?date=${date}`;
   }
 
   return (
