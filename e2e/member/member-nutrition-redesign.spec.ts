@@ -99,6 +99,10 @@ test.describe('Member: Plan card — schedule-aware', () => {
     await logTodayBtn.click();
     await expect(page.getByText(/breakfast|lunch|dinner/i).first()).toBeVisible({ timeout: 8000 });
   });
+
+  test.afterEach(async ({ request }) => {
+    await deleteTodayFreestyleLog(request);
+  });
 });
 
 // ── Freestyle card: today only, no double-log ──────────────────────────────────
@@ -141,6 +145,10 @@ test.describe('Member: Freestyle card — today only, no double-log', () => {
     await expect(page.getByRole('button', { name: /view today/i })).toBeVisible({ timeout: 6000 });
     // Continue must not appear when already completed
     await expect(page.getByRole('button', { name: /continue today/i })).not.toBeVisible();
+    // "Log Today" must NOT appear inside the freestyle card — prevents double-logging
+    // (the plan card may still show its own "Log Today" independently)
+    const freestyleCard = page.getByText('Freestyle').locator('../..');
+    await expect(freestyleCard.first().getByRole('button', { name: /^log today$/i })).not.toBeVisible();
   });
 
   test('"View Today\'s Log" navigates to freestyle day view', async ({ page, request }) => {
@@ -229,6 +237,31 @@ test.describe('Member: Freestyle day view — no date navigation', () => {
     await page.getByRole('button', { name: /^cancel$/i }).click();
     await expect(page.getByRole('dialog')).not.toBeVisible();
     await expect(page.getByRole('button', { name: /^mark day complete$/i })).toBeVisible();
+  });
+
+  test('Complete Day flow: confirming marks day complete', async ({ page, request }) => {
+    await seedTodayFreestyleLog(request, { dayCompleted: false });
+    await page.goto(`/member/nutrition/day?date=${TODAY}&mode=free`);
+    await page.waitForTimeout(1500);
+
+    await page.getByRole('button', { name: /mark day complete/i }).click();
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 3000 });
+
+    // Click the submit/confirm button (not Cancel)
+    const confirmBtn = page.getByRole('button', { name: /mark all & submit|submit/i }).first();
+    await confirmBtn.click();
+
+    // A "Day Complete 🎉" celebration dialog may appear — dismiss it to reveal the underlying state
+    const celebrationDialog = page.getByRole('dialog', { name: /day complete/i });
+    const doneBtn = celebrationDialog.getByRole('button', { name: /^done$/i });
+    if (await doneBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await doneBtn.click();
+      await expect(celebrationDialog).not.toBeVisible({ timeout: 3000 });
+    }
+
+    // Day should now show as completed
+    await expect(page.getByRole('button', { name: /day completed/i })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('button', { name: /day completed/i })).toBeDisabled();
   });
 });
 
