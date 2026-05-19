@@ -33,6 +33,21 @@ export async function MyNutritionLanding({ basePath }: { basePath: BasePath }) {
     tplRepo.findByCreator(userId),
   ]);
 
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const todayFreestyleLog = await logRepo.findByDate(userId, todayISO);
+  const todayFreestyleLogSummary =
+    todayFreestyleLog != null
+      ? {
+          kcal: Math.round(
+            todayFreestyleLog.meals.reduce(
+              (s, m) => s + m.items.reduce((si, i) => si + i.kcal, 0),
+              0,
+            ),
+          ),
+          dayCompleted: todayFreestyleLog.dayCompleted,
+        }
+      : null;
+
   const completedCount = recent.filter((l) => l.dayCompleted).length;
   const hasUsedTemplate = recent.some((l) => l.sourceTemplateId !== null);
   const state = detectLandingState({ completedSessionCount: completedCount, hasUsedTemplate });
@@ -87,13 +102,20 @@ export async function MyNutritionLanding({ basePath }: { basePath: BasePath }) {
             />
           </PathCardItem>
           <PathCardItem>
-            {!lastFreestyleLog && <NutritionFreestylePathCard state="empty" basePath={basePath} />}
+            {!lastFreestyleLog && (
+              <NutritionFreestylePathCard
+                state="empty"
+                basePath={basePath}
+                todayLog={todayFreestyleLogSummary}
+              />
+            )}
             {lastFreestyleLog && state === 'full' && (
               <NutritionFreestylePathCard
                 state="full"
                 lastFreestyle={toLastFreestyle(lastFreestyleLog)}
                 daysThisWeek={countDaysThisWeek(recent)}
                 basePath={basePath}
+                todayLog={todayFreestyleLogSummary}
               />
             )}
             {lastFreestyleLog && state !== 'full' && (
@@ -101,6 +123,7 @@ export async function MyNutritionLanding({ basePath }: { basePath: BasePath }) {
                 state="light"
                 lastFreestyle={toLastFreestyle(lastFreestyleLog)}
                 basePath={basePath}
+                todayLog={todayFreestyleLogSummary}
               />
             )}
           </PathCardItem>
