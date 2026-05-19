@@ -123,4 +123,24 @@ describe('MongoSelfNutritionLogRepository', () => {
     const ok = await repo.delete(USER_A, '2026-05-08');
     expect(ok).toBe(false);
   });
+
+  it('findRecent returns N most recent logs sorted descending', async () => {
+    const logs = [
+      { _id: 'log5', date: '2026-05-05' },
+      { _id: 'log4', date: '2026-05-04' },
+      { _id: 'log3', date: '2026-05-03' },
+    ];
+    const limitFn = jest.fn().mockResolvedValue(logs);
+    const sortFn = jest.fn().mockReturnValue({ limit: limitFn });
+    mockModel.find.mockReturnValue({ sort: sortFn });
+
+    const result = await repo.findRecent(USER_A, 3);
+
+    expect(mockModel.find).toHaveBeenCalledWith({
+      userId: new mongoose.Types.ObjectId(USER_A),
+    });
+    expect(sortFn).toHaveBeenCalledWith({ date: -1 });
+    expect(limitFn).toHaveBeenCalledWith(3);
+    expect(result).toEqual(logs);
+  });
 });

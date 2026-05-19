@@ -14,6 +14,7 @@ export interface ISelfNutritionLogRepository {
   findByDate(userId: string, date: string): Promise<ISelfNutritionLog | null>;
   upsertByDate(userId: string, date: string, data: UpsertSelfNutritionLogData): Promise<ISelfNutritionLog>;
   findByUserMonth(userId: string, year: number, month: number): Promise<ISelfNutritionLog[]>;
+  findRecent(userId: string, limit: number): Promise<ISelfNutritionLog[]>;
   delete(userId: string, date: string): Promise<boolean>;
 }
 
@@ -54,6 +55,13 @@ export class MongoSelfNutritionLogRepository implements ISelfNutritionLogReposit
       userId: oid(userId),
       date: { $gte: startStr, $lt: endExclusive },
     }).sort({ date: 1 });
+  }
+
+  async findRecent(userId: string, limit: number): Promise<ISelfNutritionLog[]> {
+    return SelfNutritionLogModel
+      .find({ userId: oid(userId) })
+      .sort({ date: -1 })
+      .limit(limit);
   }
 
   async delete(userId: string, date: string): Promise<boolean> {
