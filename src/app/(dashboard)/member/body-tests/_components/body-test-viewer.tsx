@@ -7,11 +7,7 @@ import { StatCard } from '@/components/shared/stat-card';
 import { EmptyState } from '@/components/shared/empty-state';
 import { SectionHeader } from '@/components/shared/section-header';
 import { BodyTestImprovementAnimation } from '@/components/animations/body-test-improvement';
-import dynamic from 'next/dynamic';
-const BodyTestHistoryChart = dynamic(
-  () => import('./body-test-history-chart-client').then((m) => m.BodyTestHistoryChart),
-  { ssr: false },
-);
+import { BodyTestHistoryChart } from './body-test-history-chart-client';
 
 interface BodyTestRecord {
   _id: string;

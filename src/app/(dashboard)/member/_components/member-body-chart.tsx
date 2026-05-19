@@ -1,11 +1,7 @@
 import { auth } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
 import { MongoBodyTestRepository } from '@/lib/repositories/body-test.repository';
-import dynamic from 'next/dynamic';
-const MemberBodyChartClient = dynamic(
-  () => import('./member-body-chart-client').then((m) => m.MemberBodyChartClient),
-  { ssr: false },
-);
+import { MemberBodyChartClient } from './member-body-chart-client';
 
 export async function MemberBodyChart() {
   const session = await auth();

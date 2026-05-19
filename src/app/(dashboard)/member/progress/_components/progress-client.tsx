@@ -1,14 +1,7 @@
 'use client';
 
 import { MemberHeatmapClient } from '@/app/(dashboard)/member/_components/member-heatmap-client';
-import dynamic from 'next/dynamic';
-const MemberStrengthSelectorClient = dynamic(
-  () =>
-    import('@/app/(dashboard)/member/_components/member-strength-selector-client').then(
-      (m) => m.MemberStrengthSelectorClient,
-    ),
-  { ssr: false },
-);
+import { MemberStrengthSelectorClient } from '@/app/(dashboard)/member/_components/member-strength-selector-client';
 
 interface ProgressClientProps {
   heatmapData: { date: string }[];
