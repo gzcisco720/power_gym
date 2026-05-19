@@ -1,20 +1,5 @@
-import { auth } from '@/lib/auth/auth';
-import { redirect } from 'next/navigation';
-import { SelfNutritionDayViewWithRouter } from './_components/day-view-with-router';
+import { MyNutritionLanding } from '@/components/self-tracking/my-nutrition-landing';
 
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-
-interface PageProps {
-  searchParams: Promise<{ date?: string }>;
-}
-
-export default async function TrainerMyNutritionPage({ searchParams }: PageProps) {
-  const session = await auth();
-  if (!session?.user || session.user.role !== 'trainer') redirect('/login');
-
-  const { date: rawDate } = await searchParams;
-  const today = new Date().toISOString().slice(0, 10);
-  const date = rawDate && DATE_RE.test(rawDate) && rawDate <= today ? rawDate : today;
-
-  return <SelfNutritionDayViewWithRouter initialDate={date} basePath="/trainer/my-nutrition" />;
+export default function TrainerMyNutritionPage() {
+  return <MyNutritionLanding basePath="/trainer/my-nutrition" />;
 }
