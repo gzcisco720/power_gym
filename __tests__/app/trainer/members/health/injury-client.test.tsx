@@ -11,7 +11,18 @@ const mockInjury = {
   trainerNotes: 'Ice daily',
   memberNotes: null,
   status: 'active' as const,
-  createdAt: '2024-01-01T00:00:00.000Z',
+  recordedAt: '2024-01-01T00:00:00.000Z',
+  resolvedAt: null,
+  injuryType: null,
+  bodyPart: null,
+  bodySide: null,
+  painAtRest: null,
+  painDuringExercise: null,
+  mechanism: null,
+  aggravatingFactors: null,
+  relievingFactors: null,
+  doctorRestrictions: null,
+  rehabilitationStatus: null,
 };
 
 describe('InjuryClient loading states', () => {

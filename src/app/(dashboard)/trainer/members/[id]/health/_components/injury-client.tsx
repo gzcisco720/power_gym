@@ -9,10 +9,11 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { SectionHeader } from '@/components/shared/section-header';
 import { Trash2, Check, RotateCcw, Pencil, Loader2 } from 'lucide-react';
+import { InjurySheet, EMPTY_INJURY_FORM, injuryToForm } from './injury-sheet';
+import type { InjuryFormData } from './injury-sheet';
 import type { SerializedInjury } from '../page';
 
 interface Props {
@@ -21,19 +22,41 @@ interface Props {
   role: 'owner' | 'trainer' | 'member';
 }
 
-interface AddForm {
-  title: string;
-  affectedMovements: string;
-  trainerNotes: string;
-}
+const INJURY_TYPE_LABELS: Record<string, string> = {
+  acute: 'Acute',
+  chronic: 'Chronic',
+  post_surgery: 'Post-surgery',
+};
 
-const EMPTY_FORM: AddForm = { title: '', affectedMovements: '', trainerNotes: '' };
+const BODY_PART_LABELS: Record<string, string> = {
+  knee: 'Knee',
+  shoulder: 'Shoulder',
+  lower_back: 'Lower Back',
+  hip: 'Hip',
+  ankle: 'Ankle',
+  wrist: 'Wrist',
+  neck: 'Neck',
+  other: 'Other',
+};
+
+const BODY_SIDE_LABELS: Record<string, string> = {
+  left: 'Left',
+  right: 'Right',
+  bilateral: 'Bilateral',
+};
+
+const REHAB_LABELS: Record<string, string> = {
+  not_started: 'Not started',
+  in_progress: 'In progress',
+  cleared: 'Cleared',
+};
 
 export function InjuryClient({ memberId, initialInjuries, role }: Props) {
   const router = useRouter();
   const [injuries, setInjuries] = useState(initialInjuries);
-  const [addOpen, setAddOpen] = useState(false);
-  const [form, setForm] = useState<AddForm>(EMPTY_FORM);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [editingInjury, setEditingInjury] = useState<SerializedInjury | null>(null);
+  const [sheetForm, setSheetForm] = useState<InjuryFormData>(EMPTY_INJURY_FORM);
   const [saving, setSaving] = useState(false);
   const [changingStatusId, setChangingStatusId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -51,29 +74,69 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
     [injuries],
   );
 
-  async function handleAdd() {
-    if (!form.title.trim()) return;
+  function openAdd() {
+    setEditingInjury(null);
+    setSheetForm(EMPTY_INJURY_FORM);
+    setSheetOpen(true);
+  }
+
+  function openEdit(injury: SerializedInjury) {
+    setEditingInjury(injury);
+    setSheetForm(injuryToForm(injury));
+    setSheetOpen(true);
+  }
+
+  function handleFormChange(field: keyof InjuryFormData, value: string) {
+    setSheetForm((f) => ({ ...f, [field]: value }));
+  }
+
+  async function handleSave() {
+    const data = sheetForm;
+    if (!data.title.trim()) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/members/${memberId}/injuries`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: form.title.trim(),
-          affectedMovements: form.affectedMovements.trim() || null,
-          trainerNotes: form.trainerNotes.trim() || null,
-        }),
-      });
-      if (!res.ok) {
-        const data = (await res.json()) as { error?: string };
-        toast.error(data.error ?? 'Failed to add');
-        return;
+      const payload = {
+        title: data.title.trim(),
+        injuryType: data.injuryType || null,
+        bodyPart: data.bodyPart || null,
+        bodySide: data.bodySide || null,
+        affectedMovements: data.affectedMovements.trim() || null,
+        doctorRestrictions: data.doctorRestrictions.trim() || null,
+        rehabilitationStatus: data.rehabilitationStatus || null,
+        trainerNotes: data.trainerNotes.trim() || null,
+      };
+
+      if (editingInjury) {
+        const res = await fetch(`/api/members/${memberId}/injuries/${editingInjury._id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const d = (await res.json()) as { error?: string };
+          toast.error(d.error ?? 'Failed to update');
+          return;
+        }
+        const updated = (await res.json()) as SerializedInjury;
+        setInjuries((prev) => prev.map((i) => (i._id === editingInjury._id ? updated : i)));
+        toast.success('Injury updated');
+      } else {
+        const res = await fetch(`/api/members/${memberId}/injuries`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const d = (await res.json()) as { error?: string };
+          toast.error(d.error ?? 'Failed to add');
+          return;
+        }
+        const created = (await res.json()) as SerializedInjury;
+        setInjuries((prev) => [created, ...prev]);
+        toast.success('Injury record added');
       }
-      const created = (await res.json()) as SerializedInjury;
-      setInjuries((prev) => [created, ...prev]);
-      setForm(EMPTY_FORM);
-      setAddOpen(false);
-      toast.success('Injury record added');
+
+      setSheetOpen(false);
       router.refresh();
     } finally {
       setSaving(false);
@@ -133,6 +196,12 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
 
   function renderInjury(injury: SerializedInjury, isResolved: boolean) {
     const isEditingNotes = editingNotesId === injury._id;
+    const locationParts = [
+      injury.bodyPart ? BODY_PART_LABELS[injury.bodyPart] : null,
+      injury.bodySide ? BODY_SIDE_LABELS[injury.bodySide] : null,
+    ].filter(Boolean);
+    const hasPain = injury.painAtRest !== null || injury.painDuringExercise !== null;
+
     return (
       <li
         key={injury._id}
@@ -140,19 +209,74 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-foreground">{injury.title}</p>
-            {injury.affectedMovements && (
-              <p className="mt-0.5 text-xs text-foreground/65">{injury.affectedMovements}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm font-semibold text-foreground">{injury.title}</p>
+              {isResolved ? (
+                <span className="bg-muted text-foreground/40 text-[10px] rounded-full px-2 py-0.5 shrink-0">
+                  Resolved{injury.resolvedAt
+                    ? ` ${new Date(injury.resolvedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
+                    : ''}
+                </span>
+              ) : (
+                <span className="bg-red-950/60 text-red-400 text-[10px] rounded-full px-2 py-0.5 shrink-0">
+                  Active
+                </span>
+              )}
+              {injury.injuryType && (
+                <span className="text-[10px] bg-muted rounded-full px-2 py-0.5 text-foreground/65 shrink-0">
+                  {INJURY_TYPE_LABELS[injury.injuryType]}
+                </span>
+              )}
+              {injury.rehabilitationStatus && (
+                <span className="text-[10px] bg-muted rounded-full px-2 py-0.5 text-foreground/65 shrink-0">
+                  Rehab: {REHAB_LABELS[injury.rehabilitationStatus]}
+                </span>
+              )}
+            </div>
+
+            {(locationParts.length > 0 || injury.affectedMovements) && (
+              <p className="mt-0.5 text-xs text-foreground/65">
+                {locationParts.length > 0 && locationParts.join(' · ')}
+                {locationParts.length > 0 && injury.affectedMovements && ' · '}
+                {injury.affectedMovements}
+              </p>
             )}
+
+            {hasPain && (
+              <p className="mt-0.5 text-xs text-foreground/65">
+                <span className="font-medium text-foreground/80">Pain: </span>
+                {injury.painAtRest !== null && `${injury.painAtRest}/10 rest`}
+                {injury.painAtRest !== null && injury.painDuringExercise !== null && ' · '}
+                {injury.painDuringExercise !== null && `${injury.painDuringExercise}/10 exercise`}
+              </p>
+            )}
+
             {injury.trainerNotes && (
-              <p className="mt-1.5 text-xs text-foreground/65">
-                <span className="font-medium text-foreground/80">Notes: </span>
+              <p className="mt-1 text-xs text-foreground/65">
+                <span className="font-medium text-foreground/80">Trainer notes: </span>
                 {injury.trainerNotes}
               </p>
             )}
+
+            {role !== 'member' && injury.memberNotes && (
+              <p className="mt-1 text-xs text-foreground/65">
+                <span className="font-medium text-foreground/80">Member notes: </span>
+                {injury.memberNotes}
+              </p>
+            )}
           </div>
+
           {canEdit && (
             <div className="flex shrink-0 items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Edit"
+                onClick={() => openEdit(injury)}
+                className="text-foreground/65 hover:text-foreground"
+              >
+                <Pencil className="size-3.5" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon-sm"
@@ -220,12 +344,6 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
             )}
           </div>
         )}
-        {role !== 'member' && injury.memberNotes && (
-          <p className="mt-1.5 text-xs text-foreground/65">
-            <span className="font-medium text-foreground/80">Member notes: </span>
-            {injury.memberNotes}
-          </p>
-        )}
       </li>
     );
   }
@@ -236,59 +354,14 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
         <div className="flex items-center justify-between">
           <SectionHeader title="Active Injuries" />
           {canEdit && (
-            <Dialog open={addOpen} onOpenChange={setAddOpen}>
-              <DialogTrigger
-                render={
-                  <Button variant="outline" size="sm" className="text-xs font-medium">
-                    + Add
-                  </Button>
-                }
-              />
-              <DialogContent className="sm:max-w-md">
-                <DialogTitle>New Injury Record</DialogTitle>
-                <div className="space-y-3 mt-2">
-                  <FieldRow label="Title" required>
-                    <Input
-                      value={form.title}
-                      onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                      placeholder="e.g. Left knee ligament strain"
-                    />
-                  </FieldRow>
-                  <FieldRow label="Affected Movements">
-                    <Input
-                      value={form.affectedMovements}
-                      onChange={(e) => setForm((f) => ({ ...f, affectedMovements: e.target.value }))}
-                      placeholder="e.g. Avoid squats, jumping"
-                    />
-                  </FieldRow>
-                  <FieldRow label="Notes">
-                    <Input
-                      value={form.trainerNotes}
-                      onChange={(e) => setForm((f) => ({ ...f, trainerNotes: e.target.value }))}
-                      placeholder="Additional notes"
-                    />
-                  </FieldRow>
-                  <div className="flex justify-end gap-2 pt-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => { setAddOpen(false); setForm(EMPTY_FORM); }}
-                      className="text-xs"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleAdd}
-                      disabled={saving || !form.title.trim()}
-                      size="sm"
-                      className="text-xs font-semibold"
-                    >
-                      {saving ? 'Saving…' : 'Save'}
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs font-medium"
+              onClick={openAdd}
+            >
+              + Add
+            </Button>
           )}
         </div>
 
@@ -309,6 +382,16 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
           <ul className="mt-3 space-y-2">{resolved.map((i) => renderInjury(i, true))}</ul>
         )}
       </section>
+
+      <InjurySheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        editing={editingInjury}
+        form={sheetForm}
+        onFormChange={handleFormChange}
+        onSave={handleSave}
+        saving={saving}
+      />
 
       <Dialog open={deleteId !== null} onOpenChange={(o) => !o && setDeleteId(null)}>
         <DialogContent className="sm:max-w-sm">
@@ -335,26 +418,6 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
-function FieldRow({
-  label,
-  required,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-1">
-      <label className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold block">
-        {label}
-        {required && <span className="ml-1 text-destructive">*</span>}
-      </label>
-      {children}
     </div>
   );
 }
