@@ -16,12 +16,11 @@ interface Props {
 
 export function MemberNutritionDayClient({ memberId, initialDate, mode, forceDayType, planDayTypes }: Props) {
   const router = useRouter();
-  const onDateChange = useCallback(
+  const onPlanDateChange = useCallback(
     (d: string) => {
-      const params = new URLSearchParams({ date: d, mode });
-      router.push(`/member/nutrition/day?${params.toString()}`, { scroll: false });
+      router.push(`/member/nutrition/day?date=${d}&mode=plan`, { scroll: false });
     },
-    [router, mode],
+    [router],
   );
 
   if (mode === 'free') {
@@ -29,7 +28,7 @@ export function MemberNutritionDayClient({ memberId, initialDate, mode, forceDay
       <SelfNutritionDayView
         key={initialDate}
         initialDate={initialDate}
-        onDateChange={onDateChange}
+        noDateNav
         planDayTypes={planDayTypes}
       />
     );
@@ -41,7 +40,7 @@ export function MemberNutritionDayClient({ memberId, initialDate, mode, forceDay
       initialDate={initialDate}
       forceDayType={forceDayType}
       planDayTypes={planDayTypes}
-      onDateChange={onDateChange}
+      onDateChange={onPlanDateChange}
     />
   );
 }
