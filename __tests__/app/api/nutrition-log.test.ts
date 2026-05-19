@@ -56,6 +56,33 @@ describe('GET /api/members/[memberId]/nutrition/log/[date]', () => {
     expect(data.meals[0].completed).toBe(false);
   });
 
+  it('GET uses explicit dayTypeName param instead of schedule when provided', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
+    mockLogRepo.findByDate.mockResolvedValue(null);
+    mockPlanRepo.findActive.mockResolvedValue({
+      _id: 'np1',
+      assignedAt: new Date('2026-05-01'),
+      schedule: {
+        weeklyPattern: [{ dayOfWeek: 3, dayTypeName: 'Rest Day' }],
+        calendarOverrides: [],
+        iterate: true,
+      },
+      dayTypes: [
+        { name: 'Training Day', meals: [{ name: 'Lunch', order: 1, items: [] }] },
+        { name: 'Rest Day', meals: [{ name: 'Snack', order: 1, items: [] }] },
+      ],
+    });
+    const { GET } = await import('@/app/api/members/[memberId]/nutrition/log/[date]/route');
+    const res = await GET(
+      new Request('http://localhost/?dayTypeName=Training+Day'),
+      makeParams('m1', '2026-05-06'),
+    );
+    const data = (await res.json()) as { dayTypeName: string; meals: Array<{ name: string }> };
+    expect(res.status).toBe(200);
+    expect(data.dayTypeName).toBe('Training Day');
+    expect(data.meals[0].name).toBe('Lunch');
+  });
+
   it('returns null log when no plan and no log', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
     mockLogRepo.findByDate.mockResolvedValue(null);

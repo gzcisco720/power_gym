@@ -39,7 +39,7 @@ async function checkRead(session: { user: { id: string; role: UserRole } }, memb
   return null;
 }
 
-export async function GET(_req: Request, { params }: RouteContext): Promise<Response> {
+export async function GET(req: Request, { params }: RouteContext): Promise<Response> {
   const session = await auth();
   if (!session?.user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -58,8 +58,12 @@ export async function GET(_req: Request, { params }: RouteContext): Promise<Resp
   const plan = await planRepo.findActive(memberId);
   if (!plan) return Response.json(null);
 
+  // NEW: honour explicit dayTypeName param (used when member picks a day type from landing)
+  const url = new URL(req.url);
+  const explicitDayType = url.searchParams.get('dayTypeName');
+
   const startDateISO = plan.assignedAt.toISOString().slice(0, 10);
-  const dayTypeName = resolveDayType(plan.schedule, date, startDateISO);
+  const dayTypeName = explicitDayType ?? resolveDayType(plan.schedule, date, startDateISO);
   if (!dayTypeName) return Response.json(null);
   const dayType = plan.dayTypes.find((d) => d.name === dayTypeName);
   if (!dayType) return Response.json(null);
