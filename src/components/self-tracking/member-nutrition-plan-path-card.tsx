@@ -18,6 +18,7 @@ export interface MemberNutritionPlan {
 
 interface Props {
   plan: MemberNutritionPlan | null;
+  todayDayTypeName: string | null;
   basePath?: '/member/nutrition';
 }
 
@@ -26,7 +27,7 @@ function todayISO(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export function MemberNutritionPlanPathCard({ plan, basePath = '/member/nutrition' }: Props) {
+export function MemberNutritionPlanPathCard({ plan, todayDayTypeName, basePath = '/member/nutrition' }: Props) {
   const router = useRouter();
 
   if (!plan) {
@@ -44,6 +45,10 @@ export function MemberNutritionPlanPathCard({ plan, basePath = '/member/nutritio
     );
   }
 
+  const todayDayType = todayDayTypeName
+    ? plan.dayTypes.find((dt) => dt.name === todayDayTypeName) ?? null
+    : null;
+
   return (
     <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 flex flex-col">
       <span className="text-[10px] uppercase tracking-[1.6px] font-bold text-primary-light mb-3">
@@ -55,34 +60,54 @@ export function MemberNutritionPlanPathCard({ plan, basePath = '/member/nutritio
           Assigned by {plan.assignedByName} · {plan.dayTypes.length} day type{plan.dayTypes.length === 1 ? '' : 's'}
         </div>
       </div>
-      <div className="flex flex-col gap-1">
-        {plan.dayTypes.map((dt) => (
-          <div
-            key={dt.name}
-            className="flex items-center justify-between px-2 py-2 rounded-lg hover:bg-foreground/5 transition-colors"
-          >
-            <div className="min-w-0 flex-1">
-              <div className="text-[12px] font-medium">{dt.name}</div>
-              <div className="text-[10px] text-foreground/65">
-                {dt.targetKcal} kcal · P {dt.targetProtein}g · C {dt.targetCarbs}g · F {dt.targetFat}g
-              </div>
+
+      {todayDayType ? (
+        <div className="flex flex-col gap-2">
+          <div className="rounded-lg ring-1 ring-foreground/10 px-3 py-2.5 bg-foreground/[0.02]">
+            <div className="text-[12px] font-semibold text-foreground">{todayDayType.name}</div>
+            <div className="text-[10px] text-foreground/65 mt-0.5">
+              {todayDayType.targetKcal} kcal · P {todayDayType.targetProtein}g · C {todayDayType.targetCarbs}g · F {todayDayType.targetFat}g
             </div>
-            <Button
-              size="sm"
-              variant="ghost"
-              type="button"
-              onClick={() =>
-                router.push(
-                  `${basePath}/day?date=${todayISO()}&mode=plan&dayTypeName=${encodeURIComponent(dt.name)}`,
-                )
-              }
-              className="h-6 px-2 text-[11px] shrink-0 text-primary-light hover:bg-primary/10"
-            >
-              Log
-            </Button>
           </div>
-        ))}
-      </div>
+          <Button
+            type="button"
+            onClick={() => router.push(`${basePath}/day?date=${todayISO()}&mode=plan`)}
+            className="w-full"
+          >
+            Log Today
+          </Button>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-1">
+          <p className="text-[11px] text-foreground/65 mb-1">No plan for today. Pick a day:</p>
+          {plan.dayTypes.map((dt) => (
+            <div
+              key={dt.name}
+              className="flex items-center justify-between px-2 py-2 rounded-lg hover:bg-foreground/5 transition-colors"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="text-[12px] font-medium">{dt.name}</div>
+                <div className="text-[10px] text-foreground/65">
+                  {dt.targetKcal} kcal · P {dt.targetProtein}g · C {dt.targetCarbs}g · F {dt.targetFat}g
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                type="button"
+                onClick={() =>
+                  router.push(
+                    `${basePath}/day?date=${todayISO()}&mode=plan&dayTypeName=${encodeURIComponent(dt.name)}`,
+                  )
+                }
+                className="h-6 px-2 text-[11px] shrink-0 text-primary-light hover:bg-primary/10"
+              >
+                Log
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
