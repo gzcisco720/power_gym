@@ -54,6 +54,20 @@ it('shows Continue Today log button when member has incomplete log today', () =>
   expect(screen.getByText(/800/)).toBeInTheDocument();
 });
 
+it('shows Continue Today log in light state when member has incomplete log today', () => {
+  render(
+    <NutritionFreestylePathCard
+      state="light"
+      lastFreestyle={{ dateLabel: 'Mon', kcal: 2087, protein: 162, carbs: 228, fat: 58 }}
+      basePath="/member/nutrition"
+      todayLog={{ kcal: 800, dayCompleted: false }}
+    />,
+  );
+  expect(screen.getByRole('button', { name: /continue today/i })).toBeInTheDocument();
+  // Default "Log Today (Freestyle)" button must NOT appear
+  expect(screen.queryByRole('button', { name: /log today \(freestyle\)/i })).not.toBeInTheDocument();
+});
+
 it('shows View Today log button when member has completed log today', () => {
   render(
     <NutritionFreestylePathCard
