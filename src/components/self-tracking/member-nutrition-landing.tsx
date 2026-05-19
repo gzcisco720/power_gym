@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
 import { redirect } from 'next/navigation';
 import { MongoSelfNutritionLogRepository } from '@/lib/repositories/self-nutrition-log.repository';
+import { MongoNutritionDailyLogRepository } from '@/lib/repositories/nutrition-daily-log.repository';
 import { MongoMemberNutritionPlanRepository } from '@/lib/repositories/member-nutrition-plan.repository';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { detectLandingState } from '@/lib/self-tracking/landing-state';
@@ -23,13 +24,15 @@ export async function MemberNutritionLanding() {
 
   await connectDB();
   const logRepo = new MongoSelfNutritionLogRepository();
+  const planLogRepo = new MongoNutritionDailyLogRepository();
   const planRepo = new MongoMemberNutritionPlanRepository();
   const userRepo = new MongoUserRepository();
 
   const now = new Date();
-  const [monthLogs, recent, activePlan] = await Promise.all([
+  const [monthLogs, recent, planMonthLogs, activePlan] = await Promise.all([
     logRepo.findByUserMonth(userId, now.getFullYear(), now.getMonth() + 1),
     logRepo.findRecent(userId, 14),
+    planLogRepo.findByMemberMonth(userId, now.getFullYear(), now.getMonth() + 1),
     planRepo.findActive(userId),
   ]);
 
@@ -39,16 +42,24 @@ export async function MemberNutritionLanding() {
     if (trainer?.name) trainerName = trainer.name;
   }
 
-  const completedCount = recent.filter((l) => l.dayCompleted).length;
-  const hasUsedTemplate = recent.some((l) => l.sourceTemplateId !== null);
-  const state = detectLandingState({ completedSessionCount: completedCount, hasUsedTemplate });
+  // Merge freestyle + plan-based log dates for activity tracking
+  const planLogDates = new Set(planMonthLogs.map((l) => l.date));
+  const allMonthDates = new Set([...monthLogs.map((l) => l.date), ...planLogDates]);
+  const totalDaysThisMonth = allMonthDates.size;
+
+  const freestyleCompleted = recent.filter((l) => l.dayCompleted).length;
+  // Count plan-based completed days in the last 14 days for state detection
+  const planRecentDates = new Set(planMonthLogs.filter((l) => l.dayCompleted).map((l) => l.date));
+  const totalCompletedCount = freestyleCompleted + planRecentDates.size;
+  const hasUsedTemplate = recent.some((l) => l.sourceTemplateId !== null) || planMonthLogs.length > 0;
+  const state = detectLandingState({ completedSessionCount: totalCompletedCount, hasUsedTemplate });
 
   const last14Days: boolean[] = [];
   for (let i = 13; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    last14Days.push(recent.some((l) => l.date === iso));
+    last14Days.push(recent.some((l) => l.date === iso) || planLogDates.has(iso));
   }
 
   const avgKcal = avgKcalFromLogs(monthLogs);
@@ -56,9 +67,9 @@ export async function MemberNutritionLanding() {
 
   const headerSubtitle =
     state === 'full'
-      ? `${monthLogs.length} days in ${now.toLocaleString('en-US', { month: 'long' })}`
+      ? `${totalDaysThisMonth} days in ${now.toLocaleString('en-US', { month: 'long' })}`
       : state === 'light'
-        ? `${completedCount} days logged`
+        ? `${totalCompletedCount} days logged`
         : 'Track your daily nutrition here.';
 
   const plan = activePlan ? toPlanCard(activePlan, trainerName) : null;
@@ -76,13 +87,13 @@ export async function MemberNutritionLanding() {
           <NutritionActivityStrip
             state="full"
             last14Days={last14Days}
-            daysThisMonth={monthLogs.length}
+            daysThisMonth={totalDaysThisMonth}
             avgKcal={avgKcal}
             avgProteinG={avgProtein}
           />
         )}
         {state === 'light' && (
-          <NutritionActivityStrip state="light" last14Days={last14Days} daysLogged={completedCount} />
+          <NutritionActivityStrip state="light" last14Days={last14Days} daysLogged={totalCompletedCount} />
         )}
         {state === 'empty' && <NutritionActivityStrip state="empty" />}
 
@@ -110,7 +121,7 @@ export async function MemberNutritionLanding() {
           </PathCardItem>
         </PathCardsGrid>
 
-        <MiniNutritionCalendar basePath="/member/nutrition" />
+        <MiniNutritionCalendar basePath="/member/nutrition" memberId={userId} />
       </div>
     </div>
   );

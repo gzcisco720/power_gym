@@ -6,27 +6,52 @@ import { SelfNutritionCalendar, type NutritionDayEntry } from './self-nutrition-
 
 type BasePath = '/owner/my-nutrition' | '/trainer/my-nutrition' | '/member/nutrition';
 
-interface RawLog {
+interface RawSelfLog {
   date: string;
   dayLabel: string;
   dayCompleted: boolean;
   meals: { completed: boolean; items: { kcal: number }[] }[];
 }
 
-interface Props { basePath: BasePath; }
-
-function toEntries(logs: RawLog[]): NutritionDayEntry[] {
-  return logs.map((l) => ({
-    date: l.date,
-    kcal: l.meals
-      .filter((m) => m.completed)
-      .reduce((s, m) => s + m.items.reduce((si, i) => si + i.kcal, 0), 0),
-    dayLabel: l.dayLabel,
-    dayCompleted: l.dayCompleted,
-  }));
+interface RawPlanLog {
+  date: string;
+  dayTypeName: string;
+  dayCompleted: boolean;
+  meals: { completed: boolean; items: { kcal: number }[] }[];
 }
 
-export function MiniNutritionCalendar({ basePath }: Props) {
+interface Props {
+  basePath: BasePath;
+  memberId?: string; // member only — triggers fetching plan-based logs too
+}
+
+function selfLogToEntry(l: RawSelfLog): NutritionDayEntry {
+  return {
+    date: l.date,
+    kcal: l.meals.filter((m) => m.completed).reduce((s, m) => s + m.items.reduce((si, i) => si + i.kcal, 0), 0),
+    dayLabel: l.dayLabel,
+    dayCompleted: l.dayCompleted,
+  };
+}
+
+function planLogToEntry(l: RawPlanLog): NutritionDayEntry {
+  return {
+    date: l.date,
+    kcal: l.meals.filter((m) => m.completed).reduce((s, m) => s + m.items.reduce((si, i) => si + i.kcal, 0), 0),
+    dayLabel: l.dayTypeName,
+    dayCompleted: l.dayCompleted,
+  };
+}
+
+function mergeEntries(self: NutritionDayEntry[], plan: NutritionDayEntry[]): NutritionDayEntry[] {
+  const map = new Map<string, NutritionDayEntry>();
+  for (const e of plan) map.set(e.date, e);
+  // Freestyle logs override plan logs for same date (more specific user action)
+  for (const e of self) map.set(e.date, e);
+  return Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+export function MiniNutritionCalendar({ basePath, memberId }: Props) {
   const router = useRouter();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -35,12 +60,25 @@ export function MiniNutritionCalendar({ basePath }: Props) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`/api/me/nutrition-logs?year=${year}&month=${month}`)
-      .then((r) => r.json())
-      .then((data: RawLog[]) => { if (!cancelled) setEntries(toEntries(data)); })
-      .catch(() => {});
+
+    async function load() {
+      const selfRes = await fetch(`/api/me/nutrition-logs?year=${year}&month=${month}`);
+      const selfData: RawSelfLog[] = selfRes.ok ? await selfRes.json() : [];
+
+      let planData: RawPlanLog[] = [];
+      if (memberId) {
+        const planRes = await fetch(`/api/me/nutrition-daily-logs?year=${year}&month=${month}`);
+        planData = planRes.ok ? await planRes.json() : [];
+      }
+
+      if (!cancelled) {
+        setEntries(mergeEntries(selfData.map(selfLogToEntry), planData.map(planLogToEntry)));
+      }
+    }
+
+    void load();
     return () => { cancelled = true; };
-  }, [year, month]);
+  }, [year, month, memberId]);
 
   function dayPath(date: string): string {
     if (basePath === '/member/nutrition') return `/member/nutrition/day?date=${date}`;
