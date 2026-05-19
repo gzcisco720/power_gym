@@ -152,26 +152,33 @@ interface Props {
 }
 ```
 
+Props: `plan`, `todayDayTypeName: string | null`, `basePath`.
+
 Behaviour:
 - Always expanded (no accordion — single plan).
-- Shows plan name + "Assigned by [trainer]" + day type list.
-- Each day type row: name + macro targets + "Log" button.
-- "Log" → navigates to `/member/nutrition/day?date=today&mode=plan&dayType=Y`.
+- Shows plan name + "Assigned by [trainer]" + day type info.
+- **Schedule-aware**: when `todayDayTypeName` is set (server resolved from `ISchedule`), shows a single "Log Today" button with the scheduled day type. URL: `mode=plan` only (no `dayTypeName` — server resolves from schedule).
+- **No schedule today**: shows "No plan for today. Pick a day:" fallback list of all day types with individual "Log" buttons. URL: `mode=plan&dayTypeName=Y`.
 - No plan → empty state: "No nutrition plan assigned yet. Ask your trainer to assign one."
 
 ### `NutritionFreestylePathCard` (client component)
 Location: `src/components/self-tracking/nutrition-freestyle-path-card.tsx`
 
-Props: recent freestyle log summary (last date, kcal, macros) + basePath.
+Props: recent freestyle log summary (last date, kcal, macros) + `basePath` + `todayLog?` + `planDoneToday?`.
 
 States: `empty` | `light` | `full` — same pattern as `FreestylePathCard`.
 
-"Log Today" → navigates to `${basePath}/day?date=today` (owner/trainer) or `/member/nutrition/day?date=today&mode=free` (member).
+**Today CTA priority (all roles):**
+1. `todayLog != null` → show "Continue Today's Log" (incomplete) or "View Today's Log" (completed) button.
+2. `planDoneToday=true` (member only) → show "Plan completed for today." label + "View Today's Log" button (→ `mode=plan` readonly). Triggered when today's `NutritionDailyLog` is completed but no `SelfNutritionLog` exists for today.
+3. Default → "Log Today" button.
+
+Owner/trainer URL includes `&noNav=1` (suppresses date navigation). Member URL uses `&mode=free`.
 
 ### `MiniNutritionCalendar` (client component)
 Location: `src/components/self-tracking/mini-nutrition-calendar.tsx`
 
-Mirrors `MiniWorkoutCalendar`. Fetches `SelfNutritionLog` for current month. Displays kcal dot per logged day. Clicking a date navigates to that day's view.
+Mirrors `MiniWorkoutCalendar`. For member, fetches both `SelfNutritionLog` (freestyle) and `NutritionDailyLog` (plan) for current month via `/api/me/nutrition-logs` and `/api/me/nutrition-daily-logs`. Displays dot per logged day. Clicking a date navigates using `freestyleDates` set to choose the correct mode (`mode=free` for freestyle days, `mode=plan` otherwise).
 
 ### `NutritionPlanCompareDialog` (client component)
 Location: `src/components/nutrition/nutrition-plan-compare-dialog.tsx`
@@ -210,7 +217,8 @@ Behaviour:
 ### `SelfNutritionDayView`
 - Accept optional `initialTemplateId?: string` and `initialDayTypeName?: string` props.
 - When no existing log and both props present: fetch the template's day type from `/api/nutrition-templates/[id]`, use its meals as the initial state (with `sourceTemplateId` and `sourceTemplateDayTypeName` set).
-- No other changes.
+- Accept `noDateNav?: boolean` — when `true`, hides ← [date] → navigation row and renders a plain centered date label. Used for member freestyle mode and owner/trainer when entering via the card (`noNav=1` URL param).
+- Accept `planDayTypes?: PlanDayType[]` — when non-empty, triggers `NutritionPlanCompareDialog` after the celebration animation `onComplete` callback.
 
 ### `DailyNutritionView` (member plan-based day view)
 - Add `DayCompleteConfirmDialog` — same pattern as `SelfNutritionDayView`.
