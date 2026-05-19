@@ -29,6 +29,8 @@ export type SerializedInjury = {
   relievingFactors: string | null;
   doctorRestrictions: string | null;
   rehabilitationStatus: 'not_started' | 'in_progress' | 'cleared' | null;
+  seenDoctor: boolean;
+  createdByRole: 'trainer' | 'member';
 };
 
 export type SerializedMedication = {
@@ -75,6 +77,8 @@ function serializeInjury(injury: IMemberInjury): SerializedInjury {
     relievingFactors: injury.relievingFactors,
     doctorRestrictions: injury.doctorRestrictions,
     rehabilitationStatus: injury.rehabilitationStatus,
+    seenDoctor: injury.seenDoctor,
+    createdByRole: injury.createdByRole,
   };
 }
 
