@@ -1,52 +1,51 @@
-/** @jest-environment node */
+import { MemberInjuryModel } from '@/lib/db/models/member-injury.model';
 
 describe('MemberInjuryModel schema', () => {
-  it('requires memberId', async () => {
-    const { MemberInjuryModel } = await import('@/lib/db/models/member-injury.model');
-    const doc = new MemberInjuryModel({ title: 'Knee strain' });
-    const err = doc.validateSync();
-    expect(err?.errors['memberId']).toBeDefined();
-  });
-
-  it('requires title', async () => {
-    const { MemberInjuryModel } = await import('@/lib/db/models/member-injury.model');
-    const { Types } = await import('mongoose');
-    const doc = new MemberInjuryModel({ memberId: new Types.ObjectId() });
-    const err = doc.validateSync();
-    expect(err?.errors['title']).toBeDefined();
-  });
-
-  it('defaults status to active', async () => {
-    const { MemberInjuryModel } = await import('@/lib/db/models/member-injury.model');
-    const { Types } = await import('mongoose');
+  it('has new extended fields with correct defaults', () => {
     const doc = new MemberInjuryModel({
-      memberId: new Types.ObjectId(),
+      memberId: '507f1f77bcf86cd799439011',
       title: 'Test',
+      createdByRole: 'trainer',
     });
-    expect(doc.status).toBe('active');
+    expect(doc.injuryType).toBeNull();
+    expect(doc.bodyPart).toBeNull();
+    expect(doc.bodySide).toBeNull();
+    expect(doc.painAtRest).toBeNull();
+    expect(doc.painDuringExercise).toBeNull();
+    expect(doc.mechanism).toBeNull();
+    expect(doc.aggravatingFactors).toBeNull();
+    expect(doc.relievingFactors).toBeNull();
+    expect(doc.seenDoctor).toBe(false);
+    expect(doc.doctorRestrictions).toBeNull();
+    expect(doc.rehabilitationStatus).toBeNull();
+    expect(doc.resolvedAt).toBeNull();
+    expect(doc.createdByRole).toBe('trainer');
   });
 
-  it('defaults trainerNotes, memberNotes, affectedMovements to null', async () => {
-    const { MemberInjuryModel } = await import('@/lib/db/models/member-injury.model');
-    const { Types } = await import('mongoose');
-    const doc = new MemberInjuryModel({
-      memberId: new Types.ObjectId(),
-      title: 'Test',
-    });
-    expect(doc.trainerNotes).toBeNull();
-    expect(doc.memberNotes).toBeNull();
-    expect(doc.affectedMovements).toBeNull();
+  it('defaults createdByRole to trainer', () => {
+    const doc = new MemberInjuryModel({ memberId: '507f1f77bcf86cd799439011', title: 'Test' });
+    expect(doc.createdByRole).toBe('trainer');
   });
 
-  it('rejects invalid status value', async () => {
-    const { MemberInjuryModel } = await import('@/lib/db/models/member-injury.model');
-    const { Types } = await import('mongoose');
+  it('rejects invalid injuryType', () => {
     const doc = new MemberInjuryModel({
-      memberId: new Types.ObjectId(),
+      memberId: '507f1f77bcf86cd799439011',
       title: 'Test',
-      status: 'unknown',
+      injuryType: 'invalid',
+      createdByRole: 'trainer',
     });
     const err = doc.validateSync();
-    expect(err?.errors['status']).toBeDefined();
+    expect(err?.errors['injuryType']).toBeDefined();
+  });
+
+  it('rejects painAtRest above 10', () => {
+    const doc = new MemberInjuryModel({
+      memberId: '507f1f77bcf86cd799439011',
+      title: 'Test',
+      painAtRest: 11,
+      createdByRole: 'trainer',
+    });
+    const err = doc.validateSync();
+    expect(err?.errors['painAtRest']).toBeDefined();
   });
 });

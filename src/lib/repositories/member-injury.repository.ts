@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { MemberInjuryModel } from '@/lib/db/models/member-injury.model';
-import type { IMemberInjury, InjuryStatus } from '@/lib/db/models/member-injury.model';
+import type { IMemberInjury, InjuryStatus, InjuryType, BodyPart, BodySide, RehabStatus, CreatedByRole } from '@/lib/db/models/member-injury.model';
 
 export interface CreateInjuryData {
   memberId: string;
@@ -10,6 +10,19 @@ export interface CreateInjuryData {
   trainerNotes?: string | null;
   memberNotes?: string | null;
   affectedMovements?: string | null;
+  injuryType?: InjuryType | null;
+  bodyPart?: BodyPart | null;
+  bodySide?: BodySide | null;
+  painAtRest?: number | null;
+  painDuringExercise?: number | null;
+  mechanism?: string | null;
+  aggravatingFactors?: string | null;
+  relievingFactors?: string | null;
+  seenDoctor?: boolean;
+  doctorRestrictions?: string | null;
+  rehabilitationStatus?: RehabStatus | null;
+  resolvedAt?: Date | null;
+  createdByRole?: CreatedByRole;
 }
 
 export type UpdateInjuryData = Partial<Omit<CreateInjuryData, 'memberId'>>;
