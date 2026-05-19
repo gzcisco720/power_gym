@@ -5,14 +5,14 @@ import { SelfNutritionDayViewWithRouter } from '../_components/day-view-with-rou
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 interface PageProps {
-  searchParams: Promise<{ date?: string; templateId?: string; dayTypeName?: string }>;
+  searchParams: Promise<{ date?: string; templateId?: string; dayTypeName?: string; noNav?: string }>;
 }
 
 export default async function TrainerMyNutritionDayPage({ searchParams }: PageProps) {
   const session = await auth();
   if (!session?.user || session.user.role !== 'trainer') redirect('/login');
 
-  const { date: rawDate, templateId, dayTypeName } = await searchParams;
+  const { date: rawDate, templateId, dayTypeName, noNav } = await searchParams;
   const today = new Date().toISOString().slice(0, 10);
   const date = rawDate && DATE_RE.test(rawDate) && rawDate <= today ? rawDate : today;
 
@@ -22,6 +22,7 @@ export default async function TrainerMyNutritionDayPage({ searchParams }: PagePr
       basePath="/trainer/my-nutrition"
       initialTemplateId={templateId}
       initialDayTypeName={dayTypeName}
+      noDateNav={noNav === '1'}
     />
   );
 }

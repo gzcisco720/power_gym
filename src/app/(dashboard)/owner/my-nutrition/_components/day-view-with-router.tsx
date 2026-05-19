@@ -9,9 +9,10 @@ interface Props {
   basePath: '/owner/my-nutrition' | '/trainer/my-nutrition';
   initialTemplateId?: string;
   initialDayTypeName?: string;
+  noDateNav?: boolean;
 }
 
-export function SelfNutritionDayViewWithRouter({ initialDate, basePath, initialTemplateId, initialDayTypeName }: Props) {
+export function SelfNutritionDayViewWithRouter({ initialDate, basePath, initialTemplateId, initialDayTypeName, noDateNav = false }: Props) {
   const router = useRouter();
   const onDateChange = useCallback(
     (d: string) => {
@@ -23,9 +24,10 @@ export function SelfNutritionDayViewWithRouter({ initialDate, basePath, initialT
     <SelfNutritionDayView
       key={initialDate}
       initialDate={initialDate}
-      onDateChange={onDateChange}
+      onDateChange={noDateNav ? undefined : onDateChange}
       initialTemplateId={initialTemplateId}
       initialDayTypeName={initialDayTypeName}
+      noDateNav={noDateNav}
     />
   );
 }
