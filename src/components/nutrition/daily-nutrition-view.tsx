@@ -6,6 +6,10 @@ import { Card } from '@/components/ui/card';
 import { MacroSummaryCard } from './macro-summary-card';
 import { MealSection } from './meal-section';
 import { FoodPickerDialog } from './food-picker-dialog';
+import { DayCompleteBar } from '@/components/self-tracking/day-complete-bar';
+import { DayCompleteConfirmDialog } from '@/components/self-tracking/day-complete-confirm-dialog';
+import { NutritionDayCompleteAnimation } from '@/components/animations/nutrition-day-complete';
+import { NutritionPlanCompareDialog, type PlanDayType } from '@/components/nutrition/nutrition-plan-compare-dialog';
 import type { IDailyLogMeal } from '@/lib/db/models/nutrition-daily-log.model';
 import type { IMealItem } from '@/lib/db/models/nutrition-template.model';
 import type { MacroSnapshot } from '@/lib/nutrition/macros';
@@ -22,6 +26,8 @@ interface DailyLog {
 interface Props {
   memberId: string;
   initialDate: string;
+  forceDayType?: string;
+  planDayTypes?: PlanDayType[];
 }
 
 const OPTIONAL_MACRO_KEYS = [
@@ -56,17 +62,28 @@ function shiftDate(iso: string, days: number): string {
 
 const todayISO = (): string => new Date().toISOString().slice(0, 10);
 
-export function DailyNutritionView({ memberId, initialDate }: Props) {
+export function DailyNutritionView({ memberId, initialDate, forceDayType, planDayTypes }: Props) {
   const [date, setDate] = useState(initialDate);
   const [log, setLog] = useState<DailyLog | null>(null);
   const [loading, setLoading] = useState(true);
   const [addingForMealIdx, setAddingForMealIdx] = useState<number | null>(null);
+  const [submittingComplete, setSubmittingComplete] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [celebrationMacros, setCelebrationMacros] = useState<{
+    proteinG: number;
+    carbsG: number;
+    fatG: number;
+  } | null>(null);
+  const [compareOpen, setCompareOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
-      const res = await fetch(`/api/members/${memberId}/nutrition/log/${date}`);
+      const url = forceDayType
+        ? `/api/members/${memberId}/nutrition/log/${date}?dayTypeName=${encodeURIComponent(forceDayType)}`
+        : `/api/members/${memberId}/nutrition/log/${date}`;
+      const res = await fetch(url);
       if (cancelled) return;
       const data = res.ok ? ((await res.json()) as DailyLog | null) : null;
       setLog(data);
@@ -75,7 +92,7 @@ export function DailyNutritionView({ memberId, initialDate }: Props) {
 
     void load();
     return () => { cancelled = true; };
-  }, [memberId, date]);
+  }, [memberId, date, forceDayType]);
 
   async function persist(next: DailyLog): Promise<void> {
     setLog(next);
@@ -123,9 +140,29 @@ export function DailyNutritionView({ memberId, initialDate }: Props) {
     void persist({ ...log, meals });
   }
 
-  function completeDay(): void {
+  const completedMeals = log ? log.meals.filter((m) => m.completed).length : 0;
+  const sealedKcal = log
+    ? log.meals
+        .filter((m) => m.completed)
+        .reduce((s, m) => s + m.items.reduce((si, i) => si + i.kcal, 0), 0)
+    : 0;
+
+  async function markDayComplete(opts: { markAll: boolean }): Promise<void> {
     if (!log) return;
-    void persist({ ...log, dayCompleted: true });
+    setSubmittingComplete(true);
+    const nextMeals = opts.markAll
+      ? log.meals.map((m) => ({ ...m, completed: true }))
+      : log.meals;
+    const next = { ...log, meals: nextMeals, dayCompleted: true };
+    const completedMacros = aggregateMacros(nextMeals);
+    await persist(next);
+    setSubmittingComplete(false);
+    setConfirmOpen(false);
+    setCelebrationMacros({
+      proteinG: Math.round(completedMacros.protein),
+      carbsG: Math.round(completedMacros.carbs),
+      fatG: Math.round(completedMacros.fat),
+    });
   }
 
   if (loading) return <div>Loading...</div>;
@@ -189,16 +226,53 @@ export function DailyNutritionView({ memberId, initialDate }: Props) {
         />
       </div>
 
-      <div className="sticky bottom-0 z-10 border-t border-foreground/10 backdrop-blur-md bg-background/50 px-4 sm:px-8 py-3">
-        <div className="max-w-2xl mx-auto w-full flex items-center justify-between gap-3">
-          <span className="text-xs text-foreground/65">
-            {Math.round(dayMacros.kcal)} kcal · {totalItems} {totalItems === 1 ? 'item' : 'items'} logged
-          </span>
-          <Button onClick={completeDay} disabled={log.dayCompleted} variant={log.dayCompleted ? 'outline' : 'default'}>
-            {log.dayCompleted ? 'Day Completed ✓' : 'Complete Day'}
-          </Button>
+      <DayCompleteBar
+        dayCompleted={log.dayCompleted}
+        kcal={log.dayCompleted ? Math.round(sealedKcal) : Math.round(dayMacros.kcal)}
+        totalItems={totalItems}
+        onRequestComplete={() => setConfirmOpen(true)}
+        submitting={submittingComplete}
+      />
+
+      <DayCompleteConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        totalMeals={log?.meals.length ?? 0}
+        completedMeals={completedMeals}
+        sealedKcal={Math.round(sealedKcal)}
+        totalKcal={Math.round(dayMacros.kcal)}
+        onConfirm={markDayComplete}
+        submitting={submittingComplete}
+      />
+
+      {celebrationMacros && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="bg-white/[.04] ring-1 ring-white/10 backdrop-blur-md rounded-2xl p-6 w-full max-w-xs mx-4">
+            <NutritionDayCompleteAnimation
+              proteinG={celebrationMacros.proteinG}
+              carbsG={celebrationMacros.carbsG}
+              fatG={celebrationMacros.fatG}
+              onComplete={() => {
+                setCelebrationMacros(null);
+                if (planDayTypes && planDayTypes.length > 0) setCompareOpen(true);
+              }}
+            />
+          </div>
         </div>
-      </div>
+      )}
+
+      {planDayTypes && planDayTypes.length > 0 && log && (
+        <NutritionPlanCompareDialog
+          open={compareOpen}
+          onOpenChange={setCompareOpen}
+          date={date}
+          loggedKcal={Math.round(dayMacros.kcal)}
+          loggedProtein={Math.round(dayMacros.protein)}
+          loggedCarbs={Math.round(dayMacros.carbs)}
+          loggedFat={Math.round(dayMacros.fat)}
+          planDayTypes={planDayTypes}
+        />
+      )}
     </div>
   );
 }
