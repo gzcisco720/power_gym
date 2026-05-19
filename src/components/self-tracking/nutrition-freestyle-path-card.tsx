@@ -20,7 +20,8 @@ type Props =
   | { state: 'full'; lastFreestyle: LastFreestyle; daysThisWeek: number; basePath: BasePath };
 
 function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function freestyleDayPath(basePath: BasePath): string {
@@ -36,7 +37,7 @@ export function NutritionFreestylePathCard(props: Props) {
   if (props.state === 'empty') {
     return (
       <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 flex flex-col">
-        <span className="text-[10px] uppercase tracking-[1.6px] font-bold text-emerald-400 mb-3">
+        <span className="text-[10px] uppercase tracking-[1.6px] font-bold text-primary-light mb-3">
           Freestyle
         </span>
         <div className="flex-1 flex flex-col items-center justify-center text-center gap-1.5 py-4">
@@ -44,7 +45,7 @@ export function NutritionFreestylePathCard(props: Props) {
           <p className="text-sm text-foreground/65">No freestyle logs yet.</p>
           <p className="text-xs text-foreground/65">Log any day without a template.</p>
         </div>
-        <Button variant="outline" onClick={() => router.push(freestyleDayPath(props.basePath))}>
+        <Button variant="outline" type="button" onClick={() => router.push(freestyleDayPath(props.basePath))}>
           Log Today
         </Button>
       </div>
@@ -54,7 +55,7 @@ export function NutritionFreestylePathCard(props: Props) {
   const { lastFreestyle } = props;
   return (
     <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 flex flex-col">
-      <span className="text-[10px] uppercase tracking-[1.6px] font-bold text-emerald-400 mb-3">
+      <span className="text-[10px] uppercase tracking-[1.6px] font-bold text-primary-light mb-3">
         Freestyle
       </span>
       <div className="rounded-lg ring-1 ring-foreground/10 p-3 mb-3 bg-foreground/[0.02]">
@@ -77,6 +78,7 @@ export function NutritionFreestylePathCard(props: Props) {
       )}
       <Button
         variant="outline"
+        type="button"
         className="mt-auto"
         onClick={() => router.push(freestyleDayPath(props.basePath))}
       >
