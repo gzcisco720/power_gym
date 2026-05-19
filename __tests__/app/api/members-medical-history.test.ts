@@ -53,6 +53,15 @@ describe('GET /api/members/[memberId]/medical-history', () => {
     const res = await GET(new Request('http://localhost/'), makeParams('m1'));
     expect(res.status).toBe(403);
   });
+
+  it('returns medical history for trainer reading own member', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
+    mockUserRepo.findById.mockResolvedValue({ trainerId: { toString: () => 't1' } });
+    mockHistoryRepo.findByMember.mockResolvedValue({ memberId: 'm1', chronicConditions: [] });
+    const { GET } = await import('@/app/api/members/[memberId]/medical-history/route');
+    const res = await GET(new Request('http://localhost/'), makeParams('m1'));
+    expect(res.status).toBe(200);
+  });
 });
 
 describe('PUT /api/members/[memberId]/medical-history', () => {

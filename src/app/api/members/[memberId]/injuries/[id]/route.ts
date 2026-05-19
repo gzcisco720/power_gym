@@ -12,6 +12,16 @@ const MEMBER_ALLOWED_FIELDS = new Set([
   'aggravatingFactors', 'relievingFactors', 'seenDoctor', 'status', 'resolvedAt',
 ]);
 
+function applyResolvedAt(data: UpdateInjuryData): UpdateInjuryData {
+  if (data.status === 'resolved' && !data.resolvedAt) {
+    return { ...data, resolvedAt: new Date() };
+  }
+  if (data.status === 'active') {
+    return { ...data, resolvedAt: null };
+  }
+  return data;
+}
+
 export async function PATCH(req: Request, { params }: RouteContext): Promise<Response> {
   const session = await auth();
   if (!session?.user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -46,14 +56,8 @@ export async function PATCH(req: Request, { params }: RouteContext): Promise<Res
         (updateData as Record<string, unknown>)[k] = (body as Record<string, unknown>)[k];
       }
     }
-    if (updateData.status === 'resolved' && !updateData.resolvedAt) {
-      updateData.resolvedAt = new Date();
-    }
-    if (updateData.status === 'active') {
-      updateData.resolvedAt = null;
-    }
-
-    const updated = await injuryRepo.update(id, updateData);
+    const updated = await injuryRepo.update(id, applyResolvedAt(updateData));
+    if (!updated) return Response.json({ error: 'Not found' }, { status: 404 });
     return Response.json(updated);
   }
 
@@ -65,18 +69,11 @@ export async function PATCH(req: Request, { params }: RouteContext): Promise<Res
     }
   }
 
-  const { memberNotes: _mn, ...trainerBody } = body as UpdateInjuryData & { memberNotes?: unknown };
-  void _mn;
+  const trainerBody = { ...body } as Record<string, unknown>;
+  delete trainerBody['memberNotes'];
+  const finalUpdate = trainerBody as UpdateInjuryData;
 
-  const finalUpdate = { ...trainerBody } as UpdateInjuryData;
-  if (finalUpdate.status === 'resolved' && !finalUpdate.resolvedAt) {
-    finalUpdate.resolvedAt = new Date();
-  }
-  if (finalUpdate.status === 'active') {
-    finalUpdate.resolvedAt = null;
-  }
-
-  const updated = await injuryRepo.update(id, finalUpdate);
+  const updated = await injuryRepo.update(id, applyResolvedAt(finalUpdate));
   if (!updated) return Response.json({ error: 'Not found' }, { status: 404 });
   return Response.json(updated);
 }

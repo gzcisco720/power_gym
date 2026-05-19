@@ -27,7 +27,7 @@ describe('MemberMedicationModel schema', () => {
     expect(err?.errors['duration']).toBeDefined();
   });
 
-  it('requires name, purpose, duration, startDate', () => {
+  it('requires name and duration', () => {
     const doc = new MemberMedicationModel({ memberId: '507f1f77bcf86cd799439011' });
     const err = doc.validateSync();
     expect(err?.errors['name']).toBeDefined();
