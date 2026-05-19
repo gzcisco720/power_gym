@@ -43,7 +43,7 @@ test.describe('owner nutrition day + saveAsTemplate', () => {
   });
 
   test('owner saves nutrition day as template', async ({ page, request }) => {
-    await page.goto('/owner/my-nutrition');
+    await page.goto(`/owner/my-nutrition/day?date=${TEST_DATE}`);
 
     // Verify the seeded Egg item shows up
     await expect(page.getByText('Egg').first()).toBeVisible();
@@ -70,7 +70,7 @@ test.describe('owner nutrition day + saveAsTemplate', () => {
   });
 
   test('owner can Mark day complete via confirm dialog and the button transitions to disabled', async ({ page }) => {
-    await page.goto('/owner/my-nutrition');
+    await page.goto(`/owner/my-nutrition/day?date=${TEST_DATE}`);
 
     // Click Mark day complete — opens confirm dialog
     const markBtn = page.getByRole('button', { name: /^mark day complete$/i });
