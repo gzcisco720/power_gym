@@ -4,6 +4,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { StatStripSection } from './_components/stat-strip-section';
 import { PlanCardSection } from './_components/plan-card-section';
 import { HealthPanelSection } from './_components/health-panel-section';
+import { BodyCompositionSection } from './_components/body-composition-section';
+import { ProgressContent } from '@/app/(dashboard)/member/progress/_components/progress-content';
 
 export default async function MemberHubOverviewPage({
   params,
@@ -39,6 +41,16 @@ export default async function MemberHubOverviewPage({
         {/* Right column */}
         <Suspense fallback={<Skeleton className="h-[200px] rounded-xl" />}>
           <HealthPanelSection memberId={memberId} />
+        </Suspense>
+      </div>
+
+      {/* Progress row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+        <Suspense fallback={<Skeleton className="h-[200px] rounded-xl" />}>
+          <BodyCompositionSection memberId={memberId} />
+        </Suspense>
+        <Suspense fallback={<Skeleton className="h-[200px] rounded-xl" />}>
+          <ProgressContent memberId={memberId} />
         </Suspense>
       </div>
     </div>
