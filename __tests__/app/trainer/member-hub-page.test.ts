@@ -1,6 +1,9 @@
 /** @jest-environment node */
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
-jest.mock('@/lib/auth/auth', () => ({ auth: jest.fn() }));
+
+// auth mock uses a stable external ref so mockAuth.mockResolvedValue survives jest.resetModules()
+const authState = { impl: jest.fn() };
+jest.mock('@/lib/auth/auth', () => ({ auth: (...args: unknown[]) => authState.impl(...args) }));
 
 const mockBodyTestRepo = { findByMember: jest.fn() };
 const mockSessionRepo = {
@@ -27,8 +30,7 @@ jest.mock('@/lib/repositories/member-medication.repository', () => ({
   MongoMemberMedicationRepository: jest.fn(() => mockMedRepo),
 }));
 
-import { auth } from '@/lib/auth/auth';
-const mockAuth = jest.mocked(auth);
+const mockAuth = authState.impl;
 
 function makeParams(id: string) {
   return { params: Promise.resolve({ id }) };

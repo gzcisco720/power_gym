@@ -1,9 +1,9 @@
 import { Suspense } from 'react';
 import { auth } from '@/lib/auth/auth';
+import { Skeleton } from '@/components/ui/skeleton';
 import { StatStripSection } from './_components/stat-strip-section';
-import { StatCardsSkeleton } from '@/components/shared/stat-cards-skeleton';
-import { HealthSection } from './_components/health-section';
-import { HealthSectionSkeleton } from './_components/health-section-skeleton';
+import { PlanCardSection } from './_components/plan-card-section';
+import { HealthPanelSection } from './_components/health-panel-section';
 
 export default async function MemberHubOverviewPage({
   params,
@@ -16,13 +16,31 @@ export default async function MemberHubOverviewPage({
   const { id: memberId } = await params;
 
   return (
-    <div className="px-4 sm:px-8 py-7 space-y-6">
-      <Suspense fallback={<StatCardsSkeleton count={4} className="sm:grid-cols-4" />}>
-        <StatStripSection memberId={memberId} />
-      </Suspense>
-      <Suspense fallback={<HealthSectionSkeleton />}>
-        <HealthSection memberId={memberId} />
-      </Suspense>
+    <div className="px-4 sm:px-8 py-7">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3">
+        {/* Left column */}
+        <div className="flex flex-col gap-3">
+          <Suspense
+            fallback={
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-[80px] rounded-xl" />
+                ))}
+              </div>
+            }
+          >
+            <StatStripSection memberId={memberId} />
+          </Suspense>
+          <Suspense fallback={<Skeleton className="h-[88px] rounded-xl" />}>
+            <PlanCardSection memberId={memberId} />
+          </Suspense>
+        </div>
+
+        {/* Right column */}
+        <Suspense fallback={<Skeleton className="h-[200px] rounded-xl" />}>
+          <HealthPanelSection memberId={memberId} />
+        </Suspense>
+      </div>
     </div>
   );
 }
