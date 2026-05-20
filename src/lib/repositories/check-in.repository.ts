@@ -31,7 +31,12 @@ export interface ICheckInRepository {
   findById(checkInId: string, memberId: string): Promise<ICheckIn | null>;
   hasCheckInThisWeek(memberId: string, weekStart: Date): Promise<boolean>;
   countSince(since: Date): Promise<number>;
-  findPhotosForMember(memberId: string): Promise<{ submittedAt: Date; photos: string[] }[]>;
+  findPhotosForMember(memberId: string): Promise<{
+    _id: string;
+    submittedAt: Date;
+    photos: string[];
+    weight: number | null;
+  }[]>;
 }
 
 export class MongoCheckInRepository implements ICheckInRepository {
@@ -69,10 +74,25 @@ export class MongoCheckInRepository implements ICheckInRepository {
     return CheckInModel.countDocuments({ submittedAt: { $gte: since } });
   }
 
-  async findPhotosForMember(memberId: string): Promise<{ submittedAt: Date; photos: string[] }[]> {
-    return CheckInModel.find(
-      { memberId: new mongoose.Types.ObjectId(memberId) },
-      { submittedAt: 1, photos: 1, _id: 0 },
+  async findPhotosForMember(memberId: string): Promise<{
+    _id: string;
+    submittedAt: Date;
+    photos: string[];
+    weight: number | null;
+  }[]> {
+    const docs = await CheckInModel.find(
+      {
+        memberId: new mongoose.Types.ObjectId(memberId),
+        'photos.0': { $exists: true },
+      },
+      { submittedAt: 1, photos: 1, weight: 1 },
     ).sort({ submittedAt: 1 }).lean();
+
+    return docs.map((d) => ({
+      _id: String(d._id),
+      submittedAt: d.submittedAt as Date,
+      photos: d.photos as string[],
+      weight: (d.weight as number | null | undefined) ?? null,
+    }));
   }
 }

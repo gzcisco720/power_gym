@@ -89,4 +89,43 @@ describe('MongoCheckInRepository', () => {
       expect(result).toBe(false);
     });
   });
+
+  describe('findPhotosForMember', () => {
+    it('returns only check-ins that have photos, with _id, submittedAt, photos, weight', async () => {
+      const submittedAt = new Date('2026-05-01');
+      const mockDocs = [
+        { _id: { toString: () => 'ci1' }, submittedAt, photos: ['url1', 'url2'], weight: 78 },
+      ];
+      const leanMock = jest.fn().mockResolvedValue(mockDocs);
+      const sortMock = jest.fn().mockReturnValue({ lean: leanMock });
+      mockModel.find.mockReturnValue({ sort: sortMock } as never);
+
+      const result = await repo.findPhotosForMember(memberId);
+
+      expect(mockModel.find).toHaveBeenCalledWith(
+        expect.objectContaining({ 'photos.0': { $exists: true } }),
+        expect.objectContaining({ photos: 1, weight: 1 }),
+      );
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        _id: 'ci1',
+        submittedAt,
+        photos: ['url1', 'url2'],
+        weight: 78,
+      });
+    });
+
+    it('maps weight to null when undefined', async () => {
+      const mockDocs = [
+        { _id: { toString: () => 'ci2' }, submittedAt: new Date(), photos: ['url1'], weight: undefined },
+      ];
+      const leanMock = jest.fn().mockResolvedValue(mockDocs);
+      const sortMock = jest.fn().mockReturnValue({ lean: leanMock });
+      mockModel.find.mockReturnValue({ sort: sortMock } as never);
+
+      const result = await repo.findPhotosForMember(memberId);
+
+      expect(result[0].weight).toBeNull();
+    });
+  });
 });
