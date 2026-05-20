@@ -1,13 +1,21 @@
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { auth } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
+import { MongoMemberPlanRepository } from '@/lib/repositories/member-plan.repository';
 import { MemberTabNav } from '@/components/shared/member-tab-nav';
 import type { UserRole } from '@/types/auth';
 
 interface MemberHubLayoutProps {
   children: React.ReactNode;
   params: Promise<{ id: string }>;
+}
+
+function formatJoinDate(date: Date): string {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const d = new Date(date);
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 }
 
 export default async function MemberHubLayout({ children, params }: MemberHubLayoutProps) {
@@ -25,6 +33,8 @@ export default async function MemberHubLayout({ children, params }: MemberHubLay
     redirect('/trainer/members');
   }
 
+  const hasActivePlan = !!(await new MongoMemberPlanRepository().findActive(memberId));
+
   const initials = member.name
     .split(' ')
     .map((n) => n[0] ?? '')
@@ -32,36 +42,53 @@ export default async function MemberHubLayout({ children, params }: MemberHubLay
     .slice(0, 2)
     .toUpperCase();
 
-  const daysSinceJoined = Math.floor(
-    (Date.now() - member.createdAt.getTime()) / (1000 * 60 * 60 * 24),
-  );
+  const backHref = role === 'owner' ? '/owner/members' : '/trainer/members';
+  const backLabel = role === 'owner' ? '← All Members' : '← Members';
+  const planHref = `/trainer/members/${memberId}/plan`;
 
   return (
     <div>
-      <div className="sticky top-0 z-10 border-b border-[#0f0f0f] bg-[#050505]">
-        <div className="flex items-center justify-between px-4 py-4 sm:px-8">
+      <div className="sticky top-0 z-10 border-b border-border/60 bg-background">
+
+        {/* Breadcrumb row */}
+        <div className="px-4 pt-3 sm:px-8">
+          <Link
+            href={backHref}
+            className="text-[11px] text-foreground/30 hover:text-foreground/55 transition-colors flex items-center gap-1 w-fit"
+          >
+            {backLabel}
+          </Link>
+        </div>
+
+        {/* Identity + CTA row */}
+        <div className="flex items-center justify-between px-4 py-3 sm:px-8">
           <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#222] bg-[#1a1a1a] text-[13px] font-semibold text-[#666]">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-primary/15 ring-4 ring-primary/6 text-[15px] font-bold text-primary-light">
               {initials}
             </div>
             <div>
-              <div className="text-[16px] font-bold text-white leading-tight">{member.name}</div>
-              <div className="text-[11px] text-[#666] mt-0.5">
+              <div className="text-[16px] font-bold text-foreground leading-tight">
+                {member.name}
+              </div>
+              <div className="text-[11px] text-foreground/65 mt-0.5">
                 {member.email}
-                <span className="mx-1.5 text-[#333]">·</span>
-                Member for {daysSinceJoined} days
+                <span className="mx-1.5 text-foreground/20" aria-hidden="true">·</span>
+                Joined {formatJoinDate(member.createdAt)}
               </div>
             </div>
           </div>
-          {role === 'owner' && (
-            <a
-              href="/owner/members"
-              className="text-[11px] text-[#666] hover:text-[#aaa] transition-colors"
+
+          {hasActivePlan && (
+            <Link
+              href={planHref}
+              className="bg-primary text-white rounded-lg px-4 py-2 text-[13px] font-semibold hover:bg-primary/90 transition-colors"
             >
-              ← All Members
-            </a>
+              Log Workout
+            </Link>
           )}
         </div>
+
+        {/* Tab bar */}
         <MemberTabNav memberId={memberId} />
       </div>
 
