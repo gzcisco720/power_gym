@@ -19,7 +19,7 @@ export default async function MemberHubOverviewPage({
 
   return (
     <div className="px-4 sm:px-8 py-7">
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3">
         {/* Left column */}
         <div className="flex flex-col gap-3">
           <Suspense
@@ -36,20 +36,22 @@ export default async function MemberHubOverviewPage({
           <Suspense fallback={<Skeleton className="h-[88px] rounded-xl" />}>
             <PlanCardSection memberId={memberId} />
           </Suspense>
-          <Suspense fallback={<Skeleton className="h-[200px] rounded-xl" />}>
-            <BodyCompositionSection memberId={memberId} />
-          </Suspense>
         </div>
 
         {/* Right column */}
-        <div className="flex flex-col gap-3">
-          <Suspense fallback={<Skeleton className="h-[200px] rounded-xl" />}>
-            <HealthPanelSection memberId={memberId} />
-          </Suspense>
-          <Suspense fallback={<Skeleton className="h-[200px] rounded-xl" />}>
-            <ProgressContent memberId={memberId} />
-          </Suspense>
-        </div>
+        <Suspense fallback={<Skeleton className="h-[200px] rounded-xl" />}>
+          <HealthPanelSection memberId={memberId} />
+        </Suspense>
+      </div>
+
+      {/* Progress row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+        <Suspense fallback={<Skeleton className="h-[200px] rounded-xl" />}>
+          <BodyCompositionSection memberId={memberId} />
+        </Suspense>
+        <Suspense fallback={<Skeleton className="h-[200px] rounded-xl" />}>
+          <ProgressContent memberId={memberId} />
+        </Suspense>
       </div>
     </div>
   );
