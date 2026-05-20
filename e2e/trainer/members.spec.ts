@@ -22,14 +22,15 @@ test.describe('Trainer: Members', () => {
     await page.getByText('Test Member').click();
     await page.waitForURL(/\/trainer\/members\/.+$/);
 
+    // Stat strip: 4 cards
     await expect(page.getByText('Weight')).toBeVisible();
     await expect(page.getByText('Body Fat')).toBeVisible();
     await expect(page.getByText('Sessions')).toBeVisible();
     await expect(page.getByText('Last Session')).toBeVisible();
-    await expect(page.getByText('Active Plan')).toBeVisible();
     // Seeded body test: weight 75kg
     await expect(page.getByText('75')).toBeVisible();
-    // Active plan name
+    // Plan card section
+    await expect(page.getByText('Active Plan')).toBeVisible();
     await expect(page.getByText('E2E Test Plan')).toBeVisible();
   });
 
@@ -69,13 +70,15 @@ test.describe('Trainer: Members', () => {
     expect(email.HTML).toContain('Test Trainer');
   });
 
-  test('Progress tab navigates to progress page', async ({ page }) => {
+  test('Photos tab is visible and navigates correctly', async ({ page }) => {
     await page.goto('/trainer/members');
     await page.getByText('Test Member').click();
     await page.waitForURL(/\/trainer\/members\/.+$/);
-    await page.getByRole('link', { name: 'Progress', exact: true }).click();
-    await page.waitForURL(/\/trainer\/members\/.+\/progress/);
-    await expect(page.getByText('Training Frequency')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Photos', exact: true })).toBeVisible();
+    await page.getByRole('link', { name: 'Photos', exact: true }).click();
+    await page.waitForURL(/\/trainer\/members\/.+\/photos$/);
+    // No photos in seed — empty state should appear
+    await expect(page.getByText(/No photos submitted/i)).toBeVisible();
   });
 
   test('Nutrition tab shows assigned plan name', async ({ page }) => {
