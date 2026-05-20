@@ -57,6 +57,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Member Hub Overview Redesign | [member-hub-overview-redesign.md](2026-05-20/plans/member-hub-overview-redesign.md) | Approved |
 | Member Hub Overview Redesign (Plan) | [member-hub-overview-redesign-plan.md](2026-05-20/plans/member-hub-overview-redesign-plan.md) | In Progress |
 | Plan Tab Session History Redesign | [plan-tab-session-history-redesign-plan.md](2026-05-20/plans/plan-tab-session-history-redesign-plan.md) | In Progress |
+| Check-ins & Photos Tab Redesign | [check-ins-photos-redesign-plan.md](2026-05-20/plans/check-ins-photos-redesign-plan.md) | In Progress |
 
 ---
 
