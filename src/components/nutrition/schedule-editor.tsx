@@ -32,8 +32,11 @@ export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule }: Prop
   const [newDayType, setNewDayType] = useState(dayTypeNames[0] ?? '');
   const [saving, setSaving] = useState(false);
 
+  const today = new Date().toISOString().split('T')[0];
+
   function addOverride(): void {
     if (!newDate || !newDayType) return;
+    if (newDate < today) return; // reject past dates
     setOverrides((list) =>
       [...list, { date: newDate, dayTypeName: newDayType }].sort((a, b) => a.date.localeCompare(b.date)),
     );
@@ -129,6 +132,7 @@ export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule }: Prop
           <Input
             type="date"
             value={newDate}
+            min={today}
             onChange={(e) => setNewDate(e.target.value)}
             className="flex-1 h-9 text-sm"
           />
