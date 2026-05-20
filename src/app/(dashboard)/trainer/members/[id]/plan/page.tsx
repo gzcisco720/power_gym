@@ -25,7 +25,7 @@ export default async function TrainerMemberPlanPage({
   const [templates, activePlan, sessions, pbs, activeSession] = await Promise.all([
     new MongoPlanTemplateRepository().findByCreator(session.user.id),
     new MongoMemberPlanRepository().findActive(memberId),
-    sessionRepo.findByMember(memberId),
+    sessionRepo.findByMember(memberId, 50),
     new MongoPersonalBestRepository().findByMember(memberId),
     sessionRepo.findActive(memberId),
   ]);

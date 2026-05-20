@@ -28,7 +28,7 @@ export interface UpdateSetData {
 export interface IWorkoutSessionRepository {
   create(data: CreateSessionData): Promise<IWorkoutSession>;
   findById(id: string): Promise<IWorkoutSession | null>;
-  findByMember(memberId: string): Promise<IWorkoutSession[]>;
+  findByMember(memberId: string, limit?: number): Promise<IWorkoutSession[]>;
   findActive(memberId: string): Promise<IWorkoutSession | null>;
   findToday(memberId: string): Promise<IWorkoutSession | null>;
   findCompletedToday(memberId: string): Promise<IWorkoutSession | null>;
@@ -77,10 +77,11 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
     return WorkoutSessionModel.findById(id);
   }
 
-  async findByMember(memberId: string): Promise<IWorkoutSession[]> {
-    return WorkoutSessionModel.find({
+  async findByMember(memberId: string, limit?: number): Promise<IWorkoutSession[]> {
+    const query = WorkoutSessionModel.find({
       memberId: new mongoose.Types.ObjectId(memberId),
     }).sort({ startedAt: -1 });
+    return limit ? query.limit(limit) : query;
   }
 
   async findActive(memberId: string): Promise<IWorkoutSession | null> {
