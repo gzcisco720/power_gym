@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { ISchedule, IWeeklyPatternEntry, ICalendarOverride } from '@/lib/db/models/member-nutrition-plan.model';
@@ -74,91 +73,119 @@ export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule }: Prop
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Tabs value={mode} onValueChange={(v) => setMode(v as 'daily' | 'weekly')}>
         <TabsList className="grid grid-cols-2 w-full">
           <TabsTrigger value="weekly">Weekly Pattern</TabsTrigger>
-          <TabsTrigger value="daily">Daily (Calendar)</TabsTrigger>
+          <TabsTrigger value="daily">Date Overrides Only</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="weekly">
-          <Card className="p-3 space-y-3">
-            <div className="grid grid-cols-7 gap-2">
-              {DAY_VALUES.map((d) => (
-                <div key={d}>
-                  <div className="text-xs text-foreground/65">{DAY_LABELS[d]}</div>
-                  <Select
-                    value={weekly[d]}
-                    onValueChange={(v) => setWeekly((w) => ({ ...w, [d]: v ?? NONE }))}
-                  >
-                    <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={NONE}>—</SelectItem>
-                      {dayTypeNames.map((n) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ))}
-            </div>
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={iterate}
-                onChange={(e) => setIterate(e.target.checked)}
-                aria-label="Iterate weekly"
-              />
-              <span>Iterate weekly (auto-roll to subsequent weeks)</span>
-            </label>
-          </Card>
+        <TabsContent value="weekly" className="mt-4 space-y-4">
+          {/* One row per day */}
+          <div className="space-y-2">
+            {DAY_VALUES.map((d) => (
+              <div key={d} className="flex items-center gap-3">
+                <span className="w-9 shrink-0 text-[12px] font-medium text-foreground/50">
+                  {DAY_LABELS[d]}
+                </span>
+                <Select
+                  value={weekly[d]}
+                  onValueChange={(v) => setWeekly((w) => ({ ...w, [d]: v ?? NONE }))}
+                >
+                  <SelectTrigger className="h-9 flex-1 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NONE}>— Not set —</SelectItem>
+                    {dayTypeNames.map((n) => (
+                      <SelectItem key={n} value={n}>{n}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
+          </div>
+
+          <label className="flex items-center gap-2.5 text-sm cursor-pointer text-foreground/80">
+            <input
+              type="checkbox"
+              checked={iterate}
+              onChange={(e) => setIterate(e.target.checked)}
+              aria-label="Iterate weekly"
+              className="rounded"
+            />
+            Auto-roll to subsequent weeks
+          </label>
         </TabsContent>
 
-        <TabsContent value="daily">
-          <Card className="p-3 text-sm text-muted-foreground">
-            Pick a day type for specific dates. Leave gaps for unscheduled days.
-          </Card>
+        <TabsContent value="daily" className="mt-4">
+          <p className="text-sm text-foreground/50">
+            No repeating pattern — use the date overrides below to schedule specific days.
+          </p>
         </TabsContent>
       </Tabs>
 
-      {/* Calendar overrides — visible in both modes; in 'daily' mode it IS the full schedule */}
-      <Card className="p-3 space-y-3">
-        <h3 className="text-sm font-medium">
-          {mode === 'daily' ? 'Scheduled Dates' : 'Calendar Overrides'}
-        </h3>
-        <ul className="divide-y">
-          {overrides.length === 0 && (
-            <li className="py-2 text-xs text-muted-foreground">No dates scheduled</li>
-          )}
-          {overrides.map((o) => (
-            <li key={o.date} className="py-1.5 flex justify-between items-center text-sm">
-              <span>{o.date}</span>
-              <span>{o.dayTypeName}</span>
-              <Button variant="ghost" size="sm" onClick={() => removeOverride(o.date)}>
-                ×
-              </Button>
-            </li>
-          ))}
-        </ul>
-        <div className="flex gap-2 items-end">
+      {/* Calendar overrides */}
+      <div className="space-y-3">
+        <div className="text-[11px] font-semibold uppercase tracking-wider text-foreground/40">
+          {mode === 'daily' ? 'Scheduled Dates' : 'Date Overrides'}
+        </div>
+
+        {overrides.length > 0 && (
+          <div className="space-y-1.5">
+            {overrides.map((o) => (
+              <div key={o.date} className="flex items-center gap-3 rounded-lg bg-muted/40 px-3 py-2 text-sm">
+                <span className="text-foreground/60 font-medium tabular-nums">{o.date}</span>
+                <span className="text-foreground/30 mx-0.5">→</span>
+                <span className="text-foreground/80 flex-1">{o.dayTypeName}</span>
+                <button
+                  type="button"
+                  onClick={() => removeOverride(o.date)}
+                  className="text-foreground/30 hover:text-destructive transition-colors ml-auto"
+                  aria-label={`Remove override for ${o.date}`}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {overrides.length === 0 && (
+          <p className="text-sm text-foreground/35">No date overrides set.</p>
+        )}
+
+        {/* Add new override */}
+        <div className="flex gap-2 pt-1">
           <Input
             type="date"
             value={newDate}
             onChange={(e) => setNewDate(e.target.value)}
-            className="w-40"
+            className="flex-1 h-9 text-sm"
           />
           <Select value={newDayType} onValueChange={(v) => setNewDayType(v ?? '')}>
-            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="flex-1 h-9 text-sm">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
-              {dayTypeNames.map((n) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+              {dayTypeNames.map((n) => (
+                <SelectItem key={n} value={n}>{n}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
-          <Button onClick={addOverride} disabled={!newDate || !newDayType}>
-            + Add
+          <Button
+            onClick={addOverride}
+            disabled={!newDate || !newDayType}
+            size="sm"
+            className="h-9 px-4"
+          >
+            Add
           </Button>
         </div>
-      </Card>
+      </div>
 
-      <Button onClick={save} disabled={saving}>
-        {saving ? 'Saving...' : 'Save Schedule'}
+      <Button onClick={save} disabled={saving} className="w-full">
+        {saving ? 'Saving…' : 'Save Schedule'}
       </Button>
     </div>
   );
