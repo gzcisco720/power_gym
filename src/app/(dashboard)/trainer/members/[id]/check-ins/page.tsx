@@ -3,6 +3,7 @@ import { MongoCheckInConfigRepository } from '@/lib/repositories/check-in-config
 import { MongoCheckInRepository } from '@/lib/repositories/check-in.repository';
 import { CheckInScheduleForm } from './_components/check-in-schedule-form';
 import { CheckInList } from './_components/check-in-list';
+import { CheckInTrends } from './_components/check-in-trends';
 import type { ICheckInConfig } from '@/lib/db/models/check-in-config.model';
 import type { ICheckIn } from '@/lib/db/models/check-in.model';
 
@@ -27,6 +28,7 @@ export default async function TrainerMemberCheckInsPage({
   return (
     <div className="space-y-8 py-6">
       <CheckInScheduleForm memberId={memberId} initialConfig={config} />
+      {checkIns.length >= 2 && <CheckInTrends checkIns={checkIns} />}
       <CheckInList memberId={memberId} checkIns={checkIns} />
     </div>
   );
