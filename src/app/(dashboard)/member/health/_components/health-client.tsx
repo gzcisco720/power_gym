@@ -145,7 +145,10 @@ function InjurySection({
   return (
     <section className="px-4 sm:px-8">
       <div className="flex items-center justify-between mb-3">
-        <SectionHeader title="Injuries" />
+        <SectionHeader
+          title="Injuries"
+          tooltip="Log pain and movement restrictions. Both you and your trainer can add entries. You can only delete records you created yourself — contact your trainer to remove theirs."
+        />
         <Button variant="outline" size="sm" className="text-xs font-medium" onClick={openAdd}>
           + Report Injury
         </Button>
@@ -435,7 +438,10 @@ function MedicationSection({
   return (
     <section className="px-4 sm:px-8">
       <div className="flex items-center justify-between mb-3">
-        <SectionHeader title="Medications" />
+        <SectionHeader
+          title="Medications"
+          tooltip="List all current medications, supplements, and short-term pain relief. Your trainer uses this to safely adjust exercise intensity — for example, beta blockers affect how heart rate targets are set."
+        />
         <Button variant="outline" size="sm" className="text-xs font-medium" onClick={openAdd}>
           + Add Medication
         </Button>
@@ -602,7 +608,10 @@ export function HealthClient({ memberId, initialInjuries, initialMedications, in
 
       <section className="px-4 sm:px-8">
         <div className="mb-3">
-          <SectionHeader title="Medical Background" />
+          <SectionHeader
+            title="Medical Background"
+            tooltip="Your one-time health profile — chronic conditions, surgeries, allergies, and emergency contact. Fill this in once and keep it updated. Your trainer uses it to programme safely and respond correctly in an emergency."
+          />
         </div>
         <MedicalHistoryInline
           memberId={memberId}

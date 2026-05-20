@@ -7,6 +7,7 @@ import { getGymBranding } from '@/lib/db/queries/gym-branding';
 import { AppShell } from '@/components/shared/app-shell';
 import { PageTransition } from '@/components/shared/page-transition';
 import { LogoutButton } from '@/components/shared/logout-button';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import type { UserRole } from '@/types/auth';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -32,7 +33,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
       gymBranding={gymBranding}
       logoutSlot={<LogoutButton />}
     >
-      <PageTransition>{children}</PageTransition>
+      <TooltipProvider>
+        <PageTransition>{children}</PageTransition>
+      </TooltipProvider>
     </AppShell>
   );
 }
