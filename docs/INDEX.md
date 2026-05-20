@@ -52,6 +52,8 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Nutrition Enhancement (Design) | [nutrition-enhancement-design.md](2026-05-19/plans/nutrition-enhancement-design.md) | Approved |
 | Member Health Profile (Design) | [member-health-profile-design.md](2026-05-19/plans/member-health-profile-design.md) | Approved |
 | Health Profile Module A — Data Layer | [health-module-a-data-layer.md](2026-05-19/plans/health-module-a-data-layer.md) | In Progress |
+| Member Hub Header Redesign | [member-hub-header-redesign.md](2026-05-20/plans/member-hub-header-redesign.md) | Approved |
+| Member Hub Header Redesign (Plan) | [member-hub-header-redesign-plan.md](2026-05-20/plans/member-hub-header-redesign-plan.md) | In Progress |
 
 ---
 
