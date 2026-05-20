@@ -3,13 +3,31 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { TriangleAlert } from 'lucide-react';
+import { ChevronRight, TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { SectionHeader } from '@/components/shared/section-header';
 import { ActiveSessionPrompt } from '@/components/shared/active-session-prompt';
 import { SessionPeekSheet } from './session-peek-sheet';
 import type { SessionSummary } from '@/lib/training/session-summary';
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+function formatVolume(kg: number): string {
+  if (kg >= 1000) return `${(kg / 1000).toFixed(1)} ton`;
+  return `${kg} kg`;
+}
+
+function pbGridCols(count: number): string {
+  if (count === 1) return 'grid-cols-1';
+  if (count === 2) return 'grid-cols-2';
+  if (count === 4) return 'grid-cols-2 lg:grid-cols-4';
+  return 'grid-cols-2 lg:grid-cols-3';
+}
 
 interface Template {
   _id: string;
@@ -150,7 +168,7 @@ export function TrainerMemberPlanClient({
                   <span className="mx-1.5 text-foreground/40">·</span>
                   {sessions.length} {sessions.length === 1 ? 'session' : 'sessions'} logged
                   <span className="mx-1.5 text-foreground/40">·</span>
-                  Assigned {new Date(activePlan.assignedAt).toLocaleDateString('en-US')}
+                  Assigned {formatDate(activePlan.assignedAt)}
                 </p>
               </div>
 
@@ -201,26 +219,41 @@ export function TrainerMemberPlanClient({
       {pbs.length > 0 && (
         <section className="px-4 sm:px-8">
           <SectionHeader title="Personal Bests" />
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {pbs.map((pb) => (
-              <div
-                key={pb.exerciseName}
-                className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-3"
-              >
-                <p className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold">
-                  {pb.exerciseName}
-                </p>
-                <p className="mt-1 text-2xl font-semibold text-foreground tabular-nums">
-                  {pb.bestWeight}
-                  <span className="ml-1 text-sm font-medium text-foreground/65">kg</span>
-                </p>
-                <p className="mt-0.5 text-xs text-foreground/65">
-                  {pb.bestReps} reps
-                  <span className="mx-1.5 text-foreground/40">·</span>
-                  est. 1RM {pb.estimatedOneRM.toFixed(1)} kg
-                </p>
-              </div>
-            ))}
+          <div className={`mt-3 grid gap-3 ${pbGridCols(pbs.length)}`}>
+            {pbs.map((pb) => {
+              const isBodyweight = pb.bestWeight === 0;
+              return (
+                <div
+                  key={pb.exerciseName}
+                  className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-3"
+                >
+                  <p className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold">
+                    {pb.exerciseName}
+                  </p>
+                  {isBodyweight ? (
+                    <>
+                      <p className="mt-1 text-2xl font-semibold text-foreground tabular-nums">
+                        {pb.bestReps}
+                        <span className="ml-1 text-sm font-medium text-foreground/65">reps</span>
+                      </p>
+                      <p className="mt-0.5 text-xs text-foreground/65">Bodyweight</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="mt-1 text-2xl font-semibold text-foreground tabular-nums">
+                        {pb.bestWeight}
+                        <span className="ml-1 text-sm font-medium text-foreground/65">kg</span>
+                      </p>
+                      <p className="mt-0.5 text-xs text-foreground/65">
+                        {pb.bestReps} reps
+                        <span className="mx-1.5 text-foreground/40">·</span>
+                        est. 1RM {pb.estimatedOneRM.toFixed(1)} kg
+                      </p>
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
@@ -231,7 +264,7 @@ export function TrainerMemberPlanClient({
           <ul className="mt-3 space-y-1.5">
             {sessions.map((s) => {
               const isActive = s.completedAt === null;
-              const date = new Date(s.startedAt).toLocaleDateString('en-US');
+              const date = formatDate(s.startedAt);
               return (
                 <li key={s._id}>
                   <button
@@ -256,9 +289,10 @@ export function TrainerMemberPlanClient({
                       {s.totalVolume > 0 && (
                         <>
                           <span className="text-foreground/40">·</span>
-                          <span>{(s.totalVolume / 1000).toFixed(1)} t</span>
+                          <span>{formatVolume(s.totalVolume)}</span>
                         </>
                       )}
+                      <ChevronRight className="size-3.5 text-foreground/30 ml-1" />
                     </div>
                   </button>
                 </li>
