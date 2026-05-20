@@ -3,12 +3,16 @@ import { test, expect } from '@playwright/test';
 test.use({ storageState: 'e2e/.auth/trainer.json' });
 
 test.describe('Trainer: Body Tests', () => {
-  test('existing seeded body tests are visible on page load', async ({ page }) => {
+  async function goToBodyTestsTab(page: import('@playwright/test').Page) {
     await page.goto('/trainer/members');
-    await page.getByText('Test Member').click();
+    await page.getByRole('link', { name: 'View Hub →' }).first().click();
     await page.waitForURL(/\/trainer\/members\/.+$/);
     await page.getByRole('link', { name: 'Body Tests', exact: true }).click();
     await page.waitForURL(/\/trainer\/members\/.+\/body-tests/);
+  }
+
+  test('existing seeded body tests are visible on page load', async ({ page }) => {
+    await goToBodyTestsTab(page);
     // Latest seeded member test: weight 75, BF 18.0%
     await expect(page.getByText('75kg').first()).toBeVisible();
     await expect(page.getByText('18.0%').first()).toBeVisible();
@@ -17,11 +21,7 @@ test.describe('Trainer: Body Tests', () => {
   // The dialog form lives behind the "New Test" button. Age & sex come from
   // the member's profile — no #age input exists on screen.
   async function openNewTestDialog(page: import('@playwright/test').Page) {
-    await page.goto('/trainer/members');
-    await page.getByText('Test Member').click();
-    await page.waitForURL(/\/trainer\/members\/.+$/);
-    await page.getByRole('link', { name: 'Body Tests', exact: true }).click();
-    await page.waitForURL(/\/trainer\/members\/.+\/body-tests/);
+    await goToBodyTestsTab(page);
     await page.getByRole('button', { name: 'New Test' }).click();
     await expect(page.getByRole('heading', { name: 'New Body Test' })).toBeVisible();
   }
@@ -76,6 +76,13 @@ test.describe('Trainer: Body Tests', () => {
     await page.getByRole('button', { name: 'Save' }).click();
 
     await expect(page.getByText('78kg').first()).toBeVisible({ timeout: 8000 });
+  });
+
+  // ── Trend chart (seed has 6 body tests → chart should render) ────────────
+  test('body test tab shows trend chart with multiple historical tests', async ({ page }) => {
+    await goToBodyTestsTab(page);
+    // Recharts renders a container when chart data is present (≥2 tests)
+    await expect(page.locator('.recharts-responsive-container').first()).toBeVisible();
   });
 
   test('add manual (other protocol) body test for member', async ({ page }) => {

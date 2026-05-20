@@ -36,7 +36,7 @@ test.describe('trainer: member plan session lifecycle', () => {
     // Discover the seeded member's id by navigating to the members page and
     // reading the URL after clicking — same pattern other trainer specs use.
     await page.goto('/trainer/members');
-    await page.getByText('Test Member').click();
+    await page.getByRole('link', { name: 'View Hub →' }).first().click();
     await page.waitForURL(/\/trainer\/members\/[^/]+$/);
     const memberId = page.url().split('/').pop()!;
 

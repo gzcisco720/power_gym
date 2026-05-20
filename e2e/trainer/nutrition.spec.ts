@@ -41,14 +41,17 @@ test.describe('Trainer: Nutrition Templates', () => {
     await expect(page.getByPlaceholder('Search foods...')).toBeVisible();
   });
 
-  test('member nutrition page shows 3-section layout', async ({ page }) => {
-    // Navigate to a member's nutrition page via the members list
+  async function goToMemberNutrition(page: import('@playwright/test').Page) {
     await page.goto('/trainer/members');
-    await page.getByText('Test Member').click();
+    await page.getByRole('link', { name: 'View Hub →' }).first().click();
     await page.waitForURL(/\/trainer\/members\/.+$/);
-
     await page.getByRole('link', { name: 'Nutrition', exact: true }).click();
     await page.waitForURL(/\/trainer\/members\/.+\/nutrition/);
+  }
+
+  test('member nutrition page shows 3-section layout', async ({ page }) => {
+    // Navigate to a member's nutrition page via the members list
+    await goToMemberNutrition(page);
 
     // Sections: Current Plan (always), Schedule + History (when active plan + history exist)
     await expect(page.getByRole('heading', { name: 'Current Plan' })).toBeVisible();
@@ -57,24 +60,42 @@ test.describe('Trainer: Nutrition Templates', () => {
   });
 
   test('member nutrition Current Plan section shows seeded plan', async ({ page }) => {
-    await page.goto('/trainer/members');
-    await page.getByText('Test Member').click();
-    await page.waitForURL(/\/trainer\/members\/.+$/);
-
-    await page.getByRole('link', { name: 'Nutrition', exact: true }).click();
-    await page.waitForURL(/\/trainer\/members\/.+\/nutrition/);
-
+    await goToMemberNutrition(page);
     // Current Plan section shows the seeded active plan
     await expect(page.getByText('E2E Nutrition Template').first()).toBeVisible();
   });
 
+  // ── Member nutrition tab: macro cards ────────────────────────────────────
+  test('member nutrition Training Day macro card shows computed totals', async ({ page }) => {
+    await goToMemberNutrition(page);
+
+    // Seed: Rice 100g + Chicken 150g → 613 kcal, 54g protein, 79g carbs, 6g fat
+    await expect(page.getByText('Training Day').first()).toBeVisible();
+    await expect(page.getByText('613')).toBeVisible();
+    await expect(page.getByText('54g')).toBeVisible();
+    await expect(page.getByText('79g')).toBeVisible();
+    await expect(page.getByText('6g')).toBeVisible();
+  });
+
+  test('member nutrition Weekly Schedule section shows day grid', async ({ page }) => {
+    await goToMemberNutrition(page);
+    await expect(page.getByText('Weekly Schedule')).toBeVisible();
+    // Day abbreviations are always rendered in the 7-column schedule grid
+    await expect(page.getByText('Mon')).toBeVisible();
+    await expect(page.getByText('Sun')).toBeVisible();
+  });
+
+  test('Edit Schedule button opens Sheet with correct title', async ({ page }) => {
+    await goToMemberNutrition(page);
+    await page.getByRole('button', { name: 'Edit Schedule' }).click();
+    await expect(page.getByText('Edit Schedule').nth(1)).toBeVisible();
+    // Sheet body warning is also shown
+    await expect(page.getByText(/today.*locked/i)).toBeVisible();
+  });
+
   test('assigning nutrition plan sends email to member', async ({ page }) => {
     const before = new Date();
-    await page.goto('/trainer/members');
-    await page.getByText('Test Member').click();
-    await page.waitForURL(/\/trainer\/members\/.+$/);
-    await page.getByRole('link', { name: 'Nutrition', exact: true }).click();
-    await page.waitForURL(/\/trainer\/members\/.+\/nutrition/);
+    await goToMemberNutrition(page);
 
     await page.getByRole('button', { name: 'Change Plan' }).click();
     await page.getByLabel('Select nutrition template').selectOption({ label: 'E2E Nutrition Template' });
