@@ -94,6 +94,7 @@ export function MemberStrengthSelectorClient({ exercises, memberId }: Props) {
                   stroke="currentColor"
                 />
                 <YAxis
+                  domain={['auto', 'auto']}
                   tick={{ fontSize: 10, fill: 'currentColor' }}
                   className="text-foreground/65"
                   stroke="currentColor"

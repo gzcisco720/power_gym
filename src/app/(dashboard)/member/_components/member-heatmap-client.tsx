@@ -103,7 +103,7 @@ export function MemberHeatmapClient({ heatmapData }: MemberHeatmapClientProps) {
                       day.hasSession
                         ? 'bg-emerald-500'
                         : day.inRange
-                          ? 'bg-muted'
+                          ? 'bg-muted/30'
                           : 'bg-transparent'
                     }`}
                   />
