@@ -181,16 +181,18 @@ export function TrainerMemberNutritionClient({ memberId, templates }: Props) {
 
           <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 space-y-3">
             {weeklyPattern.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 {[0,1,2,3,4,5,6].map((d) => {
                   const entry = weeklyPattern.find((w) => w.dayOfWeek === d);
                   return (
-                    <div key={d} className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-medium text-foreground/40 w-7">{DAY_LABELS[d]}</span>
-                      <span className={`rounded-md px-2 py-0.5 text-[11px] font-medium ${
+                    <div key={d} className="flex flex-col gap-1">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground/35">
+                        {DAY_LABELS[d]}
+                      </span>
+                      <span className={`rounded-md px-2 py-1 text-[11px] font-medium text-center ${
                         entry
                           ? 'bg-primary/12 text-primary-light border border-primary/20'
-                          : 'bg-muted/50 text-foreground/30 border border-foreground/8'
+                          : 'bg-muted/50 text-foreground/25 border border-foreground/8'
                       }`}>
                         {entry ? entry.dayTypeName : '—'}
                       </span>
