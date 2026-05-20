@@ -54,6 +54,8 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Health Profile Module A — Data Layer | [health-module-a-data-layer.md](2026-05-19/plans/health-module-a-data-layer.md) | In Progress |
 | Member Hub Header Redesign | [member-hub-header-redesign.md](2026-05-20/plans/member-hub-header-redesign.md) | Approved |
 | Member Hub Header Redesign (Plan) | [member-hub-header-redesign-plan.md](2026-05-20/plans/member-hub-header-redesign-plan.md) | In Progress |
+| Member Hub Overview Redesign | [member-hub-overview-redesign.md](2026-05-20/plans/member-hub-overview-redesign.md) | Approved |
+| Member Hub Overview Redesign (Plan) | [member-hub-overview-redesign-plan.md](2026-05-20/plans/member-hub-overview-redesign-plan.md) | In Progress |
 
 ---
 
