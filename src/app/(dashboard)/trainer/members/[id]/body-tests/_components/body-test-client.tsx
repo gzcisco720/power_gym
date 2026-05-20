@@ -17,6 +17,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { MemberBodyChartClient } from '@/app/(dashboard)/member/_components/member-body-chart-client';
 import { NewBodyTestDialog } from './new-body-test-dialog';
 import type { BodyTestRecord } from './types';
 
@@ -30,14 +31,6 @@ interface Props {
   defaultAge?: number | null;
 }
 
-const ACCENT_BORDERS = [
-  'border-t-rose-400/50',
-  'border-t-violet-400/50',
-  'border-t-sky-400/50',
-  'border-t-amber-400/50',
-  'border-t-emerald-400/50',
-];
-
 const PROTOCOL_LABELS: Record<string, string> = {
   '3site': '3-Site · Jackson-Pollock',
   '7site': '7-Site · Jackson-Pollock',
@@ -45,10 +38,11 @@ const PROTOCOL_LABELS: Record<string, string> = {
   other: 'Other',
 };
 
-function hashIndex(s: string, mod: number): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
-  return Math.abs(h) % mod;
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function formatTestDate(iso: string): string {
+  const d = new Date(iso);
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 }
 
 function sortByDateDesc(tests: BodyTestRecord[]): BodyTestRecord[] {
@@ -65,6 +59,22 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
   const latest = tests[0] ?? null;
   const prev = tests[1] ?? null;
   const bfChange = latest && prev ? latest.bodyFatPct - prev.bodyFatPct : null;
+
+  // Compute chart points in chronological order from the sorted-desc list
+  const chartPoints = [...tests]
+    .reverse()
+    .map((t) => ({
+      date: `${MONTHS[new Date(t.date).getMonth()]} ${new Date(t.date).getDate()}`,
+      weight: parseFloat(t.weight.toFixed(1)),
+      bodyFatPct: parseFloat(t.bodyFatPct.toFixed(1)),
+    }));
+
+  // Only show protocol badge per-card if tests use multiple different protocols
+  const uniqueProtocols = new Set(tests.map((t) => t.protocol));
+  const allSameProtocol = uniqueProtocols.size === 1;
+  const sharedProtocolLabel = allSameProtocol
+    ? (PROTOCOL_LABELS[tests[0]!.protocol] ?? tests[0]!.protocol)
+    : null;
 
   function handleSaved(test: BodyTestRecord) {
     setTests((current) => sortByDateDesc([test, ...current]));
@@ -104,11 +114,11 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
     <div>
       <PageHeader
         title={memberName ? `${memberName}'s Body Tests` : 'Body Tests'}
-        subtitle={`${tests.length} record${tests.length !== 1 ? 's' : ''}`}
+        subtitle={`${tests.length} record${tests.length !== 1 ? 's' : ''}${sharedProtocolLabel ? ` · ${sharedProtocolLabel}` : ''}`}
         actions={dialogTrigger}
       />
 
-      <div className="px-4 sm:px-8 py-7">
+      <div className="px-4 sm:px-8 py-7 space-y-6">
         {tests.length === 0 ? (
           <EmptyState
             heading="No body tests yet"
@@ -117,7 +127,16 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
           />
         ) : (
           <>
-            <div className="mb-6 grid grid-cols-4 gap-3 rounded-xl bg-[#080808] border border-[#141414] p-4">
+            {/* Trend chart */}
+            <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-foreground/65 mb-3">
+                Body Composition Trend
+              </div>
+              <MemberBodyChartClient points={chartPoints} />
+            </div>
+
+            {/* Summary stats */}
+            <div className="grid grid-cols-4 gap-3 rounded-xl bg-card ring-1 ring-foreground/10 p-4">
               <SummaryCell label="Latest Weight" value={String(latest!.weight)} unit="kg" color="text-foreground" />
               <SummaryCell label="Body Fat" value={latest!.bodyFatPct.toFixed(1)} unit="%" color="text-rose-400" />
               <SummaryCell label="Lean Mass" value={latest!.leanMassKg.toFixed(1)} unit="kg" color="text-sky-400" />
@@ -129,65 +148,62 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
               />
             </div>
 
+            {/* Test cards */}
             <motion.div
               className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
               variants={variants.staggerContainer}
               initial="hidden"
               animate="visible"
             >
-              {tests.map((test) => {
-                const accent = ACCENT_BORDERS[hashIndex(test._id, ACCENT_BORDERS.length)];
-                return (
-                  <motion.div
-                    key={test._id}
-                    variants={shouldReduce ? undefined : variants.staggerItem}
-                    initial={shouldReduce ? { opacity: 1 } : undefined}
-                    className="relative"
-                  >
-                    <div className={`rounded-xl border border-[#141414] border-t-2 ${accent} bg-[#0c0c0c] p-4 pr-11`}>
-                      <div className="text-sm font-semibold text-white">
-                        {new Date(test.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-                      </div>
-                      <div className="mt-1.5 inline-flex rounded px-1.5 py-0.5 text-[10px] ring-1 bg-violet-500/10 text-violet-300 ring-violet-500/20">
+              {tests.map((test) => (
+                <motion.div
+                  key={test._id}
+                  variants={shouldReduce ? undefined : variants.staggerItem}
+                  initial={shouldReduce ? { opacity: 1 } : undefined}
+                  className="relative"
+                >
+                  <div className="rounded-xl bg-card ring-1 ring-foreground/10 hover:ring-foreground/20 transition-shadow p-4 pr-11">
+                    <div className="text-sm font-semibold text-foreground">
+                      {formatTestDate(test.date)}
+                    </div>
+                    {!allSameProtocol && (
+                      <div className="mt-1.5 inline-flex rounded px-1.5 py-0.5 text-[10px] ring-1 bg-primary/10 text-primary-light ring-primary/20">
                         {PROTOCOL_LABELS[test.protocol] ?? test.protocol}
                       </div>
-                      <div className="mt-3 grid grid-cols-4 gap-1.5 border-t border-[#1a1a1a] pt-3 text-center">
-                        <StatCell value={String(test.weight)} unit="kg" label="Weight" color="text-foreground" />
-                        <StatCell value={test.bodyFatPct.toFixed(1)} unit="%" label="BF" color="text-rose-400" />
-                        <StatCell value={test.leanMassKg.toFixed(1)} unit="kg" label="Lean" color="text-sky-400" />
-                        <StatCell value={test.fatMassKg.toFixed(1)} unit="kg" label="Fat" color="text-amber-400" />
-                      </div>
+                    )}
+                    <div className="mt-3 grid grid-cols-4 gap-1.5 border-t border-foreground/8 pt-3 text-center">
+                      <StatCell value={String(test.weight)} unit="kg" label="Weight" color="text-foreground" />
+                      <StatCell value={test.bodyFatPct.toFixed(1)} unit="%" label="BF" color="text-rose-400" />
+                      <StatCell value={test.leanMassKg.toFixed(1)} unit="kg" label="Lean" color="text-sky-400" />
+                      <StatCell value={test.fatMassKg.toFixed(1)} unit="kg" label="Fat" color="text-amber-400" />
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setDeleteTarget(test)}
-                      className="absolute right-2 top-2 size-8 text-foreground/40 hover:bg-[#141414] hover:text-red-400"
-                      aria-label="Delete"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </motion.div>
-                );
-              })}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setDeleteTarget(test)}
+                    className="absolute right-2 top-2 size-8 text-foreground/30 hover:bg-muted hover:text-destructive"
+                    aria-label="Delete"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </motion.div>
+              ))}
             </motion.div>
           </>
         )}
       </div>
 
       <Dialog open={deleteTarget !== null} onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}>
-        <DialogContent className="bg-[#0c0c0c] border-[#1e1e1e] max-w-sm">
+        <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Delete Body Test</DialogTitle>
             <DialogDescription className="text-foreground/65">
-              {deleteTarget
-                ? new Date(deleteTarget.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-                : ''}{' '}
-              — are you sure? This cannot be undone.
+              {deleteTarget ? formatTestDate(deleteTarget.date) : ''} — are you sure? This cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setDeleteTarget(null)} className="text-foreground/65 border border-[#222]">
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
               Cancel
             </Button>
             <Button
