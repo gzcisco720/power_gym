@@ -11,15 +11,44 @@ import { ActiveSessionPrompt } from '@/components/shared/active-session-prompt';
 import { SessionPeekSheet } from './session-peek-sheet';
 import type { SessionSummary } from '@/lib/training/session-summary';
 
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
 function formatDate(iso: string): string {
   const d = new Date(iso);
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 }
 
 function formatVolume(kg: number): string {
   if (kg >= 1000) return `${(kg / 1000).toFixed(1)} ton`;
   return `${kg} kg`;
+}
+
+// Returns a full static Tailwind bg class for the left-bar color indicator.
+// All strings are complete class names so Tailwind's scanner can detect them.
+function dayAccentBg(dayName: string): string {
+  const n = dayName.toLowerCase();
+  if (n.includes('push'))  return 'bg-primary/50';
+  if (n.includes('pull'))  return 'bg-emerald-500/50';
+  if (n.includes('legs') || n.includes('leg')) return 'bg-amber-500/50';
+  if (n.includes('upper')) return 'bg-purple-500/50';
+  if (n.includes('lower')) return 'bg-orange-500/50';
+  const palette = ['bg-sky-500/50', 'bg-pink-500/50', 'bg-violet-500/50'];
+  let h = 0;
+  for (let i = 0; i < dayName.length; i++) h += dayName.charCodeAt(i);
+  return palette[h % palette.length];
+}
+
+function groupByMonth(
+  sessions: SessionSummary[],
+): { label: string; sessions: SessionSummary[] }[] {
+  const map = new Map<string, SessionSummary[]>();
+  for (const s of sessions) {
+    const d = new Date(s.startedAt);
+    const key = `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(s);
+  }
+  return Array.from(map.entries()).map(([label, sessions]) => ({ label, sessions }));
 }
 
 function pbGridCols(count: number): string {
@@ -60,7 +89,6 @@ interface ActivePromptInfo {
 
 interface Props {
   memberId: string;
-  memberName?: string;
   templates: Template[];
   activePlan: ActivePlan | null;
   sessions: SessionSummary[];
@@ -85,6 +113,13 @@ export function TrainerMemberPlanClient({
   const [peekSession, setPeekSession] = useState<SessionSummary | null>(null);
 
   const [conflictBanner, setConflictBanner] = useState<ActiveConflict | null>(conflict ?? null);
+  const [prevSessions, setPrevSessions] = useState(sessions);
+  const [visibleCount, setVisibleCount] = useState(8);
+
+  if (prevSessions !== sessions) {
+    setPrevSessions(sessions);
+    setVisibleCount(8);
+  }
 
   async function assignPlan(): Promise<boolean> {
     if (!selectedTemplate) return false;
@@ -261,44 +296,72 @@ export function TrainerMemberPlanClient({
       {sessions.length > 0 && (
         <section className="px-4 sm:px-8">
           <SectionHeader title="Session History" />
-          <ul className="mt-3 space-y-1.5">
-            {sessions.map((s) => {
-              const isActive = s.completedAt === null;
-              const date = formatDate(s.startedAt);
-              return (
-                <li key={s._id}>
-                  <button
-                    type="button"
-                    onClick={() => setPeekSession(s)}
-                    className="w-full rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 hover:ring-foreground/25 transition-colors flex items-center text-left cursor-pointer"
-                  >
-                    <div className="min-w-0 flex items-center gap-2">
-                      <span className="text-sm font-semibold text-foreground">{s.dayName}</span>
-                      <span className="text-xs text-foreground/65">·</span>
-                      <span className="text-xs text-foreground/65">{date}</span>
-                      {isActive && (
-                        <span className="inline-flex items-center rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-400 ring-1 ring-amber-500/30 shrink-0">
-                          Active
-                        </span>
-                      )}
-                    </div>
-                    <div className="ml-auto flex items-center gap-3 shrink-0 text-xs text-foreground/65 tabular-nums">
-                      <span>{s.exerciseCount} ex</span>
-                      <span className="text-foreground/40">·</span>
-                      <span>{s.setCount} sets</span>
-                      {s.totalVolume > 0 && (
-                        <>
-                          <span className="text-foreground/40">·</span>
-                          <span>{formatVolume(s.totalVolume)}</span>
-                        </>
-                      )}
-                      <ChevronRight className="size-3.5 text-foreground/30 ml-1" />
-                    </div>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+
+          <div className="mt-3 space-y-5">
+            {groupByMonth(sessions.slice(0, visibleCount)).map(({ label, sessions: group }) => (
+              <div key={label}>
+                <div className="flex items-center gap-2 mb-2 px-1">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/40">
+                    {label}
+                  </span>
+                  <span className="text-[11px] text-foreground/25">
+                    {group.length} {group.length === 1 ? 'session' : 'sessions'}
+                  </span>
+                </div>
+                <ul className="space-y-1.5">
+                  {group.map((s) => {
+                    const isActive = s.completedAt === null;
+                    const date = formatDate(s.startedAt);
+                    return (
+                      <li key={s._id}>
+                        <button
+                          type="button"
+                          onClick={() => setPeekSession(s)}
+                          className="w-full rounded-xl bg-card ring-1 ring-foreground/10 hover:ring-foreground/25 transition-colors flex items-stretch text-left cursor-pointer overflow-hidden"
+                        >
+                          <div className={`w-1 shrink-0 ${dayAccentBg(s.dayName)}`} />
+                          <div className="flex items-center flex-1 px-3 py-2">
+                            <div className="min-w-0 flex items-center gap-2">
+                              <span className="text-sm font-semibold text-foreground">{s.dayName}</span>
+                              <span className="text-xs text-foreground/40">·</span>
+                              <span className="text-xs text-foreground/65">{date}</span>
+                              {isActive && (
+                                <span className="inline-flex items-center rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-400 ring-1 ring-amber-500/30 shrink-0">
+                                  Active
+                                </span>
+                              )}
+                            </div>
+                            <div className="ml-auto flex items-center gap-3 shrink-0 text-xs text-foreground/65 tabular-nums">
+                              <span>{s.exerciseCount} ex</span>
+                              <span className="text-foreground/40">·</span>
+                              <span>{s.setCount} sets</span>
+                              {s.totalVolume > 0 && (
+                                <>
+                                  <span className="text-foreground/40">·</span>
+                                  <span>{formatVolume(s.totalVolume)}</span>
+                                </>
+                              )}
+                              <ChevronRight className="size-3.5 text-foreground/30 ml-1" />
+                            </div>
+                          </div>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          {sessions.length > visibleCount && (
+            <button
+              type="button"
+              onClick={() => setVisibleCount((c) => c + 8)}
+              className="mt-4 w-full rounded-xl border border-foreground/10 py-2.5 text-sm text-foreground/50 hover:text-foreground/75 hover:border-foreground/20 transition-colors"
+            >
+              Show {Math.min(8, sessions.length - visibleCount)} more sessions
+            </button>
+          )}
 
           <SessionPeekSheet
             memberId={memberId}
