@@ -166,6 +166,9 @@ export function TrainerMemberNutritionClient({ memberId, templates }: Props) {
               <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
                 <SheetHeader className="mb-6">
                   <SheetTitle>Edit Schedule</SheetTitle>
+                  <p className="text-[12px] text-foreground/45 mt-1">
+                    Changes to the weekly pattern take effect immediately. Date overrides can only be added from tomorrow onwards — today&apos;s schedule is locked.
+                  </p>
                 </SheetHeader>
                 <ScheduleEditor
                   memberId={memberId}
