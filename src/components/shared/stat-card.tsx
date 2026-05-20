@@ -8,6 +8,7 @@ interface StatCardProps {
   value: string;
   unit?: string;
   delta?: string;
+  deltaVariant?: 'success' | 'warning' | 'neutral';
   accentColor?: 'primary' | 'success' | 'achievement';
 }
 
@@ -17,10 +18,18 @@ const accentMap = {
   achievement: 'bg-amber-500/10 ring-amber-500/20',
 } as const;
 
-export function StatCard({ label, value, unit, delta, accentColor }: StatCardProps) {
+const deltaColorMap = {
+  success: 'text-emerald-400',
+  warning: 'text-amber-400',
+  neutral: 'text-foreground/50',
+} as const;
+
+export function StatCard({ label, value, unit, delta, deltaVariant, accentColor }: StatCardProps) {
   const surfaceClass = accentColor
     ? accentMap[accentColor]
     : 'bg-white/[.04] ring-white/10';
+
+  const deltaColorClass = deltaVariant ? deltaColorMap[deltaVariant] : 'text-foreground/65';
 
   return (
     <div className={`rounded-xl ring-1 backdrop-blur-sm p-4 ${surfaceClass}`}>
@@ -39,7 +48,7 @@ export function StatCard({ label, value, unit, delta, accentColor }: StatCardPro
         )}
       </motion.div>
       {delta && (
-        <div className="mt-1.5 text-xs text-foreground/65">{delta}</div>
+        <div className={`mt-1.5 text-xs ${deltaColorClass}`}>{delta}</div>
       )}
     </div>
   );
