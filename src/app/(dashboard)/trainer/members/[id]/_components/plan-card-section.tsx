@@ -1,15 +1,24 @@
 import Link from 'next/link';
 import { connectDB } from '@/lib/db/connect';
 import { MongoMemberPlanRepository } from '@/lib/repositories/member-plan.repository';
+import { MongoWorkoutSessionRepository } from '@/lib/repositories/workout-session.repository';
 
 function formatAssignedDate(date: Date): string {
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 }
 
+function formatSessionDate(date: Date): string {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[date.getMonth()]} ${date.getDate()}`;
+}
+
 export async function PlanCardSection({ memberId }: { memberId: string }) {
   await connectDB();
-  const plan = await new MongoMemberPlanRepository().findActive(memberId);
+  const [plan, recentSessions] = await Promise.all([
+    new MongoMemberPlanRepository().findActive(memberId),
+    new MongoWorkoutSessionRepository().findRecentCompletedByMemberIds([memberId], 4),
+  ]);
 
   const planHref = `/trainer/members/${memberId}/plan`;
 
@@ -63,6 +72,22 @@ export async function PlanCardSection({ memberId }: { memberId: string }) {
           </Link>
         </div>
       </div>
+
+      {recentSessions.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-primary/12">
+          <div className="text-[10px] font-semibold uppercase tracking-widest text-foreground/35 mb-2">
+            Recent Sessions
+          </div>
+          <div className="space-y-1.5">
+            {recentSessions.map((s, i) => (
+              <div key={i} className="flex items-center justify-between">
+                <span className="text-[13px] text-foreground/80">{s.dayName}</span>
+                <span className="text-[12px] text-foreground/40">{formatSessionDate(s.completedAt)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
