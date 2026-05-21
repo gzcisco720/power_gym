@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useMemberHub } from '../../_components/member-hub-provider';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ChevronRight, TriangleAlert } from 'lucide-react';
@@ -107,6 +108,7 @@ export function TrainerMemberPlanClient({
   activePrompt,
 }: Props) {
   const router = useRouter();
+  const { basePath } = useMemberHub();
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [assigning, setAssigning] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number>(activePlan?.days[0]?.dayNumber ?? 1);
@@ -155,7 +157,7 @@ export function TrainerMemberPlanClient({
             dayName={activePrompt.dayName}
             startedAtIso={activePrompt.startedAtIso}
             lastActivityAtIso={activePrompt.lastActivityAtIso}
-            continueHref={`/trainer/members/${memberId}/log/${activePrompt.sessionId}`}
+            continueHref={`${basePath}/log/${activePrompt.sessionId}`}
             sealEndpoint={`/api/sessions/${activePrompt.sessionId}/seal`}
             deleteEndpoint={`/api/sessions/${activePrompt.sessionId}`}
           />
@@ -174,7 +176,7 @@ export function TrainerMemberPlanClient({
               </p>
             </div>
             <a
-              href={`/trainer/members/${memberId}/log/${conflictBanner.sessionId}`}
+              href={`${basePath}/log/${conflictBanner.sessionId}`}
               className="shrink-0 inline-flex items-center rounded-md bg-amber-500/20 px-3 py-1.5 text-xs font-semibold text-amber-100 ring-1 ring-amber-500/40 hover:bg-amber-500/30 transition-colors"
             >
               Open
@@ -221,7 +223,7 @@ export function TrainerMemberPlanClient({
                   ))}
                 </select>
                 <a
-                  href={`/trainer/members/${memberId}/log/new?day=${selectedDay}`}
+                  href={`${basePath}/log/new?day=${selectedDay}`}
                   className="inline-flex items-center rounded-md bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-400 ring-1 ring-emerald-500/30 hover:bg-emerald-500/25 transition-colors"
                 >
                   Log Workout

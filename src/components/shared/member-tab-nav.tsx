@@ -10,6 +10,6 @@ const TABS = [
   { label: 'Photos', segment: '/photos' },
 ] as const;
 
-export function MemberTabNav({ memberId }: { memberId: string }) {
-  return <TabNav base={`/trainer/members/${memberId}`} tabs={TABS} />;
+export function MemberTabNav({ basePath }: { basePath: string }) {
+  return <TabNav base={basePath} tabs={TABS} />;
 }

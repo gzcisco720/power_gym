@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useMemberHub } from '../../../_components/member-hub-provider';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -83,6 +84,7 @@ function emptyMeal(order: number): IMeal {
 
 export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
   const router = useRouter();
+  const { basePath } = useMemberHub();
   const [name, setName] = useState(initialData?.name ?? '');
   const [dayTypes, setDayTypes] = useState<IDayType[]>(initialData?.dayTypes ?? []);
   const [collapsed, setCollapsed] = useState<Record<number, boolean>>({});
@@ -248,7 +250,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
       }
 
       toast.success('Plan saved');
-      router.push(`/trainer/members/${memberId}/nutrition`);
+      router.push(`${basePath}/nutrition`);
     } finally {
       setSaving(false);
     }
@@ -440,7 +442,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
         <div className="flex items-center justify-end gap-3">
           <button
             type="button"
-            onClick={() => router.push(`/trainer/members/${memberId}/nutrition`)}
+            onClick={() => router.push(`${basePath}/nutrition`)}
             className="text-sm text-foreground/65 hover:text-foreground/80"
           >
             Cancel

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { auth } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
 import { MongoMemberInjuryRepository } from '@/lib/repositories/member-injury.repository';
 import { MongoMemberMedicationRepository } from '@/lib/repositories/member-medication.repository';
@@ -9,6 +10,7 @@ function formatSinceDate(date: Date): string {
 }
 
 export async function HealthPanelSection({ memberId }: { memberId: string }) {
+  const session = await auth();
   await connectDB();
   const [injuries, allMeds] = await Promise.all([
     new MongoMemberInjuryRepository().findActiveByMember(memberId),
@@ -17,7 +19,8 @@ export async function HealthPanelSection({ memberId }: { memberId: string }) {
   const activeMeds = allMeds.filter((m) => m.status === 'active');
   const hasContent = injuries.length > 0 || activeMeds.length > 0;
 
-  const healthHref = `/trainer/members/${memberId}/health`;
+  const memberBase = session?.user.role === 'owner' ? `/owner/members/${memberId}` : `/trainer/members/${memberId}`;
+  const healthHref = `${memberBase}/health`;
 
   if (!hasContent) {
     return (

@@ -70,7 +70,7 @@ export function TrainerHubMembersClient({ members, trainers, currentTrainerId }:
               </span>
               <div className="flex items-center gap-2 shrink-0">
                 <Link
-                  href={`/trainer/members/${member._id}`}
+                  href={`/owner/members/${member._id}`}
                   className="text-[11px] text-foreground/35 hover:text-foreground/70 transition-colors"
                 >
                   View →

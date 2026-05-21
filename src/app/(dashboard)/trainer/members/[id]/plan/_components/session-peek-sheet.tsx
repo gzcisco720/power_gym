@@ -3,6 +3,7 @@
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { ArrowUpRight } from 'lucide-react';
 import type { SessionSummary } from '@/lib/training/session-summary';
+import { useMemberHub } from '../../_components/member-hub-provider';
 
 interface Props {
   memberId: string;
@@ -11,7 +12,8 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
-export function SessionPeekSheet({ memberId, session, open, onOpenChange }: Props) {
+export function SessionPeekSheet({ session, open, onOpenChange }: Props) {
+  const { basePath } = useMemberHub();
   if (!session) return null;
 
   const date = new Date(session.startedAt).toLocaleDateString('en-US', {
@@ -70,7 +72,7 @@ export function SessionPeekSheet({ memberId, session, open, onOpenChange }: Prop
 
         <div className="mt-auto">
           <a
-            href={`/trainer/members/${memberId}/log/${session._id}`}
+            href={`${basePath}/log/${session._id}`}
             className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-foreground text-background px-4 py-2 text-sm font-semibold hover:bg-foreground/90 transition-colors"
           >
             Open in full view

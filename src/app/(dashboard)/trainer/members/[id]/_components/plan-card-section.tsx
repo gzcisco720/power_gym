@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { auth } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
 import { MongoMemberPlanRepository } from '@/lib/repositories/member-plan.repository';
 import { MongoWorkoutSessionRepository } from '@/lib/repositories/workout-session.repository';
@@ -14,13 +15,15 @@ function formatSessionDate(date: Date): string {
 }
 
 export async function PlanCardSection({ memberId }: { memberId: string }) {
+  const session = await auth();
   await connectDB();
   const [plan, recentSessions] = await Promise.all([
     new MongoMemberPlanRepository().findActive(memberId),
     new MongoWorkoutSessionRepository().findRecentCompletedByMemberIds([memberId], 4),
   ]);
 
-  const planHref = `/trainer/members/${memberId}/plan`;
+  const memberBase = session?.user.role === 'owner' ? `/owner/members/${memberId}` : `/trainer/members/${memberId}`;
+  const planHref = `${memberBase}/plan`;
 
   if (!plan) {
     return (

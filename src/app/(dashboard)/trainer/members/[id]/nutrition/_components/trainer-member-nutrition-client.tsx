@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useMemberHub } from '../../_components/member-hub-provider';
 import { useRouter } from 'next/navigation';
 import { Settings2, Check, ChevronsUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -105,7 +106,6 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
           {!loading && active && (
             <ChangePlanDialog
               templates={templates}
-              memberId={memberId}
               triggerLabel="Change Plan"
             />
           )}
@@ -170,7 +170,6 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
             <p className="text-sm text-foreground/45">No nutrition plan assigned</p>
             <ChangePlanDialog
               templates={templates}
-              memberId={memberId}
               triggerLabel="Assign Plan"
             />
           </div>
@@ -365,22 +364,21 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
 
 function ChangePlanDialog({
   templates,
-  memberId,
   triggerLabel,
 }: {
   templates: TemplateOption[];
-  memberId: string;
   triggerLabel: string;
 }) {
   const router = useRouter();
+  const { basePath } = useMemberHub();
   const [open, setOpen] = useState(false);
   const [comboOpen, setComboOpen] = useState(false);
   const [selectedId, setSelectedId] = useState('');
 
   function handleOpen(): void {
     const url = selectedId
-      ? `/trainer/members/${memberId}/nutrition/new?templateId=${selectedId}`
-      : `/trainer/members/${memberId}/nutrition/new`;
+      ? `${basePath}/nutrition/new?templateId=${selectedId}`
+      : `${basePath}/nutrition/new`;
     router.push(url);
     setOpen(false);
   }

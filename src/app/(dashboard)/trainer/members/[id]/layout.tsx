@@ -5,6 +5,7 @@ import { connectDB } from '@/lib/db/connect';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { MongoMemberPlanRepository } from '@/lib/repositories/member-plan.repository';
 import { MemberTabNav } from '@/components/shared/member-tab-nav';
+import { MemberHubProvider } from './_components/member-hub-provider';
 import type { UserRole } from '@/types/auth';
 
 interface MemberHubLayoutProps {
@@ -42,9 +43,10 @@ export default async function MemberHubLayout({ children, params }: MemberHubLay
     .slice(0, 2)
     .toUpperCase();
 
+  const memberBase = role === 'owner' ? `/owner/members/${memberId}` : `/trainer/members/${memberId}`;
   const backHref = role === 'owner' ? '/owner/members' : '/trainer/members';
   const backLabel = role === 'owner' ? '← All Members' : '← Members';
-  const planHref = `/trainer/members/${memberId}/plan`;
+  const planHref = `${memberBase}/plan`;
 
   return (
     <div>
@@ -89,10 +91,12 @@ export default async function MemberHubLayout({ children, params }: MemberHubLay
         </div>
 
         {/* Tab bar */}
-        <MemberTabNav memberId={memberId} />
+        <MemberTabNav basePath={memberBase} />
       </div>
 
-      <main>{children}</main>
+      <MemberHubProvider basePath={memberBase}>
+        <main>{children}</main>
+      </MemberHubProvider>
     </div>
   );
 }

@@ -21,12 +21,13 @@ export default async function TrainerLogSessionPage({
     new MongoUserRepository().findById(memberId),
   ]);
 
-  if (!workoutSession) redirect(`/trainer/members/${memberId}/plan`);
+  const memberBase = session.user.role === 'owner' ? `/owner/members/${memberId}` : `/trainer/members/${memberId}`;
+  if (!workoutSession) redirect(`${memberBase}/plan`);
 
   return (
     <SessionLogger
       session={JSON.parse(JSON.stringify(workoutSession))}
-      backPath={`/trainer/members/${memberId}/plan`}
+      backPath={`${memberBase}/plan`}
       mode="trainer"
       loggedForMember={{ id: memberId, name: member?.name ?? 'Member' }}
     />

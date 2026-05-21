@@ -190,7 +190,7 @@ export function MemberListClient({
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <Link
-                  href={`/trainer/members/${member._id}`}
+                  href={`/owner/members/${member._id}`}
                   className="inline-flex h-8 items-center rounded-lg bg-primary/15 px-3 text-xs font-semibold text-primary-light hover:bg-primary/25 transition-colors"
                 >
                   View Hub →

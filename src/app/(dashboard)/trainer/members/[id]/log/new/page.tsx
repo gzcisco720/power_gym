@@ -20,12 +20,12 @@ export default async function TrainerLogNewPage({
 
   await connectDB();
   const plan = await new MongoMemberPlanRepository().findActive(memberId);
-  if (!plan) redirect(`/trainer/members/${memberId}/plan`);
+  if (!plan) redirect(`${session.user.role === 'owner' ? `/owner/members/${memberId}` : `/trainer/members/${memberId}`}/plan`);
 
   const planDay = plan.days.find((d) => d.dayNumber === dayNumber);
-  if (!planDay) redirect(`/trainer/members/${memberId}/plan`);
+  if (!planDay) redirect(`${session.user.role === 'owner' ? `/owner/members/${memberId}` : `/trainer/members/${memberId}`}/plan`);
 
-  if (!process.env.AUTH_URL) redirect(`/trainer/members/${memberId}/plan`);
+  if (!process.env.AUTH_URL) redirect(`${session.user.role === 'owner' ? `/owner/members/${memberId}` : `/trainer/members/${memberId}`}/plan`);
 
   const cookieStore = await cookies();
   const res = await fetch(`${process.env.AUTH_URL}/api/sessions`, {
@@ -39,7 +39,7 @@ export default async function TrainerLogNewPage({
 
   if (res.ok) {
     const data = (await res.json()) as { _id: string };
-    redirect(`/trainer/members/${memberId}/log/${data._id}`);
+    redirect(`${session.user.role === 'owner' ? `/owner/members/${memberId}` : `/trainer/members/${memberId}`}/log/${data._id}`);
   }
 
   if (res.status === 409) {
@@ -51,9 +51,9 @@ export default async function TrainerLogNewPage({
         activeSession: data.activeSession._id,
         activeDayName: data.activeSession.dayName,
       });
-      redirect(`/trainer/members/${memberId}/plan?${params.toString()}`);
+      redirect(`${session.user.role === 'owner' ? `/owner/members/${memberId}` : `/trainer/members/${memberId}`}/plan?${params.toString()}`);
     }
   }
 
-  redirect(`/trainer/members/${memberId}/plan`);
+  redirect(`${session.user.role === 'owner' ? `/owner/members/${memberId}` : `/trainer/members/${memberId}`}/plan`);
 }

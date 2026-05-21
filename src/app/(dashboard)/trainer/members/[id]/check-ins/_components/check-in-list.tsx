@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { SectionHeader } from '@/components/shared/section-header';
 import type { ICheckIn } from '@/lib/db/models/check-in.model';
+import { useMemberHub } from '../../_components/member-hub-provider';
 
 interface Props {
   memberId: string;
@@ -28,7 +29,8 @@ const DIET_COLOR: Record<string, string> = {
   partial: 'text-amber-400',
 };
 
-export function CheckInList({ memberId, checkIns }: Props) {
+export function CheckInList({ checkIns }: Props) {
+  const { basePath } = useMemberHub();
   const [visibleCount, setVisibleCount] = useState(10);
   const visible = checkIns.slice(0, visibleCount);
   const hasMore = checkIns.length > visibleCount;
@@ -51,7 +53,7 @@ export function CheckInList({ memberId, checkIns }: Props) {
               return (
                 <li key={id}>
                   <Link
-                    href={`/trainer/members/${memberId}/check-ins/${id}`}
+                    href={`${basePath}/check-ins/${id}`}
                     className="block rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 hover:ring-foreground/25 transition-colors"
                   >
                     <div className="flex items-center">
