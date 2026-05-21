@@ -70,6 +70,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
   const [active, setActive] = useState<IMemberNutritionPlan | null>(null);
   const [history, setHistory] = useState<IMemberNutritionPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [logVisible, setLogVisible] = useState(10);
 
   useEffect(() => {
     let cancelled = false;
@@ -261,7 +262,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
         <section className="px-4 sm:px-8">
           <SectionHeader title={`Adherence Log (last 30 days)`} />
           <ul className="mt-3 space-y-1.5">
-            {recentLogs.map((log) => {
+            {recentLogs.slice(0, logVisible).map((log) => {
               const target = dayTypeTargets[log.dayTypeName];
               const d = new Date(log.date + 'T00:00:00');
               const dateLabel = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
@@ -314,6 +315,15 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
               );
             })}
           </ul>
+          {recentLogs.length > logVisible && (
+            <button
+              type="button"
+              onClick={() => setLogVisible((c) => c + 10)}
+              className="mt-3 w-full rounded-xl border border-foreground/10 py-2.5 text-sm text-foreground/50 hover:text-foreground/75 hover:border-foreground/20 transition-colors"
+            >
+              Show {Math.min(10, recentLogs.length - logVisible)} more
+            </button>
+          )}
         </section>
       )}
 
