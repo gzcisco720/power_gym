@@ -196,7 +196,8 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
                   memberId={memberId}
                   dayTypeNames={active.dayTypes.map((d) => d.name)}
                   initialSchedule={active.schedule}
-                  onSave={() => { setScheduleOpen(false); setScheduleRefresh((n) => n + 1); }}
+                  mode="edit"
+                  onSave={(_schedule) => { setScheduleOpen(false); setScheduleRefresh((n) => n + 1); }}
                 />
               </SheetContent>
             </Sheet>

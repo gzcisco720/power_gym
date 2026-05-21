@@ -40,9 +40,19 @@ describe('ScheduleEditor', () => {
   it('calls onSave callback after successful save', async () => {
     mockFetch.mockResolvedValueOnce(new Response('{}', { status: 200 }));
     const onSave = jest.fn();
-    render(<ScheduleEditor memberId="m1" dayTypeNames={dayTypeNames} initialSchedule={weeklySchedule} onSave={onSave} />);
+    render(
+      <ScheduleEditor
+        memberId="m1"
+        dayTypeNames={dayTypeNames}
+        initialSchedule={weeklySchedule}
+        mode="edit"
+        onSave={onSave}
+      />,
+    );
     fireEvent.click(screen.getByRole('button', { name: /save schedule/i }));
     await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+    const [passedSchedule] = onSave.mock.calls[0] as [{ weeklyPattern: unknown[] }];
+    expect(passedSchedule).toHaveProperty('weeklyPattern');
   });
 
   it('renders iterate checkbox checked when iterate=true', () => {

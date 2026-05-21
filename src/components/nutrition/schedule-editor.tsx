@@ -13,13 +13,14 @@ type DayOfWeek = (typeof DAY_VALUES)[number];
 const NONE = '__none__';
 
 interface Props {
-  memberId: string;
+  memberId?: string;
   dayTypeNames: string[];
   initialSchedule: ISchedule;
-  onSave?: () => void;
+  onSave?: (schedule: ISchedule) => void;
+  mode?: 'edit' | 'create';
 }
 
-export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule, onSave }: Props) {
+export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule, onSave, mode = 'edit' }: Props) {
   const [weekly, setWeekly] = useState<Record<DayOfWeek, string>>(() => {
     const map = {} as Record<DayOfWeek, string>;
     for (const d of DAY_VALUES) {
@@ -57,13 +58,18 @@ export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule, onSave
     const weeklyPattern: IWeeklyPatternEntry[] = DAY_VALUES
       .filter((d) => weekly[d] !== NONE)
       .map((d) => ({ dayOfWeek: d, dayTypeName: weekly[d] }));
-    await fetch(`/api/members/${memberId}/nutrition/schedule`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ weeklyPattern, calendarOverrides: overrides, iterate }),
-    });
+    const builtSchedule: ISchedule = { weeklyPattern, calendarOverrides: overrides, iterate };
+
+    if (mode === 'edit') {
+      await fetch(`/api/members/${memberId}/nutrition/schedule`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(builtSchedule),
+      });
+    }
+
     setSaving(false);
-    onSave?.();
+    onSave?.(builtSchedule);
   }
 
   return (
