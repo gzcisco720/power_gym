@@ -2,7 +2,7 @@
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 jest.mock('@/lib/auth/auth', () => ({ auth: jest.fn() }));
 jest.mock('@/lib/email/index', () => ({
-  getEmailService: () => ({ sendNutritionPlanAssigned: jest.fn().mockResolvedValue(undefined) }),
+  getEmailService: jest.fn(() => ({ sendNutritionPlanAssigned: jest.fn().mockResolvedValue(undefined) })),
 }));
 
 const mockNutritionPlanRepo = { findActive: jest.fn(), deactivateAll: jest.fn(), create: jest.fn() };
@@ -16,6 +16,7 @@ jest.mock('@/lib/repositories/user.repository', () => ({
 }));
 
 import { auth } from '@/lib/auth/auth';
+import { getEmailService } from '@/lib/email/index';
 const mockAuth = jest.mocked(auth);
 
 const emptySchedule = { weeklyPattern: [], calendarOverrides: [], iterate: true };
@@ -142,11 +143,10 @@ describe('POST /api/members/[memberId]/nutrition', () => {
     });
     mockNutritionPlanRepo.create.mockResolvedValue({ _id: 'np1', name: 'Bulk Plan' });
 
-    // Make the email service throw by mocking it before import
-    const emailModule = jest.mocked(require('@/lib/email/index'));
-    emailModule.getEmailService = jest.fn(() => ({
+    // Override email service to throw for this test
+    jest.mocked(getEmailService).mockReturnValueOnce({
       sendNutritionPlanAssigned: jest.fn().mockRejectedValue(new Error('SMTP down')),
-    }));
+    } as never);
 
     const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
     const res = await POST(makeRequest(validBody), makeParams('m1'));
