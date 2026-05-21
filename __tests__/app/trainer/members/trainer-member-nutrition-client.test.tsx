@@ -11,7 +11,7 @@ describe('TrainerMemberNutritionClient', () => {
     mockFetch
       .mockResolvedValueOnce(new Response(JSON.stringify(null), { status: 200 }))
       .mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }));
-    render(<TrainerMemberNutritionClient memberId="m1" templates={[]} />);
+    render(<TrainerMemberNutritionClient memberId="m1" templates={[]} recentLogs={[]} dayTypeTargets={{}} />);
     await waitFor(() => expect(screen.getByText(/No nutrition plan assigned/i)).toBeInTheDocument());
     expect(screen.getByRole('button', { name: /assign plan/i })).toBeInTheDocument();
     expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -27,7 +27,7 @@ describe('TrainerMemberNutritionClient', () => {
         schedule: { weeklyPattern: [], calendarOverrides: [], iterate: true },
       }), { status: 200 }))
       .mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }));
-    render(<TrainerMemberNutritionClient memberId="m1" templates={[]} />);
+    render(<TrainerMemberNutritionClient memberId="m1" templates={[]} recentLogs={[]} dayTypeTargets={{}} />);
     await waitFor(() => expect(screen.getByText('Bulk')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: /change plan/i })).toBeInTheDocument();
   });

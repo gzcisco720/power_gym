@@ -71,6 +71,8 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
   const [history, setHistory] = useState<IMemberNutritionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [logVisible, setLogVisible] = useState(10);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [scheduleRefresh, setScheduleRefresh] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -84,7 +86,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
       setLoading(false);
     });
     return () => { cancelled = true; };
-  }, [memberId]);
+  }, [memberId, scheduleRefresh]);
 
   const weeklyPattern = active?.schedule.weeklyPattern ?? [];
   const calendarOverrides = active?.schedule.calendarOverrides ?? [];
@@ -178,7 +180,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
         <section className="px-4 sm:px-8">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-foreground">Weekly Schedule</h2>
-            <Sheet>
+            <Sheet open={scheduleOpen} onOpenChange={setScheduleOpen}>
               <SheetTrigger className="flex items-center gap-1.5 text-[12px] text-foreground/45 hover:text-foreground/70 transition-colors bg-transparent border-none cursor-pointer">
                 <Settings2 className="size-3.5" />
                 Edit Schedule
@@ -194,6 +196,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
                   memberId={memberId}
                   dayTypeNames={active.dayTypes.map((d) => d.name)}
                   initialSchedule={active.schedule}
+                  onSave={() => { setScheduleOpen(false); setScheduleRefresh((n) => n + 1); }}
                 />
               </SheetContent>
             </Sheet>

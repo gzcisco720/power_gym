@@ -16,9 +16,10 @@ interface Props {
   memberId: string;
   dayTypeNames: string[];
   initialSchedule: ISchedule;
+  onSave?: () => void;
 }
 
-export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule }: Props) {
+export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule, onSave }: Props) {
   const [weekly, setWeekly] = useState<Record<DayOfWeek, string>>(() => {
     const map = {} as Record<DayOfWeek, string>;
     for (const d of DAY_VALUES) {
@@ -62,6 +63,7 @@ export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule }: Prop
       body: JSON.stringify({ weeklyPattern, calendarOverrides: overrides, iterate }),
     });
     setSaving(false);
+    onSave?.();
   }
 
   return (
