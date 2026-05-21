@@ -10,11 +10,6 @@ jest.mock('@/lib/repositories/member-nutrition-plan.repository', () => ({
   MongoMemberNutritionPlanRepository: jest.fn(() => mockNutritionPlanRepo),
 }));
 
-const mockTemplateRepo = { findById: jest.fn() };
-jest.mock('@/lib/repositories/nutrition-template.repository', () => ({
-  MongoNutritionTemplateRepository: jest.fn(() => mockTemplateRepo),
-}));
-
 const mockUserRepo = { findById: jest.fn() };
 jest.mock('@/lib/repositories/user.repository', () => ({
   MongoUserRepository: jest.fn(() => mockUserRepo),
@@ -23,95 +18,113 @@ jest.mock('@/lib/repositories/user.repository', () => ({
 import { auth } from '@/lib/auth/auth';
 const mockAuth = jest.mocked(auth);
 
+const emptySchedule = { weeklyPattern: [], calendarOverrides: [], iterate: true };
+const validBody = { name: 'Bulk Plan', dayTypes: [{ name: 'Training', meals: [] }], schedule: emptySchedule };
+
 function makeParams(memberId: string) {
   return { params: Promise.resolve({ memberId }) };
+}
+function makeRequest(body: unknown) {
+  return new Request('http://localhost/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
 }
 
 describe('POST /api/members/[memberId]/nutrition', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('rejects member', async () => {
+  it('rejects member role', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'm1', role: 'member' } } as never);
     const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
-    const res = await POST(
-      new Request('http://localhost/', { method: 'POST', body: JSON.stringify({ templateId: 'tpl1' }) }),
-      makeParams('m1'),
-    );
+    const res = await POST(makeRequest(validBody), makeParams('m1'));
     expect(res.status).toBe(403);
   });
 
-  it('owner can assign template to any member', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'owner1', role: 'owner', name: 'Owner' } } as never);
-    mockUserRepo.findById.mockResolvedValue({ _id: 'm1', email: 'm@x.com', trainerId: { toString: () => 't1' } });
-    mockTemplateRepo.findById.mockResolvedValue({
-      _id: 'tpl1',
-      name: '增肌计划',
-      dayTypes: [],
-      toObject: () => ({ _id: 'tpl1', name: '增肌计划', dayTypes: [] }),
-    });
-    mockNutritionPlanRepo.create.mockResolvedValue({ _id: 'np1', name: '增肌计划' });
-
-    const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
-    const res = await POST(
-      new Request('http://localhost/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ templateId: 'tpl1' }),
-      }),
-      makeParams('m1'),
-    );
-    expect(res.status).toBe(201);
-    expect(mockNutritionPlanRepo.create).toHaveBeenCalledWith(expect.objectContaining({
-      memberId: 'm1',
-      assignedById: 'owner1',
-      templateId: 'tpl1',
-    }));
-  });
-
-  it('trainer cannot assign to non-own member', async () => {
+  it('returns 400 when body is missing required fields', async () => {
     mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
-    mockUserRepo.findById.mockResolvedValue({ _id: 'm1', trainerId: { toString: () => 't2' } });
     const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
-    const res = await POST(
-      new Request('http://localhost/', { method: 'POST', body: JSON.stringify({ templateId: 'tpl1' }) }),
-      makeParams('m1'),
-    );
-    expect(res.status).toBe(403);
+    const res = await POST(makeRequest({}), makeParams('m1'));
+    expect(res.status).toBe(400);
   });
 
-  it('direct creation accepts {name, dayTypes} without templateId', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer', name: 'T' } } as never);
-    mockUserRepo.findById.mockResolvedValue({ _id: 'm1', email: 'm@x.com', trainerId: { toString: () => 't1' } });
-    mockNutritionPlanRepo.create.mockResolvedValue({ _id: 'np1', name: '直建计划' });
-
-    const dayTypes = [{ name: 'Training', meals: [] }];
-    const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
-    const res = await POST(
-      new Request('http://localhost/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: '直建计划', dayTypes }),
-      }),
-      makeParams('m1'),
-    );
-    expect(res.status).toBe(201);
-    expect(mockNutritionPlanRepo.create).toHaveBeenCalledWith(expect.objectContaining({
-      memberId: 'm1',
-      assignedById: 't1',
-      templateId: null,
-      name: '直建计划',
-      dayTypes,
-    }));
-  });
-
-  it('returns 400 when body is neither shape', async () => {
+  it('returns 400 when schedule is missing', async () => {
     mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
     const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
     const res = await POST(
-      new Request('http://localhost/', { method: 'POST', body: JSON.stringify({}) }),
+      makeRequest({ name: 'Plan', dayTypes: [] }),
       makeParams('m1'),
     );
     expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when schedule is missing required fields', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
+    const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
+    const res = await POST(
+      makeRequest({ name: 'Plan', dayTypes: [], schedule: {} }),
+      makeParams('m1'),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it('trainer cannot assign to a member belonging to another trainer', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
+    mockUserRepo.findById.mockResolvedValue({ _id: 'm1', trainerId: { toString: () => 't2' } });
+    const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
+    const res = await POST(makeRequest(validBody), makeParams('m1'));
+    expect(res.status).toBe(403);
+  });
+
+  it('creates plan with name, dayTypes, schedule, and templateId', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer', name: 'T' } } as never);
+    mockUserRepo.findById.mockResolvedValue({
+      _id: 'm1', email: 'm@x.com', trainerId: { toString: () => 't1' },
+    });
+    mockNutritionPlanRepo.create.mockResolvedValue({ _id: 'np1', name: 'Bulk Plan' });
+
+    const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
+    const body = { ...validBody, templateId: 'tpl1' };
+    const res = await POST(makeRequest(body), makeParams('m1'));
+
+    expect(res.status).toBe(201);
+    expect(mockNutritionPlanRepo.deactivateAll).toHaveBeenCalledWith('m1');
+    expect(mockNutritionPlanRepo.create).toHaveBeenCalledWith(expect.objectContaining({
+      memberId: 'm1',
+      assignedById: 't1',
+      templateId: 'tpl1',
+      name: 'Bulk Plan',
+      schedule: emptySchedule,
+    }));
+  });
+
+  it('creates plan without templateId when not provided', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer', name: 'T' } } as never);
+    mockUserRepo.findById.mockResolvedValue({
+      _id: 'm1', email: 'm@x.com', trainerId: { toString: () => 't1' },
+    });
+    mockNutritionPlanRepo.create.mockResolvedValue({ _id: 'np1', name: 'Bulk Plan' });
+
+    const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
+    const res = await POST(makeRequest(validBody), makeParams('m1'));
+
+    expect(res.status).toBe(201);
+    expect(mockNutritionPlanRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ templateId: null }),
+    );
+  });
+
+  it('owner can create plan for any member', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'o1', role: 'owner', name: 'Owner' } } as never);
+    mockUserRepo.findById.mockResolvedValue({
+      _id: 'm1', email: 'm@x.com', trainerId: { toString: () => 't1' },
+    });
+    mockNutritionPlanRepo.create.mockResolvedValue({ _id: 'np1', name: 'Bulk Plan' });
+
+    const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
+    const res = await POST(makeRequest(validBody), makeParams('m1'));
+    expect(res.status).toBe(201);
   });
 });
 
