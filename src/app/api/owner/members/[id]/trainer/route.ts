@@ -14,13 +14,16 @@ export async function PATCH(
 
   const { id } = await params;
 
-  let trainerId: string;
+  let trainerId: string | null;
   try {
     const body = (await req.json()) as { trainerId?: unknown };
-    if (typeof body.trainerId !== 'string' || !body.trainerId) {
-      return Response.json({ error: 'trainerId is required' }, { status: 400 });
+    if (body.trainerId === null) {
+      trainerId = null;
+    } else if (typeof body.trainerId === 'string' && body.trainerId) {
+      trainerId = body.trainerId;
+    } else {
+      return Response.json({ error: 'trainerId must be a non-empty string or null' }, { status: 400 });
     }
-    trainerId = body.trainerId;
   } catch {
     return Response.json({ error: 'Invalid request body' }, { status: 400 });
   }
@@ -37,17 +40,19 @@ export async function PATCH(
   const scheduleRepo = new MongoScheduledSessionRepository();
   await scheduleRepo.removeMemberFromFutureSessions(id);
 
-  const newTrainer = await userRepo.findById(trainerId);
-  if (newTrainer) {
-    try {
-      await getEmailService().sendMemberAssigned({
-        to: newTrainer.email,
-        trainerName: newTrainer.name,
-        memberNames: [member.name],
-        assignerName: session.user.name ?? 'Owner',
-      });
-    } catch (e) {
-      console.error('sendMemberAssigned failed:', e);
+  if (trainerId) {
+    const newTrainer = await userRepo.findById(trainerId);
+    if (newTrainer) {
+      try {
+        await getEmailService().sendMemberAssigned({
+          to: newTrainer.email,
+          trainerName: newTrainer.name,
+          memberNames: [member.name],
+          assignerName: session.user.name ?? 'Owner',
+        });
+      } catch (e) {
+        console.error('sendMemberAssigned failed:', e);
+      }
     }
   }
 

@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { StatCard } from '@/components/shared/stat-card';
 import { ReassignModal } from './reassign-modal';
@@ -38,10 +40,37 @@ export function MemberListClient({
   unassignedCount,
   newThisMonth,
 }: Props) {
+  const router = useRouter();
   const [reassigning, setReassigning] = useState<MemberRow | null>(null);
+  const [unassigning, setUnassigning] = useState<MemberRow | null>(null);
+  const [unassignSaving, setUnassignSaving] = useState(false);
   const [search, setSearch] = useState('');
   const [trainerFilter, setTrainerFilter] = useState('all');
   const [page, setPage] = useState(1);
+
+  async function handleUnassign() {
+    if (!unassigning) return;
+    setUnassignSaving(true);
+    try {
+      const res = await fetch(`/api/owner/members/${unassigning._id}/trainer`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trainerId: null }),
+      });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        toast.error(data.error ?? 'Failed to unassign member');
+        return;
+      }
+      toast.success(`${unassigning.name} unassigned`);
+      setUnassigning(null);
+      router.refresh();
+    } catch {
+      toast.error('Something went wrong');
+    } finally {
+      setUnassignSaving(false);
+    }
+  }
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -174,6 +203,16 @@ export function MemberListClient({
                 >
                   Reassign
                 </Button>
+                {member.trainerId && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setUnassigning(member)}
+                    className="text-destructive/60 hover:text-destructive hover:bg-destructive/10 text-xs h-7 px-2"
+                  >
+                    Unassign
+                  </Button>
+                )}
               </div>
             </div>
           ))}
@@ -221,6 +260,39 @@ export function MemberListClient({
           trainers={trainers}
           onClose={() => setReassigning(null)}
         />
+      )}
+
+      {unassigning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-card ring-1 ring-foreground/10 rounded-xl p-6 w-full max-w-sm space-y-4">
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/35 mb-1">
+                Unassign Member
+              </div>
+              <div className="text-[15px] font-semibold text-foreground">{unassigning.name}</div>
+              <div className="text-xs text-foreground/50 mt-1.5">
+                This member will become unassigned. Their training history and data will be preserved.
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                onClick={handleUnassign}
+                disabled={unassignSaving}
+                className="bg-destructive/90 hover:bg-destructive text-white text-sm disabled:opacity-50"
+              >
+                {unassignSaving ? 'Saving...' : 'Unassign'}
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => setUnassigning(null)}
+                disabled={unassignSaving}
+                className="text-foreground/65 hover:text-foreground text-sm"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

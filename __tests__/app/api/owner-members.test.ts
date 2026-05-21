@@ -124,6 +124,49 @@ describe('PATCH /api/owner/members/[id]/trainer — unassign side effect', () =>
   });
 });
 
+describe('PATCH /api/owner/members/[id]/trainer — unassign (trainerId: null)', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('accepts trainerId: null and calls updateTrainerId with null', async () => {
+    mockAuth.mockResolvedValue({ user: { role: 'owner', id: 'o1' } } as unknown as Awaited<ReturnType<typeof auth>>);
+    mockUserRepo.findById.mockResolvedValue({ _id: 'm1', role: 'member', name: 'Alice' });
+    mockUserRepo.updateTrainerId.mockResolvedValue(undefined);
+    mockScheduleRepo.removeMemberFromFutureSessions.mockResolvedValue(undefined);
+    const { PATCH } = await import('@/app/api/owner/members/[id]/trainer/route');
+    const res = await PATCH(
+      new Request('http://localhost', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trainerId: null }) }),
+      { params: Promise.resolve({ id: 'm1' }) },
+    );
+    expect(res.status).toBe(200);
+    expect(mockUserRepo.updateTrainerId).toHaveBeenCalledWith('m1', null);
+  });
+
+  it('does not send email when unassigning (trainerId: null)', async () => {
+    const sendMock = jest.fn();
+    mockGetEmailService.mockReturnValue({ sendMemberAssigned: sendMock } as unknown as ReturnType<typeof getEmailService>);
+    mockAuth.mockResolvedValue({ user: { role: 'owner', id: 'o1' } } as unknown as Awaited<ReturnType<typeof auth>>);
+    mockUserRepo.findById.mockResolvedValue({ _id: 'm1', role: 'member', name: 'Alice' });
+    mockUserRepo.updateTrainerId.mockResolvedValue(undefined);
+    mockScheduleRepo.removeMemberFromFutureSessions.mockResolvedValue(undefined);
+    const { PATCH } = await import('@/app/api/owner/members/[id]/trainer/route');
+    await PATCH(
+      new Request('http://localhost', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trainerId: null }) }),
+      { params: Promise.resolve({ id: 'm1' }) },
+    );
+    expect(sendMock).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 for invalid trainerId (empty string)', async () => {
+    mockAuth.mockResolvedValue({ user: { role: 'owner', id: 'o1' } } as unknown as Awaited<ReturnType<typeof auth>>);
+    const { PATCH } = await import('@/app/api/owner/members/[id]/trainer/route');
+    const res = await PATCH(
+      new Request('http://localhost', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trainerId: '' }) }),
+      { params: Promise.resolve({ id: 'm1' }) },
+    );
+    expect(res.status).toBe(400);
+  });
+});
+
 describe('PATCH /api/owner/members/[id]/trainer — email notification', () => {
   const sendMemberAssignedMock = jest.fn().mockResolvedValue(undefined);
 
