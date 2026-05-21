@@ -117,10 +117,25 @@ test.describe('Trainer: Nutrition Templates', () => {
     const before = new Date();
     await goToMemberNutrition(page);
 
+    // New flow: "Change Plan" → combobox → Open Editor → Continue → Save
     await page.getByRole('button', { name: 'Change Plan' }).click();
-    await page.getByLabel('Select nutrition template').selectOption({ label: 'E2E Nutrition Template' });
-    await page.getByRole('button', { name: 'Assign', exact: true }).click();
-    await expect(page.getByText('Plan assigned')).toBeVisible();
+
+    // Combobox: click trigger, then search and pick template
+    await page.getByRole('button', { name: /search templates/i }).click();
+    await page.getByPlaceholder('Search templates...').fill('E2E');
+    await page.getByRole('option', { name: 'E2E Nutrition Template' }).click();
+
+    await page.getByRole('button', { name: 'Open Editor →' }).click();
+    await page.waitForURL(/\/nutrition\/new/);
+
+    // Editor is pre-filled — just continue
+    await page.getByRole('button', { name: /continue/i }).click();
+
+    // Schedule sheet is open — save directly (schedule can be empty)
+    await page.getByRole('button', { name: /save schedule/i }).click();
+
+    await page.waitForURL(/\/nutrition$/);
+    await expect(page.getByText('E2E Nutrition Template')).toBeVisible();
 
     const email = await waitForEmailTo('member@test.com', {
       subject: /Nutrition Plan/,
@@ -129,5 +144,110 @@ test.describe('Trainer: Nutrition Templates', () => {
     expect(email.Subject).toBe('Your Nutrition Plan Has Been Updated — POWER GYM');
     expect(email.HTML).toContain('E2E Nutrition Template');
     expect(email.HTML).toContain('Test Trainer');
+  });
+
+  test('assign plan from scratch', async ({ page }) => {
+    await goToMemberNutrition(page);
+    await page.getByRole('button', { name: /assign plan|change plan/i }).first().click();
+
+    // Leave combobox empty → scratch
+    await page.getByRole('button', { name: 'Open Editor →' }).click();
+    await page.waitForURL(/\/nutrition\/new$/);
+
+    // Fill name + add day type
+    await page.getByPlaceholder('Plan name').fill('Scratch Plan E2E');
+    await page.getByRole('button', { name: '+ Add Day Type' }).click();
+    await page.getByPlaceholder('Day type name').fill('Training Day');
+
+    // Continue is now enabled
+    await page.getByRole('button', { name: /continue/i }).click();
+
+    // Schedule sheet is open — save directly
+    await page.getByRole('button', { name: /save schedule/i }).click();
+
+    await page.waitForURL(/\/nutrition$/);
+    await expect(page.getByText('Scratch Plan E2E')).toBeVisible();
+  });
+
+  test('assign plan from template with micro-edit', async ({ page }) => {
+    await goToMemberNutrition(page);
+    await page.getByRole('button', { name: /change plan/i }).click();
+
+    // Select template via combobox
+    await page.getByRole('button', { name: /search templates/i }).click();
+    await page.getByPlaceholder('Search templates...').fill('E2E');
+    await page.getByRole('option', { name: 'E2E Nutrition Template' }).click();
+    await page.getByRole('button', { name: 'Open Editor →' }).click();
+    await page.waitForURL(/\/nutrition\/new\?templateId=/);
+
+    // Editor is pre-filled — edit the plan name
+    await page.getByPlaceholder('Plan name').fill('Custom Bulk');
+
+    await page.getByRole('button', { name: /continue/i }).click();
+    await page.getByRole('button', { name: /save schedule/i }).click();
+
+    await page.waitForURL(/\/nutrition$/);
+    await expect(page.getByText('Custom Bulk')).toBeVisible();
+  });
+
+  test('save as template checkbox creates template in trainer list', async ({ page }) => {
+    await goToMemberNutrition(page);
+    await page.getByRole('button', { name: /assign plan|change plan/i }).first().click();
+    // Leave combobox empty → scratch
+    await page.getByRole('button', { name: 'Open Editor →' }).click();
+    await page.waitForURL(/\/nutrition\/new$/);
+
+    await page.getByPlaceholder('Plan name').fill('E2E SaveAsTemplate Plan');
+    await page.getByRole('button', { name: '+ Add Day Type' }).click();
+    await page.getByPlaceholder('Day type name').fill('Training Day');
+
+    // Check save-as-template
+    await page.getByRole('checkbox', { name: /save as template/i }).check();
+    await page.getByPlaceholder('Template name').fill('E2E Generated Template');
+
+    await page.getByRole('button', { name: /continue/i }).click();
+    await page.getByRole('button', { name: /save schedule/i }).click();
+
+    await page.waitForURL(/\/nutrition$/);
+
+    // Verify template was created
+    await page.goto('/trainer/nutrition');
+    await expect(page.getByText('E2E Generated Template')).toBeVisible();
+  });
+
+  test('Continue button is disabled until name and day type are filled', async ({ page }) => {
+    await goToMemberNutrition(page);
+    await page.getByRole('button', { name: /assign plan|change plan/i }).first().click();
+    await page.getByRole('button', { name: 'Open Editor →' }).click();
+    await page.waitForURL(/\/nutrition\/new/);
+
+    await expect(page.getByRole('button', { name: /continue/i })).toBeDisabled();
+
+    await page.getByPlaceholder('Plan name').fill('My Plan');
+    await expect(page.getByRole('button', { name: /continue/i })).toBeDisabled();
+
+    await page.getByRole('button', { name: '+ Add Day Type' }).click();
+    await expect(page.getByRole('button', { name: /continue/i })).not.toBeDisabled();
+  });
+
+  test('Change Plan flow replaces active plan', async ({ page }) => {
+    await goToMemberNutrition(page);
+
+    // Verify active plan visible first
+    await expect(page.getByText('E2E Nutrition Template').first()).toBeVisible();
+
+    await page.getByRole('button', { name: 'Change Plan' }).click();
+    await page.getByRole('button', { name: 'Open Editor →' }).click();
+    await page.waitForURL(/\/nutrition\/new$/);
+
+    await page.getByPlaceholder('Plan name').fill('Replacement Plan E2E');
+    await page.getByRole('button', { name: '+ Add Day Type' }).click();
+    await page.getByPlaceholder('Day type name').fill('Rest Day');
+
+    await page.getByRole('button', { name: /continue/i }).click();
+    await page.getByRole('button', { name: /save schedule/i }).click();
+
+    await page.waitForURL(/\/nutrition$/);
+    await expect(page.getByText('Replacement Plan E2E')).toBeVisible();
   });
 });
