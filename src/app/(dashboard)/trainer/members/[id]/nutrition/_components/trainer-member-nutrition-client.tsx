@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverPortal, PopoverPositioner, PopoverPopup, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { SectionHeader } from '@/components/shared/section-header';
@@ -406,7 +406,7 @@ function ChangePlanDialog({
             Template <span className="text-foreground/45">(optional)</span>
           </Label>
           <Popover open={comboOpen} onOpenChange={setComboOpen}>
-            <PopoverTrigger asChild>
+            <PopoverTrigger render={
               <Button
                 variant="outline"
                 role="combobox"
@@ -416,32 +416,38 @@ function ChangePlanDialog({
                 {selectedName ?? 'Search templates...'}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-full p-0" align="start">
-              <Command>
-                <CommandInput placeholder="Search templates..." />
-                <CommandList>
-                  <CommandEmpty>No templates found.</CommandEmpty>
-                  <CommandGroup>
-                    {templates.map((t) => (
-                      <CommandItem
-                        key={t._id}
-                        value={t.name}
-                        onSelect={() => {
-                          setSelectedId((prev) => (prev === t._id ? '' : t._id));
-                          setComboOpen(false);
-                        }}
-                      >
-                        <Check
-                          className={cn('mr-2 h-4 w-4', selectedId === t._id ? 'opacity-100' : 'opacity-0')}
-                        />
-                        {t.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
+            } />
+            {comboOpen && (
+              <PopoverPortal>
+                <PopoverPositioner align="start">
+                  <PopoverPopup className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder="Search templates..." />
+                      <CommandList>
+                        <CommandEmpty>No templates found.</CommandEmpty>
+                        <CommandGroup>
+                          {templates.map((t) => (
+                            <CommandItem
+                              key={t._id}
+                              value={t.name}
+                              onSelect={() => {
+                                setSelectedId((prev) => (prev === t._id ? '' : t._id));
+                                setComboOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn('mr-2 h-4 w-4', selectedId === t._id ? 'opacity-100' : 'opacity-0')}
+                              />
+                              {t.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverPopup>
+                </PopoverPositioner>
+              </PopoverPortal>
+            )}
           </Popover>
 
           {selectedId && (
