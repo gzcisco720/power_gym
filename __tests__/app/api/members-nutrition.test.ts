@@ -126,6 +126,32 @@ describe('POST /api/members/[memberId]/nutrition', () => {
     const res = await POST(makeRequest(validBody), makeParams('m1'));
     expect(res.status).toBe(201);
   });
+
+  it('returns 404 when member does not exist', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer' } } as never);
+    mockUserRepo.findById.mockResolvedValue(null);
+    const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
+    const res = await POST(makeRequest(validBody), makeParams('m1'));
+    expect(res.status).toBe(404);
+  });
+
+  it('returns 201 even when email notification fails', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 't1', role: 'trainer', name: 'T' } } as never);
+    mockUserRepo.findById.mockResolvedValue({
+      _id: 'm1', email: 'm@x.com', trainerId: { toString: () => 't1' },
+    });
+    mockNutritionPlanRepo.create.mockResolvedValue({ _id: 'np1', name: 'Bulk Plan' });
+
+    // Make the email service throw by mocking it before import
+    const emailModule = jest.mocked(require('@/lib/email/index'));
+    emailModule.getEmailService = jest.fn(() => ({
+      sendNutritionPlanAssigned: jest.fn().mockRejectedValue(new Error('SMTP down')),
+    }));
+
+    const { POST } = await import('@/app/api/members/[memberId]/nutrition/route');
+    const res = await POST(makeRequest(validBody), makeParams('m1'));
+    expect(res.status).toBe(201);
+  });
 });
 
 describe('GET /api/members/[memberId]/nutrition', () => {
