@@ -19,12 +19,15 @@ interface AssignBody {
 function isValidBody(b: unknown): b is AssignBody {
   if (!b || typeof b !== 'object') return false;
   const body = b as Record<string, unknown>;
+  if (typeof body.name !== 'string' || body.name.trim().length === 0) return false;
+  if (!Array.isArray(body.dayTypes)) return false;
+  if (body.templateId !== undefined && typeof body.templateId !== 'string') return false;
+  const sched = body.schedule as Record<string, unknown> | null | undefined;
+  if (!sched || typeof sched !== 'object') return false;
   return (
-    typeof body.name === 'string' &&
-    body.name.trim().length > 0 &&
-    Array.isArray(body.dayTypes) &&
-    body.schedule !== null &&
-    typeof body.schedule === 'object'
+    Array.isArray(sched.weeklyPattern) &&
+    Array.isArray(sched.calendarOverrides) &&
+    typeof sched.iterate === 'boolean'
   );
 }
 
@@ -59,8 +62,6 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
     return Response.json({ error: 'Body must be {name, dayTypes, schedule}' }, { status: 400 });
   }
 
-  const body: AssignBody = raw;
-
   await connectDB();
 
   const userRepo = new MongoUserRepository();
@@ -77,10 +78,10 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
   const plan = await planRepo.create({
     memberId,
     assignedById: session.user.id,
-    templateId: body.templateId ?? null,
-    name: body.name,
-    dayTypes: body.dayTypes,
-    schedule: body.schedule,
+    templateId: raw.templateId ?? null,
+    name: raw.name,
+    dayTypes: raw.dayTypes,
+    schedule: raw.schedule,
     assignedAt: new Date(),
   });
 
@@ -88,7 +89,7 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
     await getEmailService().sendNutritionPlanAssigned({
       to: member.email,
       trainerName: session.user.name ?? 'Your trainer',
-      planName: body.name,
+      planName: raw.name,
     });
   } catch (e) {
     console.error('sendNutritionPlanAssigned failed:', e);
