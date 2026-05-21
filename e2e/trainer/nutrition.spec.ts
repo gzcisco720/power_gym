@@ -126,7 +126,7 @@ test.describe('Trainer: Nutrition Templates', () => {
     await page.getByRole('option', { name: 'E2E Nutrition Template' }).click();
 
     await page.getByRole('button', { name: 'Open Editor →' }).click();
-    await page.waitForURL(/\/nutrition\/new/);
+    await page.waitForURL(/\/nutrition\/new\?templateId=/);
 
     // Editor is pre-filled — just continue
     await page.getByRole('button', { name: /continue/i }).click();
@@ -166,7 +166,7 @@ test.describe('Trainer: Nutrition Templates', () => {
     await page.getByRole('button', { name: /save schedule/i }).click();
 
     await page.waitForURL(/\/nutrition$/);
-    await expect(page.getByText('Scratch Plan E2E')).toBeVisible();
+    await expect(page.locator('section').filter({ hasText: 'Current Plan' }).getByText('Scratch Plan E2E')).toBeVisible();
   });
 
   test('assign plan from template with micro-edit', async ({ page }) => {
@@ -187,7 +187,7 @@ test.describe('Trainer: Nutrition Templates', () => {
     await page.getByRole('button', { name: /save schedule/i }).click();
 
     await page.waitForURL(/\/nutrition$/);
-    await expect(page.getByText('Custom Bulk')).toBeVisible();
+    await expect(page.locator('section').filter({ hasText: 'Current Plan' }).getByText('Custom Bulk')).toBeVisible();
   });
 
   test('save as template checkbox creates template in trainer list', async ({ page }) => {
@@ -234,7 +234,7 @@ test.describe('Trainer: Nutrition Templates', () => {
     await goToMemberNutrition(page);
 
     // Verify active plan visible first
-    await expect(page.getByText('E2E Nutrition Template').first()).toBeVisible();
+    await expect(page.locator('section').filter({ hasText: 'Current Plan' }).getByText('E2E Nutrition Template')).toBeVisible();
 
     await page.getByRole('button', { name: 'Change Plan' }).click();
     await page.getByRole('button', { name: 'Open Editor →' }).click();
@@ -248,6 +248,6 @@ test.describe('Trainer: Nutrition Templates', () => {
     await page.getByRole('button', { name: /save schedule/i }).click();
 
     await page.waitForURL(/\/nutrition$/);
-    await expect(page.getByText('Replacement Plan E2E')).toBeVisible();
+    await expect(page.locator('section').filter({ hasText: 'Current Plan' }).getByText('Replacement Plan E2E')).toBeVisible();
   });
 });
