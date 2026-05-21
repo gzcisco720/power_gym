@@ -11,6 +11,7 @@ export interface UpsertDailyLogData {
 
 export interface INutritionDailyLogRepository {
   findByDate(memberId: string, date: string): Promise<INutritionDailyLog | null>;
+  findRecent(memberId: string, days: number): Promise<INutritionDailyLog[]>;
   upsert(memberId: string, date: string, data: UpsertDailyLogData): Promise<INutritionDailyLog>;
   findByMemberMonth(memberId: string, year: number, month: number): Promise<INutritionDailyLog[]>;
   delete(memberId: string, date: string): Promise<boolean>;
@@ -22,6 +23,16 @@ export class MongoNutritionDailyLogRepository implements INutritionDailyLogRepos
       memberId: new mongoose.Types.ObjectId(memberId),
       date,
     });
+  }
+
+  async findRecent(memberId: string, days: number): Promise<INutritionDailyLog[]> {
+    const cutoff = new Date();
+    cutoff.setUTCDate(cutoff.getUTCDate() - days);
+    const cutoffISO = cutoff.toISOString().slice(0, 10);
+    return NutritionDailyLogModel.find({
+      memberId: new mongoose.Types.ObjectId(memberId),
+      date: { $gte: cutoffISO },
+    }).sort({ date: -1 });
   }
 
   async findByMemberMonth(memberId: string, year: number, month: number): Promise<INutritionDailyLog[]> {

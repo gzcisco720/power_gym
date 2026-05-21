@@ -70,11 +70,12 @@ test.describe('Trainer: Nutrition Templates', () => {
     await goToMemberNutrition(page);
 
     // Seed: Rice 100g + Chicken 150g → 613 kcal, 54g protein, 79g carbs, 6g fat
+    // Values now appear in both Current Plan card and Adherence Log — use .first()
     await expect(page.getByText('Training Day').first()).toBeVisible();
-    await expect(page.getByText('613')).toBeVisible();
-    await expect(page.getByText('54g')).toBeVisible();
-    await expect(page.getByText('79g')).toBeVisible();
-    await expect(page.getByText('6g')).toBeVisible();
+    await expect(page.getByText('613').first()).toBeVisible();
+    await expect(page.getByText('54g').first()).toBeVisible();
+    await expect(page.getByText('79g').first()).toBeVisible();
+    await expect(page.getByText('6g').first()).toBeVisible();
   });
 
   test('member nutrition Weekly Schedule section shows day grid', async ({ page }) => {
@@ -91,6 +92,25 @@ test.describe('Trainer: Nutrition Templates', () => {
     await expect(page.getByText('Edit Schedule').nth(1)).toBeVisible();
     // Sheet body warning is also shown
     await expect(page.getByText(/today.*locked/i)).toBeVisible();
+  });
+
+  // ── Adherence Log section ─────────────────────────────────────────────────
+  test('member nutrition Adherence Log section shows today seeded log', async ({ page }) => {
+    await goToMemberNutrition(page);
+    await expect(page.getByText('Adherence Log (last 30 days)')).toBeVisible();
+    // Seed: today's log — Training Day, Rice 100g + Chicken 150g
+    await expect(page.getByText('Training Day').first()).toBeVisible();
+    // Actual kcal from seed (613 kcal) appears in the adherence row
+    await expect(page.getByText('613').first()).toBeVisible();
+  });
+
+  test('member nutrition Adherence Log shows actual vs target macros', async ({ page }) => {
+    await goToMemberNutrition(page);
+    // The adherence log row shows actual protein "54g" with target "/ 54g" inline
+    // Scope to the adherence section to avoid matching the Current Plan card
+    const adherenceSection = page.locator('section').filter({ hasText: 'Adherence Log (last 30 days)' });
+    await expect(adherenceSection.getByText(/54g/).first()).toBeVisible();
+    await expect(adherenceSection.getByText(/79g/).first()).toBeVisible();
   });
 
   test('assigning nutrition plan sends email to member', async ({ page }) => {

@@ -11,6 +11,23 @@ import { ScheduleEditor } from '@/components/nutrition/schedule-editor';
 import type { IMemberNutritionPlan } from '@/lib/db/models/member-nutrition-plan.model';
 import type { IDayType } from '@/lib/db/models/nutrition-template.model';
 
+export interface DayTypeTarget {
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+export interface SerializedRecentLog {
+  date: string;
+  dayTypeName: string;
+  dayCompleted: boolean;
+  actualKcal: number;
+  actualProtein: number;
+  actualCarbs: number;
+  actualFat: number;
+}
+
 interface TemplateOption {
   _id: string;
   name: string;
@@ -19,6 +36,8 @@ interface TemplateOption {
 interface Props {
   memberId: string;
   templates: TemplateOption[];
+  recentLogs: SerializedRecentLog[];
+  dayTypeTargets: Record<string, DayTypeTarget>;
 }
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -47,7 +66,7 @@ function computeDayMacros(dayType: IDayType) {
   };
 }
 
-export function TrainerMemberNutritionClient({ memberId, templates }: Props) {
+export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, dayTypeTargets }: Props) {
   const [active, setActive] = useState<IMemberNutritionPlan | null>(null);
   const [history, setHistory] = useState<IMemberNutritionPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -234,6 +253,67 @@ export function TrainerMemberNutritionClient({ memberId, templates }: Props) {
               </p>
             )}
           </div>
+        </section>
+      )}
+
+      {/* ── Adherence Log ────────────────────────────────────────── */}
+      {recentLogs.length > 0 && (
+        <section className="px-4 sm:px-8">
+          <SectionHeader title={`Adherence Log (last 30 days)`} />
+          <ul className="mt-3 space-y-1.5">
+            {recentLogs.map((log) => {
+              const target = dayTypeTargets[log.dayTypeName];
+              const d = new Date(log.date + 'T00:00:00');
+              const dateLabel = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+              return (
+                <li key={log.date} className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2.5">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-foreground">{dateLabel}</span>
+                      <span className="text-[11px] text-foreground/40 bg-muted rounded-full px-2 py-0.5">
+                        {log.dayTypeName}
+                      </span>
+                    </div>
+                    {log.dayCompleted && (
+                      <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 rounded-full px-2 py-0.5">
+                        ✓ Completed
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4 text-[12px]">
+                    <span>
+                      <span className="font-semibold text-foreground">{log.actualKcal.toLocaleString()}</span>
+                      <span className="text-foreground/40 ml-0.5">kcal</span>
+                      {target && (
+                        <span className="text-foreground/30 ml-1">/ {target.kcal.toLocaleString()}</span>
+                      )}
+                    </span>
+                    <span>
+                      <span className="font-semibold text-emerald-400">{log.actualProtein}g</span>
+                      <span className="text-foreground/40 ml-0.5">prot</span>
+                      {target && (
+                        <span className="text-foreground/30 ml-1">/ {target.protein}g</span>
+                      )}
+                    </span>
+                    <span>
+                      <span className="font-semibold text-amber-400">{log.actualCarbs}g</span>
+                      <span className="text-foreground/40 ml-0.5">carbs</span>
+                      {target && (
+                        <span className="text-foreground/30 ml-1">/ {target.carbs}g</span>
+                      )}
+                    </span>
+                    <span>
+                      <span className="font-semibold text-rose-400">{log.actualFat}g</span>
+                      <span className="text-foreground/40 ml-0.5">fat</span>
+                      {target && (
+                        <span className="text-foreground/30 ml-1">/ {target.fat}g</span>
+                      )}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         </section>
       )}
 

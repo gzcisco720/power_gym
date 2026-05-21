@@ -6,6 +6,7 @@ jest.mock('@/lib/db/models/nutrition-daily-log.model', () => ({
   NutritionDailyLogModel: Object.assign(jest.fn(), {
     findOne: jest.fn(),
     findOneAndUpdate: jest.fn(),
+    find: jest.fn(),
   }),
 }));
 
@@ -34,6 +35,25 @@ describe('MongoNutritionDailyLogRepository', () => {
     mockModel.findOne.mockResolvedValue(null as never);
     const result = await repo.findByDate(new mongoose.Types.ObjectId().toString(), '2026-05-06');
     expect(result).toBeNull();
+  });
+
+  it('findRecent returns logs from the last N days, newest first', async () => {
+    const memberId = new mongoose.Types.ObjectId().toString();
+    const logs = [
+      { _id: 'log2', date: '2026-05-19', dayCompleted: true },
+      { _id: 'log1', date: '2026-05-15', dayCompleted: false },
+    ];
+    const sortMock = jest.fn().mockResolvedValue(logs);
+    mockModel.find.mockReturnValue({ sort: sortMock } as never);
+
+    const result = await repo.findRecent(memberId, 30);
+
+    expect(mockModel.find).toHaveBeenCalledWith({
+      memberId: expect.any(mongoose.Types.ObjectId),
+      date: { $gte: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) },
+    });
+    expect(sortMock).toHaveBeenCalledWith({ date: -1 });
+    expect(result).toEqual(logs);
   });
 
   it('upsert creates or updates log', async () => {
