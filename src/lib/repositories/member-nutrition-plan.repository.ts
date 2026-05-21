@@ -10,6 +10,7 @@ export interface CreateMemberNutritionPlanData {
   name: string;
   dayTypes: IDayType[];
   assignedAt: Date;
+  schedule: ISchedule;
 }
 
 export interface IMemberNutritionPlanRepository {
@@ -50,7 +51,7 @@ export class MongoMemberNutritionPlanRepository implements IMemberNutritionPlanR
       dayTypes: data.dayTypes,
       isActive: true,
       assignedAt: data.assignedAt,
-      schedule: { weeklyPattern: [], calendarOverrides: [] },
+      schedule: data.schedule,
     });
     return plan.save();
   }

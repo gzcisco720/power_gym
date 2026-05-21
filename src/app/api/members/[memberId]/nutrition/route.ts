@@ -2,22 +2,30 @@ import { connectDB } from '@/lib/db/connect';
 import { auth } from '@/lib/auth/auth';
 import { getEmailService } from '@/lib/email/index';
 import { MongoMemberNutritionPlanRepository } from '@/lib/repositories/member-nutrition-plan.repository';
-import { MongoNutritionTemplateRepository } from '@/lib/repositories/nutrition-template.repository';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import type { IDayType } from '@/lib/db/models/nutrition-template.model';
+import type { ISchedule } from '@/lib/db/models/member-nutrition-plan.model';
 import type { UserRole } from '@/types/auth';
 
 type RouteContext = { params: Promise<{ memberId: string }> };
 
-interface AssignFromTemplate { templateId: string }
-interface AssignDirect { name: string; dayTypes: IDayType[] }
-type AssignBody = AssignFromTemplate | AssignDirect;
-
-function isFromTemplate(b: AssignBody): b is AssignFromTemplate {
-  return typeof (b as AssignFromTemplate).templateId === 'string';
+interface AssignBody {
+  name: string;
+  dayTypes: IDayType[];
+  schedule: ISchedule;
+  templateId?: string;
 }
-function isDirect(b: AssignBody): b is AssignDirect {
-  return typeof (b as AssignDirect).name === 'string' && Array.isArray((b as AssignDirect).dayTypes);
+
+function isValidBody(b: unknown): b is AssignBody {
+  if (!b || typeof b !== 'object') return false;
+  const body = b as Record<string, unknown>;
+  return (
+    typeof body.name === 'string' &&
+    body.name.trim().length > 0 &&
+    Array.isArray(body.dayTypes) &&
+    body.schedule !== null &&
+    typeof body.schedule === 'object'
+  );
 }
 
 export async function GET(_req: Request, { params }: RouteContext): Promise<Response> {
@@ -45,11 +53,13 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
   if (role === 'member') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
   const { memberId } = await params;
-  const body = (await req.json()) as AssignBody;
+  const raw = await req.json();
 
-  if (!isFromTemplate(body) && !isDirect(body)) {
-    return Response.json({ error: 'Body must be {templateId} or {name, dayTypes}' }, { status: 400 });
+  if (!isValidBody(raw)) {
+    return Response.json({ error: 'Body must be {name, dayTypes, schedule}' }, { status: 400 });
   }
+
+  const body: AssignBody = raw;
 
   await connectDB();
 
@@ -62,31 +72,15 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
   }
 
   const planRepo = new MongoMemberNutritionPlanRepository();
-
-  let name: string;
-  let dayTypes: IDayType[];
-  let templateId: string | null;
-
-  if (isFromTemplate(body)) {
-    const templateRepo = new MongoNutritionTemplateRepository();
-    const template = await templateRepo.findById(body.templateId);
-    if (!template) return Response.json({ error: 'Template not found' }, { status: 404 });
-    name = template.name;
-    dayTypes = template.toObject().dayTypes;
-    templateId = body.templateId;
-  } else {
-    name = body.name;
-    dayTypes = body.dayTypes;
-    templateId = null;
-  }
-
   await planRepo.deactivateAll(memberId);
+
   const plan = await planRepo.create({
     memberId,
     assignedById: session.user.id,
-    templateId,
-    name,
-    dayTypes,
+    templateId: body.templateId ?? null,
+    name: body.name,
+    dayTypes: body.dayTypes,
+    schedule: body.schedule,
     assignedAt: new Date(),
   });
 
@@ -94,7 +88,7 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
     await getEmailService().sendNutritionPlanAssigned({
       to: member.email,
       trainerName: session.user.name ?? 'Your trainer',
-      planName: name,
+      planName: body.name,
     });
   } catch (e) {
     console.error('sendNutritionPlanAssigned failed:', e);
