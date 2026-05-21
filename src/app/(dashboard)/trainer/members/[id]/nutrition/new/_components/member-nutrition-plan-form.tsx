@@ -112,8 +112,13 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
   function removeDayType(dayIdx: number): void {
     setDayTypes((prev) => prev.filter((_, i) => i !== dayIdx));
     setCollapsed((prev) => {
-      const next = { ...prev };
-      delete next[dayIdx];
+      const next: Record<number, boolean> = {};
+      for (const [k, v] of Object.entries(prev)) {
+        const idx = Number(k);
+        if (idx < dayIdx) next[idx] = v;
+        else if (idx > dayIdx) next[idx - 1] = v;
+        // idx === dayIdx is dropped
+      }
       return next;
     });
   }
@@ -450,7 +455,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
       </div>
 
       {/* Schedule sheet */}
-      <Sheet open={scheduleOpen} onOpenChange={setScheduleOpen}>
+      <Sheet open={scheduleOpen} onOpenChange={(open) => { if (!saving) setScheduleOpen(open); }}>
         <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader className="mb-6">
             <SheetTitle>Set Schedule</SheetTitle>

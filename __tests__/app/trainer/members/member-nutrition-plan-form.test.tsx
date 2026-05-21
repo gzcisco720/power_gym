@@ -6,7 +6,6 @@ const mockPush = jest.fn();
 jest.mock('next/navigation', () => ({ useRouter: () => ({ push: mockPush }) }));
 
 global.fetch = jest.fn();
-const mockFetch = global.fetch as jest.Mock;
 
 beforeEach(() => {
   jest.clearAllMocks();
