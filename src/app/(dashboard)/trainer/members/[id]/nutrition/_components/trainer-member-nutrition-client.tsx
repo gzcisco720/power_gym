@@ -1,10 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { Settings2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Settings2, Check, ChevronsUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { SectionHeader } from '@/components/shared/section-header';
 import { ScheduleEditor } from '@/components/nutrition/schedule-editor';
@@ -99,10 +103,9 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-foreground">Current Plan</h2>
           {!loading && active && (
-            <AssignDialog
+            <ChangePlanDialog
               templates={templates}
               memberId={memberId}
-              onAssigned={(next) => { setActive(next); setHistory((h) => [next, ...h]); }}
               triggerLabel="Change Plan"
             />
           )}
@@ -165,10 +168,9 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
         ) : (
           <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 flex items-center justify-between">
             <p className="text-sm text-foreground/45">No nutrition plan assigned</p>
-            <AssignDialog
+            <ChangePlanDialog
               templates={templates}
               memberId={memberId}
-              onAssigned={(next) => { setActive(next); setHistory((h) => [next, ...h]); }}
               triggerLabel="Assign Plan"
             />
           </div>
@@ -361,44 +363,29 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
   );
 }
 
-function AssignDialog({
+function ChangePlanDialog({
   templates,
   memberId,
-  onAssigned,
   triggerLabel,
 }: {
   templates: TemplateOption[];
   memberId: string;
-  onAssigned: (plan: IMemberNutritionPlan) => void;
   triggerLabel: string;
 }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [pickedTemplate, setPickedTemplate] = useState('');
-  const [assigning, setAssigning] = useState(false);
+  const [comboOpen, setComboOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState('');
 
-  async function handleAssign() {
-    if (!pickedTemplate) return;
-    setAssigning(true);
-    try {
-      const res = await fetch(`/api/members/${memberId}/nutrition`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ templateId: pickedTemplate }),
-      });
-      if (!res.ok) {
-        const data = (await res.json()) as { error?: string };
-        toast.error(data.error ?? 'Failed to assign');
-        return;
-      }
-      const next = (await res.json()) as IMemberNutritionPlan;
-      onAssigned(next);
-      toast.success('Plan assigned');
-      setPickedTemplate('');
-      setOpen(false);
-    } finally {
-      setAssigning(false);
-    }
+  function handleOpen(): void {
+    const url = selectedId
+      ? `/trainer/members/${memberId}/nutrition/new?templateId=${selectedId}`
+      : `/trainer/members/${memberId}/nutrition/new`;
+    router.push(url);
+    setOpen(false);
   }
+
+  const selectedName = templates.find((t) => t._id === selectedId)?.name;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -410,29 +397,66 @@ function AssignDialog({
         }
       />
       <DialogContent className="sm:max-w-md">
-        <DialogTitle>Assign Nutrition Plan</DialogTitle>
+        <DialogTitle>Change Nutrition Plan</DialogTitle>
         <p className="text-xs text-foreground/65 -mt-1">
-          Replaces the current active plan. History is kept.
+          Pre-fill from a template, or leave blank to start from scratch.
         </p>
         <div className="space-y-3 mt-2">
-          <select
-            value={pickedTemplate}
-            onChange={(e) => setPickedTemplate(e.target.value)}
-            aria-label="Select nutrition template"
-            className="w-full rounded-md bg-muted border border-border/60 px-3 py-2 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-          >
-            <option value="" disabled>Select a nutrition template</option>
-            {templates.map((t) => (
-              <option key={t._id} value={t._id}>{t.name}</option>
-            ))}
-          </select>
-          <div className="flex justify-end gap-2 pt-1">
-            <Button
-              onClick={handleAssign}
-              disabled={!pickedTemplate || assigning}
-              className="text-xs font-semibold"
+          <Label className="text-xs font-medium text-foreground/80">
+            Template <span className="text-foreground/45">(optional)</span>
+          </Label>
+          <Popover open={comboOpen} onOpenChange={setComboOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={comboOpen}
+                className="w-full justify-between text-sm font-normal text-foreground/70"
+              >
+                {selectedName ?? 'Search templates...'}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Search templates..." />
+                <CommandList>
+                  <CommandEmpty>No templates found.</CommandEmpty>
+                  <CommandGroup>
+                    {templates.map((t) => (
+                      <CommandItem
+                        key={t._id}
+                        value={t.name}
+                        onSelect={() => {
+                          setSelectedId((prev) => (prev === t._id ? '' : t._id));
+                          setComboOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn('mr-2 h-4 w-4', selectedId === t._id ? 'opacity-100' : 'opacity-0')}
+                        />
+                        {t.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+
+          {selectedId && (
+            <button
+              type="button"
+              onClick={() => setSelectedId('')}
+              className="text-xs text-foreground/45 hover:text-foreground/70 transition-colors"
             >
-              {assigning ? 'Assigning…' : 'Assign'}
+              Clear selection
+            </button>
+          )}
+
+          <div className="flex justify-end pt-1">
+            <Button onClick={handleOpen} className="text-xs font-semibold">
+              Open Editor →
             </Button>
           </div>
         </div>
