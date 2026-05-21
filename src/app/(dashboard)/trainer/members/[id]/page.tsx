@@ -5,7 +5,7 @@ import { StatStripSection } from './_components/stat-strip-section';
 import { PlanCardSection } from './_components/plan-card-section';
 import { HealthPanelSection } from './_components/health-panel-section';
 import { BodyCompositionSection } from './_components/body-composition-section';
-import { ProgressContent } from '@/app/(dashboard)/member/progress/_components/progress-content';
+import { TrainingFrequencySection } from './_components/training-frequency-section';
 
 export default async function MemberHubOverviewPage({
   params,
@@ -50,7 +50,7 @@ export default async function MemberHubOverviewPage({
           <BodyCompositionSection memberId={memberId} />
         </Suspense>
         <Suspense fallback={<Skeleton className="h-[200px] rounded-xl" />}>
-          <ProgressContent memberId={memberId} />
+          <TrainingFrequencySection memberId={memberId} />
         </Suspense>
       </div>
     </div>
