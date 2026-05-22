@@ -29,7 +29,7 @@ function initialPeriod(): BillingPeriod {
   return {
     from: new Date(now.getFullYear(), now.getMonth(), 1),
     to: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999),
-    label: now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' }),
+    label: now.toLocaleDateString('en-US', { year: 'numeric', month: 'long' }),
   };
 }
 
@@ -44,7 +44,13 @@ export function BillingSummaryClient({ role, memberHubBase }: BillingSummaryClie
     const from = period.from.toISOString();
     const to = period.to.toISOString();
     fetch(`/api/billing?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          setData(null);
+          return;
+        }
+        return res.json();
+      })
       .then((json: SummaryData) => {
         if (!cancelled) setData(json);
       })

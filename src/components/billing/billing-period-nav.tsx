@@ -12,7 +12,7 @@ export interface BillingPeriod {
 function getMonthPeriod(year: number, month: number): BillingPeriod {
   const from = new Date(year, month, 1);
   const to = new Date(year, month + 1, 0, 23, 59, 59, 999);
-  const label = from.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' });
+  const label = from.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
   return { from, to, label };
 }
 

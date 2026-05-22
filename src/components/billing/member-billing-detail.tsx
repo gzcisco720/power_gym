@@ -29,7 +29,7 @@ function initialPeriod(): BillingPeriod {
   return {
     from: new Date(now.getFullYear(), now.getMonth(), 1),
     to: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999),
-    label: now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' }),
+    label: now.toLocaleDateString('en-US', { year: 'numeric', month: 'long' }),
   };
 }
 
@@ -43,7 +43,13 @@ export function MemberBillingDetail({ memberId }: MemberBillingDetailProps) {
     const from = period.from.toISOString();
     const to = period.to.toISOString();
     fetch(`/api/billing/member/${memberId}?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          setData(null);
+          return;
+        }
+        return res.json();
+      })
       .then((json: BillingData) => {
         if (!cancelled) setData(json);
       })
@@ -81,13 +87,13 @@ export function MemberBillingDetail({ memberId }: MemberBillingDetailProps) {
           </div>
           {data.lines.map((line) => {
             const d = new Date(line.date);
-            const dateLabel = d.toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric', weekday: 'short' });
+            const dateLabel = d.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', weekday: 'short' });
             return (
               <div key={line.sessionId} className="grid grid-cols-[1fr_auto] gap-4 items-center px-3 py-2.5 border-b border-foreground/[.05] last:border-0">
                 <div>
                   <span className="text-sm text-foreground/80">{dateLabel}</span>
                   <span className="text-xs text-foreground/65 ml-2">{line.startTime}–{line.endTime}</span>
-                  <span className="text-xs text-foreground/40 ml-2">{line.serviceTypeName}</span>
+                  <span className="text-xs text-foreground/65 ml-2">{line.serviceTypeName}</span>
                 </div>
                 <span className="text-sm font-semibold text-primary-light">{line.currency} {line.price}</span>
               </div>
