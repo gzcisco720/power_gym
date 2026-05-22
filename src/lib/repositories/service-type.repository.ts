@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { ServiceTypeModel, type IServiceType } from '@/lib/db/models/service-type.model';
 
 export interface CreateServiceTypeData {
@@ -44,7 +45,7 @@ export class MongoServiceTypeRepository implements IServiceTypeRepository {
       durationMin: data.durationMin,
       pricePerSession: data.pricePerSession,
       currency: data.currency,
-      createdBy: data.createdBy,
+      createdBy: new mongoose.Types.ObjectId(data.createdBy),
     });
     return doc.save();
   }
