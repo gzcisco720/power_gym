@@ -18,6 +18,7 @@ interface PostBody {
   startTime?: string;
   endTime?: string;
   isRecurring?: boolean;
+  serviceTypeId?: string | null;
 }
 
 async function sendSessionBookedEmails(params: {
@@ -98,6 +99,7 @@ export async function POST(req: Request): Promise<Response> {
       date: baseDate,
       startTime: body.startTime,
       endTime: body.endTime,
+      serviceTypeId: typeof body.serviceTypeId === 'string' ? body.serviceTypeId : null,
     });
 
     await sendSessionBookedEmails({
@@ -120,6 +122,7 @@ export async function POST(req: Request): Promise<Response> {
     date: addWeeks(baseDate, i),
     startTime: body.startTime as string,
     endTime: body.endTime as string,
+    serviceTypeId: typeof body.serviceTypeId === 'string' ? body.serviceTypeId : null,
   }));
 
   await repo.createMany(sessions);

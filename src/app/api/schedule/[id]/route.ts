@@ -14,6 +14,7 @@ interface PatchBody {
   memberIds?: string[];
   startTime?: string;
   endTime?: string;
+  serviceTypeId?: string | null;
 }
 
 interface DeleteBody {
@@ -53,6 +54,7 @@ export async function PATCH(req: Request, { params }: RouteContext): Promise<Res
     if (Array.isArray(body.memberIds)) update.memberIds = body.memberIds;
     if (typeof body.startTime === 'string') update.startTime = body.startTime;
     if (typeof body.endTime === 'string') update.endTime = body.endTime;
+    if (body.serviceTypeId !== undefined) update.serviceTypeId = body.serviceTypeId;
 
     const seriesId = existing.seriesId?.toString();
 
