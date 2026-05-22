@@ -9,7 +9,7 @@ interface PatchBody {
   name?: string;
   durationMin?: number;
   pricePerSession?: number;
-  currency?: string;
+  note?: string | null;
   isActive?: boolean;
 }
 
@@ -38,8 +38,7 @@ export async function PATCH(req: Request, { params }: RouteContext): Promise<Res
   }
 
   const hasUpdate = typeof body.name === 'string' || typeof body.durationMin === 'number' ||
-    typeof body.pricePerSession === 'number' || typeof body.currency === 'string' ||
-    typeof body.isActive === 'boolean';
+    typeof body.pricePerSession === 'number' || 'note' in body || typeof body.isActive === 'boolean';
   if (!hasUpdate) {
     return Response.json({ error: 'At least one field required' }, { status: 400 });
   }
@@ -50,7 +49,7 @@ export async function PATCH(req: Request, { params }: RouteContext): Promise<Res
     ...(typeof body.name === 'string' ? { name: body.name.trim() } : {}),
     ...(typeof body.durationMin === 'number' ? { durationMin: body.durationMin } : {}),
     ...(typeof body.pricePerSession === 'number' ? { pricePerSession: body.pricePerSession } : {}),
-    ...(typeof body.currency === 'string' && body.currency.trim() ? { currency: body.currency.trim() } : {}),
+    ...('note' in body ? { note: body.note ?? null } : {}),
     ...(typeof body.isActive === 'boolean' ? { isActive: body.isActive } : {}),
   });
 

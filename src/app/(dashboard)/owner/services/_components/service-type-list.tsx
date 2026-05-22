@@ -13,6 +13,7 @@ interface ServiceType {
   durationMin: number;
   pricePerSession: number;
   currency: string;
+  note: string | null;
   isActive: boolean;
 }
 
@@ -155,9 +156,9 @@ export function ServiceTypeList() {
                       <span className="text-xs text-foreground/65">{st.currency} / session</span>
                     </div>
 
-                    {/* Edit hint */}
-                    <div className="text-[11px] text-foreground/30 group-hover:text-foreground/55 transition-colors">
-                      Click to edit
+                    {/* Note or edit hint */}
+                    <div className="text-[11px] text-foreground/40 group-hover:text-foreground/65 transition-colors line-clamp-2 leading-relaxed">
+                      {st.note ?? 'Click to edit'}
                     </div>
                   </motion.div>
                 ))}

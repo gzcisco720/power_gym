@@ -5,7 +5,7 @@ export interface CreateServiceTypeData {
   name: string;
   durationMin: number;
   pricePerSession: number;
-  currency: string;
+  note: string | null;
   createdBy: string;
 }
 
@@ -13,7 +13,7 @@ export interface UpdateServiceTypeData {
   name?: string;
   durationMin?: number;
   pricePerSession?: number;
-  currency?: string;
+  note?: string | null;
   isActive?: boolean;
 }
 
@@ -44,7 +44,8 @@ export class MongoServiceTypeRepository implements IServiceTypeRepository {
       name: data.name,
       durationMin: data.durationMin,
       pricePerSession: data.pricePerSession,
-      currency: data.currency,
+      currency: 'AUD',
+      note: data.note,
       createdBy: new mongoose.Types.ObjectId(data.createdBy),
     });
     return doc.save();

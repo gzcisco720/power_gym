@@ -563,6 +563,7 @@ export async function seed(): Promise<void> {
     durationMin: 60,
     pricePerSession: 300,
     currency: 'AUD',
+    note: 'Includes program design, warm-up, session coaching and recap notes.',
     isActive: true,
     createdBy: owner._id,
   });
@@ -572,6 +573,7 @@ export async function seed(): Promise<void> {
     durationMin: 30,
     pricePerSession: 150,
     currency: 'AUD',
+    note: 'Progress review, form check and goal adjustment session.',
     isActive: true,
     createdBy: owner._id,
   });

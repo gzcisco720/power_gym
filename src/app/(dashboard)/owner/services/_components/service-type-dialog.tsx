@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 interface ServiceType {
   _id: string;
@@ -18,6 +19,7 @@ interface ServiceType {
   durationMin: number;
   pricePerSession: number;
   currency: string;
+  note: string | null;
   isActive: boolean;
 }
 
@@ -33,7 +35,7 @@ export function ServiceTypeDialog({ open, serviceType, onSuccess, onClose }: Ser
   const [name, setName] = useState(serviceType?.name ?? '');
   const [durationMin, setDurationMin] = useState(String(serviceType?.durationMin ?? 60));
   const [pricePerSession, setPricePerSession] = useState(String(serviceType?.pricePerSession ?? ''));
-  const [currency, setCurrency] = useState(serviceType?.currency ?? 'AUD');
+  const [note, setNote] = useState(serviceType?.note ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -52,7 +54,12 @@ export function ServiceTypeDialog({ open, serviceType, onSuccess, onClose }: Ser
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), durationMin: dur, pricePerSession: price, currency }),
+        body: JSON.stringify({
+          name: name.trim(),
+          durationMin: dur,
+          pricePerSession: price,
+          note: note.trim() || null,
+        }),
       });
       if (!res.ok) { setError('Failed to save'); return; }
       onSuccess();
@@ -88,27 +95,65 @@ export function ServiceTypeDialog({ open, serviceType, onSuccess, onClose }: Ser
         <div className="space-y-4 py-2">
           <div>
             <Label htmlFor="stName">Name</Label>
-            <Input id="stName" className="mt-1" value={name} onChange={(e) => setName(e.target.value)} placeholder="1小时私教" />
+            <Input
+              id="stName"
+              className="mt-1"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="1hr Personal Training"
+            />
           </div>
+
           <div className="flex gap-3">
             <div className="flex-1">
               <Label htmlFor="stDur">Duration (min)</Label>
-              <Input id="stDur" type="text" inputMode="decimal" className="mt-1" value={durationMin} onChange={(e) => setDurationMin(e.target.value)} />
+              <Input
+                id="stDur"
+                type="text"
+                inputMode="decimal"
+                className="mt-1"
+                value={durationMin}
+                onChange={(e) => setDurationMin(e.target.value)}
+              />
             </div>
             <div className="flex-1">
-              <Label htmlFor="stCur">Currency</Label>
-              <Input id="stCur" className="mt-1" value={currency} onChange={(e) => setCurrency(e.target.value)} />
+              <Label htmlFor="stPrice">Price (AUD)</Label>
+              <Input
+                id="stPrice"
+                type="text"
+                inputMode="decimal"
+                className="mt-1"
+                value={pricePerSession}
+                onChange={(e) => setPricePerSession(e.target.value)}
+                placeholder="300"
+              />
             </div>
           </div>
+
           <div>
-            <Label htmlFor="stPrice">Price per Session</Label>
-            <Input id="stPrice" type="text" inputMode="decimal" className="mt-1" value={pricePerSession} onChange={(e) => setPricePerSession(e.target.value)} placeholder="300" />
+            <Label htmlFor="stNote">
+              Note <span className="text-foreground/40">(optional)</span>
+            </Label>
+            <Textarea
+              id="stNote"
+              className="mt-1 resize-none"
+              rows={3}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="e.g. Includes program design and session recap"
+            />
           </div>
-          {error && <p className="text-xs text-red-400">{error}</p>}
+
+          {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
         <DialogFooter className="flex-col gap-2 sm:flex-row">
           {isEdit && (
-            <Button variant="ghost" onClick={handleDeactivate} disabled={loading} className="sm:mr-auto text-foreground/40">
+            <Button
+              variant="ghost"
+              onClick={handleDeactivate}
+              disabled={loading}
+              className="sm:mr-auto text-foreground/40"
+            >
               {serviceType.isActive ? 'Deactivate' : 'Reactivate'}
             </Button>
           )}

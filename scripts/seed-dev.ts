@@ -1459,6 +1459,7 @@ async function seedDevData() {
     durationMin: 60,
     pricePerSession: 300,
     currency: 'AUD',
+    note: 'Includes program design, warm-up, session coaching and recap notes.',
     isActive: true,
     createdBy: owner._id,
   });
@@ -1468,6 +1469,7 @@ async function seedDevData() {
     durationMin: 30,
     pricePerSession: 150,
     currency: 'AUD',
+    note: 'Progress review, form check and goal adjustment session.',
     isActive: true,
     createdBy: owner._id,
   });
@@ -1477,6 +1479,7 @@ async function seedDevData() {
     durationMin: 45,
     pricePerSession: 200,
     currency: 'AUD',
+    note: 'Remote session via video call. Program sent 24hrs prior.',
     isActive: false,
     createdBy: owner._id,
   });

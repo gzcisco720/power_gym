@@ -5,6 +5,7 @@ export interface IServiceType extends Document {
   durationMin: number;
   pricePerSession: number;
   currency: string;
+  note: string | null;
   isActive: boolean;
   createdBy: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -16,6 +17,7 @@ const ServiceTypeSchema = new Schema<IServiceType>(
     durationMin: { type: Number, required: true, min: 1 },
     pricePerSession: { type: Number, required: true, min: 0 },
     currency: { type: String, required: true, default: 'AUD' },
+    note: { type: String, default: null },
     isActive: { type: Boolean, required: true, default: true },
     createdBy: { type: Schema.Types.ObjectId, required: true },
   },

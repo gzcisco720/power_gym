@@ -6,7 +6,7 @@ interface PostBody {
   name?: string;
   durationMin?: number;
   pricePerSession?: number;
-  currency?: string;
+  note?: string;
 }
 
 export async function GET(): Promise<Response> {
@@ -48,7 +48,7 @@ export async function POST(req: Request): Promise<Response> {
     name: body.name.trim(),
     durationMin: body.durationMin,
     pricePerSession: body.pricePerSession,
-    currency: typeof body.currency === 'string' ? body.currency : 'AUD',
+    note: typeof body.note === 'string' && body.note.trim() ? body.note.trim() : null,
     createdBy: session.user.id,
   });
 
