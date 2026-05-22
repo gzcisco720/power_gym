@@ -23,7 +23,7 @@ const ScheduledSessionSchema = new Schema<IScheduledSession>(
     startTime: { type: String, required: true, match: /^\d{2}:\d{2}$/ },
     endTime: { type: String, required: true, match: /^\d{2}:\d{2}$/ },
     status: { type: String, enum: ['scheduled', 'cancelled'], default: 'scheduled' },
-    serviceTypeId: { type: Schema.Types.ObjectId, default: null },
+    serviceTypeId: { type: Schema.Types.ObjectId, ref: 'ServiceType', default: null },
     reminderSentAt: { type: Date, default: null },
   },
   { timestamps: true },
