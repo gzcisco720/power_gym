@@ -8,6 +8,7 @@ const TABS = [
   { label: 'Health', segment: '/health' },
   { label: 'Check-ins', segment: '/check-ins' },
   { label: 'Photos', segment: '/photos' },
+  { label: 'Billing', segment: '/billing' },
 ] as const;
 
 export function MemberTabNav({ basePath }: { basePath: string }) {
