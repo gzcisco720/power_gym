@@ -48,6 +48,7 @@ import { FoodModel } from '../src/lib/db/models/food.model';
 import { NutritionDailyLogModel } from '../src/lib/db/models/nutrition-daily-log.model';
 import { InviteTokenModel } from '../src/lib/db/models/invite-token.model';
 import { SelfWorkoutLogModel } from '../src/lib/db/models/self-workout-log.model';
+import { ServiceTypeModel } from '../src/lib/db/models/service-type.model';
 import { FOOD_EXTRAS_PER_100G, withExtras } from './food-extras';
 
 const GymEquipmentCatalogModel: mongoose.Model<mongoose.Document & { catalogId: string; name: string }> =
@@ -1452,6 +1453,73 @@ async function seedDevData() {
   }
   console.log('  ✓ Member2 check-ins: 4 created (via owner)');
 
+  // ── Service Types ─────────────────────────────────────────────────────────
+  const ptService = await ServiceTypeModel.create({
+    name: '1hr Personal Training',
+    durationMin: 60,
+    pricePerSession: 300,
+    currency: 'CNY',
+    isActive: true,
+    createdBy: owner._id,
+  });
+
+  const checkinService = await ServiceTypeModel.create({
+    name: '30min Check-in',
+    durationMin: 30,
+    pricePerSession: 150,
+    currency: 'CNY',
+    isActive: true,
+    createdBy: owner._id,
+  });
+
+  await ServiceTypeModel.create({
+    name: 'Online Coaching',
+    durationMin: 45,
+    pricePerSession: 200,
+    currency: 'CNY',
+    isActive: false,
+    createdBy: owner._id,
+  });
+  console.log('  ✓ Service types: 2 active (1hr PT ¥300, 30min Check-in ¥150) + 1 inactive');
+
+  // ── Past Scheduled Sessions with Service Types (billing data) ─────────────
+  // member: 6 past PT sessions over the last 6 weeks — appear in billing summary
+  for (const weeksBack of [1, 2, 3, 4, 5, 6]) {
+    const d = new Date();
+    d.setDate(d.getDate() - weeksBack * 7);
+    d.setHours(0, 0, 0, 0);
+    await ScheduledSessionModel.create({
+      seriesId: null,
+      trainerId: trainer._id,
+      memberIds: [member._id],
+      date: d,
+      startTime: '10:00',
+      endTime: '11:00',
+      status: 'scheduled',
+      serviceTypeId: ptService._id,
+      reminderSentAt: null,
+    });
+  }
+
+  // member2: 3 past check-in sessions
+  for (const weeksBack of [1, 2, 3]) {
+    const d = new Date();
+    d.setDate(d.getDate() - weeksBack * 7 - 2);
+    d.setHours(0, 0, 0, 0);
+    await ScheduledSessionModel.create({
+      seriesId: null,
+      trainerId: owner._id,
+      memberIds: [member2._id],
+      date: d,
+      startTime: '09:00',
+      endTime: '09:30',
+      status: 'scheduled',
+      serviceTypeId: checkinService._id,
+      reminderSentAt: null,
+    });
+  }
+  console.log('  ✓ Billing sessions: 6 PT sessions (member) + 3 check-in sessions (member2)');
+
   // ── Invite Tokens ──────────────────────────────────────────────────────────
   await Promise.all([
     // Used: owner invited trainer 90 days ago (still within 120-day validity window)
@@ -1557,6 +1625,8 @@ async function main() {
     console.log('\nPlan templates: PPL | Full Body 3-Day | Upper/Lower 4-Day');
     console.log('Exercises: 7 global + 2 trainer-custom + 1 owner-custom (all with catalog image URLs)');
     console.log('Equipment: 11 active/maintenance + 1 retired | 11 condition reports (catalog names)');
+    console.log('Service types: 1hr PT ¥300 | 30min Check-in ¥150 | Online Coaching ¥200 (inactive)');
+    console.log('Billing sessions: 6 PT (member, 6 weeks) + 3 check-in (member2, 3 weeks)');
     console.log('Invite tokens: 1 used + 2 active pending + 1 expired');
   }
 
