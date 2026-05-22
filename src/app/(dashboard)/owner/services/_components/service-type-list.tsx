@@ -43,6 +43,7 @@ export function ServiceTypeList() {
   const active = serviceTypes.filter((st) => st.isActive);
   const inactive = serviceTypes.filter((st) => !st.isActive);
 
+  const currency = active[0]?.currency ?? 'AUD';
   const avgPrice = active.length
     ? Math.round(active.reduce((s, st) => s + st.pricePerSession, 0) / active.length)
     : 0;
@@ -82,7 +83,7 @@ export function ServiceTypeList() {
             </div>
             <div>
               <div className="text-lg font-bold text-foreground leading-none">
-                {priceRange ? (priceRange.min === priceRange.max ? `¥${priceRange.min}` : `¥${priceRange.min}–${priceRange.max}`) : '—'}
+                {priceRange ? (priceRange.min === priceRange.max ? `${currency} ${priceRange.min}` : `${currency} ${priceRange.min}–${priceRange.max}`) : '—'}
               </div>
               <div className="text-[11px] text-foreground/65 mt-0.5">Price range</div>
             </div>
@@ -92,7 +93,7 @@ export function ServiceTypeList() {
               <Clock className="h-4 w-4 text-primary-light" />
             </div>
             <div>
-              <div className="text-lg font-bold text-foreground leading-none">¥{avgPrice}</div>
+              <div className="text-lg font-bold text-foreground leading-none">{currency} {avgPrice}</div>
               <div className="text-[11px] text-foreground/65 mt-0.5">Average price</div>
             </div>
           </div>
