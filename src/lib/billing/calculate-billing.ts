@@ -44,7 +44,7 @@ export function calculateMemberBilling(sessions: BillingSession[], now: Date): B
   }
 
   const total = lines.reduce((sum, l) => sum + l.price, 0);
-  const currency = lines[0]?.currency ?? 'CNY';
+  const currency = lines[0]?.currency ?? 'AUD';
 
   return { total, count: lines.length, currency, lines };
 }

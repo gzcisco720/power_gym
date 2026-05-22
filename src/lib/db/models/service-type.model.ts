@@ -15,7 +15,7 @@ const ServiceTypeSchema = new Schema<IServiceType>(
     name: { type: String, required: true, trim: true },
     durationMin: { type: Number, required: true, min: 1 },
     pricePerSession: { type: Number, required: true, min: 0 },
-    currency: { type: String, required: true, default: 'CNY' },
+    currency: { type: String, required: true, default: 'AUD' },
     isActive: { type: Boolean, required: true, default: true },
     createdBy: { type: Schema.Types.ObjectId, required: true },
   },

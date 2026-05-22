@@ -48,7 +48,7 @@ export async function POST(req: Request): Promise<Response> {
     name: body.name.trim(),
     durationMin: body.durationMin,
     pricePerSession: body.pricePerSession,
-    currency: typeof body.currency === 'string' ? body.currency : 'CNY',
+    currency: typeof body.currency === 'string' ? body.currency : 'AUD',
     createdBy: session.user.id,
   });
 

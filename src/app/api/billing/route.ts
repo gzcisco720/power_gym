@@ -111,7 +111,7 @@ export async function GET(req: Request): Promise<Response> {
   );
 
   const grandTotal = memberResults.reduce((sum, m) => sum + m.totalAmount, 0);
-  const currency = memberResults[0]?.currency ?? 'CNY';
+  const currency = memberResults[0]?.currency ?? 'AUD';
 
   return Response.json({ members: memberResults, grandTotal, currency });
 }

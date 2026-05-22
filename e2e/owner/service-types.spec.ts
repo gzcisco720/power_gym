@@ -18,7 +18,7 @@ test.describe('Owner: Service Types', () => {
     await page.getByLabel('Price per Session').fill('250');
     await page.getByRole('button', { name: 'Save' }).click();
     await expect(page.getByText('E2E Test PT Session')).toBeVisible();
-    await expect(page.getByText('CNY 250')).toBeVisible();
+    await expect(page.getByText('AUD 250')).toBeVisible();
   });
 
   test('created service type appears in services list', async ({ page }) => {

@@ -562,7 +562,7 @@ export async function seed(): Promise<void> {
     name: '1hr Personal Training',
     durationMin: 60,
     pricePerSession: 300,
-    currency: 'CNY',
+    currency: 'AUD',
     isActive: true,
     createdBy: owner._id,
   });
@@ -571,7 +571,7 @@ export async function seed(): Promise<void> {
     name: '30min Check-in',
     durationMin: 30,
     pricePerSession: 150,
-    currency: 'CNY',
+    currency: 'AUD',
     isActive: true,
     createdBy: owner._id,
   });

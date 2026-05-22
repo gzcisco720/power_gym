@@ -33,7 +33,7 @@ export function ServiceTypeDialog({ open, serviceType, onSuccess, onClose }: Ser
   const [name, setName] = useState(serviceType?.name ?? '');
   const [durationMin, setDurationMin] = useState(String(serviceType?.durationMin ?? 60));
   const [pricePerSession, setPricePerSession] = useState(String(serviceType?.pricePerSession ?? ''));
-  const [currency, setCurrency] = useState(serviceType?.currency ?? 'CNY');
+  const [currency, setCurrency] = useState(serviceType?.currency ?? 'AUD');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 

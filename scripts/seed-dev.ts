@@ -1458,7 +1458,7 @@ async function seedDevData() {
     name: '1hr Personal Training',
     durationMin: 60,
     pricePerSession: 300,
-    currency: 'CNY',
+    currency: 'AUD',
     isActive: true,
     createdBy: owner._id,
   });
@@ -1467,7 +1467,7 @@ async function seedDevData() {
     name: '30min Check-in',
     durationMin: 30,
     pricePerSession: 150,
-    currency: 'CNY',
+    currency: 'AUD',
     isActive: true,
     createdBy: owner._id,
   });
@@ -1476,11 +1476,11 @@ async function seedDevData() {
     name: 'Online Coaching',
     durationMin: 45,
     pricePerSession: 200,
-    currency: 'CNY',
+    currency: 'AUD',
     isActive: false,
     createdBy: owner._id,
   });
-  console.log('  ✓ Service types: 2 active (1hr PT ¥300, 30min Check-in ¥150) + 1 inactive');
+  console.log('  ✓ Service types: 2 active (1hr PT A$300, 30min Check-in A$150) + 1 inactive');
 
   // ── Past Scheduled Sessions with Service Types (billing data) ─────────────
   // member: 6 past PT sessions over the last 6 weeks — appear in billing summary
@@ -1625,7 +1625,7 @@ async function main() {
     console.log('\nPlan templates: PPL | Full Body 3-Day | Upper/Lower 4-Day');
     console.log('Exercises: 7 global + 2 trainer-custom + 1 owner-custom (all with catalog image URLs)');
     console.log('Equipment: 11 active/maintenance + 1 retired | 11 condition reports (catalog names)');
-    console.log('Service types: 1hr PT ¥300 | 30min Check-in ¥150 | Online Coaching ¥200 (inactive)');
+    console.log('Service types: 1hr PT A$300 | 30min Check-in A$150 | Online Coaching A$200 (inactive)');
     console.log('Billing sessions: 6 PT (member, 6 weeks) + 3 check-in (member2, 3 weeks)');
     console.log('Invite tokens: 1 used + 2 active pending + 1 expired');
   }
