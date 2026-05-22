@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth/auth';
 import mongoose from 'mongoose';
 import { ScheduledSessionModel } from '@/lib/db/models/scheduled-session.model';
 import { calculateMemberBilling } from '@/lib/billing/calculate-billing';
+import { MongoUserRepository } from '@/lib/repositories/user.repository';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -15,6 +16,19 @@ export async function GET(req: Request, { params }: RouteContext): Promise<Respo
   // Members can only see their own billing
   if (session.user.role === 'member' && session.user.id !== memberId) {
     return Response.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  // Trainers can only see billing for their own members
+  if (session.user.role === 'trainer') {
+    const userRepo = new MongoUserRepository();
+    const member = await userRepo.findById(memberId);
+    if (!member || member.trainerId?.toString() !== session.user.id) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+  }
+
+  if (!mongoose.isValidObjectId(memberId)) {
+    return Response.json({ error: 'Not found' }, { status: 404 });
   }
 
   const url = new URL(req.url);
@@ -30,6 +44,11 @@ export async function GET(req: Request, { params }: RouteContext): Promise<Respo
     from = new Date(now.getFullYear(), now.getMonth(), 1);
     to = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
   }
+
+  if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+    return Response.json({ error: 'Invalid date parameters' }, { status: 400 });
+  }
+
   const effectiveTo = to < now ? to : now;
 
   await connectDB();

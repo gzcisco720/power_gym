@@ -37,6 +37,10 @@ export async function GET(req: Request): Promise<Response> {
     ({ from, to } = getMonthRange(url.searchParams.get('month')));
   }
 
+  if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+    return Response.json({ error: 'Invalid date parameters' }, { status: 400 });
+  }
+
   const now = new Date();
   const effectiveTo = to < now ? to : now;
 
@@ -64,12 +68,16 @@ export async function GET(req: Request): Promise<Response> {
   }
 
   const userRepo = new MongoUserRepository();
+  const trainerIds = new Set(sessions.map((s) => s.trainerId?.toString()).filter(Boolean));
+  const trainerDocs = await Promise.all(Array.from(trainerIds).map((id) => userRepo.findById(id!)));
+  const trainerMap = new Map(trainerDocs.filter(Boolean).map((t) => [t!._id.toString(), t!.name]));
+
   const memberResults = await Promise.all(
     Array.from(memberSessions.entries()).map(async ([memberId, mSessions]) => {
       const member = await userRepo.findById(memberId);
-      const trainer = mSessions[0]?.trainerId
-        ? await userRepo.findById(mSessions[0].trainerId.toString())
-        : null;
+      const trainerName = mSessions[0]?.trainerId
+        ? (trainerMap.get(mSessions[0].trainerId.toString()) ?? '')
+        : '';
 
       const billingSessions = mSessions.map((s) => ({
         _id: s._id.toString(),
@@ -85,7 +93,7 @@ export async function GET(req: Request): Promise<Response> {
       return {
         memberId,
         name: member?.name ?? 'Unknown',
-        trainerName: trainer?.name ?? '',
+        trainerName,
         sessionsCount: billing.count,
         totalAmount: billing.total,
         currency: billing.currency,
