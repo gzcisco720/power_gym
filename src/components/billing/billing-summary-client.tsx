@@ -94,7 +94,7 @@ export function BillingSummaryClient({ role, memberHubBase }: BillingSummaryClie
                 <span className="text-sm font-medium text-foreground">{m.name}</span>
                 {role === 'owner' && <span className="text-xs text-foreground/65">{m.trainerName}</span>}
                 <span className="text-xs text-foreground/65">{m.sessionsCount} sessions</span>
-                <span className="text-sm font-semibold text-primary-light text-right">{m.currency} {m.totalAmount.toLocaleString()}</span>
+                <span className="text-sm font-semibold text-primary-light text-right">{m.currency} {(m.totalAmount ?? 0).toLocaleString()}</span>
               </div>
             ))}
           </div>

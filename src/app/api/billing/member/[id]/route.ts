@@ -2,6 +2,7 @@ import { connectDB } from '@/lib/db/connect';
 import { auth } from '@/lib/auth/auth';
 import mongoose from 'mongoose';
 import { ScheduledSessionModel } from '@/lib/db/models/scheduled-session.model';
+import { ServiceTypeModel } from '@/lib/db/models/service-type.model';
 import { calculateMemberBilling } from '@/lib/billing/calculate-billing';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 
@@ -58,7 +59,14 @@ export async function GET(req: Request, { params }: RouteContext): Promise<Respo
     date: { $gte: from, $lte: effectiveTo },
     status: 'scheduled',
     serviceTypeId: { $ne: null },
-  }).populate('serviceTypeId').lean();
+  }).lean();
+
+  // Manual lookup — avoid populate() which requires ref on the schema singleton
+  const stIds = [...new Set(
+    sessions.map((s) => s.serviceTypeId?.toString()).filter((id): id is string => !!id),
+  )];
+  const stDocs = await ServiceTypeModel.find({ _id: { $in: stIds } }).lean();
+  const stMap = new Map(stDocs.map((st) => [st._id.toString(), st]));
 
   const billingSessions = sessions.map((s) => ({
     _id: s._id.toString(),
@@ -66,7 +74,7 @@ export async function GET(req: Request, { params }: RouteContext): Promise<Respo
     startTime: s.startTime,
     endTime: s.endTime,
     status: s.status,
-    serviceType: s.serviceTypeId as { _id: string; name: string; pricePerSession: number; currency: string } | null,
+    serviceType: s.serviceTypeId ? (stMap.get(s.serviceTypeId.toString()) ?? null) : null,
   }));
 
   const billing = calculateMemberBilling(billingSessions, now);
