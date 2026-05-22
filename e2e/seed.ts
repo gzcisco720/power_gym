@@ -11,6 +11,7 @@ import { MemberNutritionPlanModel } from '../src/lib/db/models/member-nutrition-
 import { BodyTestModel } from '../src/lib/db/models/body-test.model';
 import { InviteTokenModel } from '../src/lib/db/models/invite-token.model';
 import { ScheduledSessionModel } from '../src/lib/db/models/scheduled-session.model';
+import { ServiceTypeModel } from '../src/lib/db/models/service-type.model';
 import { MemberInjuryModel } from '../src/lib/db/models/member-injury.model';
 import { MemberMedicationModel } from '../src/lib/db/models/member-medication.model';
 import { EquipmentModel } from '../src/lib/db/models/equipment.model';
@@ -556,6 +557,25 @@ export async function seed(): Promise<void> {
     targetBodyFatPct: null,
   });
 
+  // ── Service Types ─────────────────────────────────────────────────────────
+  const ptService = await ServiceTypeModel.create({
+    name: '1hr Personal Training',
+    durationMin: 60,
+    pricePerSession: 300,
+    currency: 'CNY',
+    isActive: true,
+    createdBy: owner._id,
+  });
+
+  await ServiceTypeModel.create({
+    name: '30min Check-in',
+    durationMin: 30,
+    pricePerSession: 150,
+    currency: 'CNY',
+    isActive: true,
+    createdBy: owner._id,
+  });
+
   // ── Scheduled Sessions ────────────────────────────────────────────────────
   // Always seed on "next Monday" so navigating forward one week always reveals them
   const nextMon = new Date();
@@ -599,19 +619,28 @@ export async function seed(): Promise<void> {
     reminderSentAt: null,
   });
 
-  // Past session — appears in member history
-  const lastWeek = new Date();
-  lastWeek.setDate(lastWeek.getDate() - 7);
-  await ScheduledSessionModel.create({
-    seriesId: null,
-    trainerId: trainer._id,
-    memberIds: [member._id],
-    date: lastWeek,
-    startTime: '10:00',
-    endTime: '11:00',
-    status: 'scheduled',
-    reminderSentAt: null,
-  });
+  // Past sessions — appear in member history and billing
+  const pastDate = (daysBack: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() - daysBack);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+
+  // 4 past sessions this month with service type — will appear in billing summary
+  for (const daysAgo of [7, 14, 21, 28]) {
+    await ScheduledSessionModel.create({
+      seriesId: null,
+      trainerId: trainer._id,
+      memberIds: [member._id],
+      date: pastDate(daysAgo),
+      startTime: '10:00',
+      endTime: '11:00',
+      status: 'scheduled',
+      serviceTypeId: ptService._id,
+      reminderSentAt: null,
+    });
+  }
 
   // ── Invite Tokens ─────────────────────────────────────────────────────────
   // Used by auth.spec.ts register test
