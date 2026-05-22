@@ -90,6 +90,39 @@ describe('MongoCheckInRepository', () => {
     });
   });
 
+  describe('findRecentByTrainer', () => {
+    it('returns check-ins for trainer since given date sorted newest first', async () => {
+      const since = new Date('2026-05-15T00:00:00Z');
+      const docs = [
+        { memberId: new mongoose.Types.ObjectId(memberId), submittedAt: new Date('2026-05-20') },
+        { memberId: new mongoose.Types.ObjectId(memberId), submittedAt: new Date('2026-05-16') },
+      ];
+      const leanMock = jest.fn().mockResolvedValue(docs);
+      const sortMock = jest.fn().mockReturnValue({ lean: leanMock });
+      mockModel.find.mockReturnValue({ sort: sortMock } as never);
+
+      const result = await repo.findRecentByTrainer(trainerId, since);
+
+      expect(mockModel.find).toHaveBeenCalledWith({
+        trainerId: expect.any(mongoose.Types.ObjectId),
+        submittedAt: { $gte: since },
+      });
+      expect(sortMock).toHaveBeenCalledWith({ submittedAt: -1 });
+      expect(leanMock).toHaveBeenCalled();
+      expect(result).toEqual(docs);
+    });
+
+    it('returns empty array when no recent check-ins', async () => {
+      const leanMock = jest.fn().mockResolvedValue([]);
+      const sortMock = jest.fn().mockReturnValue({ lean: leanMock });
+      mockModel.find.mockReturnValue({ sort: sortMock } as never);
+
+      const result = await repo.findRecentByTrainer(trainerId, new Date());
+
+      expect(result).toEqual([]);
+    });
+  });
+
   describe('findPhotosForMember', () => {
     it('returns only check-ins that have photos, with _id, submittedAt, photos, weight', async () => {
       const submittedAt = new Date('2026-05-01');

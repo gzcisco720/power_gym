@@ -60,6 +60,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Check-ins & Photos Tab Redesign | [check-ins-photos-redesign-plan.md](2026-05-20/plans/check-ins-photos-redesign-plan.md) | In Progress |
 | Member Plan Create Flow | [member-plan-create-flow-design.md](2026-05-21/plans/member-plan-create-flow-design.md) | Approved |
 | Member Plan Create Flow (Plan) | [member-plan-create-flow-plan.md](2026-05-21/plans/member-plan-create-flow-plan.md) | In Progress |
+| Trainer Dashboard Redesign | [trainer-dashboard-redesign.md](2026-05-22/plans/trainer-dashboard-redesign.md) | Approved |
 
 ---
 

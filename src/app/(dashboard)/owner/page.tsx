@@ -21,7 +21,7 @@ export default async function OwnerDashboardPage() {
         </Suspense>
 
         <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4">
-          <div className="text-[9px] uppercase tracking-[2px] text-foreground/30 font-semibold mb-3">
+          <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-3">
             Member Growth — Last 6 Months
           </div>
           <Suspense fallback={<Skeleton className="h-20 w-full" />}>

@@ -38,13 +38,13 @@ export async function MemberNutritionToday() {
 
   if (!plan) {
     return (
-      <div className="bg-white/[.02] ring-1 ring-foreground/[.06] rounded-xl p-4">
-        <div className="text-[11px] font-semibold uppercase tracking-[.07em] text-foreground/65 mb-3">
+      <div className="bg-white/[.02] ring-1 ring-foreground/[.06] rounded-xl p-4 flex flex-col min-h-[160px]">
+        <div className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65 mb-3">
           Nutrition Today
         </div>
-        <p className="text-[11px] text-foreground/65 text-center py-2">
-          No nutrition plan assigned
-        </p>
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-xs text-foreground/40">No nutrition plan assigned</p>
+        </div>
       </div>
     );
   }

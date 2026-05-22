@@ -5,9 +5,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TrainerKpiStrip } from './_components/trainer-kpi-strip';
 import { TrainerTodaySessions } from './_components/trainer-today-sessions';
 import { TrainerNeedsAttention } from './_components/trainer-needs-attention';
+import { TrainerPendingCheckIns } from './_components/trainer-pending-checkins';
 import { TrainerCompliance } from './_components/trainer-compliance';
 import { TrainerRecentPrs } from './_components/trainer-recent-prs';
 import { TrainerMyTrainingCard } from './_components/trainer-my-training-card';
+import { TrainerWeekSchedule } from './_components/trainer-week-schedule';
 
 export default async function TrainerDashboardPage() {
   const session = await auth();
@@ -17,6 +19,8 @@ export default async function TrainerDashboardPage() {
     <div>
       <PageHeader title="Dashboard" subtitle="Your members at a glance" />
       <div className="px-4 sm:px-8 py-6 space-y-4">
+
+        {/* Row 1 — KPI Strip */}
         <Suspense
           fallback={
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -28,25 +32,40 @@ export default async function TrainerDashboardPage() {
         >
           <TrainerKpiStrip />
         </Suspense>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Suspense fallback={<Skeleton className="h-48 rounded-xl" />}>
-            <TrainerTodaySessions />
-          </Suspense>
-          <Suspense fallback={<Skeleton className="h-48 rounded-xl" />}>
-            <TrainerNeedsAttention />
-          </Suspense>
+
+        {/* Row 2 — Main content: Today's Sessions (left) + Alerts sidebar (right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-start">
+          <div className="lg:col-span-3">
+            <Suspense fallback={<Skeleton className="h-48 rounded-xl" />}>
+              <TrainerTodaySessions />
+            </Suspense>
+          </div>
+          <div className="lg:col-span-2 flex flex-col gap-4">
+            <Suspense fallback={<Skeleton className="h-36 rounded-xl" />}>
+              <TrainerNeedsAttention />
+            </Suspense>
+            <Suspense fallback={<Skeleton className="h-36 rounded-xl" />}>
+              <TrainerPendingCheckIns />
+            </Suspense>
+          </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Suspense fallback={<Skeleton className="h-56 rounded-xl" />}>
+
+        {/* Row 3 — Bottom 4 columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Suspense fallback={<Skeleton className="h-48 rounded-xl" />}>
             <TrainerCompliance />
           </Suspense>
-          <Suspense fallback={<Skeleton className="h-56 rounded-xl" />}>
+          <Suspense fallback={<Skeleton className="h-48 rounded-xl" />}>
             <TrainerRecentPrs />
           </Suspense>
-          <Suspense fallback={<Skeleton className="h-56 rounded-xl" />}>
+          <Suspense fallback={<Skeleton className="h-48 rounded-xl" />}>
             <TrainerMyTrainingCard />
           </Suspense>
+          <Suspense fallback={<Skeleton className="h-48 rounded-xl" />}>
+            <TrainerWeekSchedule />
+          </Suspense>
         </div>
+
       </div>
     </div>
   );

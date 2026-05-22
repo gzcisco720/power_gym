@@ -37,8 +37,8 @@ export async function EquipmentStatusSection() {
     .slice(0, 5);
 
   return (
-    <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4">
-      <div className="text-[9px] uppercase tracking-[2px] text-foreground/30 font-semibold mb-3">
+    <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4 flex flex-col min-h-[180px]">
+      <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-3">
         Equipment Status
       </div>
       <div className="grid grid-cols-3 gap-2 mb-4">
@@ -62,9 +62,11 @@ export async function EquipmentStatusSection() {
         ))}
       </div>
       {nonActive.length === 0 ? (
-        <p className="text-[11px] text-foreground/40 text-center py-2">All equipment active ✓</p>
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-xs text-foreground/40">All equipment active ✓</p>
+        </div>
       ) : (
-        <div className="space-y-0">
+        <div className="space-y-0 flex-1">
           {nonActive.map(item => (
             <div
               key={item._id.toString()}

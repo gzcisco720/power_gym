@@ -96,24 +96,24 @@ export async function TrainerNeedsAttention() {
   );
 
   alerts.sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);
-  const shown = alerts.slice(0, 6);
+  const shown = alerts.slice(0, 5);
 
   if (shown.length === 0) {
     return (
-      <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4">
-        <div className="text-[9px] uppercase tracking-[2px] text-foreground/30 font-semibold mb-3">
+      <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4 min-h-[100px] flex flex-col">
+        <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-3">
           Needs Attention
         </div>
-        <p className="text-[11px] text-foreground/40 text-center py-3">
-          All members on track ✓
-        </p>
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-xs text-foreground/40">All members on track ✓</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4">
-      <div className="text-[9px] uppercase tracking-[2px] text-foreground/30 font-semibold mb-3">
+      <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-3">
         Needs Attention
       </div>
       <div className="space-y-0">
@@ -145,6 +145,13 @@ export async function TrainerNeedsAttention() {
           </div>
         ))}
       </div>
+      {alerts.length > 5 && (
+        <div className="mt-2 text-right">
+          <Link href="/trainer/members" className="text-[10px] text-foreground/35 hover:text-foreground/60 transition-colors">
+            View all ({alerts.length}) →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

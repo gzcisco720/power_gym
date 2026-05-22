@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { connectDB } from '@/lib/db/connect';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { MongoWorkoutSessionRepository } from '@/lib/repositories/workout-session.repository';
@@ -13,6 +14,7 @@ function initials(name: string) {
 }
 
 const TRAINER_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#06b6d4', '#8b5cf6'];
+const MAX_VISIBLE = 5;
 
 export async function TrainerPerformanceSection() {
   await connectDB();
@@ -53,13 +55,16 @@ export async function TrainerPerformanceSection() {
   trainerStats.sort((a, b) => b.sessions - a.sessions);
   const maxSessions = Math.max(...trainerStats.map(t => t.sessions), 1);
 
+  const shown = trainerStats.slice(0, MAX_VISIBLE);
+  const overflow = trainerStats.length - MAX_VISIBLE;
+
   return (
-    <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4">
-      <div className="text-[9px] uppercase tracking-[2px] text-foreground/30 font-semibold mb-3">
+    <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4 flex flex-col min-h-[180px]">
+      <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-3">
         Trainer Performance — This Month
       </div>
-      <div className="space-y-3">
-        {trainerStats.map(({ trainer, memberCount, sessions, color }) => (
+      <div className="space-y-3 flex-1">
+        {shown.map(({ trainer, memberCount, sessions, color }) => (
           <div key={trainer._id.toString()} className="flex items-center gap-3">
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
@@ -85,11 +90,18 @@ export async function TrainerPerformanceSection() {
               <div className="text-[12px] font-bold" style={{ color }}>
                 {sessions} sessions
               </div>
-              <div className="text-[9px] text-foreground/30 mt-0.5">{memberCount} members</div>
+              <div className="text-[9px] text-foreground/35 mt-0.5">{memberCount} members</div>
             </div>
           </div>
         ))}
       </div>
+      {overflow > 0 && (
+        <div className="mt-3 pt-2 border-t border-white/[.04]">
+          <Link href="/owner/trainers" className="text-[10px] text-foreground/35 hover:text-foreground/60 transition-colors">
+            +{overflow} more trainer{overflow !== 1 ? 's' : ''} →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
