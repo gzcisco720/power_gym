@@ -19,6 +19,7 @@ export interface CalendarSession {
   startTime: string;
   endTime: string;
   status: 'scheduled' | 'cancelled';
+  serviceTypeId: string | null;
   reminderSentAt: string | null;
 }
 

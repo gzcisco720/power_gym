@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,13 @@ interface Member {
   name: string;
   trainerId: string;
 }
+interface ServiceType {
+  _id: string;
+  name: string;
+  durationMin: number;
+  pricePerSession: number;
+  currency: string;
+}
 
 interface CreateSessionModalProps {
   open: boolean;
@@ -34,7 +41,6 @@ interface CreateSessionModalProps {
   onSuccess: () => void;
   onClose: () => void;
 }
-
 
 export function CreateSessionModal({
   open,
@@ -62,10 +68,21 @@ export function CreateSessionModal({
   const [startTime, setStartTime] = useState(defaultStartTime);
   const [endTime, setEndTime] = useState(addOneHour(defaultStartTime));
   const [isRecurring, setIsRecurring] = useState(false);
+  const [serviceTypeId, setServiceTypeId] = useState<string>('');
+  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    if (!open) return;
+    fetch('/api/service-types/active')
+      .then((r) => r.json())
+      .then((data: { serviceTypes: ServiceType[] }) => setServiceTypes(data.serviceTypes ?? []))
+      .catch(() => {});
+  }, [open]);
+
   const filteredMembers = members.filter((m) => m.trainerId === trainerId);
+  const selectedServiceType = serviceTypes.find((st) => st._id === serviceTypeId) ?? null;
 
   function toggleMember(id: string) {
     setSelectedMemberIds((prev) =>
@@ -95,6 +112,7 @@ export function CreateSessionModal({
           startTime,
           endTime,
           isRecurring,
+          serviceTypeId: serviceTypeId || null,
         }),
       });
       if (!res.ok) {
@@ -213,6 +231,33 @@ export function CreateSessionModal({
             >
               Weekly Recurring
             </button>
+          </div>
+
+          <div>
+            <Label htmlFor="serviceType">
+              Service Type{' '}
+              <span className="text-foreground/40">(optional)</span>
+            </Label>
+            <div className="mt-1 flex items-center gap-2">
+              <select
+                id="serviceType"
+                className="flex-1 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white"
+                value={serviceTypeId}
+                onChange={(e) => setServiceTypeId(e.target.value)}
+              >
+                <option value="">— None —</option>
+                {serviceTypes.map((st) => (
+                  <option key={st._id} value={st._id}>
+                    {st.name} ({st.durationMin} min)
+                  </option>
+                ))}
+              </select>
+              {selectedServiceType && (
+                <span className="text-sm text-primary-light font-semibold shrink-0">
+                  ¥{selectedServiceType.pricePerSession}
+                </span>
+              )}
+            </div>
           </div>
 
           {error && <p className="text-xs text-red-400">{error}</p>}

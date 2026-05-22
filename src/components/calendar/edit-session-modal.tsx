@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,14 @@ import { RecurringScopeDialog } from './recurring-scope-dialog';
 import type { CalendarSession } from './week-calendar-grid';
 
 type Scope = 'one' | 'future' | 'all';
+
+interface ServiceType {
+  _id: string;
+  name: string;
+  durationMin: number;
+  pricePerSession: number;
+  currency: string;
+}
 
 interface EditSessionModalProps {
   open: boolean;
@@ -37,8 +45,20 @@ export function EditSessionModal({
   const [action, setAction] = useState<'edit' | 'cancel' | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [serviceTypeId, setServiceTypeId] = useState<string>(session.serviceTypeId ?? '');
+  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
 
   const isRecurring = session.seriesId !== null;
+
+  useEffect(() => {
+    if (!open) return;
+    fetch('/api/service-types/active')
+      .then((r) => r.json())
+      .then((data: { serviceTypes: ServiceType[] }) => setServiceTypes(data.serviceTypes ?? []))
+      .catch(() => {});
+  }, [open]);
+
+  const selectedServiceType = serviceTypes.find((st) => st._id === serviceTypeId) ?? null;
 
   async function executeAction(scope: Scope) {
     setLoading(true);
@@ -48,7 +68,7 @@ export function EditSessionModal({
         const res = await fetch(`/api/schedule/${session._id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ scope, startTime, endTime }),
+          body: JSON.stringify({ scope, startTime, endTime, serviceTypeId: serviceTypeId || null }),
         });
         if (!res.ok) {
           setError('Failed to update');
@@ -127,6 +147,32 @@ export function EditSessionModal({
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
                 />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="editServiceType">
+                Service Type{' '}
+                <span className="text-foreground/40">(optional)</span>
+              </Label>
+              <div className="mt-1 flex items-center gap-2">
+                <select
+                  id="editServiceType"
+                  className="flex-1 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white"
+                  value={serviceTypeId}
+                  onChange={(e) => setServiceTypeId(e.target.value)}
+                >
+                  <option value="">— None —</option>
+                  {serviceTypes.map((st) => (
+                    <option key={st._id} value={st._id}>
+                      {st.name} ({st.durationMin} min)
+                    </option>
+                  ))}
+                </select>
+                {selectedServiceType && (
+                  <span className="text-sm text-primary-light font-semibold shrink-0">
+                    ¥{selectedServiceType.pricePerSession}
+                  </span>
+                )}
               </div>
             </div>
             {error && <p className="text-xs text-red-400">{error}</p>}

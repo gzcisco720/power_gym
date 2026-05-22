@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ServiceTypeDialog } from './service-type-dialog';
 
@@ -20,22 +20,20 @@ export function ServiceTypeList() {
   const [editing, setEditing] = useState<ServiceType | undefined>(undefined);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const loadRef = useRef(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/service-types');
-      const data = (await res.json()) as { serviceTypes: ServiceType[] };
-      setServiceTypes(data.serviceTypes ?? []);
-    } finally {
-      setLoading(false);
-    }
-  });
-
   useEffect(() => {
-    void loadRef.current();
+    let cancelled = false;
+    fetch('/api/service-types')
+      .then((res) => res.json())
+      .then((data: { serviceTypes: ServiceType[] }) => {
+        if (!cancelled) setServiceTypes(data.serviceTypes ?? []);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
   }, [refreshKey]);
 
-  function reload() { setRefreshKey((k) => k + 1); }
+  function reload() { setLoading(true); setRefreshKey((k) => k + 1); }
 
   const active = serviceTypes.filter((st) => st.isActive);
   const inactive = serviceTypes.filter((st) => !st.isActive);
