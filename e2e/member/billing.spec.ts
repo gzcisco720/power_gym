@@ -25,7 +25,7 @@ test.describe('Member: Billing', () => {
 
   test('member cannot access owner billing page', async ({ page }) => {
     await page.goto('/owner/billing');
-    // Should redirect away from owner pages
+    await page.waitForURL((url) => !url.pathname.startsWith('/owner'));
     await expect(page).not.toHaveURL('/owner/billing');
   });
 });

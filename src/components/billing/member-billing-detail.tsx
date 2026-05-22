@@ -44,14 +44,11 @@ export function MemberBillingDetail({ memberId }: MemberBillingDetailProps) {
     const to = period.to.toISOString();
     fetch(`/api/billing/member/${memberId}?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
       .then((res) => {
-        if (!res.ok) {
-          setData(null);
-          return;
-        }
-        return res.json();
+        if (!res.ok) return null;
+        return res.json() as Promise<BillingData>;
       })
-      .then((json: BillingData) => {
-        if (!cancelled) setData(json);
+      .then((json) => {
+        if (!cancelled) setData(json ?? null);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -95,7 +92,7 @@ export function MemberBillingDetail({ memberId }: MemberBillingDetailProps) {
                   <span className="text-xs text-foreground/65 ml-2">{line.startTime}–{line.endTime}</span>
                   <span className="text-xs text-foreground/65 ml-2">{line.serviceTypeName}</span>
                 </div>
-                <span className="text-sm font-semibold text-primary-light">{line.currency} {line.price}</span>
+                <span className="text-sm font-semibold text-primary-light">{line.currency} {line.price.toLocaleString()}</span>
               </div>
             );
           })}

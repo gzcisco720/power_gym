@@ -45,14 +45,11 @@ export function BillingSummaryClient({ role, memberHubBase }: BillingSummaryClie
     const to = period.to.toISOString();
     fetch(`/api/billing?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
       .then((res) => {
-        if (!res.ok) {
-          setData(null);
-          return;
-        }
-        return res.json();
+        if (!res.ok) return null;
+        return res.json() as Promise<SummaryData>;
       })
-      .then((json: SummaryData) => {
-        if (!cancelled) setData(json);
+      .then((json) => {
+        if (!cancelled) setData(json ?? null);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
