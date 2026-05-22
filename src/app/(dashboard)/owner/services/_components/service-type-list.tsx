@@ -99,6 +99,7 @@ export function ServiceTypeList() {
       )}
 
       <ServiceTypeDialog
+        key={editing?._id ?? 'create'}
         open={dialogOpen}
         serviceType={editing}
         onSuccess={reload}

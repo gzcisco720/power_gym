@@ -66,11 +66,12 @@ export function ServiceTypeDialog({ open, serviceType, onSuccess, onClose }: Ser
     if (!serviceType) return;
     setLoading(true);
     try {
-      await fetch(`/api/service-types/${serviceType._id}`, {
+      const res = await fetch(`/api/service-types/${serviceType._id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !serviceType.isActive }),
       });
+      if (!res.ok) { setError('Failed to update'); return; }
       onSuccess();
       onClose();
     } finally {

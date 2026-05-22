@@ -170,7 +170,7 @@ export function EditSessionModal({
                 </select>
                 {selectedServiceType && (
                   <span className="text-sm text-primary-light font-semibold shrink-0">
-                    ¥{selectedServiceType.pricePerSession}
+                    {selectedServiceType.currency} {selectedServiceType.pricePerSession}
                   </span>
                 )}
               </div>
