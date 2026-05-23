@@ -16,7 +16,13 @@ export default async function OwnerMembersPage() {
     userRepo.findByRole('trainer'),
   ]);
 
-  const trainerMap = new Map(trainers.map((t) => [t._id.toString(), t.name]));
+  const ownerId = session.user.id ?? '';
+  const ownerName = session.user.name ?? 'Owner';
+
+  const trainerMap = new Map([
+    [ownerId, ownerName],
+    ...trainers.map((t) => [t._id.toString(), t.name] as [string, string]),
+  ]);
 
   const memberRows = members.map((m) => ({
     _id: m._id.toString(),
@@ -27,10 +33,10 @@ export default async function OwnerMembersPage() {
     createdAt: m.createdAt.toISOString(),
   }));
 
-  const trainerOptions = trainers.map((t) => ({
-    _id: t._id.toString(),
-    name: t.name,
-  }));
+  const trainerOptions = [
+    { _id: ownerId, name: `${ownerName} (you)` },
+    ...trainers.map((t) => ({ _id: t._id.toString(), name: t.name })),
+  ];
 
   const unassignedCount = memberRows.filter((m) => !m.trainerId).length;
 
