@@ -10,6 +10,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | ----- | ---- | ------ |
 | Phase 1 — Core Feature Summary | [phase-one-summary.md](2026-04-23/phase-one-summary.md) | Complete |
 | **基础功能里程碑总结（全部 12 域）** | [milestone-summary.md](2026-05-14/milestone-summary.md) | **Complete** |
+| gstack Skills 参考手册 | [gstack-skills-reference.md](2026-05-23/gstack-skills-reference.md) | Living |
 | Roadmap & Backlog | [roadmap.md](roadmap.md) | Living |
 | Superseded Doc Archive | [superseded.md](superseded.md) | Permanent |
 
