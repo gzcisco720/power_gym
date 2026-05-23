@@ -10,6 +10,8 @@ export interface CreateScheduledSessionData {
   startTime: string;
   endTime: string;
   serviceTypeId?: string | null;
+  customServiceName?: string | null;
+  customFee?: number | null;
 }
 
 export interface UpdateScheduledSessionData {
@@ -18,6 +20,8 @@ export interface UpdateScheduledSessionData {
   startTime?: string;
   endTime?: string;
   serviceTypeId?: string | null;
+  customServiceName?: string | null;
+  customFee?: number | null;
 }
 
 export interface FindByDateRangeOptions {
@@ -55,6 +59,8 @@ interface UpdateSetDoc {
   startTime?: string;
   endTime?: string;
   serviceTypeId?: mongoose.Types.ObjectId | null;
+  customServiceName?: string | null;
+  customFee?: number | null;
 }
 
 function buildUpdateSet(data: UpdateScheduledSessionData): { $set: UpdateSetDoc } {
@@ -66,6 +72,8 @@ function buildUpdateSet(data: UpdateScheduledSessionData): { $set: UpdateSetDoc 
   if (data.serviceTypeId !== undefined) {
     $set.serviceTypeId = data.serviceTypeId ? toOid(data.serviceTypeId) : null;
   }
+  if (data.customServiceName !== undefined) $set.customServiceName = data.customServiceName ?? null;
+  if (data.customFee !== undefined) $set.customFee = data.customFee ?? null;
   return { $set };
 }
 
@@ -79,6 +87,8 @@ export class MongoScheduledSessionRepository implements IScheduledSessionReposit
       startTime: data.startTime,
       endTime: data.endTime,
       serviceTypeId: data.serviceTypeId ? toOid(data.serviceTypeId) : null,
+      customServiceName: data.customServiceName ?? null,
+      customFee: data.customFee ?? null,
     });
     return doc.save();
   }
@@ -93,6 +103,8 @@ export class MongoScheduledSessionRepository implements IScheduledSessionReposit
         startTime: d.startTime,
         endTime: d.endTime,
         serviceTypeId: d.serviceTypeId ? toOid(d.serviceTypeId) : null,
+        customServiceName: d.customServiceName ?? null,
+        customFee: d.customFee ?? null,
       })),
     );
   }

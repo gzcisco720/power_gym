@@ -63,6 +63,7 @@ export default async function LoginPage({
             'use server';
             const email = formData.get('email') as string;
             const password = formData.get('password') as string;
+            const remember = formData.get('remember') === 'on' ? 'true' : 'false';
 
             let redirectTo = '/dashboard';
             try {
@@ -75,7 +76,7 @@ export default async function LoginPage({
             }
 
             try {
-              await signIn('credentials', { email, password, redirectTo });
+              await signIn('credentials', { email, password, remember, redirectTo });
             } catch (error) {
               if (error instanceof AuthError) {
                 redirect(`/login?error=${error.type}`);
@@ -112,6 +113,18 @@ export default async function LoginPage({
               autoComplete="current-password"
               className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#555] focus-visible:ring-white"
             />
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <input
+              id="remember"
+              name="remember"
+              type="checkbox"
+              className="h-3.5 w-3.5 rounded border-[#333] bg-[#0c0c0c] accent-white cursor-pointer"
+            />
+            <label htmlFor="remember" className="text-[13px] text-[#666] cursor-pointer select-none">
+              Remember me
+            </label>
           </div>
 
           <LoginButton />

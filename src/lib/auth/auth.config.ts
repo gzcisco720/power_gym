@@ -8,6 +8,7 @@ export interface AuthorizedUser {
   email: string;
   role: UserRole;
   trainerId: string | null;
+  remember?: boolean;
 }
 
 export const authConfig: NextAuthConfig = {
@@ -22,6 +23,8 @@ export const authConfig: NextAuthConfig = {
         token.lastName = u.lastName;
         token.role = u.role;
         token.trainerId = u.trainerId;
+        const ttl = u.remember ? 30 * 24 * 60 * 60 : 24 * 60 * 60;
+        token.exp = Math.floor(Date.now() / 1000) + ttl;
       }
       return token;
     },

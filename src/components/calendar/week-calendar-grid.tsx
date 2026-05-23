@@ -20,6 +20,8 @@ export interface CalendarSession {
   endTime: string;
   status: 'scheduled' | 'cancelled';
   serviceTypeId: string | null;
+  customServiceName: string | null;
+  customFee: number | null;
   reminderSentAt: string | null;
 }
 
@@ -27,6 +29,7 @@ interface WeekCalendarGridProps {
   weekStart: Date;
   sessions: CalendarSession[];
   memberMap: Record<string, string>;
+  serviceTypeMap: Record<string, string>;
   trainerColorMap: Record<string, string>;
   onSlotClick: (date: Date, time: string) => void;
   onSessionClick: (session: CalendarSession) => void;
@@ -62,6 +65,7 @@ export function WeekCalendarGrid({
   weekStart,
   sessions,
   memberMap,
+  serviceTypeMap,
   trainerColorMap,
   onSlotClick,
   onSessionClick,
@@ -127,26 +131,28 @@ export function WeekCalendarGrid({
               initial="hidden"
               animate="visible"
             >
-              {sessionsByDay[di].map((s) => (
-                <motion.div
-                  key={s._id}
-                  variants={variants.staggerItem}
-                  className="absolute inset-x-0"
-                  style={{
-                    top: getTopPx(s.startTime),
-                    height: Math.max(getHeightPx(s.startTime, s.endTime), SLOT_HEIGHT),
-                  }}
-                >
-                  <SessionEventCard
-                    memberNames={s.memberIds.map((id) => memberMap[id] ?? id)}
-                    startTime={s.startTime}
-                    endTime={s.endTime}
-                    isRecurring={s.seriesId !== null}
-                    trainerColor={trainerColorFallback(s.trainerId, trainerColorMap)}
-                    onClick={() => onSessionClick(s)}
-                  />
-                </motion.div>
-              ))}
+              {sessionsByDay[di].map((s) => {
+                const heightPx = getHeightPx(s.startTime, s.endTime);
+                return (
+                  <motion.div
+                    key={s._id}
+                    variants={variants.staggerItem}
+                    className="absolute inset-x-0"
+                    style={{ top: getTopPx(s.startTime), height: heightPx }}
+                  >
+                    <SessionEventCard
+                      memberNames={s.memberIds.map((id) => memberMap[id] ?? id)}
+                      startTime={s.startTime}
+                      endTime={s.endTime}
+                      isRecurring={s.seriesId !== null}
+                      serviceTypeName={s.serviceTypeId ? (serviceTypeMap[s.serviceTypeId] ?? null) : (s.customServiceName ?? null)}
+                      trainerColor={trainerColorFallback(s.trainerId, trainerColorMap)}
+                      heightPx={heightPx}
+                      onClick={() => onSessionClick(s)}
+                    />
+                  </motion.div>
+                );
+              })}
             </motion.div>
           </div>
         ))}

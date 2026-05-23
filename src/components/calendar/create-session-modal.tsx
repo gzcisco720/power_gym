@@ -61,14 +61,16 @@ export function CreateSessionModal({
   );
 
   const [trainerId, setTrainerId] = useState(defaultTrainerId);
-  const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>(
-    initialFilteredMembers.length > 0 ? [initialFilteredMembers[0]._id] : [],
+  const [selectedMemberId, setSelectedMemberId] = useState<string>(
+    initialFilteredMembers[0]?._id ?? '',
   );
   const [date, setDate] = useState(defaultDate);
   const [startTime, setStartTime] = useState(defaultStartTime);
   const [endTime, setEndTime] = useState(addOneHour(defaultStartTime));
   const [isRecurring, setIsRecurring] = useState(false);
   const [serviceTypeId, setServiceTypeId] = useState<string>('');
+  const [customServiceName, setCustomServiceName] = useState('');
+  const [customFee, setCustomFee] = useState('');
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -82,38 +84,38 @@ export function CreateSessionModal({
   }, [open]);
 
   const filteredMembers = members.filter((m) => m.trainerId === trainerId);
-  const selectedServiceType = serviceTypes.find((st) => st._id === serviceTypeId) ?? null;
-
-  function toggleMember(id: string) {
-    setSelectedMemberIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  }
+  const isCustomService = serviceTypeId === '__custom__';
+  const selectedServiceType = isCustomService ? null : (serviceTypes.find((st) => st._id === serviceTypeId) ?? null);
 
   async function handleSubmit() {
-    if (selectedMemberIds.length === 0) {
-      setError('Select at least one member');
+    if (!selectedMemberId) {
+      setError('Select a member');
       return;
     }
     if (!endTime) {
       setError('End time is required');
       return;
     }
+    if (!serviceTypeId) {
+      setError('Select a service type or choose Custom');
+      return;
+    }
+    if (isCustomService && (!customServiceName.trim() || !customFee.trim())) {
+      setError('Enter a service name and fee');
+      return;
+    }
     setError('');
     setLoading(true);
     try {
+      const body = isCustomService
+        ? { trainerId, memberIds: [selectedMemberId], date, startTime, endTime, isRecurring,
+            serviceTypeId: null, customServiceName: customServiceName.trim(), customFee: parseFloat(customFee) }
+        : { trainerId, memberIds: [selectedMemberId], date, startTime, endTime, isRecurring,
+            serviceTypeId, customServiceName: null, customFee: null };
       const res = await fetch('/api/schedule', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          trainerId,
-          memberIds: selectedMemberIds,
-          date,
-          startTime,
-          endTime,
-          isRecurring,
-          serviceTypeId: serviceTypeId || null,
-        }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         setError('Failed to create session');
@@ -140,8 +142,10 @@ export function CreateSessionModal({
                 className="w-full mt-1 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white"
                 value={trainerId}
                 onChange={(e) => {
-                  setTrainerId(e.target.value);
-                  setSelectedMemberIds([]);
+                  const newTrainerId = e.target.value;
+                  setTrainerId(newTrainerId);
+                  const first = members.find((m) => m.trainerId === newTrainerId);
+                  setSelectedMemberId(first?._id ?? '');
                 }}
               >
                 {trainers.map((t) => (
@@ -154,28 +158,17 @@ export function CreateSessionModal({
           )}
 
           <div>
-            <Label>Members</Label>
-            <div className="mt-1 flex flex-wrap gap-2">
+            <Label>Member</Label>
+            <select
+              className="w-full mt-1 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white"
+              value={selectedMemberId}
+              onChange={(e) => setSelectedMemberId(e.target.value)}
+            >
+              <option value="">— Select member —</option>
               {filteredMembers.map((m) => (
-                <button
-                  key={m._id}
-                  type="button"
-                  onClick={() => toggleMember(m._id)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                    selectedMemberIds.includes(m._id)
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-[#1e1e2e] text-[#888] hover:text-white'
-                  }`}
-                >
-                  {m.name}
-                </button>
+                <option key={m._id} value={m._id}>{m.name}</option>
               ))}
-              {filteredMembers.length === 0 && (
-                <span className="text-xs text-[#888]">
-                  No members for this trainer
-                </span>
-              )}
-            </div>
+            </select>
           </div>
 
           <div>
@@ -235,8 +228,7 @@ export function CreateSessionModal({
 
           <div>
             <Label htmlFor="serviceType">
-              Service Type{' '}
-              <span className="text-foreground/40">(optional)</span>
+              Service Type <span className="text-destructive">*</span>
             </Label>
             <div className="mt-1 flex items-center gap-2">
               <select
@@ -245,12 +237,13 @@ export function CreateSessionModal({
                 value={serviceTypeId}
                 onChange={(e) => setServiceTypeId(e.target.value)}
               >
-                <option value="">— None —</option>
+                <option value="">— Select —</option>
                 {serviceTypes.map((st) => (
                   <option key={st._id} value={st._id}>
                     {st.name} ({st.durationMin} min)
                   </option>
                 ))}
+                <option value="__custom__">Custom…</option>
               </select>
               {selectedServiceType && (
                 <span className="text-sm text-primary-light font-semibold shrink-0">
@@ -258,6 +251,25 @@ export function CreateSessionModal({
                 </span>
               )}
             </div>
+            {isCustomService && (
+              <div className="mt-2 flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Service name"
+                  className="flex-1 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white placeholder:text-foreground/40"
+                  value={customServiceName}
+                  onChange={(e) => setCustomServiceName(e.target.value)}
+                />
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="Fee (AUD)"
+                  className="w-28 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white placeholder:text-foreground/40"
+                  value={customFee}
+                  onChange={(e) => setCustomFee(e.target.value)}
+                />
+              </div>
+            )}
           </div>
 
           {error && <p className="text-xs text-red-400">{error}</p>}

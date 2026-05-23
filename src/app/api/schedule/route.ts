@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth/auth';
 import { getEmailService } from '@/lib/email/index';
 import { MongoScheduledSessionRepository } from '@/lib/repositories/scheduled-session.repository';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
-import { randomUUID } from 'crypto';
+import { randomBytes } from 'crypto';
 
 function addWeeks(date: Date, weeks: number): Date {
   const d = new Date(date);
@@ -19,6 +19,8 @@ interface PostBody {
   endTime?: string;
   isRecurring?: boolean;
   serviceTypeId?: string | null;
+  customServiceName?: string | null;
+  customFee?: number | null;
 }
 
 async function sendSessionBookedEmails(params: {
@@ -84,6 +86,16 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ error: 'date, startTime, endTime are required' }, { status: 400 });
   }
 
+  const hasServiceType = typeof body.serviceTypeId === 'string' && body.serviceTypeId;
+  const hasCustom = typeof body.customServiceName === 'string' && body.customServiceName.trim() && typeof body.customFee === 'number';
+  if (!hasServiceType && !hasCustom) {
+    return Response.json({ error: 'Either serviceTypeId or customServiceName + customFee is required' }, { status: 400 });
+  }
+
+  const serviceTypeId = hasServiceType ? (body.serviceTypeId as string) : null;
+  const customServiceName = hasCustom ? (body.customServiceName as string).trim() : null;
+  const customFee = hasCustom ? (body.customFee as number) : null;
+
   const memberIds = body.memberIds;
   const baseDate = new Date(body.date);
   const isRecurring = body.isRecurring === true;
@@ -99,7 +111,9 @@ export async function POST(req: Request): Promise<Response> {
       date: baseDate,
       startTime: body.startTime,
       endTime: body.endTime,
-      serviceTypeId: typeof body.serviceTypeId === 'string' ? body.serviceTypeId : null,
+      serviceTypeId,
+      customServiceName,
+      customFee,
     });
 
     await sendSessionBookedEmails({
@@ -114,7 +128,7 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ sessions: [doc] }, { status: 201 });
   }
 
-  const seriesId = randomUUID();
+  const seriesId = randomBytes(12).toString('hex');
   const sessions = Array.from({ length: 12 }, (_, i) => ({
     seriesId,
     trainerId,
@@ -122,7 +136,9 @@ export async function POST(req: Request): Promise<Response> {
     date: addWeeks(baseDate, i),
     startTime: body.startTime as string,
     endTime: body.endTime as string,
-    serviceTypeId: typeof body.serviceTypeId === 'string' ? body.serviceTypeId : null,
+    serviceTypeId,
+    customServiceName,
+    customFee,
   }));
 
   await repo.createMany(sessions);

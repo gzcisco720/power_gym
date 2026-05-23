@@ -45,7 +45,11 @@ export function EditSessionModal({
   const [action, setAction] = useState<'edit' | 'cancel' | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [serviceTypeId, setServiceTypeId] = useState<string>(session.serviceTypeId ?? '');
+  const [serviceTypeId, setServiceTypeId] = useState<string>(
+    session.customServiceName ? '__custom__' : (session.serviceTypeId ?? ''),
+  );
+  const [customServiceName, setCustomServiceName] = useState(session.customServiceName ?? '');
+  const [customFee, setCustomFee] = useState(session.customFee != null ? String(session.customFee) : '');
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
 
   const isRecurring = session.seriesId !== null;
@@ -58,17 +62,21 @@ export function EditSessionModal({
       .catch(() => {});
   }, [open]);
 
-  const selectedServiceType = serviceTypes.find((st) => st._id === serviceTypeId) ?? null;
+  const isCustomService = serviceTypeId === '__custom__';
+  const selectedServiceType = isCustomService ? null : (serviceTypes.find((st) => st._id === serviceTypeId) ?? null);
 
   async function executeAction(scope: Scope) {
     setLoading(true);
     setError('');
     try {
       if (action === 'edit') {
+        const servicePayload = isCustomService
+          ? { serviceTypeId: null, customServiceName: customServiceName.trim(), customFee: parseFloat(customFee) }
+          : { serviceTypeId: serviceTypeId || null, customServiceName: null, customFee: null };
         const res = await fetch(`/api/schedule/${session._id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ scope, startTime, endTime, serviceTypeId: serviceTypeId || null }),
+          body: JSON.stringify({ scope, startTime, endTime, ...servicePayload }),
         });
         if (!res.ok) {
           setError('Failed to update');
@@ -150,10 +158,7 @@ export function EditSessionModal({
               </div>
             </div>
             <div>
-              <Label htmlFor="editServiceType">
-                Service Type{' '}
-                <span className="text-foreground/40">(optional)</span>
-              </Label>
+              <Label htmlFor="editServiceType">Service Type</Label>
               <div className="mt-1 flex items-center gap-2">
                 <select
                   id="editServiceType"
@@ -161,12 +166,13 @@ export function EditSessionModal({
                   value={serviceTypeId}
                   onChange={(e) => setServiceTypeId(e.target.value)}
                 >
-                  <option value="">— None —</option>
+                  <option value="">— Select —</option>
                   {serviceTypes.map((st) => (
                     <option key={st._id} value={st._id}>
                       {st.name} ({st.durationMin} min)
                     </option>
                   ))}
+                  <option value="__custom__">Custom…</option>
                 </select>
                 {selectedServiceType && (
                   <span className="text-sm text-primary-light font-semibold shrink-0">
@@ -174,6 +180,25 @@ export function EditSessionModal({
                   </span>
                 )}
               </div>
+              {isCustomService && (
+                <div className="mt-2 flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Service name"
+                    className="flex-1 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white placeholder:text-foreground/40"
+                    value={customServiceName}
+                    onChange={(e) => setCustomServiceName(e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="Fee (AUD)"
+                    className="w-28 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white placeholder:text-foreground/40"
+                    value={customFee}
+                    onChange={(e) => setCustomFee(e.target.value)}
+                  />
+                </div>
+              )}
             </div>
             {error && <p className="text-xs text-red-400">{error}</p>}
           </div>

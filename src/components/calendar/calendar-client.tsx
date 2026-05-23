@@ -24,6 +24,11 @@ interface SessionsApiResponse {
   sessions: CalendarSession[];
 }
 
+interface ServiceType {
+  _id: string;
+  name: string;
+}
+
 function getMondayOfWeek(d: Date): Date {
   const date = new Date(d);
   const day = date.getDay();
@@ -43,6 +48,7 @@ export function CalendarClient({
 }: CalendarClientProps) {
   const [weekStart, setWeekStart] = useState(() => getMondayOfWeek(new Date()));
   const [sessions, setSessions] = useState<CalendarSession[]>([]);
+  const [serviceTypeMap, setServiceTypeMap] = useState<Record<string, string>>({});
   const [createSlot, setCreateSlot] = useState<{ date: string; time: string } | null>(null);
   const [editSession, setEditSession] = useState<CalendarSession | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
@@ -52,6 +58,16 @@ export function CalendarClient({
   weekEnd.setHours(23, 59, 59, 999);
 
   const memberMap = Object.fromEntries(members.map((m) => [m._id, m.name]));
+
+  useEffect(() => {
+    fetch('/api/service-types/active')
+      .then((r) => r.json())
+      .then((data: { serviceTypes: ServiceType[] }) => {
+        const map = Object.fromEntries((data.serviceTypes ?? []).map((st) => [st._id, st.name]));
+        setServiceTypeMap(map);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,6 +120,7 @@ export function CalendarClient({
           weekStart={weekStart}
           sessions={sessions}
           memberMap={memberMap}
+          serviceTypeMap={serviceTypeMap}
           trainerColorMap={{}}
           onSlotClick={readOnly ? () => {} : (date, time) =>
             setCreateSlot({ date: date.toISOString().slice(0, 10), time })

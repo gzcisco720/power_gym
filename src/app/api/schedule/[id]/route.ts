@@ -15,6 +15,8 @@ interface PatchBody {
   startTime?: string;
   endTime?: string;
   serviceTypeId?: string | null;
+  customServiceName?: string | null;
+  customFee?: number | null;
 }
 
 interface DeleteBody {
@@ -49,12 +51,28 @@ export async function PATCH(req: Request, { params }: RouteContext): Promise<Res
     const existing = await repo.findById(id);
     if (!existing) return Response.json({ error: 'Not found' }, { status: 404 });
 
+    const hasServiceType = typeof body.serviceTypeId === 'string' && body.serviceTypeId;
+    const hasCustom = typeof body.customServiceName === 'string' && body.customServiceName.trim() && typeof body.customFee === 'number';
+    if (body.serviceTypeId !== undefined || body.customServiceName !== undefined) {
+      if (!hasServiceType && !hasCustom) {
+        return Response.json({ error: 'Either serviceTypeId or customServiceName + customFee is required' }, { status: 400 });
+      }
+    }
+
     const update: UpdateScheduledSessionData = {};
     if (typeof body.trainerId === 'string') update.trainerId = body.trainerId;
     if (Array.isArray(body.memberIds)) update.memberIds = body.memberIds;
     if (typeof body.startTime === 'string') update.startTime = body.startTime;
     if (typeof body.endTime === 'string') update.endTime = body.endTime;
-    if (body.serviceTypeId !== undefined) update.serviceTypeId = body.serviceTypeId;
+    if (hasServiceType) {
+      update.serviceTypeId = body.serviceTypeId as string;
+      update.customServiceName = null;
+      update.customFee = null;
+    } else if (hasCustom) {
+      update.serviceTypeId = null;
+      update.customServiceName = (body.customServiceName as string).trim();
+      update.customFee = body.customFee as number;
+    }
 
     const seriesId = existing.seriesId?.toString();
 

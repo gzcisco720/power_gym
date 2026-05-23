@@ -13,7 +13,10 @@ export default async function OwnerCalendarPage() {
   const trainers = await userRepo.findByRole('trainer');
   const members = await userRepo.findAllMembers();
 
-  const trainerDtos = trainers.map((t) => ({ _id: t._id.toString(), name: t.name }));
+  const trainerDtos = [
+    { _id: session.user.id ?? '', name: 'Me (Owner)' },
+    ...trainers.map((t) => ({ _id: t._id.toString(), name: t.name })),
+  ];
   const memberDtos = members.map((m) => ({
     _id: m._id.toString(),
     name: m.name,

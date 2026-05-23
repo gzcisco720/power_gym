@@ -1312,26 +1312,7 @@ async function seedDevData() {
   }
   console.log('  ✓ Owner body tests: 3 created (7site male, 84-day history, ~19.5% → 17.4% BF)');
 
-  // ── Scheduled Sessions ─────────────────────────────────────────────────────
-  // Recurring Monday series: trainer + member
-  const seriesId = new mongoose.Types.ObjectId();
-  await Promise.all([
-    // Past — 2 weeks ago (reminder sent)
-    ScheduledSessionModel.create({ seriesId, trainerId: trainer._id, memberIds: [member._id], date: mondayAt(-2), startTime: '09:00', endTime: '10:00', status: 'scheduled', reminderSentAt: daysAgo(16) }),
-    // Past — last week (reminder sent)
-    ScheduledSessionModel.create({ seriesId, trainerId: trainer._id, memberIds: [member._id], date: mondayAt(-1), startTime: '09:00', endTime: '10:00', status: 'scheduled', reminderSentAt: daysAgo(9) }),
-    // Upcoming — next Monday
-    ScheduledSessionModel.create({ seriesId, trainerId: trainer._id, memberIds: [member._id], date: mondayAt(0),  startTime: '09:00', endTime: '10:00', status: 'scheduled', reminderSentAt: null }),
-    // Upcoming — Monday after next
-    ScheduledSessionModel.create({ seriesId, trainerId: trainer._id, memberIds: [member._id], date: mondayAt(1),  startTime: '09:00', endTime: '10:00', status: 'scheduled', reminderSentAt: null }),
-    // Group session — both members, next Wednesday
-    ScheduledSessionModel.create({ seriesId: null, trainerId: trainer._id, memberIds: [member._id, member2._id], date: nextDow(3, 0, 10), startTime: '10:00', endTime: '11:30', status: 'scheduled', reminderSentAt: null }),
-    // Cancelled — last Wednesday
-    ScheduledSessionModel.create({ seriesId: null, trainerId: trainer._id, memberIds: [member._id], date: nextDow(3, -1, 10), startTime: '10:00', endTime: '11:00', status: 'cancelled', reminderSentAt: null }),
-    // member2 individual — next Thursday (with owner as trainer)
-    ScheduledSessionModel.create({ seriesId: null, trainerId: owner._id, memberIds: [member2._id], date: nextDow(4, 0, 14), startTime: '14:00', endTime: '15:00', status: 'scheduled', reminderSentAt: null }),
-  ]);
-  console.log('  ✓ Scheduled sessions: 7 created (4-session series, group, cancelled, member2 solo)');
+  // NOTE: Scheduled sessions block moved to after service types so serviceTypeId is available.
 
   // ── Member Injuries ────────────────────────────────────────────────────────
   await Promise.all([
@@ -1484,6 +1465,23 @@ async function seedDevData() {
     createdBy: owner._id,
   });
   console.log('  ✓ Service types: 2 active (1hr PT A$300, 30min Check-in A$150) + 1 inactive');
+
+  // ── Scheduled Sessions ─────────────────────────────────────────────────────
+  // Recurring Monday series: trainer + member (1hr PT)
+  const seriesId = new mongoose.Types.ObjectId();
+  await Promise.all([
+    ScheduledSessionModel.create({ seriesId, trainerId: trainer._id, memberIds: [member._id], date: mondayAt(-2), startTime: '09:00', endTime: '10:00', status: 'scheduled', serviceTypeId: ptService._id, reminderSentAt: daysAgo(16) }),
+    ScheduledSessionModel.create({ seriesId, trainerId: trainer._id, memberIds: [member._id], date: mondayAt(-1), startTime: '09:00', endTime: '10:00', status: 'scheduled', serviceTypeId: ptService._id, reminderSentAt: daysAgo(9) }),
+    ScheduledSessionModel.create({ seriesId, trainerId: trainer._id, memberIds: [member._id], date: mondayAt(0),  startTime: '09:00', endTime: '10:00', status: 'scheduled', serviceTypeId: ptService._id, reminderSentAt: null }),
+    ScheduledSessionModel.create({ seriesId, trainerId: trainer._id, memberIds: [member._id], date: mondayAt(1),  startTime: '09:00', endTime: '10:00', status: 'scheduled', serviceTypeId: ptService._id, reminderSentAt: null }),
+    // Group check-in — both members, next Wednesday
+    ScheduledSessionModel.create({ seriesId: null, trainerId: trainer._id, memberIds: [member._id, member2._id], date: nextDow(3, 0, 10), startTime: '10:00', endTime: '10:30', status: 'scheduled', serviceTypeId: checkinService._id, reminderSentAt: null }),
+    // Cancelled — last Wednesday
+    ScheduledSessionModel.create({ seriesId: null, trainerId: trainer._id, memberIds: [member._id], date: nextDow(3, -1, 10), startTime: '10:00', endTime: '11:00', status: 'cancelled', serviceTypeId: ptService._id, reminderSentAt: null }),
+    // member2 individual — next Thursday (owner as trainer, custom service)
+    ScheduledSessionModel.create({ seriesId: null, trainerId: owner._id, memberIds: [member2._id], date: nextDow(4, 0, 14), startTime: '14:00', endTime: '15:00', status: 'scheduled', customServiceName: 'Mobility Session', customFee: 120, reminderSentAt: null }),
+  ]);
+  console.log('  ✓ Scheduled sessions: 7 created (4-session PT series, group check-in, cancelled, member2 custom)');
 
   // ── Past Scheduled Sessions with Service Types (billing data) ─────────────
   // member: 6 past PT sessions over the last 6 weeks — appear in billing summary

@@ -37,16 +37,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
+        remember: { label: 'Remember me', type: 'checkbox' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
         await connectDB();
         const repo = new MongoUserRepository();
-        return authorizeCredentials(
+        const user = await authorizeCredentials(
           credentials.email as string,
           credentials.password as string,
           repo,
         );
+        if (!user) return null;
+        return { ...user, remember: credentials.remember === 'true' };
       },
     }),
   ],

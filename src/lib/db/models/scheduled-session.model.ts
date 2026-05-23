@@ -9,6 +9,8 @@ export interface IScheduledSession extends Document {
   endTime: string;
   status: 'scheduled' | 'cancelled';
   serviceTypeId: mongoose.Types.ObjectId | null;
+  customServiceName: string | null;
+  customFee: number | null;
   reminderSentAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
@@ -24,6 +26,8 @@ const ScheduledSessionSchema = new Schema<IScheduledSession>(
     endTime: { type: String, required: true, match: /^\d{2}:\d{2}$/ },
     status: { type: String, enum: ['scheduled', 'cancelled'], default: 'scheduled' },
     serviceTypeId: { type: Schema.Types.ObjectId, ref: 'ServiceType', default: null },
+    customServiceName: { type: String, default: null },
+    customFee: { type: Number, default: null },
     reminderSentAt: { type: Date, default: null },
   },
   { timestamps: true },
