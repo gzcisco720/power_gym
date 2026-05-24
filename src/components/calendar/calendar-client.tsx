@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useReducer } from 'react';
 import { WeekCalendarGrid } from './week-calendar-grid';
 import { CreateSessionModal } from './create-session-modal';
 import { EditSessionModal } from './edit-session-modal';
@@ -38,6 +38,35 @@ function getMondayOfWeek(d: Date): Date {
   return date;
 }
 
+interface CalendarClientState {
+  weekStart: Date;
+  sessions: CalendarSession[];
+  serviceTypeMap: Record<string, string>;
+  createSlot: { date: string; time: string } | null;
+  editSession: CalendarSession | null;
+  refreshTick: number;
+}
+
+type CalendarClientAction =
+  | { type: 'SET_WEEK_START'; value: Date }
+  | { type: 'SET_SESSIONS'; value: CalendarSession[] }
+  | { type: 'SET_SERVICE_TYPE_MAP'; value: Record<string, string> }
+  | { type: 'SET_CREATE_SLOT'; value: { date: string; time: string } | null }
+  | { type: 'SET_EDIT_SESSION'; value: CalendarSession | null }
+  | { type: 'SET_REFRESH_TICK'; value: number };
+
+function calendarClientReducer(state: CalendarClientState, action: CalendarClientAction): CalendarClientState {
+  switch (action.type) {
+    case 'SET_WEEK_START': return { ...state, weekStart: action.value };
+    case 'SET_SESSIONS': return { ...state, sessions: action.value };
+    case 'SET_SERVICE_TYPE_MAP': return { ...state, serviceTypeMap: action.value };
+    case 'SET_CREATE_SLOT': return { ...state, createSlot: action.value };
+    case 'SET_EDIT_SESSION': return { ...state, editSession: action.value };
+    case 'SET_REFRESH_TICK': return { ...state, refreshTick: action.value };
+    default: return state;
+  }
+}
+
 export function CalendarClient({
   currentUserRole,
   currentUserId,
@@ -46,12 +75,15 @@ export function CalendarClient({
   readOnly = false,
   filterTrainerId,
 }: CalendarClientProps) {
-  const [weekStart, setWeekStart] = useState(() => getMondayOfWeek(new Date()));
-  const [sessions, setSessions] = useState<CalendarSession[]>([]);
-  const [serviceTypeMap, setServiceTypeMap] = useState<Record<string, string>>({});
-  const [createSlot, setCreateSlot] = useState<{ date: string; time: string } | null>(null);
-  const [editSession, setEditSession] = useState<CalendarSession | null>(null);
-  const [refreshTick, setRefreshTick] = useState(0);
+  const [state, dispatch] = useReducer(calendarClientReducer, undefined, () => ({
+    weekStart: getMondayOfWeek(new Date()),
+    sessions: [],
+    serviceTypeMap: {},
+    createSlot: null,
+    editSession: null,
+    refreshTick: 0,
+  }));
+  const { weekStart, sessions, serviceTypeMap, createSlot, editSession, refreshTick } = state;
 
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekEnd.getDate() + 6);
@@ -59,18 +91,22 @@ export function CalendarClient({
 
   const memberMap = Object.fromEntries(members.map((m) => [m._id, m.name]));
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
-    fetch('/api/service-types/active')
+    const controller = new AbortController();
+    fetch('/api/service-types/active', { signal: controller.signal })
       .then((r) => r.json())
       .then((data: { serviceTypes: ServiceType[] }) => {
         const map = Object.fromEntries((data.serviceTypes ?? []).map((st) => [st._id, st.name]));
-        setServiceTypeMap(map);
+        dispatch({ type: 'SET_SERVICE_TYPE_MAP', value: map });
       })
-      .catch(() => {});
+      .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, []);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     const startIso = weekStart.toISOString();
     const end = new Date(weekStart);
     end.setDate(end.getDate() + 6);
@@ -81,33 +117,35 @@ export function CalendarClient({
       const url = filterTrainerId
         ? `/api/schedule?start=${startIso}&end=${endIso}&trainerId=${filterTrainerId}`
         : `/api/schedule?start=${startIso}&end=${endIso}`;
-      const res = await fetch(url);
-      if (!res.ok || cancelled) return;
+      const res = await fetch(url, { signal: controller.signal });
+      if (!res.ok) return;
       const data = await res.json() as SessionsApiResponse;
-      if (!cancelled) setSessions(data.sessions);
+      dispatch({ type: 'SET_SESSIONS', value: data.sessions });
     }
 
-    void load();
-    return () => { cancelled = true; };
+    void load().catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, [weekStart, refreshTick, filterTrainerId]);
 
   function goToPrevWeek() {
-    setWeekStart((d) => { const nd = new Date(d); nd.setDate(nd.getDate() - 7); return nd; });
+    const nd = new Date(weekStart); nd.setDate(nd.getDate() - 7);
+    dispatch({ type: 'SET_WEEK_START', value: nd });
   }
   function goToNextWeek() {
-    setWeekStart((d) => { const nd = new Date(d); nd.setDate(nd.getDate() + 7); return nd; });
+    const nd = new Date(weekStart); nd.setDate(nd.getDate() + 7);
+    dispatch({ type: 'SET_WEEK_START', value: nd });
   }
-  function goToToday() { setWeekStart(getMondayOfWeek(new Date())); }
+  function goToToday() { dispatch({ type: 'SET_WEEK_START', value: getMondayOfWeek(new Date()) }); }
 
   function handleSuccess() {
-    setRefreshTick((t) => t + 1);
+    dispatch({ type: 'SET_REFRESH_TICK', value: refreshTick + 1 });
   }
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-3 px-4 sm:px-8 py-4 border-b border-[#141414]">
-        <Button variant="ghost" size="icon" onClick={goToPrevWeek}><ChevronLeft className="h-4 w-4" /></Button>
-        <Button variant="ghost" size="icon" onClick={goToNextWeek}><ChevronRight className="h-4 w-4" /></Button>
+        <Button variant="ghost" size="icon" onClick={goToPrevWeek}><ChevronLeft className="size-4" /></Button>
+        <Button variant="ghost" size="icon" onClick={goToNextWeek}><ChevronRight className="size-4" /></Button>
         <Button variant="ghost" size="sm" onClick={goToToday}>Today</Button>
         <span className="text-sm text-[#888] ml-2">
           {weekStart.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} –{' '}
@@ -123,9 +161,9 @@ export function CalendarClient({
           serviceTypeMap={serviceTypeMap}
           trainerColorMap={{}}
           onSlotClick={readOnly ? () => {} : (date, time) =>
-            setCreateSlot({ date: date.toISOString().slice(0, 10), time })
+            dispatch({ type: 'SET_CREATE_SLOT', value: { date: date.toISOString().slice(0, 10), time } })
           }
-          onSessionClick={readOnly ? () => {} : (s) => setEditSession(s)}
+          onSessionClick={readOnly ? () => {} : (s) => dispatch({ type: 'SET_EDIT_SESSION', value: s })}
         />
       </div>
 
@@ -139,17 +177,18 @@ export function CalendarClient({
           currentUserRole={currentUserRole}
           currentUserId={currentUserId}
           onSuccess={handleSuccess}
-          onClose={() => setCreateSlot(null)}
+          onClose={() => dispatch({ type: 'SET_CREATE_SLOT', value: null })}
         />
       )}
 
       {!readOnly && editSession && (
         <EditSessionModal
+          key={editSession._id}
           open
           session={editSession}
           memberMap={memberMap}
           onSuccess={handleSuccess}
-          onClose={() => setEditSession(null)}
+          onClose={() => dispatch({ type: 'SET_EDIT_SESSION', value: null })}
         />
       )}
     </div>

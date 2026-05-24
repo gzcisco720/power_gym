@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext } from 'react';
+import { createContext, use, useMemo } from 'react';
 
 interface MemberHubContextValue {
   basePath: string;
@@ -17,13 +17,14 @@ export function MemberHubProvider({
   basePath: string;
   children: React.ReactNode;
 }) {
+  const contextValue = useMemo(() => ({ basePath }), [basePath]);
   return (
-    <MemberHubContext.Provider value={{ basePath }}>
+    <MemberHubContext.Provider value={contextValue}>
       {children}
     </MemberHubContext.Provider>
   );
 }
 
 export function useMemberHub(): MemberHubContextValue {
-  return useContext(MemberHubContext);
+  return use(MemberHubContext);
 }

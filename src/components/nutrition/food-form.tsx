@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useReducer } from 'react';
 import { ChevronDown, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
@@ -103,6 +103,53 @@ function someMicroFilled(micros: Record<string, string>): boolean {
 // FoodForm
 // ---------------------------------------------------------------------------
 
+interface FoodFormState {
+  name: string;
+  brand: string;
+  kcal: string;
+  protein: string;
+  carbs: string;
+  fat: string;
+  micros: Record<string, string>;
+  servings: ServingRow[];
+  showMicros: boolean;
+  error: string | null;
+  submitting: boolean;
+  pendingCancel: boolean;
+}
+
+type FoodFormAction =
+  | { type: 'SET_NAME'; value: string }
+  | { type: 'SET_BRAND'; value: string }
+  | { type: 'SET_KCAL'; value: string }
+  | { type: 'SET_PROTEIN'; value: string }
+  | { type: 'SET_CARBS'; value: string }
+  | { type: 'SET_FAT'; value: string }
+  | { type: 'SET_MICROS'; value: Record<string, string> }
+  | { type: 'SET_SERVINGS'; value: ServingRow[] }
+  | { type: 'SET_SHOW_MICROS'; value: boolean }
+  | { type: 'SET_ERROR'; value: string | null }
+  | { type: 'SET_SUBMITTING'; value: boolean }
+  | { type: 'SET_PENDING_CANCEL'; value: boolean };
+
+function foodFormReducer(state: FoodFormState, action: FoodFormAction): FoodFormState {
+  switch (action.type) {
+    case 'SET_NAME': return { ...state, name: action.value };
+    case 'SET_BRAND': return { ...state, brand: action.value };
+    case 'SET_KCAL': return { ...state, kcal: action.value };
+    case 'SET_PROTEIN': return { ...state, protein: action.value };
+    case 'SET_CARBS': return { ...state, carbs: action.value };
+    case 'SET_FAT': return { ...state, fat: action.value };
+    case 'SET_MICROS': return { ...state, micros: action.value };
+    case 'SET_SERVINGS': return { ...state, servings: action.value };
+    case 'SET_SHOW_MICROS': return { ...state, showMicros: action.value };
+    case 'SET_ERROR': return { ...state, error: action.value };
+    case 'SET_SUBMITTING': return { ...state, submitting: action.value };
+    case 'SET_PENDING_CANCEL': return { ...state, pendingCancel: action.value };
+    default: return state;
+  }
+}
+
 export function FoodForm({
   mode = 'create',
   initialFood,
@@ -110,18 +157,21 @@ export function FoodForm({
   onCancel,
   stickyFooter = false,
 }: FoodFormProps) {
-  const [name, setName] = useState(initialFood?.name ?? '');
-  const [brand, setBrand] = useState(initialFood?.brand ?? '');
-  const [kcal, setKcal] = useState(macroToString(initialFood?.macrosPer100g.kcal));
-  const [protein, setProtein] = useState(macroToString(initialFood?.macrosPer100g.protein));
-  const [carbs, setCarbs] = useState(macroToString(initialFood?.macrosPer100g.carbs));
-  const [fat, setFat] = useState(macroToString(initialFood?.macrosPer100g.fat));
-  const [micros, setMicros] = useState<Record<string, string>>(() => initialMicros(initialFood));
-  const [servings, setServings] = useState<ServingRow[]>(() => initialServings(initialFood));
-  const [showMicros, setShowMicros] = useState<boolean>(() => someMicroFilled(initialMicros(initialFood)));
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [pendingCancel, setPendingCancel] = useState(false);
+  const [state, dispatch] = useReducer(foodFormReducer, {
+    name: initialFood?.name ?? '',
+    brand: initialFood?.brand ?? '',
+    kcal: macroToString(initialFood?.macrosPer100g.kcal),
+    protein: macroToString(initialFood?.macrosPer100g.protein),
+    carbs: macroToString(initialFood?.macrosPer100g.carbs),
+    fat: macroToString(initialFood?.macrosPer100g.fat),
+    micros: initialMicros(initialFood),
+    servings: initialServings(initialFood),
+    showMicros: someMicroFilled(initialMicros(initialFood)),
+    error: null,
+    submitting: false,
+    pendingCancel: false,
+  });
+  const { name, brand, kcal, protein, carbs, fat, micros, servings, showMicros, error, submitting, pendingCancel } = state;
 
   const initialSnapshot = useMemo(
     () =>
@@ -155,24 +205,24 @@ export function FoodForm({
   }, [isDirty]);
 
   function setMicro(key: string, value: string): void {
-    setMicros((prev) => ({ ...prev, [key]: value }));
+    dispatch({ type: 'SET_MICROS', value: { ...micros, [key]: value } });
   }
 
   function addServing(): void {
-    setServings((prev) => [...prev, { label: '', grams: '' }]);
+    dispatch({ type: 'SET_SERVINGS', value: [...servings, { label: '', grams: '' }] });
   }
 
   function updateServing(idx: number, field: 'label' | 'grams', value: string): void {
-    setServings((prev) => prev.map((s, i) => (i === idx ? { ...s, [field]: value } : s)));
+    dispatch({ type: 'SET_SERVINGS', value: servings.map((s, i) => (i === idx ? { ...s, [field]: value } : s)) });
   }
 
   function removeServing(idx: number): void {
-    setServings((prev) => prev.filter((_, i) => i !== idx));
+    dispatch({ type: 'SET_SERVINGS', value: servings.filter((_, i) => i !== idx) });
   }
 
   function handleCancelClick(): void {
     if (isDirty) {
-      setPendingCancel(true);
+      dispatch({ type: 'SET_PENDING_CANCEL', value: true });
       return;
     }
     onCancel();
@@ -180,10 +230,10 @@ export function FoodForm({
 
   async function handleSubmit(e: React.FormEvent): Promise<void> {
     e.preventDefault();
-    setError(null);
+    dispatch({ type: 'SET_ERROR', value: null });
 
     if (!name.trim()) {
-      setError('Name is required.');
+      dispatch({ type: 'SET_ERROR', value: 'Name is required.' });
       return;
     }
     const parsedKcal = parseFloat(kcal);
@@ -191,12 +241,12 @@ export function FoodForm({
     const parsedCarbs = parseFloat(carbs);
     const parsedFat = parseFloat(fat);
     if ([parsedKcal, parsedProtein, parsedCarbs, parsedFat].some(isNaN)) {
-      setError('All four per-100g macros (kcal, protein, carbs, fat) are required.');
+      dispatch({ type: 'SET_ERROR', value: 'All four per-100g macros (kcal, protein, carbs, fat) are required.' });
       return;
     }
     const validServings = servings.filter((s) => s.label.trim() && s.grams.trim());
     if (validServings.length === 0) {
-      setError('At least one valid serving is required.');
+      dispatch({ type: 'SET_ERROR', value: 'At least one valid serving is required.' });
       return;
     }
     const parsedServings = validServings.map((s) => ({
@@ -204,7 +254,7 @@ export function FoodForm({
       grams: parseFloat(s.grams),
     }));
     if (parsedServings.some((s) => isNaN(s.grams) || s.grams <= 0)) {
-      setError('Each serving must have a positive number of grams.');
+      dispatch({ type: 'SET_ERROR', value: 'Each serving must have a positive number of grams.' });
       return;
     }
 
@@ -229,7 +279,7 @@ export function FoodForm({
       servings: parsedServings,
     };
 
-    setSubmitting(true);
+    dispatch({ type: 'SET_SUBMITTING', value: true });
     try {
       const url = mode === 'edit' && initialFood ? `/api/foods/${initialFood._id}` : '/api/foods';
       const method = mode === 'edit' ? 'PATCH' : 'POST';
@@ -241,7 +291,7 @@ export function FoodForm({
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
         const msg = data.error ?? `Failed to ${mode === 'edit' ? 'save' : 'create'} food.`;
-        setError(msg);
+        dispatch({ type: 'SET_ERROR', value: msg });
         toast.error(msg);
         return;
       }
@@ -250,10 +300,10 @@ export function FoodForm({
       onSaved(food);
     } catch {
       const msg = 'Network error. Please try again.';
-      setError(msg);
+      dispatch({ type: 'SET_ERROR', value: msg });
       toast.error(msg);
     } finally {
-      setSubmitting(false);
+      dispatch({ type: 'SET_SUBMITTING', value: false });
     }
   }
 
@@ -282,7 +332,7 @@ export function FoodForm({
             <Input
               id="food-name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => dispatch({ type: 'SET_NAME', value: e.target.value })}
               placeholder="e.g. Chicken Breast"
               required
             />
@@ -295,7 +345,7 @@ export function FoodForm({
             <Input
               id="food-brand"
               value={brand}
-              onChange={(e) => setBrand(e.target.value)}
+              onChange={(e) => dispatch({ type: 'SET_BRAND', value: e.target.value })}
               placeholder="e.g. Generic"
             />
           </div>
@@ -308,16 +358,16 @@ export function FoodForm({
             <span className="text-xs text-foreground/65">per 100 g</span>
           </div>
           <p className="text-xs text-foreground/65 -mt-2">
-            Always entered per 100 g — servings below let members log by portion.
+            Always entered per 100 g; servings below let members log by portion.
           </p>
 
           <div className="grid grid-cols-2 gap-3">
             {(
               [
-                { key: 'kcal', label: 'Energy (kcal)', val: kcal, set: setKcal, placeholder: '0' },
-                { key: 'protein', label: 'Protein (g)', val: protein, set: setProtein, placeholder: '0' },
-                { key: 'carbs', label: 'Carbs (g)', val: carbs, set: setCarbs, placeholder: '0' },
-                { key: 'fat', label: 'Fat (g)', val: fat, set: setFat, placeholder: '0' },
+                { key: 'kcal', label: 'Energy (kcal)', val: kcal, set: (v: string) => dispatch({ type: 'SET_KCAL', value: v }), placeholder: '0' },
+                { key: 'protein', label: 'Protein (g)', val: protein, set: (v: string) => dispatch({ type: 'SET_PROTEIN', value: v }), placeholder: '0' },
+                { key: 'carbs', label: 'Carbs (g)', val: carbs, set: (v: string) => dispatch({ type: 'SET_CARBS', value: v }), placeholder: '0' },
+                { key: 'fat', label: 'Fat (g)', val: fat, set: (v: string) => dispatch({ type: 'SET_FAT', value: v }), placeholder: '0' },
               ] as const
             ).map(({ key, label, val, set, placeholder }) => (
               <div key={key} className="space-y-1.5">
@@ -351,7 +401,7 @@ export function FoodForm({
               onClick={addServing}
               className="h-7 text-xs text-foreground/65 hover:text-foreground"
             >
-              <Plus className="h-3.5 w-3.5 mr-1" />
+              <Plus className="size-3.5 mr-1" />
               Add Serving
             </Button>
           </div>
@@ -360,8 +410,10 @@ export function FoodForm({
           </p>
 
           <div className="space-y-2">
-            {servings.map((s, idx) => (
-              <div key={idx} className="flex items-center gap-2">
+            {servings.map((s, idx) => {
+              return (
+              // oxlint-disable-next-line react-doctor/no-array-index-key, react-doctor/no-array-index-as-key
+              <div key={idx /* serving rows have no stable id */} className="flex items-center gap-2">
                 <Input
                   value={s.label}
                   onChange={(e) => updateServing(idx, 'label', e.target.value)}
@@ -388,10 +440,11 @@ export function FoodForm({
                   className="shrink-0 text-foreground/65 hover:text-destructive hover:bg-destructive/10 disabled:opacity-30"
                   aria-label={`Remove serving ${idx + 1}`}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="size-4" />
                 </Button>
               </div>
-            ))}
+              );
+            })}
           </div>
         </Card>
 
@@ -399,15 +452,15 @@ export function FoodForm({
         <Card className="overflow-hidden">
           <button
             type="button"
-            onClick={() => setShowMicros((v) => !v)}
+            onClick={() => dispatch({ type: 'SET_SHOW_MICROS', value: !showMicros })}
             className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
             aria-expanded={showMicros}
           >
             <div className="flex items-center gap-2">
               {showMicros ? (
-                <ChevronDown className="h-4 w-4 text-foreground/65" />
+                <ChevronDown className="size-4 text-foreground/65" />
               ) : (
-                <ChevronRight className="h-4 w-4 text-foreground/65" />
+                <ChevronRight className="size-4 text-foreground/65" />
               )}
               <span className={SECTION_LABEL}>Optional Micros</span>
               {!showMicros && someMicroFilled(micros) && (
@@ -474,7 +527,7 @@ export function FoodForm({
       <Dialog
         open={pendingCancel}
         onOpenChange={(o) => {
-          if (!o) setPendingCancel(false);
+          if (!o) dispatch({ type: 'SET_PENDING_CANCEL', value: false });
         }}
       >
         <DialogContent className="sm:max-w-md" showCloseButton={false}>
@@ -488,7 +541,7 @@ export function FoodForm({
             <Button
               type="button"
               variant="outline"
-              onClick={() => setPendingCancel(false)}
+              onClick={() => dispatch({ type: 'SET_PENDING_CANCEL', value: false })}
             >
               Keep editing
             </Button>
@@ -496,7 +549,7 @@ export function FoodForm({
               type="button"
               variant="destructive"
               onClick={() => {
-                setPendingCancel(false);
+                dispatch({ type: 'SET_PENDING_CANCEL', value: false });
                 onCancel();
               }}
             >

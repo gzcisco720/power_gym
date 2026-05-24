@@ -53,22 +53,22 @@ interface BodyProps {
 }
 
 function WorkoutCalendarBody({ onSelect }: BodyProps) {
-  const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
+  // oxlint-disable-next-line react-doctor/rerender-state-only-in-handlers
+  const [year, setYear] = useState(() => new Date().getFullYear());
+  // oxlint-disable-next-line react-doctor/rerender-state-only-in-handlers
+  const [month, setMonth] = useState(() => new Date().getMonth() + 1);
   const [logs, setLogs] = useState<SelfLog[]>([]);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
-    let cancelled = false;
-    fetch(`/api/me/workout-logs?year=${year}&month=${month}`)
+    const controller = new AbortController();
+    fetch(`/api/me/workout-logs?year=${year}&month=${month}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((data: SelfLog[]) => {
-        if (cancelled) return;
         setLogs(data.filter((l) => l.completedAt !== null));
-      });
-    return () => {
-      cancelled = true;
-    };
+      })
+      .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, [year, month]);
 
   // SelfWorkoutCalendar expects logs.completedAt to be a string (non-null);

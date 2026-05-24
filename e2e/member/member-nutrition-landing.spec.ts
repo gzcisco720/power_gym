@@ -15,7 +15,8 @@ test.describe('Member My Nutrition landing', () => {
 
   test('Freestyle Log Today navigates to day view in free mode', async ({ page }) => {
     await page.goto('/member/nutrition');
-    await page.getByRole('button', { name: /log today/i }).click();
+    // Scope to the Freestyle card (second path card) to avoid ambiguity with the plan card's "Log Today"
+    await page.getByRole('button', { name: /log today/i }).last().click();
     await expect(page).toHaveURL(/\/member\/nutrition\/day.*mode=free/);
   });
 

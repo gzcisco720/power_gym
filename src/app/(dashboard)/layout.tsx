@@ -26,7 +26,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <AppShell
-      role={session.user.role as UserRole}
+      userRole={session.user.role as UserRole}
       userName={`${firstName} ${lastName}`.trim() || 'User'}
       userEmail={user?.email ?? session.user.email ?? ''}
       avatarUrl={profile?.avatarUrl ?? null}

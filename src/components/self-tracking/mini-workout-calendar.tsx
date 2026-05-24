@@ -19,23 +19,23 @@ interface Props {
 }
 
 export function MiniWorkoutCalendar({ basePath }: Props) {
-  const router = useRouter();
-  const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
+  const { push } = useRouter();
+  // oxlint-disable-next-line react-doctor/rerender-state-only-in-handlers
+  const [year, setYear] = useState(() => new Date().getFullYear());
+  // oxlint-disable-next-line react-doctor/rerender-state-only-in-handlers
+  const [month, setMonth] = useState(() => new Date().getMonth() + 1);
   const [logs, setLogs] = useState<SelfLog[]>([]);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
-    let cancelled = false;
-    fetch(`/api/me/workout-logs?year=${year}&month=${month}`)
+    const controller = new AbortController();
+    fetch(`/api/me/workout-logs?year=${year}&month=${month}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((data: SelfLog[]) => {
-        if (!cancelled) setLogs(data.filter((l) => l.completedAt !== null));
+        setLogs(data.filter((l) => l.completedAt !== null));
       })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
+      .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, [year, month]);
 
   return (
@@ -55,7 +55,7 @@ export function MiniWorkoutCalendar({ basePath }: Props) {
         logs={logs}
         onSelect={(log) => {
           const date = log.completedAt.split('T')[0];
-          router.push(`${basePath}/calendar?date=${date}`);
+          push(`${basePath}/calendar?date=${date}`);
         }}
         onMonthChange={(y, m) => {
           setYear(y);

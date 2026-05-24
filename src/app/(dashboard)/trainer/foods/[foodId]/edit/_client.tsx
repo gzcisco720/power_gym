@@ -21,7 +21,7 @@ interface Props {
 }
 
 export function FoodsEditClient({ basePath, initialFood }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
 
   return (
     <div>
@@ -33,7 +33,7 @@ export function FoodsEditClient({ basePath, initialFood }: Props) {
             href={basePath}
             className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-border/60 bg-transparent px-2.5 text-xs font-medium text-foreground/65 hover:text-foreground hover:bg-muted transition-colors"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
+            <ArrowLeft className="size-3.5" />
             Back
           </Link>
         }
@@ -43,8 +43,8 @@ export function FoodsEditClient({ basePath, initialFood }: Props) {
           mode="edit"
           stickyFooter
           initialFood={initialFood}
-          onSaved={() => router.push(basePath)}
-          onCancel={() => router.push(basePath)}
+          onSaved={() => push(basePath)}
+          onCancel={() => push(basePath)}
         />
       </div>
     </div>

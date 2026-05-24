@@ -34,9 +34,10 @@ export function HubPagination({ currentPage, totalPages, basePath }: HubPaginati
               className={currentPage <= 1 ? 'pointer-events-none opacity-40' : ''}
             />
           </PaginationItem>
-          {pages.map((p, i) =>
-            p === 'ellipsis' ? (
-              <PaginationItem key={`e-${i}`}>
+          {pages.map((p, i) => {
+            return p === 'ellipsis' ? (
+              // oxlint-disable-next-line react-doctor/no-array-index-key, react-doctor/no-array-index-as-key
+              <PaginationItem key={`ellipsis-${i}`}>
                 <PaginationEllipsis />
               </PaginationItem>
             ) : (
@@ -45,8 +46,8 @@ export function HubPagination({ currentPage, totalPages, basePath }: HubPaginati
                   {p}
                 </PaginationLink>
               </PaginationItem>
-            ),
-          )}
+            );
+          })}
           <PaginationItem>
             <PaginationNext
               href={currentPage < totalPages ? href(currentPage + 1) : '#'}

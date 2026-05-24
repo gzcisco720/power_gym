@@ -10,29 +10,30 @@ export async function GET(req: Request): Promise<Response> {
   await connectDB();
   const repo = new MongoScheduledSessionRepository();
   const seriesIds = await repo.findActiveSeriesIds();
-  let extended = 0;
+  const results = await Promise.all(
+    seriesIds.map(async (seriesId) => {
+      try {
+        const latest = await repo.findLatestInSeries(seriesId);
+        if (!latest) return false;
 
-  for (const seriesId of seriesIds) {
-    try {
-      const latest = await repo.findLatestInSeries(seriesId);
-      if (!latest) continue;
+        const nextDate = new Date(latest.date);
+        nextDate.setDate(nextDate.getDate() + 7);
 
-      const nextDate = new Date(latest.date);
-      nextDate.setDate(nextDate.getDate() + 7);
-
-      await repo.createMany([{
-        seriesId,
-        trainerId: latest.trainerId.toString(),
-        memberIds: latest.memberIds.map((id) => id.toString()),
-        date: nextDate,
-        startTime: latest.startTime,
-        endTime: latest.endTime,
-      }]);
-      extended++;
-    } catch {
-      // continue to next series on failure
-    }
-  }
+        await repo.createMany([{
+          seriesId,
+          trainerId: latest.trainerId.toString(),
+          memberIds: latest.memberIds.map((id) => id.toString()),
+          date: nextDate,
+          startTime: latest.startTime,
+          endTime: latest.endTime,
+        }]);
+        return true;
+      } catch {
+        return false;
+      }
+    }),
+  );
+  const extended = results.filter(Boolean).length;
 
   return Response.json({ extended });
 }

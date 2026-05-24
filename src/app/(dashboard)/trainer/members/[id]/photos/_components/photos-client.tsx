@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface PhotoItem {
   key: string;
@@ -52,7 +53,7 @@ export function PhotosClient({ photos }: Props) {
   }
 
   // Sort selected by date: left = older, right = newer
-  const sortedSelected = [...selected].sort(
+  const sortedSelected = selected.toSorted(
     (a, b) => new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime(),
   );
   const compareLeft = sortedSelected[0];
@@ -115,11 +116,12 @@ export function PhotosClient({ photos }: Props) {
                   : 'border-transparent'
               } ${isDimmed ? 'opacity-35' : 'opacity-100'} ${!selectMode ? 'cursor-default' : 'cursor-pointer'}`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={photo.photoUrl}
                 alt={`Check-in photo ${formatDate(photo.submittedAt)}`}
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 768px) 50vw, 33vw"
+                className="object-cover"
               />
               {/* Date label */}
               <div className="absolute bottom-0 inset-x-0 px-1.5 py-1 bg-gradient-to-t from-black/70 to-transparent">
@@ -127,13 +129,13 @@ export function PhotosClient({ photos }: Props) {
               </div>
               {/* Selection badge */}
               {isSelected && (
-                <div className="absolute top-1.5 left-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg">
+                <div className="absolute top-1.5 left-1.5 size-5 bg-primary rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg">
                   {badge}
                 </div>
               )}
               {/* Empty circle in select mode (unselected, not dimmed) */}
               {selectMode && !isSelected && !isDimmed && (
-                <div className="absolute top-1.5 left-1.5 w-5 h-5 border-2 border-white/50 rounded-full" />
+                <div className="absolute top-1.5 left-1.5 size-5 border-2 border-white/50 rounded-full" />
               )}
             </button>
           );
@@ -158,8 +160,10 @@ export function PhotosClient({ photos }: Props) {
 
       {/* Compare popup */}
       {compareOpen && compareLeft && compareRight && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+        <button
+          type="button"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 w-full"
+          aria-label="Dismiss comparison overlay"
           onClick={(e) => { if (e.target === e.currentTarget) setCompareOpen(false); }}
         >
           <div className="bg-card border border-foreground/10 rounded-2xl p-6 w-full max-w-xl">
@@ -168,7 +172,7 @@ export function PhotosClient({ photos }: Props) {
               <button
                 type="button"
                 onClick={() => setCompareOpen(false)}
-                className="w-7 h-7 rounded-md bg-muted flex items-center justify-center text-foreground/50 hover:text-foreground transition-colors"
+                className="size-7 rounded-md bg-muted flex items-center justify-center text-foreground/50 hover:text-foreground transition-colors"
                 aria-label="Close comparison"
               >
                 ×
@@ -179,11 +183,12 @@ export function PhotosClient({ photos }: Props) {
               {[compareLeft, compareRight].map((photo) => (
                 <div key={photo.key}>
                   <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={photo.photoUrl}
                       alt={`Check-in ${formatDate(photo.submittedAt)}`}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="50vw"
+                      className="object-cover"
                     />
                   </div>
                   <div className="text-[11px] text-foreground/40 mb-2">{formatDate(photo.submittedAt)}</div>
@@ -224,7 +229,7 @@ export function PhotosClient({ photos }: Props) {
               );
             })()}
           </div>
-        </div>
+        </button>
       )}
     </div>
   );

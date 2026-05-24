@@ -15,7 +15,7 @@ interface Props {
 }
 
 export function EditPlanClient({ id, initialData, exercises, backPath }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
 
   async function handleSubmit(data: { name: string; description: string | null; days: IPlanDay[] }) {
     const res = await fetch(`/api/plan-templates/${id}`, {
@@ -29,14 +29,14 @@ export function EditPlanClient({ id, initialData, exercises, backPath }: Props) 
       return;
     }
     toast.success('Plan saved');
-    router.push(backPath);
+    push(backPath);
   }
 
   return (
     <div>
       <PageHeader title="Edit Plan" />
       <div className="px-4 sm:px-8 py-7">
-        <PlanTemplateForm initialData={initialData} exercises={exercises} onSubmit={handleSubmit} onCancel={() => router.push(backPath)} />
+        <PlanTemplateForm initialData={initialData} exercises={exercises} onSubmit={handleSubmit} onCancel={() => push(backPath)} />
       </div>
     </div>
   );

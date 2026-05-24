@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -17,7 +17,7 @@ import {
 } from '@/components/training/exercise-search-sheet';
 import { labelExercises } from '@/lib/training/label-exercises';
 import { useDirtyInputGuard } from '@/lib/training/dirty-input-guard';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { variants } from '@/lib/animations/variants';
 import type { ISelfWorkoutLog, ISelfWorkoutSet } from '@/lib/db/models/self-workout-log.model';
 import { CompleteWorkoutDialog } from './complete-workout-dialog';
@@ -80,13 +80,15 @@ function buildGroups(log: ISelfWorkoutLog): Group[] {
       });
     } else if (!seenGroupIds.has(ex.groupId)) {
       seenGroupIds.add(ex.groupId);
-      const groupExercises = labelled
-        .filter((e) => e.isSuperset && e.groupId === ex.groupId)
-        .map((e) => ({
-          exerciseId: e.exerciseId,
-          exercise: e as ExerciseRowData,
-          sets: setsWithIndex.filter((s) => s.exerciseId.toString() === e.exerciseId),
-        }));
+      const groupExercises = labelled.flatMap((e) =>
+        e.isSuperset && e.groupId === ex.groupId
+          ? [{
+              exerciseId: e.exerciseId,
+              exercise: e as ExerciseRowData,
+              sets: setsWithIndex.filter((s) => s.exerciseId.toString() === e.exerciseId),
+            }]
+          : [],
+      );
       groups.push({ type: 'superset', groupId: ex.groupId, exercises: groupExercises });
     }
   }
@@ -116,58 +118,92 @@ function formatStaticDuration(startIso: string | null, endIso: string | null): s
   return min >= 60 ? `${Math.floor(min / 60)}h ${min % 60}m` : `${min}m`;
 }
 
-export function SelfWorkoutSession({ logId, basePath }: Props) {
-  const router = useRouter();
-  const [log, setLog] = useState<ISelfWorkoutLog | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [completeOpen, setCompleteOpen] = useState(false);
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [inputs, setInputs] = useState<{ weight: string; reps: string }[]>([]);
-  const [bwOverrides, setBwOverrides] = useState<Record<string, boolean>>({});
-  const [deletedIndices, setDeletedIndices] = useState<Set<number>>(new Set());
-  const [inputErrors, setInputErrors] = useState<Record<number, { weight?: boolean; reps?: boolean }>>({});
-  const [availableExercises, setAvailableExercises] = useState<ExerciseOption[]>([]);
-  const [savingSets, setSavingSets] = useState(false);
+interface SelfWorkoutSessionState {
+  log: ISelfWorkoutLog | null;
+  loading: boolean;
+  completeOpen: boolean;
+  pickerOpen: boolean;
+  inputs: { weight: string; reps: string }[];
+  bwOverrides: Record<string, boolean>;
+  deletedIndices: Set<number>;
+  inputErrors: Record<number, { weight?: boolean; reps?: boolean }>;
+  availableExercises: ExerciseOption[];
+  savingSets: boolean;
+}
 
+type SelfWorkoutSessionAction =
+  | { type: 'SET_LOG'; value: ISelfWorkoutLog | null }
+  | { type: 'SET_LOADING'; value: boolean }
+  | { type: 'SET_COMPLETE_OPEN'; value: boolean }
+  | { type: 'SET_PICKER_OPEN'; value: boolean }
+  | { type: 'SET_INPUTS'; value: { weight: string; reps: string }[] }
+  | { type: 'SET_BW_OVERRIDES'; value: Record<string, boolean> }
+  | { type: 'SET_DELETED_INDICES'; value: Set<number> }
+  | { type: 'SET_INPUT_ERRORS'; value: Record<number, { weight?: boolean; reps?: boolean }> }
+  | { type: 'SET_AVAILABLE_EXERCISES'; value: ExerciseOption[] }
+  | { type: 'SET_SAVING_SETS'; value: boolean };
+
+function selfWorkoutSessionReducer(state: SelfWorkoutSessionState, action: SelfWorkoutSessionAction): SelfWorkoutSessionState {
+  switch (action.type) {
+    case 'SET_LOG': return { ...state, log: action.value };
+    case 'SET_LOADING': return { ...state, loading: action.value };
+    case 'SET_COMPLETE_OPEN': return { ...state, completeOpen: action.value };
+    case 'SET_PICKER_OPEN': return { ...state, pickerOpen: action.value };
+    case 'SET_INPUTS': return { ...state, inputs: action.value };
+    case 'SET_BW_OVERRIDES': return { ...state, bwOverrides: action.value };
+    case 'SET_DELETED_INDICES': return { ...state, deletedIndices: action.value };
+    case 'SET_INPUT_ERRORS': return { ...state, inputErrors: action.value };
+    case 'SET_AVAILABLE_EXERCISES': return { ...state, availableExercises: action.value };
+    case 'SET_SAVING_SETS': return { ...state, savingSets: action.value };
+    default: return state;
+  }
+}
+
+export function SelfWorkoutSession({ logId, basePath }: Props) {
+  const { push } = useRouter();
+  const [state, dispatch] = useReducer(selfWorkoutSessionReducer, {
+    log: null, loading: true, completeOpen: false, pickerOpen: false,
+    inputs: [], bwOverrides: {}, deletedIndices: new Set(), inputErrors: {},
+    availableExercises: [], savingSets: false,
+  });
+  const { log, loading, completeOpen, pickerOpen, inputs, bwOverrides, deletedIndices, inputErrors, availableExercises, savingSets } = state;
+
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
-    let cancelled = false;
-    fetch(`/api/me/workout-logs/${logId}`)
+    const controller = new AbortController();
+    fetch(`/api/me/workout-logs/${logId}`, { signal: controller.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((d: ISelfWorkoutLog | null) => {
-        if (cancelled) return;
-        setLog(d);
+        dispatch({ type: 'SET_LOG', value: d });
         if (d) {
-          setInputs(d.sets.map((s) => ({
+          dispatch({ type: 'SET_INPUTS', value: d.sets.map((s) => ({
             weight: s.actualWeight !== null ? String(s.actualWeight) : '',
             reps: s.actualReps !== null ? String(s.actualReps) : '',
-          })));
+          })) });
           const map: Record<string, boolean> = {};
           d.sets.forEach((s) => {
             map[s.exerciseId.toString()] = s.isBodyweight;
           });
-          setBwOverrides(map);
+          dispatch({ type: 'SET_BW_OVERRIDES', value: map });
         }
-        setLoading(false);
+        dispatch({ type: 'SET_LOADING', value: false });
       })
-      .catch(() => {
-        if (!cancelled) setLoading(false);
+      .catch((err: unknown) => {
+        if (err instanceof Error && err.name !== 'AbortError') dispatch({ type: 'SET_LOADING', value: false });
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [logId]);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
-    let cancelled = false;
-    fetch('/api/exercises')
+    const controller = new AbortController();
+    fetch('/api/exercises', { signal: controller.signal })
       .then((r) => (r.ok ? r.json() : []))
       .then((data: ExerciseOption[]) => {
-        if (!cancelled) setAvailableExercises(data);
+        dispatch({ type: 'SET_AVAILABLE_EXERCISES', value: data });
       })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
+      .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, []);
 
   const isFreestyle = log?.sourceTemplateId == null;
@@ -194,41 +230,33 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     : '';
 
   function syncLog(next: ISelfWorkoutLog) {
-    setLog(next);
-    setInputs((prev) => {
-      if (next.sets.length <= prev.length) return prev;
-      const extra = next.sets.length - prev.length;
-      return [...prev, ...Array.from({ length: extra }, () => ({ weight: '', reps: '' }))];
-    });
+    dispatch({ type: 'SET_LOG', value: next });
+    if (next.sets.length > inputs.length) {
+      const extra = next.sets.length - inputs.length;
+      dispatch({ type: 'SET_INPUTS', value: [...inputs, ...Array.from({ length: extra }, () => ({ weight: '', reps: '' }))] });
+    }
   }
 
   function updateInput(globalIndex: number, field: 'weight' | 'reps', value: string) {
-    setInputs((prev) => {
-      const next = [...prev];
-      next[globalIndex] = { ...next[globalIndex], [field]: value };
-      return next;
-    });
-    setInputErrors((prev) => {
-      if (!prev[globalIndex]?.[field]) return prev;
-      const next = { ...prev };
-      next[globalIndex] = { ...next[globalIndex], [field]: undefined };
-      if (!next[globalIndex].weight && !next[globalIndex].reps) delete next[globalIndex];
-      return next;
-    });
+    const nextInputs = [...inputs];
+    nextInputs[globalIndex] = { ...nextInputs[globalIndex], [field]: value };
+    dispatch({ type: 'SET_INPUTS', value: nextInputs });
+    if (inputErrors[globalIndex]?.[field]) {
+      const nextErrors = { ...inputErrors };
+      nextErrors[globalIndex] = { ...nextErrors[globalIndex], [field]: undefined };
+      if (!nextErrors[globalIndex].weight && !nextErrors[globalIndex].reps) delete nextErrors[globalIndex];
+      dispatch({ type: 'SET_INPUT_ERRORS', value: nextErrors });
+    }
   }
 
   function deleteSet(globalIndex: number) {
-    setDeletedIndices((prev) => new Set([...prev, globalIndex]));
-    setInputs((prev) => {
-      const next = [...prev];
-      next[globalIndex] = { weight: '', reps: '' };
-      return next;
-    });
-    setInputErrors((prev) => {
-      const next = { ...prev };
-      delete next[globalIndex];
-      return next;
-    });
+    dispatch({ type: 'SET_DELETED_INDICES', value: new Set([...deletedIndices, globalIndex]) });
+    const nextInputs = [...inputs];
+    nextInputs[globalIndex] = { weight: '', reps: '' };
+    dispatch({ type: 'SET_INPUTS', value: nextInputs });
+    const nextErrors = { ...inputErrors };
+    delete nextErrors[globalIndex];
+    dispatch({ type: 'SET_INPUT_ERRORS', value: nextErrors });
   }
 
   function validateInputs(): Record<number, { weight?: boolean; reps?: boolean }> {
@@ -251,7 +279,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     if (!log) return;
     const errors = validateInputs();
     if (Object.keys(errors).length > 0) {
-      setInputErrors(errors);
+      dispatch({ type: 'SET_INPUT_ERRORS', value: errors });
       return;
     }
     // Only block if there are non-deleted sets and none have any data filled
@@ -268,7 +296,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
         return;
       }
     }
-    setInputErrors({});
+    dispatch({ type: 'SET_INPUT_ERRORS', value: {} });
 
     // Batch-PATCH filled sets before opening the dialog
     const setsToSave: { index: number; weight: number | null; reps: number | null }[] = [];
@@ -288,7 +316,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     });
 
     if (setsToSave.length > 0) {
-      setSavingSets(true);
+      dispatch({ type: 'SET_SAVING_SETS', value: true });
       try {
         const results = await Promise.all(
           setsToSave.map(({ index, weight, reps }) =>
@@ -303,7 +331,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
           if (!res.ok) {
             if (res.status === 404) {
               toast.error('This session was ended on another device.');
-              router.push(basePath);
+              push(basePath);
               return;
             }
             toast.error('Failed to save sets');
@@ -314,11 +342,11 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
         toast.error('Something went wrong');
         return;
       } finally {
-        setSavingSets(false);
+        dispatch({ type: 'SET_SAVING_SETS', value: false });
       }
     }
 
-    setCompleteOpen(true);
+    dispatch({ type: 'SET_COMPLETE_OPEN', value: true });
   }
 
   async function addSet(exerciseId: string) {
@@ -340,7 +368,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     });
     if (res.status === 404) {
       toast.error('This session was ended on another device.');
-      router.push(basePath);
+      push(basePath);
       return;
     }
     if (res.ok) syncLog((await res.json()) as ISelfWorkoutLog);
@@ -371,7 +399,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     });
     if (res.status === 404) {
       toast.error('This session was ended on another device.');
-      router.push(basePath);
+      push(basePath);
       return;
     }
     if (!res.ok) {
@@ -380,7 +408,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     }
     const next = (await res.json()) as ISelfWorkoutLog;
     syncLog(next);
-    setBwOverrides((prev) => ({ ...prev, [option._id]: option.isBodyweight }));
+    dispatch({ type: 'SET_BW_OVERRIDES', value: { ...bwOverrides, [option._id]: option.isBodyweight } });
   }
 
   const groups = useMemo(() => (log ? buildGroups(log) : []), [log]);
@@ -388,17 +416,19 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
   useDirtyInputGuard(inputs, log?.sets ?? []);
 
   function toLoggingSets(exSets: SetWithIndex[]): LoggingSetInput[] {
-    return exSets
-      .filter((s) => !deletedIndices.has(s.globalIndex))
-      .map((s) => ({
-        setNumber: s.setNumber,
-        prescribedRepsMin: s.prescribedRepsMin ?? 0,
-        prescribedRepsMax: s.prescribedRepsMax ?? 0,
-        actualWeight: s.actualWeight,
-        actualReps: s.actualReps,
-        completedAt: s.completedAt instanceof Date ? s.completedAt.toISOString() : (s.completedAt ?? null),
-        globalIndex: s.globalIndex,
-      }));
+    return exSets.flatMap((s) =>
+      deletedIndices.has(s.globalIndex)
+        ? []
+        : [{
+            setNumber: s.setNumber,
+            prescribedRepsMin: s.prescribedRepsMin ?? 0,
+            prescribedRepsMax: s.prescribedRepsMax ?? 0,
+            actualWeight: s.actualWeight,
+            actualReps: s.actualReps,
+            completedAt: s.completedAt instanceof Date ? s.completedAt.toISOString() : (s.completedAt ?? null),
+            globalIndex: s.globalIndex,
+          }],
+    );
   }
 
   // Count sets that have at least reps filled (for the progress display)
@@ -423,7 +453,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
           >
             ← Back
           </Link>
-          <h1 className="text-base font-bold text-foreground">{log.dayName}</h1>
+          <h1 className="text-base font-semibold text-foreground">{log.dayName}</h1>
           {isFreestyle && (
             <div className="text-[10px] uppercase tracking-[1.6px] font-bold text-sky-300 mt-0.5">
               Freestyle
@@ -435,7 +465,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
         </div>
       </div>
 
-      <motion.div
+      <m.div
         className="flex-1 px-4 sm:px-8 py-5 pb-32 max-w-2xl mx-auto w-full space-y-3"
         variants={variants.staggerContainer}
         initial="hidden"
@@ -450,7 +480,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
         {groups.map((group, gi) => {
           if (group.type === 'standalone') {
             return (
-              <motion.div
+              <m.div
                 key={`${group.exerciseId}-${gi}`}
                 variants={variants.staggerItem}
                 className="rounded-xl bg-card ring-1 ring-foreground/10"
@@ -466,16 +496,16 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
                   onDeleteSet={deleteSet}
                   onAddSet={() => void addSet(group.exerciseId)}
                   onBwToggle={(next) =>
-                    setBwOverrides((prev) => ({ ...prev, [group.exerciseId]: next }))
+                    dispatch({ type: 'SET_BW_OVERRIDES', value: { ...bwOverrides, [group.exerciseId]: next } })
                   }
                   readOnly={isCompleted}
                   inputErrors={inputErrors}
                 />
-              </motion.div>
+              </m.div>
             );
           }
           return (
-            <motion.div key={group.groupId} variants={variants.staggerItem}>
+            <m.div key={group.groupId} variants={variants.staggerItem}>
               <SupersetBlock
                 mode="logging"
                 groupId={group.groupId}
@@ -491,24 +521,24 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
                 onDeleteSet={(_, idx) => deleteSet(idx)}
                 onAddSet={(exId) => void addSet(exId)}
                 onBwToggle={(exId, next) =>
-                  setBwOverrides((prev) => ({ ...prev, [exId]: next }))
+                  dispatch({ type: 'SET_BW_OVERRIDES', value: { ...bwOverrides, [exId]: next } })
                 }
                 readOnly={isCompleted}
               />
-            </motion.div>
+            </m.div>
           );
         })}
 
         {isFreestyle && !isCompleted && (
           <button
             type="button"
-            onClick={() => setPickerOpen(true)}
+            onClick={() => dispatch({ type: 'SET_PICKER_OPEN', value: true })}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/15 py-4 text-xs text-foreground/65 hover:border-foreground/40 hover:text-foreground transition-colors cursor-pointer"
           >
             + Add Exercise
           </button>
         )}
-      </motion.div>
+      </m.div>
 
       <div className="sticky bottom-0 z-10 border-t border-foreground/10 backdrop-blur-md bg-background/50 px-4 sm:px-8 py-3">
         <div className="max-w-2xl mx-auto w-full flex items-center justify-between gap-3">
@@ -532,17 +562,17 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
 
       <ExerciseSearchSheet
         open={pickerOpen}
-        onOpenChange={setPickerOpen}
+        onOpenChange={(v) => dispatch({ type: 'SET_PICKER_OPEN', value: v })}
         exercises={availableExercises}
         onSelect={(ex) => void addExercise(ex)}
-        onCreated={(ex) => setAvailableExercises((prev) => [...prev, ex])}
+        onCreated={(ex) => dispatch({ type: 'SET_AVAILABLE_EXERCISES', value: [...availableExercises, ex] })}
       />
 
       <CompleteWorkoutDialog
         open={completeOpen}
-        onOpenChange={setCompleteOpen}
+        onOpenChange={(v) => dispatch({ type: 'SET_COMPLETE_OPEN', value: v })}
         logId={logId}
-        onCompleted={() => router.push(basePath)}
+        onCompleted={() => push(basePath)}
       />
     </div>
   );

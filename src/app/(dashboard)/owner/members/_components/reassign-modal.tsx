@@ -20,7 +20,7 @@ interface Props {
 }
 
 export function ReassignModal({ memberId, memberName, currentTrainerId, trainers, onClose }: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const initialTrainerId =
     trainers.find((t) => t._id !== currentTrainerId)?._id ?? trainers[0]?._id ?? '';
   const [selectedTrainerId, setSelectedTrainerId] = useState(initialTrainerId);
@@ -41,7 +41,7 @@ export function ReassignModal({ memberId, memberName, currentTrainerId, trainers
       }
       toast.success('Member reassigned');
       onClose();
-      router.refresh();
+      refresh();
     } catch {
       toast.error('Something went wrong');
     } finally {
@@ -63,21 +63,20 @@ export function ReassignModal({ memberId, memberName, currentTrainerId, trainers
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#555]">
+          <label htmlFor="reassign-trainer" className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#555]">
             Assign to Trainer
           </label>
           <select
+            id="reassign-trainer"
             value={selectedTrainerId}
             onChange={(e) => setSelectedTrainerId(e.target.value)}
             className="w-full rounded-md border border-[#1e1e1e] bg-[#0c0c0c] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white"
           >
-            {trainers
-              .filter((t) => t._id !== currentTrainerId)
-              .map((t) => (
-                <option key={t._id} value={t._id}>
-                  {t.name}
-                </option>
-              ))}
+            {trainers.flatMap((t) =>
+              t._id === currentTrainerId
+                ? []
+                : [<option key={t._id} value={t._id}>{t.name}</option>],
+            )}
           </select>
         </div>
 

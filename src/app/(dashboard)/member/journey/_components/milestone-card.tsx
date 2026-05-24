@@ -5,6 +5,7 @@ import type { JourneyItem, MilestoneTagColor } from '@/lib/types/journey';
 interface Props {
   item: JourneyItem;
   isLast: boolean;
+  priority?: boolean;
 }
 
 const TAG_CLASSES: Record<MilestoneTagColor, string> = {
@@ -13,7 +14,7 @@ const TAG_CLASSES: Record<MilestoneTagColor, string> = {
   indigo: 'bg-primary/[0.18] text-primary-light',
 };
 
-export default function MilestoneCard({ item, isLast }: Props) {
+export default function MilestoneCard({ item, isLast, priority = false }: Props) {
   const { bodyTest, milestone } = item;
   if (!milestone) return null;
 
@@ -24,7 +25,7 @@ export default function MilestoneCard({ item, isLast }: Props) {
     <div className="flex items-stretch gap-3">
       {/* Track: large glowing dot + line */}
       <div className="flex flex-col items-center w-3.5 shrink-0">
-        <div className="mt-4 w-3.5 h-3.5 rounded-full bg-primary border-2 border-primary/40 shrink-0 z-10 shadow-[0_0_0_4px_rgba(99,102,241,0.15),0_0_12px_rgba(99,102,241,0.3)]" />
+        <div className="mt-4 size-3.5 rounded-full bg-primary border-2 border-primary/40 shrink-0 z-10 shadow-[0_0_0_4px_rgba(99,102,241,0.15),0_0_12px_rgba(99,102,241,0.3)]" />
         {!isLast && <div className="flex-1 w-0.5 bg-primary/20 rounded-full mt-1 min-h-2" />}
       </div>
 
@@ -42,9 +43,9 @@ export default function MilestoneCard({ item, isLast }: Props) {
 
           {/* Tags */}
           <div className="flex flex-wrap gap-1 mb-3">
-            {milestone.tags.map((tag, i) => (
+            {milestone.tags.map((tag) => (
               <span
-                key={i}
+                key={tag.label}
                 className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${TAG_CLASSES[tag.color]}`}
               >
                 {tag.label}
@@ -85,14 +86,15 @@ export default function MilestoneCard({ item, isLast }: Props) {
           {milestone.photos.length > 0 && (
             <div className="flex gap-1.5">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex-1 h-14 rounded-lg overflow-hidden">
+                <div key={i} className="flex-1 h-14 rounded-lg overflow-hidden" style={{ position: 'relative' }}>
                   {milestone.photos[i] ? (
                     <Image
                       src={milestone.photos[i]}
                       alt={`Milestone photo ${i + 1}`}
-                      width={100}
-                      height={56}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="(max-width: 768px) 30vw, 120px"
+                      className="object-cover"
+                      priority={priority && i === 0}
                     />
                   ) : (
                     <div className="w-full h-full bg-primary/[0.04] border border-dashed border-primary/20 flex items-center justify-center">

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Dumbbell } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -58,21 +59,25 @@ export function ExerciseThumbnail({ imageUrl, name, size = 40, className }: Prop
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={imageUrl}
           alt={name}
-          className="rounded-md object-cover w-full h-full"
+          fill
+          sizes="64px"
+          className="rounded-md object-cover"
         />
         {popupStyle !== null && (
           <div data-testid="hover-popup" style={popupStyle}>
             <div className="w-[240px] rounded-xl bg-card border border-foreground/10 p-2 shadow-2xl">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={imageUrl}
-                alt={name}
-                className="w-full h-44 rounded-md object-cover"
-              />
+              <div className="relative w-full h-44 rounded-md overflow-hidden">
+                <Image
+                  src={imageUrl}
+                  alt={name}
+                  fill
+                  sizes="240px"
+                  className="object-cover"
+                />
+              </div>
               <p className="mt-2 text-[11px] font-semibold text-foreground text-center">{name}</p>
             </div>
           </div>

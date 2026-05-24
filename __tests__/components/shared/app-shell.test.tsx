@@ -8,7 +8,7 @@ jest.mock('next/navigation', () => ({
 describe('AppShell', () => {
   it('renders member navigation groups', () => {
     render(
-      <AppShell role="member" userName="Eric Gong">
+      <AppShell userRole="member" userName="Eric Gong">
         <div>page content</div>
       </AppShell>
     );
@@ -20,7 +20,7 @@ describe('AppShell', () => {
 
   it('renders trainer navigation', () => {
     render(
-      <AppShell role="trainer" userName="John Smith">
+      <AppShell userRole="trainer" userName="John Smith">
         <div>content</div>
       </AppShell>
     );
@@ -31,7 +31,7 @@ describe('AppShell', () => {
 
   it('renders user initials in avatar', () => {
     render(
-      <AppShell role="member" userName="Eric Gong">
+      <AppShell userRole="member" userName="Eric Gong">
         <div>content</div>
       </AppShell>
     );
@@ -40,7 +40,7 @@ describe('AppShell', () => {
 
   it('renders page children', () => {
     render(
-      <AppShell role="member" userName="Eric Gong">
+      <AppShell userRole="member" userName="Eric Gong">
         <div>my page content</div>
       </AppShell>
     );
@@ -49,7 +49,7 @@ describe('AppShell', () => {
 
   it('opens mobile drawer when menu button is clicked', async () => {
     const { getByLabelText } = render(
-      <AppShell role="member" userName="Eric Gong">
+      <AppShell userRole="member" userName="Eric Gong">
         <div>content</div>
       </AppShell>
     );
@@ -61,7 +61,7 @@ describe('AppShell', () => {
 
   it('member My Training nav link points to /member/my-training', () => {
     render(
-      <AppShell role="member" userName="Eric Gong">
+      <AppShell userRole="member" userName="Eric Gong">
         <div>page content</div>
       </AppShell>
     );

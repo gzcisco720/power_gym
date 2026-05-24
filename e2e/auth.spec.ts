@@ -20,13 +20,13 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL('/trainer/members');
   });
 
-  test('member login redirects to /member/plan', async ({ page }) => {
+  test('member login redirects to /member', async ({ page }) => {
     await page.goto('/login');
     await page.fill('#email', 'member@test.com');
     await page.fill('#password', 'TestPass123!');
     await page.getByRole('button', { name: 'Sign in' }).click();
-    await page.waitForURL('/member/plan');
-    await expect(page).toHaveURL('/member/plan');
+    await page.waitForURL('/member');
+    await expect(page).toHaveURL('/member');
   });
 
   test('logout redirects to /login', async ({ page }) => {
@@ -112,7 +112,7 @@ test.describe('Authentication', () => {
     await page.fill('#email', 'reset-test@test.com');
     await page.fill('#password', 'NewPass456!');
     await page.getByRole('button', { name: 'Sign in' }).click();
-    await page.waitForURL('/member/plan');
-    await expect(page).toHaveURL('/member/plan');
+    await page.waitForURL('/member');
+    await expect(page).toHaveURL('/member');
   });
 });

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import type { CheckInRecord } from '@/lib/check-in-stats';
 import { format } from 'date-fns';
 
@@ -26,24 +27,25 @@ function PhotoColumn({ checkIn, side }: { checkIn: CheckInRecord; side: 'before'
           <span className="text-[10px] text-foreground/35 ml-2">{checkIn.weight} kg</span>
         )}
       </div>
-      <div className="flex-1 overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+      <div className="flex-1 overflow-hidden relative">
+        <Image
           src={photos[selectedIdx]}
           alt={`${side} photo`}
-          className="w-full h-full object-cover"
+          fill
+          sizes="50vw"
+          className="object-cover"
         />
       </div>
       {photos.length > 1 && (
         <div className="flex gap-1.5 p-2 border-t border-foreground/[0.06] flex-shrink-0">
           {photos.map((url, i) => (
             <button
-              key={i}
+              type="button"
+              key={url}
               onClick={() => setSelectedIdx(i)}
-              className={`w-10 h-12 rounded overflow-hidden border-2 flex-shrink-0 ${i === selectedIdx ? 'border-primary' : 'border-foreground/10'}`}
+              className={`w-10 h-12 rounded overflow-hidden border-2 flex-shrink-0 relative ${i === selectedIdx ? 'border-primary' : 'border-foreground/10'}`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="" className="w-full h-full object-cover" />
+              <Image src={url} alt="" fill sizes="128px" className="object-cover" />
             </button>
           ))}
         </div>
@@ -63,14 +65,16 @@ export function CompareModal({ open, onClose, beforeCheckIn, afterCheckIn }: Pro
   if (!open || !beforeCheckIn || !afterCheckIn) return null;
 
   return (
+    // oxlint-disable-next-line react-doctor/prefer-tag-over-role
     <div className="fixed inset-0 z-50 bg-background flex flex-col" role="dialog" aria-modal="true">
       {/* Top bar */}
       <div className="flex items-center justify-between px-5 h-12 flex-shrink-0 border-b border-foreground/[0.07] bg-foreground/[0.03]">
         <span className="text-sm font-semibold">Before / After Comparison</span>
         <button
+          type="button"
           onClick={onClose}
           aria-label="Close comparison"
-          className="w-8 h-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 text-foreground/60 flex items-center justify-center hover:bg-foreground/10 transition-colors"
+          className="size-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 text-foreground/60 flex items-center justify-center hover:bg-foreground/10 transition-colors"
         >
           ✕
         </button>

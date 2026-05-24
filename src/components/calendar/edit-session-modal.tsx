@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useReducer } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -33,6 +33,44 @@ interface EditSessionModalProps {
   onClose: () => void;
 }
 
+interface EditSessionModalState {
+  startTime: string;
+  endTime: string;
+  action: 'edit' | 'cancel' | null;
+  loading: boolean;
+  error: string;
+  serviceTypeId: string;
+  customServiceName: string;
+  customFee: string;
+  serviceTypes: ServiceType[];
+}
+
+type EditSessionModalAction =
+  | { type: 'SET_START_TIME'; value: string }
+  | { type: 'SET_END_TIME'; value: string }
+  | { type: 'SET_ACTION'; value: 'edit' | 'cancel' | null }
+  | { type: 'SET_LOADING'; value: boolean }
+  | { type: 'SET_ERROR'; value: string }
+  | { type: 'SET_SERVICE_TYPE_ID'; value: string }
+  | { type: 'SET_CUSTOM_SERVICE_NAME'; value: string }
+  | { type: 'SET_CUSTOM_FEE'; value: string }
+  | { type: 'SET_SERVICE_TYPES'; value: ServiceType[] };
+
+function editSessionModalReducer(state: EditSessionModalState, action: EditSessionModalAction): EditSessionModalState {
+  switch (action.type) {
+    case 'SET_START_TIME': return { ...state, startTime: action.value };
+    case 'SET_END_TIME': return { ...state, endTime: action.value };
+    case 'SET_ACTION': return { ...state, action: action.value };
+    case 'SET_LOADING': return { ...state, loading: action.value };
+    case 'SET_ERROR': return { ...state, error: action.value };
+    case 'SET_SERVICE_TYPE_ID': return { ...state, serviceTypeId: action.value };
+    case 'SET_CUSTOM_SERVICE_NAME': return { ...state, customServiceName: action.value };
+    case 'SET_CUSTOM_FEE': return { ...state, customFee: action.value };
+    case 'SET_SERVICE_TYPES': return { ...state, serviceTypes: action.value };
+    default: return state;
+  }
+}
+
 export function EditSessionModal({
   open,
   session,
@@ -40,34 +78,38 @@ export function EditSessionModal({
   onSuccess,
   onClose,
 }: EditSessionModalProps) {
-  const [startTime, setStartTime] = useState(session.startTime);
-  const [endTime, setEndTime] = useState(session.endTime);
-  const [action, setAction] = useState<'edit' | 'cancel' | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [serviceTypeId, setServiceTypeId] = useState<string>(
-    session.customServiceName ? '__custom__' : (session.serviceTypeId ?? ''),
-  );
-  const [customServiceName, setCustomServiceName] = useState(session.customServiceName ?? '');
-  const [customFee, setCustomFee] = useState(session.customFee != null ? String(session.customFee) : '');
-  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
+  const [state, dispatch] = useReducer(editSessionModalReducer, {
+    startTime: session.startTime,
+    endTime: session.endTime,
+    action: null,
+    loading: false,
+    error: '',
+    serviceTypeId: session.customServiceName ? '__custom__' : (session.serviceTypeId ?? ''),
+    customServiceName: session.customServiceName ?? '',
+    customFee: session.customFee != null ? String(session.customFee) : '',
+    serviceTypes: [],
+  });
+  const { startTime, endTime, action, loading, error, serviceTypeId, customServiceName, customFee, serviceTypes } = state;
 
   const isRecurring = session.seriesId !== null;
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect, react-doctor/no-effect-event-handler
   useEffect(() => {
     if (!open) return;
-    fetch('/api/service-types/active')
+    const controller = new AbortController();
+    fetch('/api/service-types/active', { signal: controller.signal })
       .then((r) => r.json())
-      .then((data: { serviceTypes: ServiceType[] }) => setServiceTypes(data.serviceTypes ?? []))
-      .catch(() => {});
+      .then((data: { serviceTypes: ServiceType[] }) => dispatch({ type: 'SET_SERVICE_TYPES', value: data.serviceTypes ?? [] }))
+      .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, [open]);
 
   const isCustomService = serviceTypeId === '__custom__';
   const selectedServiceType = isCustomService ? null : (serviceTypes.find((st) => st._id === serviceTypeId) ?? null);
 
   async function executeAction(scope: Scope) {
-    setLoading(true);
-    setError('');
+    dispatch({ type: 'SET_LOADING', value: true });
+    dispatch({ type: 'SET_ERROR', value: '' });
     try {
       if (action === 'edit') {
         const servicePayload = isCustomService
@@ -79,7 +121,7 @@ export function EditSessionModal({
           body: JSON.stringify({ scope, startTime, endTime, ...servicePayload }),
         });
         if (!res.ok) {
-          setError('Failed to update');
+          dispatch({ type: 'SET_ERROR', value: 'Failed to update' });
           return;
         }
       } else {
@@ -89,21 +131,21 @@ export function EditSessionModal({
           body: JSON.stringify({ scope }),
         });
         if (!res.ok) {
-          setError('Failed to cancel');
+          dispatch({ type: 'SET_ERROR', value: 'Failed to cancel' });
           return;
         }
       }
       onSuccess();
       onClose();
     } finally {
-      setLoading(false);
-      setAction(null);
+      dispatch({ type: 'SET_LOADING', value: false });
+      dispatch({ type: 'SET_ACTION', value: null });
     }
   }
 
   function handleSave() {
     if (isRecurring) {
-      setAction('edit');
+      dispatch({ type: 'SET_ACTION', value: 'edit' });
     } else {
       void executeAction('one');
     }
@@ -111,7 +153,7 @@ export function EditSessionModal({
 
   function handleCancel() {
     if (isRecurring) {
-      setAction('cancel');
+      dispatch({ type: 'SET_ACTION', value: 'cancel' });
     } else {
       void executeAction('one');
     }
@@ -133,7 +175,7 @@ export function EditSessionModal({
             </div>
             {isRecurring && (
               <p className="flex items-center gap-1 text-xs text-blue-400">
-                <RefreshCw className="h-3 w-3" />
+                <RefreshCw className="size-3" />
                 This is a recurring session
               </p>
             )}
@@ -144,7 +186,7 @@ export function EditSessionModal({
                   type="time"
                   className="mt-1"
                   value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
+                  onChange={(e) => dispatch({ type: 'SET_START_TIME', value: e.target.value })}
                 />
               </div>
               <div className="flex-1">
@@ -153,7 +195,7 @@ export function EditSessionModal({
                   type="time"
                   className="mt-1"
                   value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
+                  onChange={(e) => dispatch({ type: 'SET_END_TIME', value: e.target.value })}
                 />
               </div>
             </div>
@@ -164,9 +206,9 @@ export function EditSessionModal({
                   id="editServiceType"
                   className="flex-1 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white"
                   value={serviceTypeId}
-                  onChange={(e) => setServiceTypeId(e.target.value)}
+                  onChange={(e) => dispatch({ type: 'SET_SERVICE_TYPE_ID', value: e.target.value })}
                 >
-                  <option value="">— Select —</option>
+                  <option value="">Select</option>
                   {serviceTypes.map((st) => (
                     <option key={st._id} value={st._id}>
                       {st.name} ({st.durationMin} min)
@@ -185,17 +227,19 @@ export function EditSessionModal({
                   <input
                     type="text"
                     placeholder="Service name"
+                    aria-label="Custom service name"
                     className="flex-1 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white placeholder:text-foreground/40"
                     value={customServiceName}
-                    onChange={(e) => setCustomServiceName(e.target.value)}
+                    onChange={(e) => dispatch({ type: 'SET_CUSTOM_SERVICE_NAME', value: e.target.value })}
                   />
                   <input
                     type="text"
                     inputMode="decimal"
                     placeholder="Fee (AUD)"
+                    aria-label="Custom service fee (AUD)"
                     className="w-28 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white placeholder:text-foreground/40"
                     value={customFee}
-                    onChange={(e) => setCustomFee(e.target.value)}
+                    onChange={(e) => dispatch({ type: 'SET_CUSTOM_FEE', value: e.target.value })}
                   />
                 </div>
               )}
@@ -227,7 +271,7 @@ export function EditSessionModal({
           onConfirm={(scope) => {
             void executeAction(scope);
           }}
-          onCancel={() => setAction(null)}
+          onCancel={() => dispatch({ type: 'SET_ACTION', value: null })}
         />
       )}
     </>

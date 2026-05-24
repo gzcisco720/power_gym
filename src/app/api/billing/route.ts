@@ -60,7 +60,7 @@ export async function GET(req: Request): Promise<Response> {
 
   // Manual lookup — avoid populate() which requires ref on the schema singleton
   const stIds = [...new Set(
-    sessions.map((s) => s.serviceTypeId?.toString()).filter((id): id is string => !!id),
+    sessions.flatMap((s) => s.serviceTypeId ? [s.serviceTypeId.toString()] : []),
   )];
   const stDocs = await ServiceTypeModel.find({ _id: { $in: stIds } }).lean();
   const stMap = new Map(stDocs.map((st) => [st._id.toString(), st]));
@@ -76,9 +76,9 @@ export async function GET(req: Request): Promise<Response> {
   }
 
   const userRepo = new MongoUserRepository();
-  const trainerIds = new Set(sessions.map((s) => s.trainerId?.toString()).filter(Boolean));
-  const trainerDocs = await Promise.all(Array.from(trainerIds).map((id) => userRepo.findById(id!)));
-  const trainerMap = new Map(trainerDocs.filter(Boolean).map((t) => [t!._id.toString(), t!.name]));
+  const trainerIds = new Set(sessions.flatMap((s) => s.trainerId ? [s.trainerId.toString()] : []));
+  const trainerDocs = await Promise.all(Array.from(trainerIds).map((id) => userRepo.findById(id)));
+  const trainerMap = new Map(trainerDocs.flatMap((t) => t ? [[t._id.toString(), t.name]] : []));
 
   const memberResults = await Promise.all(
     Array.from(memberSessions.entries()).map(async ([memberId, mSessions]) => {
@@ -93,7 +93,7 @@ export async function GET(req: Request): Promise<Response> {
         startTime: s.startTime,
         endTime: s.endTime,
         status: s.status,
-        serviceType: s.serviceTypeId ? (stMap.get(s.serviceTypeId.toString()) ?? null) : null,
+        serviceType: s.serviceTypeId ? (() => { const st = stMap.get(s.serviceTypeId!.toString()); return st ? { _id: st._id.toString(), name: st.name, pricePerSession: st.pricePerSession, currency: st.currency } : null; })() : null,
       }));
 
       const billing = calculateMemberBilling(billingSessions, now);

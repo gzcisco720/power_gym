@@ -23,35 +23,37 @@ export async function GET(req: Request): Promise<Response> {
   weekStart.setHours(0, 0, 0, 0);
 
   const configs = await configRepo.findDueForReminder(dayOfWeek, hour, weekStart);
-  let sent = 0;
 
-  for (const config of configs) {
-    const memberId = config.memberId.toString();
-    const trainerId = config.trainerId.toString();
+  const results = await Promise.all(
+    configs.map(async (config) => {
+      const memberId = config.memberId.toString();
+      const trainerId = config.trainerId.toString();
 
-    const member = await userRepo.findById(memberId);
-    if (!member) continue;
+      const [member, trainer] = await Promise.all([
+        userRepo.findById(memberId),
+        userRepo.findById(trainerId),
+      ]);
+      if (!member || !trainer) return false;
 
-    const trainer = await userRepo.findById(trainerId);
-    if (!trainer) continue;
+      const appUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
+      const checkInUrl = `${appUrl}/member/check-in`;
 
-    const appUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
-    const checkInUrl = `${appUrl}/member/check-in`;
+      try {
+        await emailService.sendCheckInReminder({
+          to: member.email,
+          memberName: member.name,
+          trainerName: trainer.name,
+          checkInUrl,
+        });
+      } catch {
+        // log and continue
+      }
 
-    try {
-      await emailService.sendCheckInReminder({
-        to: member.email,
-        memberName: member.name,
-        trainerName: trainer.name,
-        checkInUrl,
-      });
-    } catch {
-      // log and continue
-    }
-
-    await configRepo.markReminderSent(memberId, now);
-    sent++;
-  }
+      await configRepo.markReminderSent(memberId, now);
+      return true;
+    }),
+  );
+  const sent = results.filter(Boolean).length;
 
   return Response.json({ sent });
 }

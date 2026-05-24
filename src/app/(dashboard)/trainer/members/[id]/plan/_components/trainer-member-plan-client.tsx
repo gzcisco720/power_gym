@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useReducer } from 'react';
 import { useMemberHub } from '../../_components/member-hub-provider';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -11,6 +11,7 @@ import { SectionHeader } from '@/components/shared/section-header';
 import { ActiveSessionPrompt } from '@/components/shared/active-session-prompt';
 import { SessionPeekSheet } from './session-peek-sheet';
 import type { SessionSummary } from '@/lib/training/session-summary';
+// oxlint-disable-next-line react-doctor/prefer-dynamic-import
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -118,22 +119,25 @@ function ExerciseStrengthChart({
   const [history, setHistory] = useState<HistoryPoint[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     if (!selectedId) return;
+    const controller = new AbortController();
     async function load() {
       setLoading(true);
       try {
-        const r = await fetch(`/api/progress/${memberId}?exerciseId=${selectedId}`);
+        const r = await fetch(`/api/progress/${memberId}?exerciseId=${selectedId}`, { signal: controller.signal });
         if (!r.ok) throw new Error('Failed to fetch');
         const data = (await r.json()) as { history: HistoryPoint[] };
         setHistory(data.history ?? []);
-      } catch {
-        toast.error('Failed to load exercise history');
+      } catch (err) {
+        if (err instanceof Error && err.name !== 'AbortError') toast.error('Failed to load exercise history');
       } finally {
         setLoading(false);
       }
     }
     void load();
+    return () => controller.abort();
   }, [selectedId, memberId]);
 
   const chartData = history.map((h) => ({
@@ -204,10 +208,10 @@ function ExerciseStrengthChart({
                           border: '1px solid var(--border)',
                           borderRadius: 8,
                           padding: '8px 10px',
-                          fontSize: 11,
+                          fontSize: 12,
                         }}
                       >
-                        <p style={{ color: 'var(--muted-foreground)', fontSize: 10, marginBottom: 4 }}>
+                        <p style={{ color: 'var(--muted-foreground)', fontSize: 12, marginBottom: 4 }}>
                           {label}
                         </p>
                         <p style={{ color: 'var(--foreground)' }}>
@@ -237,6 +241,35 @@ function ExerciseStrengthChart({
   );
 }
 
+interface TrainerMemberPlanClientState {
+  selectedTemplate: string;
+  assigning: boolean;
+  selectedDay: number;
+  peekSession: SessionSummary | null;
+  conflictBanner: ActiveConflict | null;
+  visibleCount: number;
+}
+
+type TrainerMemberPlanClientAction =
+  | { type: 'SET_SELECTED_TEMPLATE'; value: string }
+  | { type: 'SET_ASSIGNING'; value: boolean }
+  | { type: 'SET_SELECTED_DAY'; value: number }
+  | { type: 'SET_PEEK_SESSION'; value: SessionSummary | null }
+  | { type: 'SET_CONFLICT_BANNER'; value: ActiveConflict | null }
+  | { type: 'SET_VISIBLE_COUNT'; value: number };
+
+function trainerMemberPlanClientReducer(state: TrainerMemberPlanClientState, action: TrainerMemberPlanClientAction): TrainerMemberPlanClientState {
+  switch (action.type) {
+    case 'SET_SELECTED_TEMPLATE': return { ...state, selectedTemplate: action.value };
+    case 'SET_ASSIGNING': return { ...state, assigning: action.value };
+    case 'SET_SELECTED_DAY': return { ...state, selectedDay: action.value };
+    case 'SET_PEEK_SESSION': return { ...state, peekSession: action.value };
+    case 'SET_CONFLICT_BANNER': return { ...state, conflictBanner: action.value };
+    case 'SET_VISIBLE_COUNT': return { ...state, visibleCount: action.value };
+    default: return state;
+  }
+}
+
 export function TrainerMemberPlanClient({
   memberId,
   templates,
@@ -246,25 +279,28 @@ export function TrainerMemberPlanClient({
   conflict,
   activePrompt,
 }: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const { basePath } = useMemberHub();
-  const [selectedTemplate, setSelectedTemplate] = useState('');
-  const [assigning, setAssigning] = useState(false);
-  const [selectedDay, setSelectedDay] = useState<number>(activePlan?.days[0]?.dayNumber ?? 1);
-  const [peekSession, setPeekSession] = useState<SessionSummary | null>(null);
+  const [state, dispatch] = useReducer(trainerMemberPlanClientReducer, undefined, () => ({
+    selectedTemplate: '',
+    assigning: false,
+    selectedDay: activePlan?.days[0]?.dayNumber ?? 1,
+    peekSession: null,
+    conflictBanner: conflict ?? null,
+    visibleCount: 8,
+  }));
+  const { selectedTemplate, assigning, selectedDay, peekSession, conflictBanner, visibleCount } = state;
 
-  const [conflictBanner, setConflictBanner] = useState<ActiveConflict | null>(conflict ?? null);
-  const [prevSessions, setPrevSessions] = useState(sessions);
-  const [visibleCount, setVisibleCount] = useState(8);
+  const prevSessionsRef = useRef(sessions);
 
-  if (prevSessions !== sessions) {
-    setPrevSessions(sessions);
-    setVisibleCount(8);
+  if (prevSessionsRef.current !== sessions) {
+    prevSessionsRef.current = sessions;
+    dispatch({ type: 'SET_VISIBLE_COUNT', value: 8 });
   }
 
   async function assignPlan(): Promise<boolean> {
     if (!selectedTemplate) return false;
-    setAssigning(true);
+    dispatch({ type: 'SET_ASSIGNING', value: true });
     try {
       const res = await fetch(`/api/members/${memberId}/plan`, {
         method: 'POST',
@@ -277,14 +313,14 @@ export function TrainerMemberPlanClient({
         return false;
       }
       toast.success('Plan assigned');
-      setSelectedTemplate('');
-      router.refresh();
+      dispatch({ type: 'SET_SELECTED_TEMPLATE', value: '' });
+      refresh();
       return true;
     } catch {
       toast.error('Something went wrong');
       return false;
     } finally {
-      setAssigning(false);
+      dispatch({ type: 'SET_ASSIGNING', value: false });
     }
   }
 
@@ -322,7 +358,7 @@ export function TrainerMemberPlanClient({
             </a>
             <button
               type="button"
-              onClick={() => setConflictBanner(null)}
+              onClick={() => dispatch({ type: 'SET_CONFLICT_BANNER', value: null })}
               aria-label="Dismiss"
               className="shrink-0 rounded-md p-1 text-foreground/65 hover:text-foreground hover:bg-muted/50 transition-colors text-xs"
             >
@@ -351,13 +387,13 @@ export function TrainerMemberPlanClient({
               <div className="flex flex-wrap items-center gap-2 shrink-0">
                 <select
                   value={selectedDay}
-                  onChange={(e) => setSelectedDay(Number(e.target.value))}
+                  onChange={(e) => dispatch({ type: 'SET_SELECTED_DAY', value: Number(e.target.value) })}
                   aria-label="Select day to log"
                   className="rounded-md bg-muted border border-border/60 px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
                 >
                   {activePlan.days.map((d) => (
                     <option key={d.dayNumber} value={d.dayNumber}>
-                      Day {d.dayNumber} — {d.name}
+                      Day {d.dayNumber}: {d.name}
                     </option>
                   ))}
                 </select>
@@ -371,7 +407,7 @@ export function TrainerMemberPlanClient({
                   templates={templates}
                   assigning={assigning}
                   selectedTemplate={selectedTemplate}
-                  onSelect={setSelectedTemplate}
+                  onSelect={(id) => dispatch({ type: 'SET_SELECTED_TEMPLATE', value: id })}
                   onAssign={assignPlan}
                 />
               </div>
@@ -384,7 +420,7 @@ export function TrainerMemberPlanClient({
               templates={templates}
               assigning={assigning}
               selectedTemplate={selectedTemplate}
-              onSelect={setSelectedTemplate}
+              onSelect={(id) => dispatch({ type: 'SET_SELECTED_TEMPLATE', value: id })}
               onAssign={assignPlan}
               triggerLabel="Assign Plan"
             />
@@ -392,15 +428,17 @@ export function TrainerMemberPlanClient({
         )}
       </section>
 
-      {pbs.filter((pb) => pb.bestWeight > 0).length > 0 && (
+      {pbs.some((pb) => pb.bestWeight > 0) && (
         <section className="px-4 sm:px-8">
           <SectionHeader title="Strength Progress" />
           <div className="mt-3">
             <ExerciseStrengthChart
               memberId={memberId}
-              exercises={pbs
-                .filter((pb) => pb.bestWeight > 0)
-                .map((pb) => ({ exerciseId: pb.exerciseId, exerciseName: pb.exerciseName }))}
+              exercises={pbs.flatMap((pb) =>
+                pb.bestWeight > 0
+                  ? [{ exerciseId: pb.exerciseId, exerciseName: pb.exerciseName }]
+                  : [],
+              )}
             />
           </div>
         </section>
@@ -471,7 +509,7 @@ export function TrainerMemberPlanClient({
                       <li key={s._id}>
                         <button
                           type="button"
-                          onClick={() => setPeekSession(s)}
+                          onClick={() => dispatch({ type: 'SET_PEEK_SESSION', value: s })}
                           className="w-full rounded-xl bg-card ring-1 ring-foreground/10 hover:ring-foreground/25 transition-colors flex items-stretch text-left cursor-pointer overflow-hidden"
                         >
                           <div className={`w-1 shrink-0 ${dayAccentBg(s.dayName)}`} />
@@ -511,7 +549,7 @@ export function TrainerMemberPlanClient({
           {sessions.length > visibleCount && (
             <button
               type="button"
-              onClick={() => setVisibleCount((c) => c + 8)}
+              onClick={() => dispatch({ type: 'SET_VISIBLE_COUNT', value: visibleCount + 8 })}
               className="mt-4 w-full rounded-xl border border-foreground/10 py-2.5 text-sm text-foreground/50 hover:text-foreground/75 hover:border-foreground/20 transition-colors"
             >
               Show {Math.min(8, sessions.length - visibleCount)} more sessions
@@ -523,7 +561,7 @@ export function TrainerMemberPlanClient({
             session={peekSession}
             open={peekSession !== null}
             onOpenChange={(open) => {
-              if (!open) setPeekSession(null);
+              if (!open) dispatch({ type: 'SET_PEEK_SESSION', value: null });
             }}
           />
         </section>

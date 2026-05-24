@@ -30,8 +30,8 @@ export function SelfNutritionCalendar({ entries, onSelect, selectedDate, onMonth
   // Use local date — `toISOString()` is UTC and can disagree with the
   // calendar grid (which is built from `getFullYear/Month/Date`) near midnight.
   const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [year, setYear] = useState(() => now.getFullYear());
+  const [month, setMonth] = useState(() => now.getMonth() + 1);
   const { startOffset, daysInMonth } = getMonthDays(year, month);
 
   const entriesByDay = useMemo(() => {
@@ -61,26 +61,29 @@ export function SelfNutritionCalendar({ entries, onSelect, selectedDate, onMonth
     <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4">
       <div className="flex items-center justify-between mb-4">
         <button
+          type="button"
           onClick={() => shift(-1)}
           aria-label="Previous month"
           className="text-foreground/65 hover:text-foreground transition-colors"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="size-4" />
         </button>
         <span className="text-[13px] font-semibold">{monthName}</span>
         <button
+          type="button"
           onClick={() => shift(1)}
           aria-label="Next month"
           className="text-foreground/65 hover:text-foreground transition-colors"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="size-4" />
         </button>
       </div>
 
       <div className="grid grid-cols-7 mb-1">
-        {dayLabels.map((l, i) => (
-          <div key={i} className="text-center text-[9px] text-foreground/65 py-1">{l}</div>
-        ))}
+        {dayLabels.map((l, i) => {
+          // oxlint-disable-next-line react-doctor/no-array-index-key, react-doctor/no-array-index-as-key
+          return <div key={i /* static 7-day array */} className="text-center text-[9px] text-foreground/65 py-1">{l}</div>;
+        })}
       </div>
 
       <div className="grid grid-cols-7 gap-y-1">
@@ -100,6 +103,7 @@ export function SelfNutritionCalendar({ entries, onSelect, selectedDate, onMonth
           return (
             <div key={day} className="flex justify-center">
               <button
+                type="button"
                 onClick={() => canSelect && onSelect(entry)}
                 disabled={!canSelect}
                 aria-label={ariaLabel}

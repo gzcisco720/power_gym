@@ -8,7 +8,7 @@ export default async function MemberBillingPage() {
   return (
     <div>
       <div className="px-4 sm:px-8 pt-7 pb-2">
-        <h1 className="text-xl font-bold text-foreground">My Billing</h1>
+        <h1 className="text-xl font-semibold text-foreground">My Billing</h1>
         <p className="text-xs text-foreground/65 mt-0.5">Sessions completed and amounts due</p>
       </div>
       <MemberBillingDetail memberId={session.user.id} />

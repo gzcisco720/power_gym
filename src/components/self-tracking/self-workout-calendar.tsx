@@ -28,8 +28,8 @@ function getMonthDays(year: number, month: number) {
 
 export function SelfWorkoutCalendar({ logs, onSelect, selectedId, onMonthChange }: Props) {
   const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [year, setYear] = useState(() => now.getFullYear());
+  const [month, setMonth] = useState(() => now.getMonth() + 1);
 
   const { startOffset, daysInMonth } = getMonthDays(year, month);
 
@@ -61,19 +61,20 @@ export function SelfWorkoutCalendar({ logs, onSelect, selectedId, onMonthChange 
   return (
     <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4">
       <div className="flex items-center justify-between mb-4">
-        <button onClick={() => shiftMonth(-1)} className="cursor-pointer text-foreground/65 hover:text-foreground transition-colors" aria-label="Previous month">
-          <ChevronLeft className="h-4 w-4" />
+        <button type="button" onClick={() => shiftMonth(-1)} className="cursor-pointer text-foreground/65 hover:text-foreground transition-colors" aria-label="Previous month">
+          <ChevronLeft className="size-4" />
         </button>
         <span className="text-[13px] font-semibold">{monthName}</span>
-        <button onClick={() => shiftMonth(1)} className="cursor-pointer text-foreground/65 hover:text-foreground transition-colors" aria-label="Next month">
-          <ChevronRight className="h-4 w-4" />
+        <button type="button" onClick={() => shiftMonth(1)} className="cursor-pointer text-foreground/65 hover:text-foreground transition-colors" aria-label="Next month">
+          <ChevronRight className="size-4" />
         </button>
       </div>
 
       <div className="grid grid-cols-7 mb-1">
-        {dayLabels.map((l, i) => (
-          <div key={i} className="text-center text-[9px] text-foreground/65 py-1">{l}</div>
-        ))}
+        {dayLabels.map((l, i) => {
+          // oxlint-disable-next-line react-doctor/no-array-index-key, react-doctor/no-array-index-as-key
+          return <div key={i /* static 7-day array */} className="text-center text-[9px] text-foreground/65 py-1">{l}</div>;
+        })}
       </div>
 
       <div className="grid grid-cols-7 gap-y-1">
@@ -89,6 +90,7 @@ export function SelfWorkoutCalendar({ logs, onSelect, selectedId, onMonthChange 
           return (
             <div key={day} className="flex justify-center">
               <button
+                type="button"
                 onClick={() => log && onSelect(log)}
                 disabled={!log}
                 aria-label={ariaLabel}

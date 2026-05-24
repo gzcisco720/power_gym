@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useReducer } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMemberHub } from '../../../_components/member-hub-provider';
 import { toast } from 'sonner';
@@ -17,7 +17,7 @@ import { ChevronDown, ChevronRight, X, Trash2 } from 'lucide-react';
 import type { IDayType, IMeal, IMealItem } from '@/lib/db/models/nutrition-template.model';
 import type { ISchedule } from '@/lib/db/models/member-nutrition-plan.model';
 import type { MacroSnapshot } from '@/lib/nutrition/macros';
-import type { PickedFood } from '@/components/nutrition/food-picker';
+import type { PickedFood } from '@/components/nutrition/food-picker.types';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -80,20 +80,63 @@ function emptyMeal(order: number): IMeal {
   return { name: 'Meal', order, items: [] };
 }
 
+// ── Reducer ────────────────────────────────────────────────────────────────
+
+interface MemberNutritionPlanFormState {
+  name: string;
+  dayTypes: IDayType[];
+  collapsed: Record<number, boolean>;
+  addingFor: AddingFor | null;
+  pendingDelete: PendingDelete | null;
+  saveAsTemplate: boolean;
+  templateName: string;
+  scheduleOpen: boolean;
+  saving: boolean;
+}
+
+type MemberNutritionPlanFormAction =
+  | { type: 'SET_NAME'; value: string }
+  | { type: 'SET_DAY_TYPES'; value: IDayType[] }
+  | { type: 'SET_COLLAPSED'; value: Record<number, boolean> }
+  | { type: 'SET_ADDING_FOR'; value: AddingFor | null }
+  | { type: 'SET_PENDING_DELETE'; value: PendingDelete | null }
+  | { type: 'SET_SAVE_AS_TEMPLATE'; value: boolean }
+  | { type: 'SET_TEMPLATE_NAME'; value: string }
+  | { type: 'SET_SCHEDULE_OPEN'; value: boolean }
+  | { type: 'SET_SAVING'; value: boolean };
+
+function memberNutritionPlanFormReducer(state: MemberNutritionPlanFormState, action: MemberNutritionPlanFormAction): MemberNutritionPlanFormState {
+  switch (action.type) {
+    case 'SET_NAME': return { ...state, name: action.value };
+    case 'SET_DAY_TYPES': return { ...state, dayTypes: action.value };
+    case 'SET_COLLAPSED': return { ...state, collapsed: action.value };
+    case 'SET_ADDING_FOR': return { ...state, addingFor: action.value };
+    case 'SET_PENDING_DELETE': return { ...state, pendingDelete: action.value };
+    case 'SET_SAVE_AS_TEMPLATE': return { ...state, saveAsTemplate: action.value };
+    case 'SET_TEMPLATE_NAME': return { ...state, templateName: action.value };
+    case 'SET_SCHEDULE_OPEN': return { ...state, scheduleOpen: action.value };
+    case 'SET_SAVING': return { ...state, saving: action.value };
+    default: return state;
+  }
+}
+
 // ── Component ──────────────────────────────────────────────────────────────
 
 export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
   const { basePath } = useMemberHub();
-  const [name, setName] = useState(initialData?.name ?? '');
-  const [dayTypes, setDayTypes] = useState<IDayType[]>(initialData?.dayTypes ?? []);
-  const [collapsed, setCollapsed] = useState<Record<number, boolean>>({});
-  const [addingFor, setAddingFor] = useState<AddingFor | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
-  const [saveAsTemplate, setSaveAsTemplate] = useState(false);
-  const [templateName, setTemplateName] = useState(initialData?.name ?? '');
-  const [scheduleOpen, setScheduleOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [state, dispatch] = useReducer(memberNutritionPlanFormReducer, {
+    name: initialData?.name ?? '',
+    dayTypes: initialData?.dayTypes ?? [],
+    collapsed: {},
+    addingFor: null,
+    pendingDelete: null,
+    saveAsTemplate: false,
+    templateName: initialData?.name ?? '',
+    scheduleOpen: false,
+    saving: false,
+  });
+  const { name, dayTypes, collapsed, addingFor, pendingDelete, saveAsTemplate, templateName, scheduleOpen, saving } = state;
 
   const emptySchedule: ISchedule = useMemo(
     () => ({ weeklyPattern: [], calendarOverrides: [], iterate: true }),
@@ -108,96 +151,64 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
   // ── Day type CRUD ──────────────────────────────────────────────────────
 
   function addDayType(): void {
-    setDayTypes((prev) => [...prev, { name: `Day Type ${prev.length + 1}`, meals: [] }]);
+    dispatch({ type: 'SET_DAY_TYPES', value: [...dayTypes, { name: `Day Type ${dayTypes.length + 1}`, meals: [] }] });
   }
 
   function removeDayType(dayIdx: number): void {
-    setDayTypes((prev) => prev.filter((_, i) => i !== dayIdx));
-    setCollapsed((prev) => {
-      const next: Record<number, boolean> = {};
-      for (const [k, v] of Object.entries(prev)) {
-        const idx = Number(k);
-        if (idx < dayIdx) next[idx] = v;
-        else if (idx > dayIdx) next[idx - 1] = v;
-        // idx === dayIdx is dropped
-      }
-      return next;
-    });
+    dispatch({ type: 'SET_DAY_TYPES', value: dayTypes.filter((_, i) => i !== dayIdx) });
+    const next: Record<number, boolean> = {};
+    for (const [k, v] of Object.entries(collapsed)) {
+      const idx = Number(k);
+      if (idx < dayIdx) next[idx] = v;
+      else if (idx > dayIdx) next[idx - 1] = v;
+    }
+    dispatch({ type: 'SET_COLLAPSED', value: next });
   }
 
   function updateDayTypeName(dayIdx: number, value: string): void {
-    setDayTypes((prev) => prev.map((d, i) => (i === dayIdx ? { ...d, name: value } : d)));
+    dispatch({ type: 'SET_DAY_TYPES', value: dayTypes.map((d, i) => (i === dayIdx ? { ...d, name: value } : d)) });
   }
 
   // ── Meal CRUD ──────────────────────────────────────────────────────────
 
   function addMeal(dayIdx: number): void {
-    setDayTypes((prev) =>
-      prev.map((d, i) =>
-        i === dayIdx
-          ? { ...d, meals: [...d.meals, emptyMeal(d.meals.length)] }
-          : d,
-      ),
-    );
+    dispatch({ type: 'SET_DAY_TYPES', value: dayTypes.map((d, i) =>
+      i === dayIdx ? { ...d, meals: [...d.meals, emptyMeal(d.meals.length)] } : d,
+    ) });
   }
 
   function removeMeal(dayIdx: number, mealIdx: number): void {
-    setDayTypes((prev) =>
-      prev.map((d, i) =>
-        i === dayIdx
-          ? { ...d, meals: d.meals.filter((_, j) => j !== mealIdx) }
-          : d,
-      ),
-    );
+    dispatch({ type: 'SET_DAY_TYPES', value: dayTypes.map((d, i) =>
+      i === dayIdx ? { ...d, meals: d.meals.filter((_, j) => j !== mealIdx) } : d,
+    ) });
   }
 
   function updateMealName(dayIdx: number, mealIdx: number, value: string): void {
-    setDayTypes((prev) =>
-      prev.map((d, i) =>
-        i === dayIdx
-          ? {
-              ...d,
-              meals: d.meals.map((m, j) => (j === mealIdx ? { ...m, name: value } : m)),
-            }
-          : d,
-      ),
-    );
+    dispatch({ type: 'SET_DAY_TYPES', value: dayTypes.map((d, i) =>
+      i === dayIdx
+        ? { ...d, meals: d.meals.map((m, j) => (j === mealIdx ? { ...m, name: value } : m)) }
+        : d,
+    ) });
   }
 
   // ── Item CRUD ──────────────────────────────────────────────────────────
 
   function addItem(dayIdx: number, mealIdx: number, picked: PickedFood): void {
     const item = pickedToMealItem(picked);
-    setDayTypes((prev) =>
-      prev.map((d, i) =>
-        i === dayIdx
-          ? {
-              ...d,
-              meals: d.meals.map((m, j) =>
-                j === mealIdx ? { ...m, items: [...m.items, item] } : m,
-              ),
-            }
-          : d,
-      ),
-    );
-    setAddingFor(null);
+    dispatch({ type: 'SET_DAY_TYPES', value: dayTypes.map((d, i) =>
+      i === dayIdx
+        ? { ...d, meals: d.meals.map((m, j) => j === mealIdx ? { ...m, items: [...m.items, item] } : m) }
+        : d,
+    ) });
+    dispatch({ type: 'SET_ADDING_FOR', value: null });
   }
 
   function removeItem(dayIdx: number, mealIdx: number, itemIdx: number): void {
-    setDayTypes((prev) =>
-      prev.map((d, i) =>
-        i === dayIdx
-          ? {
-              ...d,
-              meals: d.meals.map((m, j) =>
-                j === mealIdx
-                  ? { ...m, items: m.items.filter((_, k) => k !== itemIdx) }
-                  : m,
-              ),
-            }
-          : d,
-      ),
-    );
+    dispatch({ type: 'SET_DAY_TYPES', value: dayTypes.map((d, i) =>
+      i === dayIdx
+        ? { ...d, meals: d.meals.map((m, j) => j === mealIdx ? { ...m, items: m.items.filter((_, k) => k !== itemIdx) } : m) }
+        : d,
+    ) });
   }
 
   // ── Delete confirmation ────────────────────────────────────────────────
@@ -207,13 +218,13 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
     if (pendingDelete.kind === 'day') removeDayType(pendingDelete.dayIdx);
     else if (pendingDelete.kind === 'meal') removeMeal(pendingDelete.dayIdx, pendingDelete.mealIdx);
     else removeItem(pendingDelete.dayIdx, pendingDelete.mealIdx, pendingDelete.itemIdx);
-    setPendingDelete(null);
+    dispatch({ type: 'SET_PENDING_DELETE', value: null });
   }
 
   // ── Final save (called from ScheduleEditor via onSave) ─────────────────
 
   async function handleScheduleSave(schedule: ISchedule): Promise<void> {
-    setSaving(true);
+    dispatch({ type: 'SET_SAVING', value: true });
     try {
       let resolvedTemplateId: string | undefined;
       if (saveAsTemplate) {
@@ -250,9 +261,9 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
       }
 
       toast.success('Plan saved');
-      router.push(`${basePath}/nutrition`);
+      push(`${basePath}/nutrition`);
     } finally {
-      setSaving(false);
+      dispatch({ type: 'SET_SAVING', value: false });
     }
   }
 
@@ -270,7 +281,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
             id="plan-name"
             placeholder="Plan name"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => dispatch({ type: 'SET_NAME', value: e.target.value })}
             className="mt-1.5"
           />
         </div>
@@ -281,13 +292,14 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
             const macros = sumDayMacros(dt);
             const isCollapsed = collapsed[dayIdx] ?? false;
             return (
-              <div key={dayIdx} className="rounded-xl bg-card ring-1 ring-foreground/10">
+              // oxlint-disable-next-line react-doctor/no-array-index-key
+              <div key={dayIdx /* no stable id on day types — index is intentional */} className="rounded-xl bg-card ring-1 ring-foreground/10">
                 {/* Day type header */}
                 <div className="flex items-center gap-2 px-4 py-3">
                   <button
                     type="button"
                     aria-label={isCollapsed ? 'Expand' : 'Collapse'}
-                    onClick={() => setCollapsed((c) => ({ ...c, [dayIdx]: !isCollapsed }))}
+                    onClick={() => dispatch({ type: 'SET_COLLAPSED', value: { ...collapsed, [dayIdx]: !isCollapsed } })}
                     className="text-foreground/40 hover:text-foreground/70"
                   >
                     {isCollapsed ? <ChevronRight className="size-4" /> : <ChevronDown className="size-4" />}
@@ -301,7 +313,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
                   <button
                     type="button"
                     aria-label={`Delete day type ${dt.name}`}
-                    onClick={() => setPendingDelete({ kind: 'day', dayIdx, name: dt.name })}
+                    onClick={() => dispatch({ type: 'SET_PENDING_DELETE', value: { kind: 'day', dayIdx, name: dt.name } })}
                     className="text-foreground/30 hover:text-destructive"
                   >
                     <Trash2 className="size-4" />
@@ -329,7 +341,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
                         { kcal: 0, protein: 0, carbs: 0, fat: 0 },
                       );
                       return (
-                        <div key={mealIdx} className="rounded-lg bg-muted/30 border border-foreground/8 p-3">
+                        <div key={`meal-${dayIdx}-${mealIdx}`} className="rounded-lg bg-muted/30 border border-foreground/8 p-3">
                           <div className="flex items-center gap-2 mb-2">
                             <Input
                               value={meal.name}
@@ -347,7 +359,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
                             <button
                               type="button"
                               aria-label={`Delete meal ${meal.name}`}
-                              onClick={() => setPendingDelete({ kind: 'meal', dayIdx, mealIdx, name: meal.name })}
+                              onClick={() => dispatch({ type: 'SET_PENDING_DELETE', value: { kind: 'meal', dayIdx, mealIdx, name: meal.name } })}
                               className="text-foreground/30 hover:text-destructive"
                             >
                               <Trash2 className="size-3.5" />
@@ -356,13 +368,13 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
 
                           {/* Items */}
                           {meal.items.map((item, itemIdx) => (
-                            <div key={itemIdx} className="flex items-center gap-2 py-1 text-sm">
+                            <div key={`item-${dayIdx}-${mealIdx}-${itemIdx}`} className="flex items-center gap-2 py-1 text-sm">
                               <span className="flex-1 text-foreground/80">{item.foodName}</span>
                               <span className="text-foreground/40 text-xs">{item.quantityG}g</span>
                               <button
                                 type="button"
                                 aria-label={`Remove ${item.foodName}`}
-                                onClick={() => setPendingDelete({ kind: 'item', dayIdx, mealIdx, itemIdx, name: item.foodName })}
+                                onClick={() => dispatch({ type: 'SET_PENDING_DELETE', value: { kind: 'item', dayIdx, mealIdx, itemIdx, name: item.foodName } })}
                                 className="text-foreground/20 hover:text-destructive"
                               >
                                 <X className="size-3.5" />
@@ -375,7 +387,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
                             variant="ghost"
                             size="sm"
                             className="mt-1 h-7 text-xs text-foreground/45 hover:text-foreground/70"
-                            onClick={() => setAddingFor({ dayIdx, mealIdx })}
+                            onClick={() => dispatch({ type: 'SET_ADDING_FOR', value: { dayIdx, mealIdx } })}
                           >
                             + Add Food
                           </Button>
@@ -419,8 +431,8 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
             id="save-as-template"
             checked={saveAsTemplate}
             onChange={(e) => {
-              setSaveAsTemplate(e.target.checked);
-              if (e.target.checked) setTemplateName('');
+              dispatch({ type: 'SET_SAVE_AS_TEMPLATE', value: e.target.checked });
+              if (e.target.checked) dispatch({ type: 'SET_TEMPLATE_NAME', value: '' });
             }}
             aria-label="Save as template"
             className="rounded"
@@ -432,7 +444,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
             <Input
               placeholder="Template name"
               value={templateName}
-              onChange={(e) => setTemplateName(e.target.value)}
+              onChange={(e) => dispatch({ type: 'SET_TEMPLATE_NAME', value: e.target.value })}
               className="h-7 flex-1 text-sm ml-2"
             />
           )}
@@ -442,14 +454,14 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
         <div className="flex items-center justify-end gap-3">
           <button
             type="button"
-            onClick={() => router.push(`${basePath}/nutrition`)}
+            onClick={() => push(`${basePath}/nutrition`)}
             className="text-sm text-foreground/65 hover:text-foreground/80"
           >
             Cancel
           </button>
           <Button
             disabled={!canContinue}
-            onClick={() => setScheduleOpen(true)}
+            onClick={() => dispatch({ type: 'SET_SCHEDULE_OPEN', value: true })}
           >
             Continue → Set Schedule
           </Button>
@@ -457,7 +469,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
       </div>
 
       {/* Schedule sheet */}
-      <Sheet open={scheduleOpen} onOpenChange={(open) => { if (!saving) setScheduleOpen(open); }}>
+      <Sheet open={scheduleOpen} onOpenChange={(open) => { if (!saving) dispatch({ type: 'SET_SCHEDULE_OPEN', value: open }); }}>
         <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader className="mb-6">
             <SheetTitle>Set Schedule</SheetTitle>
@@ -481,14 +493,14 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
       {addingFor && (
         <FoodPickerDialog
           open
-          onOpenChange={(isOpen) => { if (!isOpen) setAddingFor(null); }}
+          onOpenChange={(isOpen) => { if (!isOpen) dispatch({ type: 'SET_ADDING_FOR', value: null }); }}
           memberId={memberId}
           onSelect={(picked) => addItem(addingFor.dayIdx, addingFor.mealIdx, picked)}
         />
       )}
 
       {/* Delete confirmation */}
-      <Dialog open={!!pendingDelete} onOpenChange={(open) => { if (!open) setPendingDelete(null); }}>
+      <Dialog open={!!pendingDelete} onOpenChange={(open) => { if (!open) dispatch({ type: 'SET_PENDING_DELETE', value: null }); }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>
@@ -504,7 +516,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
             &ldquo;{pendingDelete?.name}&rdquo; will be permanently removed.
           </p>
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" size="sm" onClick={() => setPendingDelete(null)}>Cancel</Button>
+            <Button variant="outline" size="sm" onClick={() => dispatch({ type: 'SET_PENDING_DELETE', value: null })}>Cancel</Button>
             <Button variant="destructive" size="sm" onClick={confirmDelete}>Delete</Button>
           </div>
         </DialogContent>

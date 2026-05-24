@@ -1,4 +1,4 @@
-import { buildKpiData } from '@/app/(dashboard)/member/_components/member-kpi-strip';
+import { buildKpiData } from '@/app/(dashboard)/member/_components/member-kpi-strip.utils';
 
 describe('buildKpiData', () => {
   const now = new Date('2026-05-16T12:00:00Z');

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useReducer, useEffect } from 'react';
+import { m } from 'framer-motion';
 import { Clock, DollarSign, Layers, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { variants } from '@/lib/animations/variants';
@@ -17,29 +17,63 @@ interface ServiceType {
   isActive: boolean;
 }
 
-export function ServiceTypeList() {
-  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<ServiceType | undefined>(undefined);
-  const [refreshKey, setRefreshKey] = useState(0);
+interface ServiceTypeListState {
+  serviceTypes: ServiceType[];
+  loading: boolean;
+  dialogOpen: boolean;
+  editing: ServiceType | undefined;
+  refreshKey: number;
+}
 
+type ServiceTypeListAction =
+  | { type: 'LOADED'; serviceTypes: ServiceType[] }
+  | { type: 'LOAD_ERROR' }
+  | { type: 'RELOAD' }
+  | { type: 'OPEN_CREATE' }
+  | { type: 'OPEN_EDIT'; serviceType: ServiceType }
+  | { type: 'CLOSE_DIALOG' };
+
+function serviceTypeListReducer(state: ServiceTypeListState, action: ServiceTypeListAction): ServiceTypeListState {
+  switch (action.type) {
+    case 'LOADED': return { ...state, serviceTypes: action.serviceTypes, loading: false };
+    case 'LOAD_ERROR': return { ...state, loading: false };
+    case 'RELOAD': return { ...state, loading: true, refreshKey: state.refreshKey + 1 };
+    case 'OPEN_CREATE': return { ...state, editing: undefined, dialogOpen: true };
+    case 'OPEN_EDIT': return { ...state, editing: action.serviceType, dialogOpen: true };
+    case 'CLOSE_DIALOG': return { ...state, dialogOpen: false };
+    default: return state;
+  }
+}
+
+export function ServiceTypeList() {
+  const [state, dispatch] = useReducer(serviceTypeListReducer, {
+    serviceTypes: [],
+    loading: true,
+    dialogOpen: false,
+    editing: undefined,
+    refreshKey: 0,
+  });
+  const { serviceTypes, loading, dialogOpen, editing, refreshKey } = state;
+
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
-    let cancelled = false;
-    fetch('/api/service-types')
+    const controller = new AbortController();
+    fetch('/api/service-types', { signal: controller.signal })
       .then((res) => res.json())
       .then((data: { serviceTypes: ServiceType[] }) => {
-        if (!cancelled) setServiceTypes(data.serviceTypes ?? []);
+        dispatch({ type: 'LOADED', serviceTypes: data.serviceTypes ?? [] });
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+      .catch((err: unknown) => {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          dispatch({ type: 'LOAD_ERROR' });
+        }
       });
-    return () => { cancelled = true; };
+    return () => controller.abort();
   }, [refreshKey]);
 
-  function reload() { setLoading(true); setRefreshKey((k) => k + 1); }
-  function openCreate() { setEditing(undefined); setDialogOpen(true); }
-  function openEdit(st: ServiceType) { setEditing(st); setDialogOpen(true); }
+  function reload() { dispatch({ type: 'RELOAD' }); }
+  function openCreate() { dispatch({ type: 'OPEN_CREATE' }); }
+  function openEdit(st: ServiceType) { dispatch({ type: 'OPEN_EDIT', serviceType: st }); }
 
   const active = serviceTypes.filter((st) => st.isActive);
   const inactive = serviceTypes.filter((st) => !st.isActive);
@@ -57,11 +91,11 @@ export function ServiceTypeList() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Services</h1>
+          <h1 className="text-xl font-semibold text-foreground">Services</h1>
           <p className="text-xs text-foreground/65 mt-0.5">Manage session types and pricing for your gym</p>
         </div>
         <Button onClick={openCreate} className="gap-1.5">
-          <Plus className="h-3.5 w-3.5" />
+          <Plus className="size-3.5" />
           Add Service
         </Button>
       </div>
@@ -70,8 +104,8 @@ export function ServiceTypeList() {
       {!loading && serviceTypes.length > 0 && (
         <div className="grid grid-cols-3 gap-3 mb-6">
           <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-3 flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-              <Layers className="h-4 w-4 text-primary-light" />
+            <div className="size-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+              <Layers className="size-4 text-primary-light" />
             </div>
             <div>
               <div className="text-lg font-bold text-foreground leading-none">{active.length}</div>
@@ -79,8 +113,8 @@ export function ServiceTypeList() {
             </div>
           </div>
           <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-3 flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-              <DollarSign className="h-4 w-4 text-primary-light" />
+            <div className="size-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+              <DollarSign className="size-4 text-primary-light" />
             </div>
             <div>
               <div className="text-lg font-bold text-foreground leading-none">
@@ -90,8 +124,8 @@ export function ServiceTypeList() {
             </div>
           </div>
           <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-3 flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-              <Clock className="h-4 w-4 text-primary-light" />
+            <div className="size-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+              <Clock className="size-4 text-primary-light" />
             </div>
             <div>
               <div className="text-lg font-bold text-foreground leading-none">{currency} {avgPrice}</div>
@@ -109,13 +143,13 @@ export function ServiceTypeList() {
         </div>
       ) : serviceTypes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-            <Layers className="h-6 w-6 text-primary-light" />
+          <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+            <Layers className="size-6 text-primary-light" />
           </div>
           <p className="text-sm font-medium text-foreground">No service types yet</p>
           <p className="text-xs text-foreground/65 mt-1 mb-4">Create your first service to start tracking session billing.</p>
           <Button onClick={openCreate} variant="outline" size="sm" className="gap-1.5">
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="size-3.5" />
             Add Service
           </Button>
         </div>
@@ -125,16 +159,16 @@ export function ServiceTypeList() {
           {active.length > 0 && (
             <div>
               <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-2">
-                Active — {active.length}
+                Active ({active.length})
               </div>
-              <motion.div
+              <m.div
                 variants={variants.staggerContainer}
                 initial="hidden"
                 animate="visible"
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
               >
                 {active.map((st) => (
-                  <motion.div
+                  <m.div
                     key={st._id}
                     variants={variants.staggerItem}
                     onClick={() => openEdit(st)}
@@ -160,9 +194,9 @@ export function ServiceTypeList() {
                     <div className="text-[11px] text-foreground/40 group-hover:text-foreground/65 transition-colors line-clamp-2 leading-relaxed">
                       {st.note ?? 'Click to edit'}
                     </div>
-                  </motion.div>
+                  </m.div>
                 ))}
-              </motion.div>
+              </m.div>
             </div>
           )}
 
@@ -170,14 +204,15 @@ export function ServiceTypeList() {
           {inactive.length > 0 && (
             <div>
               <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-2">
-                Inactive — {inactive.length}
+                Inactive ({inactive.length})
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {inactive.map((st) => (
-                  <div
+                  <button
+                    type="button"
                     key={st._id}
                     onClick={() => openEdit(st)}
-                    className="rounded-xl bg-card ring-1 ring-foreground/[.06] opacity-45 hover:opacity-70 transition-opacity cursor-pointer p-4 flex flex-col gap-3"
+                    className="rounded-xl bg-card ring-1 ring-foreground/[.06] opacity-45 hover:opacity-70 transition-opacity cursor-pointer p-4 flex flex-col gap-3 text-left w-full"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="text-sm font-semibold text-foreground/65 leading-snug">{st.name}</span>
@@ -192,7 +227,7 @@ export function ServiceTypeList() {
                       <span className="text-xs text-foreground/40">{st.currency} / session</span>
                     </div>
                     <div className="text-[11px] text-foreground/30">Click to reactivate</div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -205,7 +240,7 @@ export function ServiceTypeList() {
         open={dialogOpen}
         serviceType={editing}
         onSuccess={reload}
-        onClose={() => setDialogOpen(false)}
+        onClose={() => dispatch({ type: 'CLOSE_DIALOG' })}
       />
     </div>
   );

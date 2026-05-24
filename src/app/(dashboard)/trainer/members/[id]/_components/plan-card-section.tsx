@@ -15,8 +15,8 @@ function formatSessionDate(date: Date): string {
 }
 
 export async function PlanCardSection({ memberId }: { memberId: string }) {
-  const session = await auth();
-  await connectDB();
+  const [session] = await Promise.all([auth(), connectDB()]);
+  // oxlint-disable-next-line react-doctor/server-sequential-independent-await
   const [plan, recentSessions] = await Promise.all([
     new MongoMemberPlanRepository().findActive(memberId),
     new MongoWorkoutSessionRepository().findRecentCompletedByMemberIds([memberId], 4),
@@ -82,8 +82,8 @@ export async function PlanCardSection({ memberId }: { memberId: string }) {
             Recent Sessions
           </div>
           <div className="space-y-1.5">
-            {recentSessions.map((s, i) => (
-              <div key={i} className="flex items-center justify-between">
+            {recentSessions.map((s) => (
+              <div key={`${s.memberId}-${s.completedAt.getTime()}`} className="flex items-center justify-between">
                 <span className="text-[13px] text-foreground/80">{s.dayName}</span>
                 <span className="text-[12px] text-foreground/40">{formatSessionDate(s.completedAt)}</span>
               </div>

@@ -10,7 +10,7 @@ describe('ExerciseThumbnail', () => {
     render(<ExerciseThumbnail imageUrl="https://example.com/img.jpg" name="Squat" size={40} />);
     const img = screen.getByRole('img', { name: 'Squat' });
     expect(img).toBeInTheDocument();
-    expect(img).toHaveAttribute('src', 'https://example.com/img.jpg');
+    expect(img.getAttribute('src')).toContain('example.com');
   });
 
   it('renders a placeholder when imageUrl is null', () => {

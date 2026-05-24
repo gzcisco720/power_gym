@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import Image from 'next/image';
 import { toast } from 'sonner';
 import { uploadFile } from '@/lib/storage/upload-file';
 import { getAvatarSignatureAction } from '@/lib/actions/get-avatar-signature';
@@ -17,7 +18,7 @@ export function AvatarUpload({ avatarUrl, initials, onUpload }: Props) {
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     const objectUrl = URL.createObjectURL(file);
@@ -65,18 +66,17 @@ export function AvatarUpload({ avatarUrl, initials, onUpload }: Props) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-foreground/10 overflow-hidden bg-muted hover:opacity-80 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+          className="relative flex size-16 shrink-0 items-center justify-center rounded-full border border-foreground/10 overflow-hidden bg-muted hover:opacity-80 transition-opacity cursor-pointer disabled:cursor-not-allowed"
           aria-label="Change profile photo"
         >
           {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
+            <Image src={avatarUrl} alt="Avatar" fill sizes="96px" className="object-cover" />
           ) : (
             <span className="text-[16px] font-semibold text-foreground/60">{initials}</span>
           )}
           {uploading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-xs text-white">
-              uploading...
+              uploading…
             </div>
           )}
         </button>
@@ -89,8 +89,9 @@ export function AvatarUpload({ avatarUrl, initials, onUpload }: Props) {
           type="file"
           accept="image/jpeg,image/png,image/webp"
           className="hidden"
-          onChange={handleChange}
+          onChange={handleFileSelect}
           aria-hidden="true"
+          tabIndex={-1}
         />
       </div>
     </>

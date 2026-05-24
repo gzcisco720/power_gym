@@ -18,7 +18,7 @@ interface Props {
 }
 
 export function TrainerInviteDialog({ open, onOpenChange }: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const [email, setEmail] = useState('');
   const [saving, setSaving] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
@@ -51,7 +51,7 @@ export function TrainerInviteDialog({ open, onOpenChange }: Props) {
       const data = (await res.json()) as { inviteUrl: string };
       setGeneratedUrl(data.inviteUrl);
       toast.success('Invite link generated');
-      router.refresh();
+      refresh();
     } catch {
       toast.error('Something went wrong');
     } finally {

@@ -38,7 +38,7 @@ function freestyleDayPath(basePath: BasePath): string {
 }
 
 export function NutritionFreestylePathCard(props: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
 
   const todayLog = props.todayLog;
   const isMember = props.basePath === '/member/nutrition';
@@ -54,7 +54,7 @@ export function NutritionFreestylePathCard(props: Props) {
         <Button
           variant="outline"
           type="button"
-          onClick={() => router.push(freestyleDayPath(props.basePath))}
+          onClick={() => push(freestyleDayPath(props.basePath))}
         >
           {todayLog.dayCompleted ? "View Today's Log" : "Continue Today's Log"}
         </Button>
@@ -79,13 +79,13 @@ export function NutritionFreestylePathCard(props: Props) {
               <Button
                 variant="outline"
                 type="button"
-                onClick={() => router.push(`/member/nutrition/day?date=${todayISO()}&mode=plan`)}
+                onClick={() => push(`/member/nutrition/day?date=${todayISO()}&mode=plan`)}
               >
                 View Today&apos;s Log
               </Button>
             </div>
           ) : (
-            <Button variant="outline" type="button" onClick={() => router.push(freestyleDayPath(props.basePath))}>
+            <Button variant="outline" type="button" onClick={() => push(freestyleDayPath(props.basePath))}>
               Log Today
             </Button>
           )
@@ -125,7 +125,7 @@ export function NutritionFreestylePathCard(props: Props) {
             <Button
               variant="outline"
               type="button"
-              onClick={() => router.push(`/member/nutrition/day?date=${todayISO()}&mode=plan`)}
+              onClick={() => push(`/member/nutrition/day?date=${todayISO()}&mode=plan`)}
             >
               View Today&apos;s Log
             </Button>
@@ -135,7 +135,7 @@ export function NutritionFreestylePathCard(props: Props) {
             variant="outline"
             type="button"
             className="mt-auto"
-            onClick={() => router.push(freestyleDayPath(props.basePath))}
+            onClick={() => push(freestyleDayPath(props.basePath))}
           >
             Log Today (Freestyle)
           </Button>

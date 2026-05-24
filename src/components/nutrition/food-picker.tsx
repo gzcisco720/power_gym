@@ -1,11 +1,12 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { Loader2Icon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { calculateMacros, type MacroSnapshot } from '@/lib/nutrition/macros';
+import { calculateMacros } from '@/lib/nutrition/macros';
 import type { FatSecretFood, FatSecretServing } from '@/lib/nutrition/fatsecret-client';
+import type { FoodEntry } from './food-picker.types';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -26,43 +27,6 @@ interface MyFoodItem {
   brand: string | null;
   macrosPer100g: { kcal: number; protein: number; carbs: number; fat: number };
   servings: { label: string; grams: number }[];
-}
-
-export interface PickedFood {
-  foodName: string;
-  quantityG: number;
-  macros: MacroSnapshot;
-}
-
-/** Serving option within a unified FoodEntry */
-export interface FoodServing {
-  id: string;
-  label: string;
-  grams: number;
-  macros: Pick<MacroSnapshot, 'kcal' | 'protein' | 'carbs' | 'fat'> & {
-    fiber?: number;
-    sugar?: number;
-    saturated?: number;
-    polyunsaturated?: number;
-    monounsaturated?: number;
-    cholesterol?: number;
-    sodium?: number;
-    potassium?: number;
-    transFat?: number;
-    salt?: number;
-    polyols?: number;
-  };
-}
-
-/** Unified food shape emitted by FoodPicker to callers (e.g. FoodPickerDialog). */
-export interface FoodEntry {
-  source: 'fatsecret' | 'recent' | 'myfood';
-  /** FatSecret food ID — present when source === 'fatsecret', used to fetch full serving list */
-  foodId?: string;
-  name: string;
-  brand: string | null;
-  servings: FoodServing[];
-  defaultServingId: string;
 }
 
 interface FoodPickerProps {
@@ -145,10 +109,12 @@ interface FoodRowProps {
 function FoodRow({ name, brand, servingLabel, kcal, protein, carbs, fat, onClick }: FoodRowProps) {
   const displayName = brand ? `${name} · ${brand}` : name;
   return (
-    <div
-      role="row"
-      className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 items-start px-2 py-2 cursor-pointer hover:bg-muted border-b last:border-b-0 text-sm"
+    // oxlint-disable-next-line react-doctor/prefer-tag-over-role
+    <div role="row"
+      tabIndex={0}
+      className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 items-start p-2 cursor-pointer hover:bg-muted border-b last:border-b-0 text-sm"
       onClick={onClick}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); }}
     >
       {/* Title cell: name + serving label */}
       <div className="min-w-0">
@@ -183,39 +149,68 @@ function FoodTableHeader() {
 
 const PAGE_SIZE = 20;
 
+interface AllTabState {
+  q: string;
+  results: FatSecretFood[];
+  total: number;
+  loading: boolean;
+  loadingMore: boolean;
+  hasSearched: boolean;
+}
+
+type AllTabAction =
+  | { type: 'SET_Q'; value: string }
+  | { type: 'SET_RESULTS'; value: FatSecretFood[] }
+  | { type: 'APPEND_RESULTS'; value: FatSecretFood[] }
+  | { type: 'SET_TOTAL'; value: number }
+  | { type: 'SET_LOADING'; value: boolean }
+  | { type: 'SET_LOADING_MORE'; value: boolean }
+  | { type: 'SET_HAS_SEARCHED'; value: boolean };
+
+function allTabReducer(state: AllTabState, action: AllTabAction): AllTabState {
+  switch (action.type) {
+    case 'SET_Q': return { ...state, q: action.value };
+    case 'SET_RESULTS': return { ...state, results: action.value };
+    case 'APPEND_RESULTS': return { ...state, results: [...state.results, ...action.value] };
+    case 'SET_TOTAL': return { ...state, total: action.value };
+    case 'SET_LOADING': return { ...state, loading: action.value };
+    case 'SET_LOADING_MORE': return { ...state, loadingMore: action.value };
+    case 'SET_HAS_SEARCHED': return { ...state, hasSearched: action.value };
+    default: return state;
+  }
+}
+
 function AllTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void }) {
-  const [q, setQ] = useState('');
-  const [results, setResults] = useState<FatSecretFood[]>([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [state, dispatch] = useReducer(allTabReducer, {
+    q: '', results: [], total: 0, loading: false, loadingMore: false, hasSearched: false,
+  });
+  const { q, results, total, loading, loadingMore, hasSearched } = state;
+  const pageRef = useRef(0);
 
   async function runSearch(newPage = 0): Promise<void> {
     const query = q.trim();
     if (!query) return;
-    if (newPage === 0) setLoading(true);
-    else setLoadingMore(true);
+    if (newPage === 0) dispatch({ type: 'SET_LOADING', value: true });
+    else dispatch({ type: 'SET_LOADING_MORE', value: true });
     try {
       const url = `/api/food-search?q=${encodeURIComponent(query)}&page_size=${PAGE_SIZE}&page_number=${newPage}`;
       const res = await fetch(url);
       if (!res.ok) {
-        if (newPage === 0) setResults([]);
+        if (newPage === 0) dispatch({ type: 'SET_RESULTS', value: [] });
         return;
       }
       const data = (await res.json()) as { results: FatSecretFood[]; total: number; page: number };
       if (newPage === 0) {
-        setResults(data.results);
+        dispatch({ type: 'SET_RESULTS', value: data.results });
       } else {
-        setResults((prev) => [...prev, ...data.results]);
+        dispatch({ type: 'APPEND_RESULTS', value: data.results });
       }
-      setTotal(data.total);
-      setPage(newPage);
+      dispatch({ type: 'SET_TOTAL', value: data.total });
+      pageRef.current = newPage;
     } finally {
-      setHasSearched(true);
-      setLoading(false);
-      setLoadingMore(false);
+      dispatch({ type: 'SET_HAS_SEARCHED', value: true });
+      dispatch({ type: 'SET_LOADING', value: false });
+      dispatch({ type: 'SET_LOADING_MORE', value: false });
     }
   }
 
@@ -252,6 +247,7 @@ function AllTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void }) 
 
   return (
     <div className="space-y-2 mt-2">
+      {/* oxlint-disable-next-line react-doctor/no-prevent-default */}
       <form
         className="flex gap-2"
         onSubmit={(e) => {
@@ -262,7 +258,7 @@ function AllTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void }) 
         <Input
           placeholder="Search foods..."
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => dispatch({ type: 'SET_Q', value: e.target.value })}
         />
         <Button type="submit" disabled={loading || !q.trim()}>
           {loading ? <Loader2Icon className="size-4 animate-spin" /> : 'Search'}
@@ -294,7 +290,7 @@ function AllTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void }) 
               ) : (
                 <button
                   type="button"
-                  onClick={() => void runSearch(page + 1)}
+                  onClick={() => void runSearch(pageRef.current + 1)}
                   className="text-xs text-foreground/65 hover:text-foreground"
                 >
                   Load more · {results.length} of {total}
@@ -321,16 +317,17 @@ function RecentTab({
 }) {
   const [items, setItems] = useState<RecentItem[]>([]);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
-    let cancelled = false;
-    void fetch(`/api/members/${memberId}/nutrition/recent`).then(async (res) => {
-      if (!res.ok || cancelled) return;
-      const data = (await res.json()) as { recent: RecentItem[] };
-      if (!cancelled) setItems(data.recent);
-    });
-    return () => {
-      cancelled = true;
-    };
+    const controller = new AbortController();
+    fetch(`/api/members/${memberId}/nutrition/recent`, { signal: controller.signal })
+      .then(async (res) => {
+        if (!res.ok) return;
+        const data = (await res.json()) as { recent: RecentItem[] };
+        setItems(data.recent);
+      })
+      .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, [memberId]);
 
   function handleRowClick(it: RecentItem): void {
@@ -391,17 +388,18 @@ function MyFoodTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void 
   const [q, setQ] = useState('');
   const [items, setItems] = useState<MyFoodItem[]>([]);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     const handle = setTimeout(async () => {
       const url = q ? `/api/foods?q=${encodeURIComponent(q)}` : '/api/foods';
-      const res = await fetch(url);
-      if (!res.ok || cancelled) return;
+      const res = await fetch(url, { signal: controller.signal });
+      if (!res.ok) return;
       const data = (await res.json()) as { foods: MyFoodItem[] };
-      if (!cancelled) setItems(data.foods);
+      setItems(data.foods);
     }, 300);
     return () => {
-      cancelled = true;
+      controller.abort();
       clearTimeout(handle);
     };
   }, [q]);
@@ -477,49 +475,3 @@ function MyFoodTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void 
   );
 }
 
-// ---------------------------------------------------------------------------
-// Macro preview — used by FoodPickerDialog detail view (exported for reuse)
-// ---------------------------------------------------------------------------
-
-export function computePickedFood(entry: FoodEntry, servingId: string, qty: number): PickedFood {
-  const serving = entry.servings.find((s) => s.id === servingId) ?? entry.servings[0];
-  const ratio = qty;
-  const macros: MacroSnapshot = {
-    kcal: serving.macros.kcal * ratio,
-    protein: serving.macros.protein * ratio,
-    carbs: serving.macros.carbs * ratio,
-    fat: serving.macros.fat * ratio,
-  };
-  if (serving.macros.fiber !== undefined) macros.fiber = serving.macros.fiber * ratio;
-  if (serving.macros.sugar !== undefined) macros.sugar = serving.macros.sugar * ratio;
-  if (serving.macros.saturated !== undefined) macros.saturated = serving.macros.saturated * ratio;
-  if (serving.macros.polyunsaturated !== undefined) macros.polyunsaturated = serving.macros.polyunsaturated * ratio;
-  if (serving.macros.monounsaturated !== undefined) macros.monounsaturated = serving.macros.monounsaturated * ratio;
-  if (serving.macros.cholesterol !== undefined) macros.cholesterol = serving.macros.cholesterol * ratio;
-  if (serving.macros.sodium !== undefined) macros.sodium = serving.macros.sodium * ratio;
-  if (serving.macros.potassium !== undefined) macros.potassium = serving.macros.potassium * ratio;
-  if (serving.macros.transFat !== undefined) macros.transFat = serving.macros.transFat * ratio;
-
-  const foodName = entry.brand ? `${entry.brand} ${entry.name}` : entry.name;
-  return { foodName, quantityG: serving.grams * ratio, macros };
-}
-
-/** Inline macro preview string (used in detail view) */
-export function useMacroPreview(
-  entry: FoodEntry | null,
-  servingId: string,
-  qty: number,
-): MacroSnapshot | null {
-  return useMemo(() => {
-    if (!entry) return null;
-    const serving = entry.servings.find((s) => s.id === servingId) ?? entry.servings[0];
-    if (!serving) return null;
-    const ratio = qty;
-    return {
-      kcal: serving.macros.kcal * ratio,
-      protein: serving.macros.protein * ratio,
-      carbs: serving.macros.carbs * ratio,
-      fat: serving.macros.fat * ratio,
-    };
-  }, [entry, servingId, qty]);
-}

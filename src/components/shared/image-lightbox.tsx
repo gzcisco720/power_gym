@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Props {
@@ -12,12 +13,12 @@ interface Props {
 
 export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props) {
   const [index, setIndex] = useState(initialIndex);
-  const [prevOpen, setPrevOpen] = useState(open);
+  const prevOpenRef = useRef(open);
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; });
 
-  if (open !== prevOpen) {
-    setPrevOpen(open);
+  if (open !== prevOpenRef.current) {
+    prevOpenRef.current = open;
     if (open) setIndex(initialIndex);
   }
 
@@ -38,52 +39,59 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props
   if (!open || images.length === 0) return null;
 
   return (
-    <div
-      role="dialog"
+    // oxlint-disable-next-line react-doctor/prefer-tag-over-role
+    <div role="dialog"
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
       onClick={onClose}
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
     >
       <button
+        type="button"
         aria-label="Close"
         onClick={onClose}
         className="absolute top-4 right-4 text-white/60 hover:text-white transition-colors"
       >
-        <X className="w-6 h-6" />
+        <X className="size-6" />
       </button>
 
       {images.length > 1 && (
         <>
           <button
+            type="button"
             aria-label="Previous image"
             onClick={(e) => { e.stopPropagation(); prev(); }}
             className="absolute left-4 text-white/60 hover:text-white transition-colors"
           >
-            <ChevronLeft className="w-8 h-8" />
+            <ChevronLeft className="size-8" />
           </button>
           <button
+            type="button"
             aria-label="Next image"
             onClick={(e) => { e.stopPropagation(); next(); }}
             className="absolute right-12 text-white/60 hover:text-white transition-colors"
           >
-            <ChevronRight className="w-8 h-8" />
+            <ChevronRight className="size-8" />
           </button>
         </>
       )}
 
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={images[index]}
         alt={`Image ${index + 1} of ${images.length}`}
+        width={1200}
+        height={900}
         className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
         onClick={(e) => e.stopPropagation()}
       />
 
       {images.length > 1 && (
         <div className="absolute bottom-4 flex gap-1.5">
-          {images.map((_, i) => (
+          {images.map((img, i) => (
             <button
-              key={i}
+              type="button"
+              key={img}
+              aria-label={`View image ${i + 1}`}
               onClick={(e) => { e.stopPropagation(); setIndex(i); }}
               className={`w-1.5 h-1.5 rounded-full transition-colors ${i === index ? 'bg-white' : 'bg-white/30'}`}
             />

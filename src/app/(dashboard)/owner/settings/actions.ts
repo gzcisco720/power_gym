@@ -30,7 +30,7 @@ export async function updateOwnerProfileAction(
   const dateOfBirthRaw = formData.get('dateOfBirth') as string | null;
   const dateOfBirth = dateOfBirthRaw ? new Date(dateOfBirthRaw) : null;
   const certRaw = (formData.get('certifications') as string | null) ?? '';
-  const certifications = certRaw.split(',').map((s) => s.trim()).filter(Boolean);
+  const certifications = certRaw.split(',').flatMap((s) => { const t = s.trim(); return t ? [t] : []; });
 
   if (!firstName || !lastName) return { error: 'First and last name are required' };
   if (mobile) {

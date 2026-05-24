@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { m, useReducedMotion } from 'framer-motion';
 
 interface ProgressBarProps {
   value: number;
@@ -13,15 +13,15 @@ export function ProgressBar({ value, max, label }: ProgressBarProps) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
 
   return (
-    <div
-      role="progressbar"
+    // oxlint-disable-next-line react-doctor/prefer-tag-over-role
+    <div role="progressbar"
       aria-valuenow={value}
       aria-valuemin={0}
       aria-valuemax={max}
       aria-label={label}
       className="h-[3px] w-full overflow-hidden rounded-full bg-white/[.06]"
     >
-      <motion.div
+      <m.div
         className="h-full rounded-full bg-emerald-500"
         initial={{ width: 0 }}
         animate={{ width: `${pct}%` }}

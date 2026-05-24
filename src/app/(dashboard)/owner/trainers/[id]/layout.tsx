@@ -36,7 +36,7 @@ export default async function TrainerHubLayout({ children, params }: TrainerHubL
       <div className="sticky top-0 z-10 border-b border-foreground/[.06] bg-background">
         <div className="flex items-center justify-between px-4 py-4 sm:px-8">
           <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 shadow-[0_0_14px_rgba(99,102,241,0.35)] text-[13px] font-bold text-white">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 shadow-[0_0_14px_rgba(99,102,241,0.35)] text-[13px] font-bold text-white">
               {initials}
             </div>
             <div>

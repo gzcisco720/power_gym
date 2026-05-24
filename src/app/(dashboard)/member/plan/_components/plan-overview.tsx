@@ -56,7 +56,7 @@ export function PlanOverview({
   activePrompt,
 }: Props) {
   const [activeDay, setActiveDay] = useState<number>(plan?.days[0]?.dayNumber ?? 1);
-  const router = useRouter();
+  const { push } = useRouter();
   const [starting, setStarting] = useState(false);
   const [conflict, setConflict] = useState<{
     _id: string;
@@ -81,7 +81,7 @@ export function PlanOverview({
       });
       if (res.ok) {
         const data = (await res.json()) as { _id: string };
-        router.push(`${sessionBasePath}/session/${data._id}`);
+        push(`${sessionBasePath}/session/${data._id}`);
         return;
       }
       if (res.status === 409) {
@@ -174,7 +174,7 @@ export function PlanOverview({
           href={`${sessionBasePath}/calendar`}
           className="flex items-center gap-1.5 text-[11px] text-foreground/65 hover:text-foreground/80 bg-white/[.03] ring-1 ring-foreground/[.08] hover:ring-foreground/[.15] rounded-lg px-3 py-1.5 transition-colors"
         >
-          <CalendarDays className="h-3.5 w-3.5" />
+          <CalendarDays className="size-3.5" />
           <span>Calendar</span>
         </a>
       </div>
@@ -184,6 +184,7 @@ export function PlanOverview({
         <div className="flex min-w-max px-4 sm:px-8">
           {plan.days.map((day) => (
             <button
+              type="button"
               key={day.dayNumber}
               onClick={() => setActiveDay(day.dayNumber)}
               className={cn(
@@ -273,6 +274,7 @@ export function PlanOverview({
       {/* Footer */}
       <div className="sticky bottom-0 z-10 border-t border-foreground/10 backdrop-blur-md bg-background/50 px-4 sm:px-8 py-3">
         <button
+          type="button"
           disabled={starting}
           onClick={() => startSession(activeDay)}
           className="flex w-full items-center justify-center rounded-xl bg-primary text-primary-foreground px-4 py-3 text-[13px] font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

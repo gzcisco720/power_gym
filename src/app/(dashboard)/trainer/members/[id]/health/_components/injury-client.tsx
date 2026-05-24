@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useReducer } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -12,14 +12,15 @@ import {
 } from '@/components/ui/dialog';
 import { SectionHeader } from '@/components/shared/section-header';
 import { Trash2, Check, RotateCcw, Pencil, Loader2 } from 'lucide-react';
-import { InjurySheet, EMPTY_INJURY_FORM, injuryToForm } from './injury-sheet';
-import type { InjuryFormData } from './injury-sheet';
+import { InjurySheet } from './injury-sheet';
+import { EMPTY_INJURY_FORM, injuryToForm } from './injury-sheet.types';
+import type { InjuryFormData } from './injury-sheet.types';
 import type { SerializedInjury } from '../page';
 
 interface Props {
   memberId: string;
   initialInjuries: SerializedInjury[];
-  role: 'owner' | 'trainer' | 'member';
+  userRole: 'owner' | 'trainer' | 'member';
 }
 
 const INJURY_TYPE_LABELS: Record<string, string> = {
@@ -51,21 +52,68 @@ const REHAB_LABELS: Record<string, string> = {
   cleared: 'Cleared',
 };
 
-export function InjuryClient({ memberId, initialInjuries, role }: Props) {
-  const router = useRouter();
-  const [injuries, setInjuries] = useState(initialInjuries);
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [editingInjury, setEditingInjury] = useState<SerializedInjury | null>(null);
-  const [sheetForm, setSheetForm] = useState<InjuryFormData>(EMPTY_INJURY_FORM);
-  const [saving, setSaving] = useState(false);
-  const [changingStatusId, setChangingStatusId] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
-  const [savingNotes, setSavingNotes] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
-  const [memberNoteDraft, setMemberNoteDraft] = useState('');
+interface InjuryClientState {
+  injuries: SerializedInjury[];
+  sheetOpen: boolean;
+  editingInjury: SerializedInjury | null;
+  sheetForm: InjuryFormData;
+  saving: boolean;
+  changingStatusId: string | null;
+  deleting: boolean;
+  savingNotes: boolean;
+  deleteId: string | null;
+  editingNotesId: string | null;
+  memberNoteDraft: string;
+}
 
-  const canEdit = role === 'trainer' || role === 'owner';
+type InjuryClientAction =
+  | { type: 'SET_INJURIES'; value: SerializedInjury[] }
+  | { type: 'SET_SHEET_OPEN'; value: boolean }
+  | { type: 'SET_EDITING_INJURY'; value: SerializedInjury | null }
+  | { type: 'SET_SHEET_FORM'; value: InjuryFormData }
+  | { type: 'SET_SAVING'; value: boolean }
+  | { type: 'SET_CHANGING_STATUS_ID'; value: string | null }
+  | { type: 'SET_DELETING'; value: boolean }
+  | { type: 'SET_SAVING_NOTES'; value: boolean }
+  | { type: 'SET_DELETE_ID'; value: string | null }
+  | { type: 'SET_EDITING_NOTES_ID'; value: string | null }
+  | { type: 'SET_MEMBER_NOTE_DRAFT'; value: string };
+
+function injuryClientReducer(state: InjuryClientState, action: InjuryClientAction): InjuryClientState {
+  switch (action.type) {
+    case 'SET_INJURIES': return { ...state, injuries: action.value };
+    case 'SET_SHEET_OPEN': return { ...state, sheetOpen: action.value };
+    case 'SET_EDITING_INJURY': return { ...state, editingInjury: action.value };
+    case 'SET_SHEET_FORM': return { ...state, sheetForm: action.value };
+    case 'SET_SAVING': return { ...state, saving: action.value };
+    case 'SET_CHANGING_STATUS_ID': return { ...state, changingStatusId: action.value };
+    case 'SET_DELETING': return { ...state, deleting: action.value };
+    case 'SET_SAVING_NOTES': return { ...state, savingNotes: action.value };
+    case 'SET_DELETE_ID': return { ...state, deleteId: action.value };
+    case 'SET_EDITING_NOTES_ID': return { ...state, editingNotesId: action.value };
+    case 'SET_MEMBER_NOTE_DRAFT': return { ...state, memberNoteDraft: action.value };
+    default: return state;
+  }
+}
+
+export function InjuryClient({ memberId, initialInjuries, userRole }: Props) {
+  const { refresh } = useRouter();
+  const [state, dispatch] = useReducer(injuryClientReducer, {
+    injuries: initialInjuries,
+    sheetOpen: false,
+    editingInjury: null,
+    sheetForm: EMPTY_INJURY_FORM,
+    saving: false,
+    changingStatusId: null,
+    deleting: false,
+    savingNotes: false,
+    deleteId: null,
+    editingNotesId: null,
+    memberNoteDraft: '',
+  });
+  const { injuries, sheetOpen, editingInjury, sheetForm, saving, changingStatusId, deleting, savingNotes, deleteId, editingNotesId, memberNoteDraft } = state;
+
+  const canEdit = userRole === 'trainer' || userRole === 'owner';
   const { active, resolved } = useMemo(
     () => ({
       active: injuries.filter((i) => i.status === 'active'),
@@ -75,25 +123,25 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
   );
 
   function openAdd() {
-    setEditingInjury(null);
-    setSheetForm(EMPTY_INJURY_FORM);
-    setSheetOpen(true);
+    dispatch({ type: 'SET_EDITING_INJURY', value: null });
+    dispatch({ type: 'SET_SHEET_FORM', value: EMPTY_INJURY_FORM });
+    dispatch({ type: 'SET_SHEET_OPEN', value: true });
   }
 
   function openEdit(injury: SerializedInjury) {
-    setEditingInjury(injury);
-    setSheetForm(injuryToForm(injury));
-    setSheetOpen(true);
+    dispatch({ type: 'SET_EDITING_INJURY', value: injury });
+    dispatch({ type: 'SET_SHEET_FORM', value: injuryToForm(injury) });
+    dispatch({ type: 'SET_SHEET_OPEN', value: true });
   }
 
   function handleFormChange(field: keyof InjuryFormData, value: string) {
-    setSheetForm((f) => ({ ...f, [field]: value }));
+    dispatch({ type: 'SET_SHEET_FORM', value: { ...sheetForm, [field]: value } });
   }
 
   async function handleSave() {
     const data = sheetForm;
     if (!data.title.trim()) return;
-    setSaving(true);
+    dispatch({ type: 'SET_SAVING', value: true });
     try {
       const payload = {
         title: data.title.trim(),
@@ -118,7 +166,7 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
           return;
         }
         const updated = (await res.json()) as SerializedInjury;
-        setInjuries((prev) => prev.map((i) => (i._id === editingInjury._id ? updated : i)));
+        dispatch({ type: 'SET_INJURIES', value: injuries.map((i) => (i._id === editingInjury._id ? updated : i)) });
         toast.success('Injury updated');
       } else {
         const res = await fetch(`/api/members/${memberId}/injuries`, {
@@ -132,19 +180,19 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
           return;
         }
         const created = (await res.json()) as SerializedInjury;
-        setInjuries((prev) => [created, ...prev]);
+        dispatch({ type: 'SET_INJURIES', value: [created, ...injuries] });
         toast.success('Injury record added');
       }
 
-      setSheetOpen(false);
-      router.refresh();
+      dispatch({ type: 'SET_SHEET_OPEN', value: false });
+      refresh();
     } finally {
-      setSaving(false);
+      dispatch({ type: 'SET_SAVING', value: false });
     }
   }
 
   async function handleStatusChange(id: string, status: 'active' | 'resolved') {
-    setChangingStatusId(id);
+    dispatch({ type: 'SET_CHANGING_STATUS_ID', value: id });
     try {
       const res = await fetch(`/api/members/${memberId}/injuries/${id}`, {
         method: 'PATCH',
@@ -153,31 +201,31 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
       });
       if (!res.ok) { toast.error('Failed to update'); return; }
       const updated = (await res.json()) as SerializedInjury;
-      setInjuries((prev) => prev.map((i) => (i._id === id ? updated : i)));
+      dispatch({ type: 'SET_INJURIES', value: injuries.map((i) => (i._id === id ? updated : i)) });
       toast.success(status === 'resolved' ? 'Marked as resolved' : 'Reactivated');
-      router.refresh();
+      refresh();
     } finally {
-      setChangingStatusId(null);
+      dispatch({ type: 'SET_CHANGING_STATUS_ID', value: null });
     }
   }
 
   async function handleConfirmDelete() {
     if (!deleteId) return;
-    setDeleting(true);
+    dispatch({ type: 'SET_DELETING', value: true });
     try {
       const res = await fetch(`/api/members/${memberId}/injuries/${deleteId}`, { method: 'DELETE' });
       if (!res.ok) { toast.error('Failed to delete'); return; }
-      setInjuries((prev) => prev.filter((i) => i._id !== deleteId));
-      setDeleteId(null);
+      dispatch({ type: 'SET_INJURIES', value: injuries.filter((i) => i._id !== deleteId) });
+      dispatch({ type: 'SET_DELETE_ID', value: null });
       toast.success('Record deleted');
-      router.refresh();
+      refresh();
     } finally {
-      setDeleting(false);
+      dispatch({ type: 'SET_DELETING', value: false });
     }
   }
 
   async function handleSaveMemberNotes(id: string) {
-    setSavingNotes(true);
+    dispatch({ type: 'SET_SAVING_NOTES', value: true });
     try {
       const res = await fetch(`/api/members/${memberId}/injuries/${id}`, {
         method: 'PATCH',
@@ -186,11 +234,11 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
       });
       if (!res.ok) { toast.error('Failed to save'); return; }
       const updated = (await res.json()) as SerializedInjury;
-      setInjuries((prev) => prev.map((i) => (i._id === id ? updated : i)));
-      setEditingNotesId(null);
+      dispatch({ type: 'SET_INJURIES', value: injuries.map((i) => (i._id === id ? updated : i)) });
+      dispatch({ type: 'SET_EDITING_NOTES_ID', value: null });
       toast.success('Notes saved');
     } finally {
-      setSavingNotes(false);
+      dispatch({ type: 'SET_SAVING_NOTES', value: false });
     }
   }
 
@@ -258,7 +306,7 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
               </p>
             )}
 
-            {role !== 'member' && injury.memberNotes && (
+            {userRole !== 'member' && injury.memberNotes && (
               <p className="mt-1 text-xs text-foreground/65">
                 <span className="font-medium text-foreground/80">Member notes: </span>
                 {injury.memberNotes}
@@ -293,7 +341,7 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
                 variant="ghost"
                 size="icon-sm"
                 aria-label="Delete"
-                onClick={() => setDeleteId(injury._id)}
+                onClick={() => dispatch({ type: 'SET_DELETE_ID', value: injury._id })}
                 className="text-foreground/65 hover:text-destructive"
               >
                 <Trash2 className="size-3.5" />
@@ -302,13 +350,13 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
           )}
         </div>
 
-        {role === 'member' && (
+        {userRole === 'member' && (
           <div className="mt-2">
             {isEditingNotes ? (
               <div className="flex gap-2">
                 <Input
                   value={memberNoteDraft}
-                  onChange={(e) => setMemberNoteDraft(e.target.value)}
+                  onChange={(e) => dispatch({ type: 'SET_MEMBER_NOTE_DRAFT', value: e.target.value })}
                   className="text-xs h-7"
                   placeholder="Your notes…"
                 />
@@ -318,12 +366,12 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
                   size="sm"
                   className="text-xs"
                 >
-                  {savingNotes ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
+                  {savingNotes ? <Loader2 className="size-3 animate-spin" /> : 'Save'}
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setEditingNotesId(null)}
+                  onClick={() => dispatch({ type: 'SET_EDITING_NOTES_ID', value: null })}
                   className="text-xs"
                 >
                   Cancel
@@ -333,8 +381,8 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
               <button
                 type="button"
                 onClick={() => {
-                  setEditingNotesId(injury._id);
-                  setMemberNoteDraft(injury.memberNotes ?? '');
+                  dispatch({ type: 'SET_EDITING_NOTES_ID', value: injury._id });
+                  dispatch({ type: 'SET_MEMBER_NOTE_DRAFT', value: injury.memberNotes ?? '' });
                 }}
                 className="inline-flex items-center gap-1 text-xs text-foreground/65 hover:text-foreground transition-colors"
               >
@@ -366,7 +414,7 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
         </div>
 
         {active.length === 0 ? (
-          <div className="mt-3 rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-4">
+          <div className="mt-3 rounded-xl bg-card ring-1 ring-foreground/10 p-4">
             <p className="text-sm text-foreground/65">No active injuries</p>
           </div>
         ) : (
@@ -385,7 +433,7 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
 
       <InjurySheet
         open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        onOpenChange={(v) => dispatch({ type: 'SET_SHEET_OPEN', value: v })}
         editing={editingInjury}
         form={sheetForm}
         onFormChange={handleFormChange}
@@ -393,7 +441,7 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
         saving={saving}
       />
 
-      <Dialog open={deleteId !== null} onOpenChange={(o) => !o && setDeleteId(null)}>
+      <Dialog open={deleteId !== null} onOpenChange={(o) => !o && dispatch({ type: 'SET_DELETE_ID', value: null })}>
         <DialogContent className="sm:max-w-sm">
           <DialogTitle>Delete injury record?</DialogTitle>
           <p className="text-xs text-foreground/65 -mt-1">This cannot be undone.</p>
@@ -401,7 +449,7 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setDeleteId(null)}
+              onClick={() => dispatch({ type: 'SET_DELETE_ID', value: null })}
               className="text-xs"
             >
               Cancel
@@ -413,7 +461,7 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
               disabled={deleting}
               className="text-xs font-semibold"
             >
-              {deleting ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Delete'}
+              {deleting ? <Loader2 className="size-3 animate-spin" /> : 'Delete'}
             </Button>
           </div>
         </DialogContent>

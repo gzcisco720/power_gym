@@ -116,10 +116,8 @@ export default async function MemberHealthPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
+  const [session, { id: memberId }] = await Promise.all([auth(), params]);
   if (!session?.user) return null;
-
-  const { id: memberId } = await params;
 
   await connectDB();
   const [injuries, medications, medicalHistory] = await Promise.all([
@@ -136,7 +134,7 @@ export default async function MemberHealthPage({
 
   return (
     <div className="space-y-10">
-      <InjuryClient memberId={memberId} initialInjuries={plainInjuries} role={role} />
+      <InjuryClient memberId={memberId} initialInjuries={plainInjuries} userRole={role} />
       <MedicationsSection medications={plainMedications} />
       <MedicalHistorySection history={plainHistory} />
     </div>

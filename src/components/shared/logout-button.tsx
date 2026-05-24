@@ -29,7 +29,7 @@ export function LogoutButton() {
         onClick={() => setOpen(true)}
         className="flex w-full items-center gap-3 px-4 py-2.5 text-[13px] text-red-400 hover:bg-[#1e1e1e] transition-colors cursor-pointer"
       >
-        <LogOut className="h-4 w-4 shrink-0" />
+        <LogOut className="size-4 shrink-0" />
         Sign out
       </button>
 
@@ -57,7 +57,7 @@ export function LogoutButton() {
             >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 size-4 animate-spin" />
                   Signing out…
                 </>
               ) : (

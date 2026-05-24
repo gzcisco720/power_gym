@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useReducer } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -33,6 +33,35 @@ interface Props {
   newThisMonth: number;
 }
 
+interface MemberListClientState {
+  reassigning: MemberRow | null;
+  unassigning: MemberRow | null;
+  unassignSaving: boolean;
+  search: string;
+  trainerFilter: string;
+  page: number;
+}
+
+type MemberListClientAction =
+  | { type: 'SET_REASSIGNING'; value: MemberRow | null }
+  | { type: 'SET_UNASSIGNING'; value: MemberRow | null }
+  | { type: 'SET_UNASSIGN_SAVING'; value: boolean }
+  | { type: 'SET_SEARCH'; value: string }
+  | { type: 'SET_TRAINER_FILTER'; value: string }
+  | { type: 'SET_PAGE'; value: number };
+
+function memberListClientReducer(state: MemberListClientState, action: MemberListClientAction): MemberListClientState {
+  switch (action.type) {
+    case 'SET_REASSIGNING': return { ...state, reassigning: action.value };
+    case 'SET_UNASSIGNING': return { ...state, unassigning: action.value };
+    case 'SET_UNASSIGN_SAVING': return { ...state, unassignSaving: action.value };
+    case 'SET_SEARCH': return { ...state, search: action.value };
+    case 'SET_TRAINER_FILTER': return { ...state, trainerFilter: action.value };
+    case 'SET_PAGE': return { ...state, page: action.value };
+    default: return state;
+  }
+}
+
 export function MemberListClient({
   members,
   trainers,
@@ -40,17 +69,15 @@ export function MemberListClient({
   unassignedCount,
   newThisMonth,
 }: Props) {
-  const router = useRouter();
-  const [reassigning, setReassigning] = useState<MemberRow | null>(null);
-  const [unassigning, setUnassigning] = useState<MemberRow | null>(null);
-  const [unassignSaving, setUnassignSaving] = useState(false);
-  const [search, setSearch] = useState('');
-  const [trainerFilter, setTrainerFilter] = useState('all');
-  const [page, setPage] = useState(1);
+  const { refresh } = useRouter();
+  const [state, dispatch] = useReducer(memberListClientReducer, {
+    reassigning: null, unassigning: null, unassignSaving: false, search: '', trainerFilter: 'all', page: 1,
+  });
+  const { reassigning, unassigning, unassignSaving, search, trainerFilter, page } = state;
 
   async function handleUnassign() {
     if (!unassigning) return;
-    setUnassignSaving(true);
+    dispatch({ type: 'SET_UNASSIGN_SAVING', value: true });
     try {
       const res = await fetch(`/api/owner/members/${unassigning._id}/trainer`, {
         method: 'PATCH',
@@ -63,12 +90,12 @@ export function MemberListClient({
         return;
       }
       toast.success(`${unassigning.name} unassigned`);
-      setUnassigning(null);
-      router.refresh();
+      dispatch({ type: 'SET_UNASSIGNING', value: null });
+      refresh();
     } catch {
       toast.error('Something went wrong');
     } finally {
-      setUnassignSaving(false);
+      dispatch({ type: 'SET_UNASSIGN_SAVING', value: false });
     }
   }
 
@@ -91,13 +118,13 @@ export function MemberListClient({
   const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   function handleFilterChange(value: string) {
-    setTrainerFilter(value);
-    setPage(1);
+    dispatch({ type: 'SET_TRAINER_FILTER', value });
+    dispatch({ type: 'SET_PAGE', value: 1 });
   }
 
   function handleSearch(value: string) {
-    setSearch(value);
-    setPage(1);
+    dispatch({ type: 'SET_SEARCH', value });
+    dispatch({ type: 'SET_PAGE', value: 1 });
   }
 
   return (
@@ -117,7 +144,7 @@ export function MemberListClient({
       <div className="flex gap-3 mb-4">
         <div className="relative flex-1">
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-foreground/30"
+            className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-foreground/30"
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
@@ -127,10 +154,13 @@ export function MemberListClient({
             placeholder="Search members..."
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
+            aria-label="Search members"
             className="w-full h-9 rounded-lg bg-white/[.03] ring-1 ring-white/[.08] pl-9 pr-4 text-sm text-foreground placeholder:text-foreground/25 focus:outline-none focus:ring-white/20 transition-all"
           />
           {search && (
             <button
+              type="button"
+              aria-label="Clear search"
               onClick={() => handleSearch('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/30 hover:text-foreground/60 transition-colors"
             >
@@ -172,7 +202,7 @@ export function MemberListClient({
               key={member._id}
               className="flex items-center gap-3 px-4 py-3 bg-white/[.02] ring-1 ring-white/[.06] rounded-xl hover:ring-white/[.12] transition-all"
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary-light">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary-light">
                 {initials(member.name)}
               </div>
               <div className="flex-1 min-w-0">
@@ -190,7 +220,7 @@ export function MemberListClient({
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <Link
-                  href={`/owner/members/${member._id}`}
+                  href={`/trainer/members/${member._id}`}
                   className="inline-flex h-8 items-center rounded-lg bg-primary/15 px-3 text-xs font-semibold text-primary-light hover:bg-primary/25 transition-colors"
                 >
                   View Hub →
@@ -198,7 +228,7 @@ export function MemberListClient({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setReassigning(member)}
+                  onClick={() => dispatch({ type: 'SET_REASSIGNING', value: member })}
                   className="text-primary-light/70 hover:text-primary-light hover:bg-primary/10 text-xs h-7 px-2"
                 >
                   Reassign
@@ -207,7 +237,7 @@ export function MemberListClient({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setUnassigning(member)}
+                    onClick={() => dispatch({ type: 'SET_UNASSIGNING', value: member })}
                     className="text-destructive/60 hover:text-destructive hover:bg-destructive/10 text-xs h-7 px-2"
                   >
                     Unassign
@@ -223,7 +253,8 @@ export function MemberListClient({
       {totalPages > 1 && (
         <div className="mt-4 flex justify-center items-center gap-1.5">
           <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            type="button"
+            onClick={() => dispatch({ type: 'SET_PAGE', value: Math.max(1, page - 1) })}
             disabled={safePage <= 1}
             className="h-8 px-3 rounded-lg text-sm text-foreground/40 bg-white/[.03] ring-1 ring-white/[.07] disabled:opacity-30 hover:ring-white/20 transition-all"
           >
@@ -231,9 +262,10 @@ export function MemberListClient({
           </button>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
             <button
+              type="button"
               key={n}
-              onClick={() => setPage(n)}
-              className={`h-8 w-8 rounded-lg text-sm font-medium transition-all ${
+              onClick={() => dispatch({ type: 'SET_PAGE', value: n })}
+              className={`size-8 rounded-lg text-sm font-medium transition-all ${
                 n === safePage
                   ? 'bg-primary/20 ring-1 ring-primary/40 text-primary-light'
                   : 'text-foreground/40 bg-white/[.03] ring-1 ring-white/[.07] hover:ring-white/20'
@@ -243,7 +275,8 @@ export function MemberListClient({
             </button>
           ))}
           <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            type="button"
+            onClick={() => dispatch({ type: 'SET_PAGE', value: Math.min(totalPages, page + 1) })}
             disabled={safePage >= totalPages}
             className="h-8 px-3 rounded-lg text-sm text-foreground/40 bg-white/[.03] ring-1 ring-white/[.07] disabled:opacity-30 hover:ring-white/20 transition-all"
           >
@@ -258,7 +291,7 @@ export function MemberListClient({
           memberName={reassigning.name}
           currentTrainerId={reassigning.trainerId}
           trainers={trainers}
-          onClose={() => setReassigning(null)}
+          onClose={() => dispatch({ type: 'SET_REASSIGNING', value: null })}
         />
       )}
 
@@ -284,7 +317,7 @@ export function MemberListClient({
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => setUnassigning(null)}
+                onClick={() => dispatch({ type: 'SET_UNASSIGNING', value: null })}
                 disabled={unassignSaving}
                 className="text-foreground/65 hover:text-foreground text-sm"
               >

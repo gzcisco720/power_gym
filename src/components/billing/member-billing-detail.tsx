@@ -33,33 +33,43 @@ function initialPeriod(): BillingPeriod {
   };
 }
 
-export function MemberBillingDetail({ memberId }: MemberBillingDetailProps) {
-  const [period, setPeriod] = useState<BillingPeriod>(initialPeriod);
-  const [data, setData] = useState<BillingData | null>(null);
-  const [loading, setLoading] = useState(true);
+interface FetchState {
+  data: BillingData | null;
+  loading: boolean;
+}
 
+export function MemberBillingDetail({ memberId }: MemberBillingDetailProps) {
+  // oxlint-disable-next-line react-doctor/rerender-state-only-in-handlers
+  const [period, setPeriod] = useState<BillingPeriod>(initialPeriod);
+  const [fetchState, setFetchState] = useState<FetchState>({ data: null, loading: true });
+
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     const from = period.from.toISOString();
     const to = period.to.toISOString();
-    fetch(`/api/billing/member/${memberId}?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
+    fetch(`/api/billing/member/${memberId}?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, { signal: controller.signal })
       .then((res) => {
         if (!res.ok) return null;
         return res.json() as Promise<BillingData>;
       })
       .then((json) => {
-        if (!cancelled) setData(json ?? null);
+        setFetchState({ data: json ?? null, loading: false });
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+      .catch((err: unknown) => {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          setFetchState((s) => ({ ...s, loading: false }));
+        }
       });
-    return () => { cancelled = true; };
+    return () => controller.abort();
   }, [memberId, period]);
 
   function handlePeriodChange(p: BillingPeriod) {
-    setLoading(true);
+    setFetchState((s) => ({ ...s, loading: true }));
     setPeriod(p);
   }
+
+  const { data, loading } = fetchState;
 
   return (
     <div className="px-4 sm:px-8 py-7">

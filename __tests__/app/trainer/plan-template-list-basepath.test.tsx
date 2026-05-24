@@ -2,9 +2,11 @@ import { render, screen } from '@testing-library/react';
 import { PlanTemplateList } from '@/app/(dashboard)/trainer/plans/_components/plan-template-list';
 
 jest.mock('framer-motion', () => ({
-  motion: {
+  m: {
     div: ({ children }: React.HTMLAttributes<HTMLDivElement>) => <div>{children}</div>,
   },
+  LazyMotion: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  domAnimation: {},
   useReducedMotion: () => false,
 }));
 

@@ -39,15 +39,17 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
-  await userRepo.create({
-    firstName,
-    lastName,
-    email,
-    passwordHash,
-    role: validation.invite.role,
-    trainerId: (validation.invite.trainerId ?? validation.invite.invitedBy).toString(),
-  });
-  await inviteRepo.markUsed(token);
+  await Promise.all([
+    userRepo.create({
+      firstName,
+      lastName,
+      email,
+      passwordHash,
+      role: validation.invite.role,
+      trainerId: (validation.invite.trainerId ?? validation.invite.invitedBy).toString(),
+    }),
+    inviteRepo.markUsed(token),
+  ]);
 
   return Response.json({ success: true });
 }

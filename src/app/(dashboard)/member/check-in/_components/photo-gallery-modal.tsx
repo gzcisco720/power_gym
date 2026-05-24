@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { format } from 'date-fns';
 
 interface PhotoEntry {
@@ -52,16 +53,16 @@ function Lightbox({ photos, initialIdx, onClose }: LightboxProps) {
   }, [photos.length, onClose]);
 
   return (
+    // oxlint-disable-next-line react-doctor/prefer-tag-over-role
     <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center gap-3 z-10" role="dialog" aria-modal="true">
       <div className="absolute top-3 left-4 right-4 flex items-center justify-between">
-        <button onClick={onClose} className="text-xs text-foreground/45">← All photos</button>
+        <button type="button" onClick={onClose} className="text-xs text-foreground/45">← All photos</button>
         <span className="text-xs text-foreground/35">{idx + 1} / {photos.length}</span>
-        <button onClick={onClose} aria-label="Close lightbox" className="w-8 h-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 flex items-center justify-center text-foreground/60">✕</button>
+        <button type="button" onClick={onClose} aria-label="Close lightbox" className="size-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 flex items-center justify-center text-foreground/60">✕</button>
       </div>
 
-      <div className="max-h-[60vh] max-w-[300px] rounded-xl overflow-hidden border border-foreground/10 shadow-2xl">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={photo.url} alt="" className="w-full display-block" />
+      <div className="max-h-[60vh] max-w-[300px] rounded-xl overflow-hidden border border-foreground/10 shadow-2xl relative">
+        <Image src={photo.url} alt="" width={300} height={400} className="w-full object-cover" />
       </div>
       <div className="text-center">
         <div className="text-sm font-semibold">{format(new Date(photo.submittedAt), 'd MMMM yyyy')}</div>
@@ -69,6 +70,7 @@ function Lightbox({ photos, initialIdx, onClose }: LightboxProps) {
 
       <div className="flex gap-2">
         <button
+          type="button"
           onClick={() => setIdx(i => Math.max(0, i - 1))}
           disabled={idx === 0}
           className="bg-foreground/[0.08] border border-foreground/[0.12] text-foreground/70 rounded-lg px-5 py-2 text-xs disabled:opacity-30"
@@ -76,6 +78,7 @@ function Lightbox({ photos, initialIdx, onClose }: LightboxProps) {
           ← Prev
         </button>
         <button
+          type="button"
           onClick={() => setIdx(i => Math.min(photos.length - 1, i + 1))}
           disabled={idx === photos.length - 1}
           className="bg-foreground/[0.08] border border-foreground/[0.12] text-foreground/70 rounded-lg px-5 py-2 text-xs disabled:opacity-30"
@@ -101,33 +104,35 @@ export function PhotoGalleryModal({ open, onClose, photos, totalCount }: Props) 
 
   if (!open) return null;
 
-  const sorted = [...photos].sort(
+  const sorted = photos.toSorted(
     (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime(),
   );
   const groups = groupByMonth(sorted);
 
   return (
+    // oxlint-disable-next-line react-doctor/prefer-tag-over-role
     <div className="fixed inset-0 z-50 bg-background flex flex-col" role="dialog" aria-modal="true">
       {/* Top bar */}
       <div className="flex items-center justify-between px-5 h-12 flex-shrink-0 border-b border-foreground/[0.07] bg-foreground/[0.03]">
         <div className="flex items-center gap-3">
-          <button onClick={onClose} className="text-sm text-foreground/50 hover:text-foreground/80 transition-colors">
+          <button type="button" onClick={onClose} className="text-sm text-foreground/50 hover:text-foreground/80 transition-colors">
             ← Dashboard
           </button>
           <span className="text-sm font-semibold">Progress Photos</span>
           <span className="text-xs text-foreground/35">{totalCount} total</span>
         </div>
         <button
+          type="button"
           onClick={onClose}
           aria-label="Close gallery"
-          className="w-8 h-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 text-foreground/60 flex items-center justify-center"
+          className="size-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 text-foreground/60 flex items-center justify-center"
         >
           ✕
         </button>
       </div>
 
       {/* Scrollable grid */}
-      <div className="flex-1 overflow-y-auto px-5 py-5 pb-8 relative">
+      <div className="flex-1 overflow-y-auto p-5 pb-8 relative">
         {groups.map(group => (
           <div key={group.label} className="mb-6">
             <div className="flex items-baseline gap-2 mb-2.5">
@@ -135,16 +140,16 @@ export function PhotoGalleryModal({ open, onClose, photos, totalCount }: Props) 
               <span className="text-xs text-foreground/30">{group.photos.length} photos</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-1">
-              {group.photos.map((photo, i) => {
+              {group.photos.map((photo) => {
                 const globalIdx = sorted.indexOf(photo);
                 return (
                   <button
-                    key={i}
+                    type="button"
+                    key={photo.url}
                     onClick={() => setLightboxIdx(globalIdx >= 0 ? globalIdx : 0)}
                     className="aspect-[3/4] rounded-lg overflow-hidden border-2 border-foreground/[0.06] hover:border-foreground/[0.18] transition-colors relative"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photo.url} alt="" className="w-full h-full object-cover block" />
+                    <Image src={photo.url} alt="" fill sizes="100vw" className="object-cover" />
                     <div className="absolute bottom-0 inset-x-0 py-1 px-1.5 bg-gradient-to-t from-background/75 to-transparent text-[9px] text-foreground/55">
                       {format(new Date(photo.submittedAt), 'd MMM')}
                     </div>

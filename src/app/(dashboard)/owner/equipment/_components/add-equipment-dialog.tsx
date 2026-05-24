@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useReducer, useRef } from 'react';
+import Image from 'next/image';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
 import {
@@ -35,23 +36,59 @@ interface Props {
   onCreated: (item: NewEquipmentItem) => void;
 }
 
+interface AddEquipmentState {
+  name: string;
+  brand: string;
+  quantity: string;
+  status: EquipmentStatus;
+  note: string;
+  images: string[];
+  trackCondition: boolean;
+  uploadingImages: boolean;
+  saving: boolean;
+  suggestions: { id: string; name: string }[];
+}
+
+type AddEquipmentAction =
+  | { type: 'SET_NAME'; value: string }
+  | { type: 'SET_BRAND'; value: string }
+  | { type: 'SET_QUANTITY'; value: string }
+  | { type: 'SET_STATUS'; value: EquipmentStatus }
+  | { type: 'SET_NOTE'; value: string }
+  | { type: 'SET_IMAGES'; value: string[] }
+  | { type: 'SET_TRACK_CONDITION'; value: boolean }
+  | { type: 'SET_UPLOADING_IMAGES'; value: boolean }
+  | { type: 'SET_SAVING'; value: boolean }
+  | { type: 'SET_SUGGESTIONS'; value: { id: string; name: string }[] }
+  | { type: 'RESET' };
+
+function addEquipmentReducer(state: AddEquipmentState, action: AddEquipmentAction): AddEquipmentState {
+  switch (action.type) {
+    case 'SET_NAME': return { ...state, name: action.value };
+    case 'SET_BRAND': return { ...state, brand: action.value };
+    case 'SET_QUANTITY': return { ...state, quantity: action.value };
+    case 'SET_STATUS': return { ...state, status: action.value };
+    case 'SET_NOTE': return { ...state, note: action.value };
+    case 'SET_IMAGES': return { ...state, images: action.value };
+    case 'SET_TRACK_CONDITION': return { ...state, trackCondition: action.value };
+    case 'SET_UPLOADING_IMAGES': return { ...state, uploadingImages: action.value };
+    case 'SET_SAVING': return { ...state, saving: action.value };
+    case 'SET_SUGGESTIONS': return { ...state, suggestions: action.value };
+    case 'RESET': return { name: '', brand: '', quantity: '1', status: 'active', note: '', images: [], trackCondition: false, uploadingImages: false, saving: false, suggestions: [] };
+    default: return state;
+  }
+}
+
 export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
-  const [name, setName] = useState('');
-  const [brand, setBrand] = useState('');
-  const [quantity, setQuantity] = useState('1');
-  const [status, setStatus] = useState<EquipmentStatus>('active');
-  const [note, setNote] = useState('');
-  const [images, setImages] = useState<string[]>([]);
-  const [trackCondition, setTrackCondition] = useState(false);
-  const [uploadingImages, setUploadingImages] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [suggestions, setSuggestions] = useState<{ id: string; name: string }[]>([]);
+  const [state, dispatch] = useReducer(addEquipmentReducer, {
+    name: '', brand: '', quantity: '1', status: 'active', note: '', images: [],
+    trackCondition: false, uploadingImages: false, saving: false, suggestions: [],
+  });
+  const { name, brand, quantity, status, note, images, trackCondition, uploadingImages, saving, suggestions } = state;
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
   function reset() {
-    setName(''); setBrand(''); setQuantity('1');
-    setStatus('active'); setNote(''); setImages([]);
-    setTrackCondition(false); setSuggestions([]);
+    dispatch({ type: 'RESET' });
   }
 
   function handleClose() {
@@ -60,40 +97,36 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
   }
 
   function handleNameChange(value: string) {
-    setName(value);
-    if (value.trim().length < 2) { setSuggestions([]); return; }
+    dispatch({ type: 'SET_NAME', value });
+    if (value.trim().length < 2) { dispatch({ type: 'SET_SUGGESTIONS', value: [] }); return; }
     const lower = value.toLowerCase();
-    setSuggestions(CATALOG.filter((e) => e.name.toLowerCase().includes(lower)).slice(0, 8));
+    dispatch({ type: 'SET_SUGGESTIONS', value: CATALOG.filter((e) => e.name.toLowerCase().includes(lower)).slice(0, 8) });
   }
 
   function selectSuggestion(entry: { id: string; name: string }) {
-    setName(entry.name);
-    setSuggestions([]);
+    dispatch({ type: 'SET_NAME', value: entry.name });
+    dispatch({ type: 'SET_SUGGESTIONS', value: [] });
   }
 
   async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (images.length + files.length > 5) { toast.error('Maximum 5 images'); return; }
-    setUploadingImages(true);
+    dispatch({ type: 'SET_UPLOADING_IMAGES', value: true });
     try {
       const result = await getEquipmentImageSignatureAction();
       if (result.error) { toast.error(result.error); return; }
-      const urls: string[] = [];
-      for (const file of files) {
-        const url = await uploadFile(file, result.config!);
-        urls.push(url);
-      }
-      setImages((prev) => [...prev, ...urls]);
+      const urls = await Promise.all(files.map((file) => uploadFile(file, result.config!)));
+      dispatch({ type: 'SET_IMAGES', value: [...images, ...urls] });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Upload failed');
     } finally {
-      setUploadingImages(false);
+      dispatch({ type: 'SET_UPLOADING_IMAGES', value: false });
     }
   }
 
   async function handleSave() {
     if (!name.trim()) return;
-    setSaving(true);
+    dispatch({ type: 'SET_SAVING', value: true });
     try {
       const res = await fetch('/api/owner/equipment', {
         method: 'POST',
@@ -123,7 +156,7 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
       toast.success('Equipment added');
       handleClose();
     } finally {
-      setSaving(false);
+      dispatch({ type: 'SET_SAVING', value: false });
     }
   }
 
@@ -136,11 +169,12 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
 
         <div className="space-y-4 mt-1">
           <div className="space-y-1.5 relative">
-            <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Name</label>
+            <label htmlFor="add-eq-name" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Name</label>
             <Input
+              id="add-eq-name"
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
-              onBlur={() => setTimeout(() => setSuggestions([]), 150)}
+              onBlur={() => setTimeout(() => dispatch({ type: 'SET_SUGGESTIONS', value: [] }), 150)}
               className="bg-[#0a0a0a] border-[#1e1e1e] text-white"
               placeholder="Search equipment type…"
               autoComplete="off"
@@ -159,13 +193,13 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Brand (optional)</label>
-              <Input value={brand} onChange={(e) => setBrand(e.target.value)}
+              <label htmlFor="add-eq-brand" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Brand (optional)</label>
+              <Input id="add-eq-brand" value={brand} onChange={(e) => dispatch({ type: 'SET_BRAND', value: e.target.value })}
                 className="bg-[#0a0a0a] border-[#1e1e1e] text-white" placeholder="e.g. Life Fitness" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Quantity</label>
-              <Input type="number" min={1} value={quantity} onChange={(e) => setQuantity(e.target.value)}
+              <label htmlFor="add-eq-quantity" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Quantity</label>
+              <Input id="add-eq-quantity" type="number" min={1} value={quantity} onChange={(e) => dispatch({ type: 'SET_QUANTITY', value: e.target.value })}
                 className="bg-[#0a0a0a] border-[#1e1e1e] text-white" />
             </div>
           </div>
@@ -177,17 +211,18 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
             </div>
             <button
               type="button"
-              onClick={() => setTrackCondition((v) => !v)}
+              aria-label="Track condition status"
+              onClick={() => dispatch({ type: 'SET_TRACK_CONDITION', value: !trackCondition })}
               className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${trackCondition ? 'bg-white' : 'bg-[#333]'}`}
             >
-              <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-black shadow transition-transform ${trackCondition ? 'translate-x-4' : 'translate-x-0'}`} />
+              <span className={`pointer-events-none inline-block size-4 transform rounded-full bg-black shadow transition-transform ${trackCondition ? 'translate-x-4' : 'translate-x-0'}`} />
             </button>
           </div>
 
           {trackCondition && (
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Initial Status</label>
-              <select value={status} onChange={(e) => setStatus(e.target.value as EquipmentStatus)}
+              <label htmlFor="add-eq-status" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Initial Status</label>
+              <select id="add-eq-status" value={status} onChange={(e) => dispatch({ type: 'SET_STATUS', value: e.target.value as EquipmentStatus })}
                 className="w-full rounded-md border border-[#1e1e1e] bg-[#0a0a0a] px-3 py-2 text-sm text-white">
                 <option value="active">Active</option>
                 <option value="maintenance">Maintenance</option>
@@ -197,22 +232,21 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
           )}
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Note (optional)</label>
-            <Input value={note} onChange={(e) => setNote(e.target.value)}
+            <label htmlFor="add-eq-note" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Note (optional)</label>
+            <Input id="add-eq-note" value={note} onChange={(e) => dispatch({ type: 'SET_NOTE', value: e.target.value })}
               className="bg-[#0a0a0a] border-[#1e1e1e] text-white" placeholder="Location, condition, etc." />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Images (optional)</label>
+            <p className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Images (optional)</p>
             {images.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
                 {images.map((url) => (
                   <div key={url} className="relative group">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt="equipment" className="w-14 h-14 object-cover rounded-md border border-[#222]" />
-                    <button type="button" onClick={() => setImages((p) => p.filter((u) => u !== url))}
+                    <Image src={url} alt="equipment" width={56} height={56} className="object-cover rounded-md border border-[#222]" />
+                    <button type="button" onClick={() => dispatch({ type: 'SET_IMAGES', value: images.filter((u) => u !== url) })}
                       className="absolute -top-1.5 -right-1.5 bg-[#333] rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <X className="w-3 h-3 text-white" />
+                      <X className="size-3 text-white" />
                     </button>
                   </div>
                 ))}
@@ -220,6 +254,7 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
             )}
             <label className={`flex items-center gap-2 cursor-pointer text-[12px] text-[#555] hover:text-[#888] transition-colors ${uploadingImages ? 'opacity-50 pointer-events-none' : ''}`}>
               <input type="file" accept="image/*" multiple onChange={handleImageChange} className="hidden"
+                aria-label="Upload equipment images"
                 disabled={uploadingImages || images.length >= 5} />
               {uploadingImages ? 'Uploading…' : '+ Add images'}
             </label>

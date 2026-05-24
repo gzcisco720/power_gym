@@ -2,7 +2,9 @@ import { render, screen } from '@testing-library/react';
 
 jest.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  motion: {
+  LazyMotion: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  domAnimation: {},
+  m: {
     div: ({
       children,
       className,

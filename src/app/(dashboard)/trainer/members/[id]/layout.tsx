@@ -65,7 +65,7 @@ export default async function MemberHubLayout({ children, params }: MemberHubLay
         {/* Identity + CTA row */}
         <div className="flex items-center justify-between px-4 py-3 sm:px-8">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-primary/15 ring-4 ring-primary/6 text-[15px] font-bold text-primary-light">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-primary/15 ring-4 ring-primary/6 text-[15px] font-bold text-primary-light">
               {initials}
             </div>
             <div>

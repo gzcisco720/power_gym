@@ -38,6 +38,7 @@ export function CheckInStatsSection({ values, onChange }: Props) {
               value={values[key]}
               onChange={(e) => onChange(key, e.target.value)}
               placeholder="—"
+              aria-label={label}
               className="w-full bg-transparent text-[15px] font-bold text-foreground placeholder:text-foreground/20 outline-none"
             />
             <div className="text-[10px] text-foreground/40 mt-1">{unit}</div>

@@ -1,10 +1,12 @@
 jest.mock('framer-motion', () => ({
-  motion: {
+  m: {
     div: ({ children, className }: React.HTMLAttributes<HTMLDivElement>) => <div className={className}>{children}</div>,
     button: ({ children, className, onClick, 'aria-label': ariaLabel }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
       <button className={className} onClick={onClick} aria-label={ariaLabel}>{children}</button>
     ),
   },
+  LazyMotion: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  domAnimation: {},
   useReducedMotion: () => false,
 }));
 

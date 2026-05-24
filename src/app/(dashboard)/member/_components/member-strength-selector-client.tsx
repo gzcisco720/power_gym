@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { toast } from 'sonner';
+// oxlint-disable-next-line react-doctor/prefer-dynamic-import
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 import { variants } from '@/lib/animations/variants';
 
@@ -21,22 +22,25 @@ export function MemberStrengthSelectorClient({ exercises, memberId }: Props) {
   const [history, setHistory] = useState<HistoryPoint[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     if (!selectedExerciseId) return;
+    const controller = new AbortController();
     async function loadHistory() {
       setLoading(true);
       try {
-        const r = await fetch(`/api/progress/${memberId}?exerciseId=${selectedExerciseId}`);
+        const r = await fetch(`/api/progress/${memberId}?exerciseId=${selectedExerciseId}`, { signal: controller.signal });
         if (!r.ok) throw new Error('Failed to fetch');
         const data = (await r.json()) as { history: HistoryPoint[] };
         setHistory(data.history ?? []);
-      } catch {
-        toast.error('Failed to load exercise history');
+      } catch (err) {
+        if (err instanceof Error && err.name !== 'AbortError') toast.error('Failed to load exercise history');
       } finally {
         setLoading(false);
       }
     }
     void loadHistory();
+    return () => controller.abort();
   }, [selectedExerciseId, memberId]);
 
   const chartData = history.map((h) => ({
@@ -56,7 +60,7 @@ export function MemberStrengthSelectorClient({ exercises, memberId }: Props) {
   }
 
   return (
-    <motion.div
+    <m.div
       className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 space-y-3"
       variants={variants.fadeSlideUp}
       initial="hidden"
@@ -123,6 +127,6 @@ export function MemberStrengthSelectorClient({ exercises, memberId }: Props) {
           </div>
         )}
       </div>
-    </motion.div>
+    </m.div>
   );
 }

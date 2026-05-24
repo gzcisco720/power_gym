@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { format } from 'date-fns';
 import { PhotoGalleryModal } from './photo-gallery-modal';
 
@@ -28,6 +29,7 @@ export function RecentPhotos({ recentPhotos, allPhotos, totalCount }: Props) {
             Recent Photos
           </span>
           <button
+            type="button"
             onClick={() => setGalleryOpen(true)}
             className="text-[11px] text-primary-light"
           >
@@ -35,14 +37,14 @@ export function RecentPhotos({ recentPhotos, allPhotos, totalCount }: Props) {
           </button>
         </div>
         <div className="grid grid-cols-3 gap-[3px] p-[3px]">
-          {recentPhotos.slice(0, 6).map((photo, i) => (
+          {recentPhotos.slice(0, 6).map((photo) => (
             <button
-              key={i}
+              type="button"
+              key={photo.url}
               onClick={() => setGalleryOpen(true)}
               className="aspect-square rounded-[6px] overflow-hidden relative"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={photo.url} alt="" className="w-full h-full object-cover block" />
+              <Image src={photo.url} alt="" fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover" />
               <div className="absolute bottom-0 inset-x-0 py-[3px] bg-gradient-to-t from-background/70 to-transparent text-[8px] text-foreground/55 text-center">
                 {format(new Date(photo.submittedAt), 'd MMM')}
               </div>

@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import type { IDayType } from '@/lib/db/models/nutrition-template.model';
 
 export function OwnerNewNutritionTemplateClient() {
-  const router = useRouter();
+  const { push } = useRouter();
 
   async function handleSubmit(data: { name: string; description: string | null; dayTypes: IDayType[] }) {
     const res = await fetch('/api/nutrition-templates', {
@@ -21,7 +21,7 @@ export function OwnerNewNutritionTemplateClient() {
       return;
     }
     toast.success('Nutrition plan saved');
-    router.push('/owner/nutrition-templates');
+    push('/owner/nutrition-templates');
   }
 
   return (
@@ -30,7 +30,7 @@ export function OwnerNewNutritionTemplateClient() {
       <div className="px-4 sm:px-8 py-7">
         <NutritionTemplateForm
           onSubmit={handleSubmit}
-          onCancel={() => router.push('/owner/nutrition-templates')}
+          onCancel={() => push('/owner/nutrition-templates')}
         />
       </div>
     </div>

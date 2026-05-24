@@ -35,7 +35,7 @@ interface Props {
 }
 
 export function TrainerListClient({ trainers, allTrainers, totalSessionsThisMonth, avgMembersPerTrainer }: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const [removing, setRemoving] = useState<string | null>(null);
   const [removeTarget, setRemoveTarget] = useState<TrainerRow | null>(null);
 
@@ -57,7 +57,7 @@ export function TrainerListClient({ trainers, allTrainers, totalSessionsThisMont
         return;
       }
       toast.success('Trainer removed');
-      router.refresh();
+      refresh();
     } catch {
       toast.error('Something went wrong');
     } finally {
@@ -91,7 +91,7 @@ export function TrainerListClient({ trainers, allTrainers, totalSessionsThisMont
               key={trainer._id}
               className="flex items-center gap-3 px-4 py-3 bg-white/[.02] ring-1 ring-white/[.06] rounded-xl hover:ring-white/[.12] transition-all"
             >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-[11px] font-bold text-primary-foreground shadow-[0_0_12px_rgba(99,102,241,0.3)]">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-[11px] font-bold text-primary-foreground shadow-[0_0_12px_rgba(99,102,241,0.3)]">
                 {initials(trainer.name)}
               </div>
 
@@ -119,12 +119,13 @@ export function TrainerListClient({ trainers, allTrainers, totalSessionsThisMont
                   View Hub →
                 </Link>
                 <button
+                  type="button"
                   disabled={removing === trainer._id}
                   onClick={() => setRemoveTarget(trainer)}
                   className="inline-flex h-8 items-center rounded-lg px-3 text-xs font-medium text-red-400/60 hover:text-red-400 hover:bg-red-400/10 transition-colors disabled:opacity-40"
                 >
                   {removing === trainer._id ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <Loader2 className="size-3 animate-spin" />
                   ) : (
                     'Remove'
                   )}

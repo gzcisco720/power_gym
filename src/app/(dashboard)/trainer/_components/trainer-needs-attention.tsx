@@ -117,9 +117,9 @@ export async function TrainerNeedsAttention() {
         Needs Attention
       </div>
       <div className="space-y-0">
-        {shown.map((alert, i) => (
+        {shown.map((alert) => (
           <div
-            key={i}
+            key={`${alert.memberId}-${alert.severity}`}
             className="flex items-center gap-2 py-2 border-b border-white/[.04] last:border-0"
           >
             <div className="flex-1 min-w-0">

@@ -39,7 +39,7 @@ interface EmptyProps {
 type Props = FullProps | LightProps | EmptyProps;
 
 export function FreestylePathCard(props: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
   const [starting, setStarting] = useState(false);
   const [conflict, setConflict] = useState<{
     _id: string;
@@ -64,7 +64,7 @@ export function FreestylePathCard(props: Props) {
       });
       if (res.ok) {
         const log = (await res.json()) as { _id: string };
-        router.push(`${props.basePath}/session/${log._id}`);
+        push(`${props.basePath}/session/${log._id}`);
         return;
       }
       if (res.status === 409) {
@@ -97,7 +97,7 @@ export function FreestylePathCard(props: Props) {
         <div className="text-[11px] text-foreground/65">
           {props.state === 'empty' ? ' ' : 'No template, no plan'}
         </div>
-        <h2 className="text-xl font-bold leading-tight mt-0.5">Blank session</h2>
+        <h2 className="text-xl font-semibold leading-tight mt-0.5">Blank session</h2>
       </div>
       <div className="text-xs text-foreground/65 mb-3">
         {props.state === 'empty'
@@ -123,8 +123,8 @@ export function FreestylePathCard(props: Props) {
             </span>
           </div>
           <div className="space-y-1.5">
-            {props.lastFreestyle.topSets.map((s, i) => (
-              <div key={i} className="flex items-center justify-between text-[12px] tabular-nums">
+            {props.lastFreestyle.topSets.map((s) => (
+              <div key={s.exerciseName} className="flex items-center justify-between text-[12px] tabular-nums">
                 <span>{s.exerciseName}</span>
                 <span className="text-foreground/65">
                   {s.weight != null && s.reps != null ? `${s.weight} kg × ${s.reps}` : '—'}
@@ -194,7 +194,7 @@ export function FreestylePathCard(props: Props) {
 function Bullet({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2 text-[12px]">
-      <span className="w-1 h-1 rounded-full bg-sky-400/70" />
+      <span className="size-1 rounded-full bg-sky-400/70" />
       <span>{children}</span>
     </div>
   );

@@ -103,6 +103,7 @@ function NumberField({
           type="text"
           inputMode="decimal"
           pattern="[0-9]*\.?[0-9]*"
+          aria-label={label}
           value={value ?? ''}
           onChange={(e) => {
             const v = e.target.value;
@@ -160,7 +161,7 @@ export function ExerciseRow(props: Props) {
               onClick={onMoveUp}
               className="size-7 inline-flex items-center justify-center text-foreground/65 hover:text-foreground rounded-md disabled:opacity-30 disabled:pointer-events-none cursor-pointer disabled:cursor-default"
             >
-              <ChevronUp className="h-4 w-4" />
+              <ChevronUp className="size-4" />
             </button>
             <button
               type="button"
@@ -169,7 +170,7 @@ export function ExerciseRow(props: Props) {
               onClick={onMoveDown}
               className="size-7 inline-flex items-center justify-center text-foreground/65 hover:text-foreground rounded-md disabled:opacity-30 disabled:pointer-events-none cursor-pointer disabled:cursor-default"
             >
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="size-4" />
             </button>
             <button
               type="button"
@@ -177,7 +178,7 @@ export function ExerciseRow(props: Props) {
               onClick={onDelete}
               className="size-7 inline-flex items-center justify-center text-foreground/65 hover:text-destructive rounded-md cursor-pointer"
             >
-              <X className="h-4 w-4" />
+              <X className="size-4" />
             </button>
           </div>
 
@@ -236,7 +237,7 @@ export function ExerciseRow(props: Props) {
     if (readOnly) {
       const doneSets = loggingSets.filter((s) => s.completedAt !== null);
       return (
-        <div className="px-3 py-3" data-testid="exercise-row">
+        <div className="p-3" data-testid="exercise-row">
           <div className="flex items-center gap-2.5 mb-2.5">
             <ExerciseBadge label={label} />
             <ExerciseThumbnail imageUrl={row.imageUrl} name={row.exerciseName} size={36} />
@@ -265,7 +266,7 @@ export function ExerciseRow(props: Props) {
                   {s.actualReps !== null ? `${s.actualReps} reps` : '–'}
                 </span>
                 <span
-                  className="h-7 w-7 shrink-0 inline-flex items-center justify-center rounded-md bg-foreground/10 text-foreground text-[10px]"
+                  className="size-7 shrink-0 inline-flex items-center justify-center rounded-md bg-foreground/10 text-foreground text-[10px]"
                   aria-label={`Set ${s.setNumber} completed`}
                 >
                   ✓
@@ -281,7 +282,7 @@ export function ExerciseRow(props: Props) {
     const showHint = !isBw && !hasUserInput && !!lastWeightHint;
 
     return (
-      <div className="px-3 py-3" data-testid="exercise-row">
+      <div className="p-3" data-testid="exercise-row">
         <div className="flex items-center gap-2.5 mb-2">
           <ExerciseBadge label={label} />
           <ExerciseThumbnail imageUrl={row.imageUrl} name={row.exerciseName} size={36} />
@@ -381,10 +382,10 @@ export function ExerciseRow(props: Props) {
                 <button
                   type="button"
                   onClick={() => onDeleteSet(s.globalIndex)}
-                  className="h-7 w-7 shrink-0 inline-flex items-center justify-center rounded-md ring-1 ring-foreground/25 text-foreground/65 hover:text-destructive hover:ring-destructive/50 cursor-pointer"
+                  className="size-7 shrink-0 inline-flex items-center justify-center rounded-md ring-1 ring-foreground/25 text-foreground/65 hover:text-destructive hover:ring-destructive/50 cursor-pointer"
                   aria-label={`Delete set ${s.setNumber}`}
                 >
-                  <X className="h-3 w-3" />
+                  <X className="size-3" />
                 </button>
               </div>
             );
@@ -397,7 +398,7 @@ export function ExerciseRow(props: Props) {
           disabled={isAddingSet}
           className="mt-2 text-xs text-foreground/65 hover:text-foreground transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isAddingSet ? <Loader2 className="h-3 w-3 animate-spin inline" /> : '+ Add Set'}
+          {isAddingSet ? <Loader2 className="size-3 animate-spin inline" /> : '+ Add Set'}
         </button>
       </div>
     );

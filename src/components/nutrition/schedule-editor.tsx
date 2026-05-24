@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useReducer, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -20,44 +20,75 @@ interface Props {
   mode?: 'edit' | 'create';
 }
 
+interface ScheduleEditorState {
+  weekly: Record<DayOfWeek, string>;
+  iterate: boolean;
+  overrides: ICalendarOverride[];
+  newDate: string;
+  newDayType: string;
+  saving: boolean;
+}
+
+type ScheduleEditorAction =
+  | { type: 'SET_WEEKLY'; value: Record<DayOfWeek, string> }
+  | { type: 'SET_ITERATE'; value: boolean }
+  | { type: 'SET_OVERRIDES'; value: ICalendarOverride[] }
+  | { type: 'SET_NEW_DATE'; value: string }
+  | { type: 'SET_NEW_DAY_TYPE'; value: string }
+  | { type: 'SET_SAVING'; value: boolean };
+
+function scheduleEditorReducer(state: ScheduleEditorState, action: ScheduleEditorAction): ScheduleEditorState {
+  switch (action.type) {
+    case 'SET_WEEKLY': return { ...state, weekly: action.value };
+    case 'SET_ITERATE': return { ...state, iterate: action.value };
+    case 'SET_OVERRIDES': return { ...state, overrides: action.value };
+    case 'SET_NEW_DATE': return { ...state, newDate: action.value };
+    case 'SET_NEW_DAY_TYPE': return { ...state, newDayType: action.value };
+    case 'SET_SAVING': return { ...state, saving: action.value };
+    default: return state;
+  }
+}
+
 export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule, onSave, mode = 'edit' }: Props) {
-  const [weekly, setWeekly] = useState<Record<DayOfWeek, string>>(() => {
+  const [state, dispatch] = useReducer(scheduleEditorReducer, undefined, () => {
+    const patternMap = new Map(initialSchedule.weeklyPattern.map((w) => [w.dayOfWeek, w.dayTypeName]));
     const map = {} as Record<DayOfWeek, string>;
     for (const d of DAY_VALUES) {
-      map[d] = initialSchedule.weeklyPattern.find((w) => w.dayOfWeek === d)?.dayTypeName ?? NONE;
+      map[d] = patternMap.get(d) ?? NONE;
     }
-    return map;
+    return {
+      weekly: map,
+      iterate: initialSchedule.iterate,
+      overrides: initialSchedule.calendarOverrides,
+      newDate: '',
+      newDayType: dayTypeNames[0] ?? '',
+      saving: false,
+    };
   });
-  const [iterate, setIterate] = useState(initialSchedule.iterate);
-  const [overrides, setOverrides] = useState<ICalendarOverride[]>(initialSchedule.calendarOverrides);
-  const [newDate, setNewDate] = useState('');
-  const [newDayType, setNewDayType] = useState(dayTypeNames[0] ?? '');
-  const [saving, setSaving] = useState(false);
+  const { weekly, iterate, overrides, newDate, newDayType, saving } = state;
 
-  const [minDate] = useState(() => {
+  const minDate = useMemo(() => {
     const d = new Date();
     d.setDate(d.getDate() + 1);
     return d.toISOString().split('T')[0];
-  });
+  }, []);
 
   function addOverride(): void {
     if (!newDate || !newDayType) return;
     if (newDate < minDate) return; // reject today and past dates
-    setOverrides((list) =>
-      [...list, { date: newDate, dayTypeName: newDayType }].sort((a, b) => a.date.localeCompare(b.date)),
-    );
-    setNewDate('');
+    dispatch({ type: 'SET_OVERRIDES', value: [...overrides, { date: newDate, dayTypeName: newDayType }].sort((a, b) => a.date.localeCompare(b.date)) });
+    dispatch({ type: 'SET_NEW_DATE', value: '' });
   }
 
   function removeOverride(date: string): void {
-    setOverrides((list) => list.filter((o) => o.date !== date));
+    dispatch({ type: 'SET_OVERRIDES', value: overrides.filter((o) => o.date !== date) });
   }
 
   async function save(): Promise<void> {
-    setSaving(true);
-    const weeklyPattern: IWeeklyPatternEntry[] = DAY_VALUES
-      .filter((d) => weekly[d] !== NONE)
-      .map((d) => ({ dayOfWeek: d, dayTypeName: weekly[d] }));
+    dispatch({ type: 'SET_SAVING', value: true });
+    const weeklyPattern: IWeeklyPatternEntry[] = DAY_VALUES.flatMap((d) =>
+      weekly[d] !== NONE ? [{ dayOfWeek: d, dayTypeName: weekly[d] }] : [],
+    );
     const builtSchedule: ISchedule = { weeklyPattern, calendarOverrides: overrides, iterate };
 
     if (mode === 'edit') {
@@ -68,7 +99,7 @@ export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule, onSave
       });
     }
 
-    setSaving(false);
+    dispatch({ type: 'SET_SAVING', value: false });
     onSave?.(builtSchedule);
   }
 
@@ -83,13 +114,13 @@ export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule, onSave
             </span>
             <Select
               value={weekly[d]}
-              onValueChange={(v) => setWeekly((w) => ({ ...w, [d]: v ?? NONE }))}
+              onValueChange={(v) => dispatch({ type: 'SET_WEEKLY', value: { ...weekly, [d]: v ?? NONE } })}
             >
               <SelectTrigger className="h-9 flex-1 text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={NONE}>— Not set —</SelectItem>
+                <SelectItem value={NONE}>Not set</SelectItem>
                 {dayTypeNames.map((n) => (
                   <SelectItem key={n} value={n}>{n}</SelectItem>
                 ))}
@@ -103,7 +134,7 @@ export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule, onSave
         <input
           type="checkbox"
           checked={iterate}
-          onChange={(e) => setIterate(e.target.checked)}
+          onChange={(e) => dispatch({ type: 'SET_ITERATE', value: e.target.checked })}
           aria-label="Iterate weekly"
           className="rounded"
         />
@@ -145,10 +176,10 @@ export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule, onSave
             type="date"
             value={newDate}
             min={minDate}
-            onChange={(e) => setNewDate(e.target.value)}
+            onChange={(e) => dispatch({ type: 'SET_NEW_DATE', value: e.target.value })}
             className="flex-1 h-9 text-sm"
           />
-          <Select value={newDayType} onValueChange={(v) => setNewDayType(v ?? '')}>
+          <Select value={newDayType} onValueChange={(v) => dispatch({ type: 'SET_NEW_DAY_TYPE', value: v ?? '' })}>
             <SelectTrigger className="flex-1 h-9 text-sm">
               <SelectValue />
             </SelectTrigger>

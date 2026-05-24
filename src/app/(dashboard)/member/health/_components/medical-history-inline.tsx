@@ -108,7 +108,7 @@ export function MedicalHistoryInline({ memberId, initialHistory, onUpdated }: Me
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chronicConditions: form.chronicConditions
-            ? form.chronicConditions.split(',').map((s) => s.trim()).filter(Boolean)
+            ? form.chronicConditions.split(',').flatMap((s) => { const t = s.trim(); return t ? [t] : []; })
             : [],
           surgeries: form.surgeries.trim() || null,
           allergies: form.allergies.trim() || null,
@@ -134,7 +134,7 @@ export function MedicalHistoryInline({ memberId, initialHistory, onUpdated }: Me
   }
 
   return (
-    <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-4">
+    <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4">
       <div className="flex items-center justify-between mb-4">
         <p className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold">
           Medical History
@@ -225,7 +225,7 @@ export function MedicalHistoryInline({ memberId, initialHistory, onUpdated }: Me
             />
           </FieldRow>
           <FieldRow label="Pregnancy Status">
-            <Select value={form.pregnancyStatus} onValueChange={(v) => set('pregnancyStatus', v)}>
+            <Select value={form.pregnancyStatus} onValueChange={(v) => set('pregnancyStatus', v ?? '')}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select status… (optional)" />
               </SelectTrigger>
@@ -255,7 +255,7 @@ export function MedicalHistoryInline({ memberId, initialHistory, onUpdated }: Me
               onClick={handleSave}
               className="font-semibold"
             >
-              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Save'}
+              {saving ? <Loader2 className="size-3.5 animate-spin" /> : 'Save'}
             </Button>
           </div>
         </div>

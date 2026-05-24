@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, Settings } from 'lucide-react';
@@ -109,7 +110,7 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
 };
 
 interface SidebarContentProps {
-  role: UserRole;
+  userRole: UserRole;
   userName: string;
   userInitials: string;
   userEmail: string;
@@ -118,10 +119,10 @@ interface SidebarContentProps {
   logoutSlot?: React.ReactNode;
 }
 
-function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, gymBranding, logoutSlot }: SidebarContentProps) {
+function SidebarContent({ userRole, userName, userInitials, userEmail, avatarUrl, gymBranding, logoutSlot }: SidebarContentProps) {
   const pathname = usePathname();
   const [pendingHref, setPendingHref] = useState<string | null>(null);
-  const groups = NAV[role] ?? [];
+  const groups = NAV[userRole] ?? [];
 
   const handleNavClick = useCallback((href: string) => {
     setPendingHref(href);
@@ -144,14 +145,15 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, gy
       <div className="border-b border-foreground/[.06] px-5 pb-6 pt-6">
         <div className="flex items-center gap-3">
           {gymBranding?.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={gymBranding.logoUrl}
               alt="Gym logo"
-              className="h-12 w-12 shrink-0 rounded-full object-cover border border-foreground/10"
+              width={48}
+              height={48}
+              className="shrink-0 rounded-full object-cover border border-foreground/10"
             />
           ) : (
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-[17px] font-bold text-white">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-[17px] font-bold text-white">
               {(gymBranding?.name ?? 'P').trim().charAt(0).toUpperCase()}
             </div>
           )}
@@ -160,7 +162,7 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, gy
               {gymBranding?.name ?? 'POWER GYM'}
             </div>
             <div className="text-[9px] uppercase tracking-[1px] text-foreground/40">
-              {role} portal
+              {userRole} portal
             </div>
           </div>
         </div>
@@ -191,27 +193,28 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, gy
         ))}
       </nav>
 
-      <div className="border-t border-foreground/[.06] px-3 py-3">
+      <div className="border-t border-foreground/[.06] p-3">
         <Popover>
           <PopoverTrigger
-            className="flex w-full items-center gap-3 rounded-md px-2 py-2 cursor-pointer hover:bg-white/[.04] transition-colors"
+            className="flex w-full items-center gap-3 rounded-md p-2 cursor-pointer hover:bg-white/[.04] transition-colors"
             aria-label="User menu"
           >
             {avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={avatarUrl}
                 alt={userName}
-                className="h-8 w-8 shrink-0 rounded-full object-cover border border-[#222]"
+                width={32}
+                height={32}
+                className="shrink-0 rounded-full object-cover border border-[#222]"
               />
             ) : (
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#222] bg-[#1a1a1a] text-[11px] font-semibold text-[#666]">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[#222] bg-[#1a1a1a] text-[11px] font-semibold text-[#666]">
                 {userInitials}
               </div>
             )}
             <div className="min-w-0 flex-1 text-left">
               <div className="text-[12px] font-medium text-[#888] truncate">{userName}</div>
-              <div className="text-[10px] capitalize text-[#555]">{role}</div>
+              <div className="text-[10px] capitalize text-[#555]">{userRole}</div>
             </div>
           </PopoverTrigger>
           <PopoverPortal>
@@ -220,14 +223,15 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, gy
               {/* User info header */}
               <div className="flex items-center gap-3 px-4 py-3 border-b border-[#222]">
                 {avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={avatarUrl}
                     alt={userName}
-                    className="h-9 w-9 shrink-0 rounded-full object-cover border border-[#333]"
+                    width={36}
+                    height={36}
+                    className="shrink-0 rounded-full object-cover border border-[#333]"
                   />
                 ) : (
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#333] bg-[#2a2a2a] text-[12px] font-semibold text-[#777]">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[#333] bg-[#2a2a2a] text-[12px] font-semibold text-[#777]">
                     {userInitials}
                   </div>
                 )}
@@ -239,10 +243,10 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, gy
               {/* Menu items */}
               <div className="py-1">
                 <a
-                  href={`/${role}/settings`}
+                  href={`/${userRole}/settings`}
                   className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-[#ccc] hover:bg-[#1e1e1e] hover:text-white transition-colors cursor-pointer"
                 >
-                  <Settings className="h-4 w-4 shrink-0 text-[#666]" />
+                  <Settings className="size-4 shrink-0 text-[#666]" />
                   Profile &amp; Settings
                 </a>
                 <div className="my-1 border-t border-[#222]" />
@@ -258,7 +262,7 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, gy
 }
 
 interface AppShellProps {
-  role: UserRole;
+  userRole: UserRole;
   userName: string;
   userEmail?: string;
   avatarUrl?: string | null;
@@ -267,7 +271,7 @@ interface AppShellProps {
   logoutSlot?: React.ReactNode;
 }
 
-export function AppShell({ role, userName, userEmail = '', avatarUrl = null, gymBranding, children, logoutSlot }: AppShellProps) {
+export function AppShell({ userRole, userName, userEmail = '', avatarUrl = null, gymBranding, children, logoutSlot }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const userInitials = initials(userName);
   const gymDisplayName = gymBranding?.name ?? 'POWER GYM';
@@ -275,7 +279,7 @@ export function AppShell({ role, userName, userEmail = '', avatarUrl = null, gym
   return (
     <div className="flex h-screen bg-[#030303]">
       <aside className="hidden w-[220px] shrink-0 flex-col border-r border-foreground/[.06] bg-[#0a0a0a] lg:flex">
-        <SidebarContent role={role} userName={userName} userInitials={userInitials} userEmail={userEmail} avatarUrl={avatarUrl} gymBranding={gymBranding} logoutSlot={logoutSlot} />
+        <SidebarContent userRole={userRole} userName={userName} userInitials={userInitials} userEmail={userEmail} avatarUrl={avatarUrl} gymBranding={gymBranding} logoutSlot={logoutSlot} />
       </aside>
 
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
@@ -284,18 +288,19 @@ export function AppShell({ role, userName, userEmail = '', avatarUrl = null, gym
           className="w-[220px] border-r border-foreground/[.06] bg-[#0a0a0a] p-0"
         >
           <SheetTitle className="sr-only">Navigation</SheetTitle>
-          <SidebarContent role={role} userName={userName} userInitials={userInitials} userEmail={userEmail} avatarUrl={avatarUrl} gymBranding={gymBranding} logoutSlot={logoutSlot} />
+          <SidebarContent userRole={userRole} userName={userName} userInitials={userInitials} userEmail={userEmail} avatarUrl={avatarUrl} gymBranding={gymBranding} logoutSlot={logoutSlot} />
         </SheetContent>
       </Sheet>
 
       <div className="flex flex-1 flex-col overflow-hidden">
         <div className="flex items-center gap-3 border-b border-foreground/[.04] px-4 py-3 lg:hidden">
           <button
+            type="button"
             onClick={() => setDrawerOpen(true)}
             className="cursor-pointer text-[#888] hover:text-[#aaa] transition-colors"
             aria-label="Open navigation"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="size-5" />
           </button>
           <span className="text-[11px] font-bold tracking-[3px] text-white">{gymDisplayName}</span>
         </div>

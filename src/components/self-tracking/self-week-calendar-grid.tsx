@@ -79,7 +79,7 @@ export function SelfWeekCalendarGrid({ logs, weekStart, onEventClick }: Props) {
           const isToday = date.getTime() === today.getTime();
           return (
             <div
-              key={i}
+              key={date.toISOString()}
               className={cn(
                 'flex-1 text-center py-2',
                 isToday ? 'text-foreground font-semibold' : 'text-foreground/65',
@@ -116,8 +116,8 @@ export function SelfWeekCalendarGrid({ logs, weekStart, onEventClick }: Props) {
         </div>
 
         {/* Day columns */}
-        {weekDates.map((_, colIdx) => (
-          <div key={colIdx} className="flex-1 border-l border-foreground/5 relative">
+        {weekDates.map((date) => (
+          <div key={date.toISOString()} className="flex-1 border-l border-foreground/5 relative">
             {/* Hour lines */}
             {Array.from({ length: hourCount * 2 }, (_, i) => (
               <div
@@ -131,12 +131,13 @@ export function SelfWeekCalendarGrid({ logs, weekStart, onEventClick }: Props) {
             ))}
 
             {/* Events */}
-            {(logsByDay.get(colIdx) ?? []).map((log) => {
+            {(logsByDay.get(dayIndex(date)) ?? []).map((log) => {
               const top = topPx(new Date(log.startedAt));
               const height = heightPx(log.startedAt, log.completedAt);
               const isActive = log.completedAt === null;
               return (
                 <button
+                  type="button"
                   key={log._id}
                   onClick={() => onEventClick(log._id)}
                   style={{ top, height, minHeight: SLOT_HEIGHT }}

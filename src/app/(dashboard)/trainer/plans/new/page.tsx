@@ -12,8 +12,10 @@ export default async function NewPlanPage({
   const session = await auth();
   if (!session?.user) return null;
   await connectDB();
-  const exercises = await new MongoExerciseRepository().findAll({ creatorId: session.user.id });
-  const { preset } = await searchParams;
+  const [exercises, { preset }] = await Promise.all([
+    new MongoExerciseRepository().findAll({ creatorId: session.user.id }),
+    searchParams,
+  ]);
   const presetPlan = preset ? getPresetPlan(preset) : null;
   return (
     <NewPlanClient

@@ -15,12 +15,12 @@ interface Props {
 }
 
 export function MemberNutritionDayClient({ memberId, initialDate, mode, forceDayType, planDayTypes }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
   const onPlanDateChange = useCallback(
     (d: string) => {
-      router.push(`/member/nutrition/day?date=${d}&mode=plan`, { scroll: false });
+      push(`/member/nutrition/day?date=${d}&mode=plan`, { scroll: false });
     },
-    [router],
+    [push],
   );
 
   if (mode === 'free') {

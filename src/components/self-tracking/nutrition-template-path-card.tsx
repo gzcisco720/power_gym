@@ -30,7 +30,7 @@ function todayISO(): string {
 }
 
 export function NutritionTemplatePathCard({ templates, basePath }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
   const [expandedId, setExpandedId] = useState<string | null>(
     templates.length === 1 ? templates[0]._id : null,
   );
@@ -48,7 +48,7 @@ export function NutritionTemplatePathCard({ templates, basePath }: Props) {
         </div>
         <Button
           variant="outline"
-          onClick={() => router.push(basePath.replace('/my-nutrition', '/nutrition/new'))}
+          onClick={() => push(basePath.replace('/my-nutrition', '/nutrition/new'))}
         >
           + Create Template
         </Button>
@@ -103,7 +103,7 @@ export function NutritionTemplatePathCard({ templates, basePath }: Props) {
                         variant="ghost"
                         type="button"
                         onClick={() =>
-                          router.push(
+                          push(
                             `${basePath}/day?date=${todayISO()}&templateId=${tpl._id}&dayTypeName=${encodeURIComponent(dt.name)}`,
                           )
                         }

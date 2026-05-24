@@ -5,7 +5,7 @@ function triggerSearch(query: string): void {
   fireEvent.click(screen.getByRole('button', { name: /^search$/i }));
 }
 import { FoodPickerDialog } from '@/components/nutrition/food-picker-dialog';
-import type { PickedFood } from '@/components/nutrition/food-picker';
+import type { PickedFood } from '@/components/nutrition/food-picker.types';
 
 // ---------------------------------------------------------------------------
 // Helpers

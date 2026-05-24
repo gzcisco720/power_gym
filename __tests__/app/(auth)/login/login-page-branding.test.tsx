@@ -29,6 +29,8 @@ describe('LoginPage branding', () => {
   it('renders login logo img when loginLogoUrl is set', async () => {
     const Page = await LoginPage({ searchParams: Promise.resolve({}) });
     render(Page);
-    expect(screen.getByAltText('Iron Club')).toHaveAttribute('src', 'https://cdn.example.com/login-logo.png');
+    const img = screen.getByAltText('Iron Club');
+    expect(img).toBeInTheDocument();
+    expect(img.getAttribute('src')).toContain('cdn.example.com');
   });
 });

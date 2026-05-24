@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useReducer } from 'react';
 import { useMemberHub } from '../../_components/member-hub-provider';
 import { useRouter } from 'next/navigation';
 import { Settings2, Check, ChevronsUpDown } from 'lucide-react';
@@ -71,26 +71,55 @@ function computeDayMacros(dayType: IDayType) {
   };
 }
 
-export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, dayTypeTargets }: Props) {
-  const [active, setActive] = useState<IMemberNutritionPlan | null>(null);
-  const [history, setHistory] = useState<IMemberNutritionPlan[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [logVisible, setLogVisible] = useState(10);
-  const [scheduleOpen, setScheduleOpen] = useState(false);
-  const [scheduleRefresh, setScheduleRefresh] = useState(0);
+interface TrainerMemberNutritionClientState {
+  active: IMemberNutritionPlan | null;
+  history: IMemberNutritionPlan[];
+  loading: boolean;
+  logVisible: number;
+  scheduleOpen: boolean;
+  scheduleRefresh: number;
+}
 
+type TrainerMemberNutritionClientAction =
+  | { type: 'SET_ACTIVE'; value: IMemberNutritionPlan | null }
+  | { type: 'SET_HISTORY'; value: IMemberNutritionPlan[] }
+  | { type: 'SET_LOADING'; value: boolean }
+  | { type: 'SET_LOG_VISIBLE'; value: number }
+  | { type: 'SET_SCHEDULE_OPEN'; value: boolean }
+  | { type: 'SET_SCHEDULE_REFRESH'; value: number };
+
+function trainerMemberNutritionClientReducer(state: TrainerMemberNutritionClientState, action: TrainerMemberNutritionClientAction): TrainerMemberNutritionClientState {
+  switch (action.type) {
+    case 'SET_ACTIVE': return { ...state, active: action.value };
+    case 'SET_HISTORY': return { ...state, history: action.value };
+    case 'SET_LOADING': return { ...state, loading: action.value };
+    case 'SET_LOG_VISIBLE': return { ...state, logVisible: action.value };
+    case 'SET_SCHEDULE_OPEN': return { ...state, scheduleOpen: action.value };
+    case 'SET_SCHEDULE_REFRESH': return { ...state, scheduleRefresh: action.value };
+    default: return state;
+  }
+}
+
+export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, dayTypeTargets }: Props) {
+  const [state, dispatch] = useReducer(trainerMemberNutritionClientReducer, {
+    active: null, history: [], loading: true, logVisible: 10, scheduleOpen: false, scheduleRefresh: 0,
+  });
+  const { active, history, loading, logVisible, scheduleOpen, scheduleRefresh } = state;
+
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     void Promise.all([
-      fetch(`/api/members/${memberId}/nutrition`).then((r) => r.json()),
-      fetch(`/api/members/${memberId}/nutrition/history`).then((r) => r.json()),
+      fetch(`/api/members/${memberId}/nutrition`, { signal: controller.signal }).then((r) => r.json()),
+      fetch(`/api/members/${memberId}/nutrition/history`, { signal: controller.signal }).then((r) => r.json()),
     ]).then(([a, h]: [IMemberNutritionPlan | null, IMemberNutritionPlan[]]) => {
-      if (cancelled) return;
-      setActive(a);
-      setHistory(h);
-      setLoading(false);
+      dispatch({ type: 'SET_ACTIVE', value: a });
+      dispatch({ type: 'SET_HISTORY', value: h });
+      dispatch({ type: 'SET_LOADING', value: false });
+    }).catch((err: unknown) => {
+      if (err instanceof Error && err.name !== 'AbortError') console.error(err);
     });
-    return () => { cancelled = true; };
+    return () => controller.abort();
   }, [memberId, scheduleRefresh]);
 
   const weeklyPattern = active?.schedule.weeklyPattern ?? [];
@@ -113,8 +142,8 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
 
         {loading ? (
           <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4">
-            <div className="h-4 w-48 animate-pulse rounded bg-muted/60 mb-2" />
-            <div className="h-3 w-32 animate-pulse rounded bg-muted/40" />
+            <div className="size-48 animate-pulse rounded bg-muted/60 mb-2" />
+            <div className="size-32 animate-pulse rounded bg-muted/40" />
           </div>
         ) : active ? (
           <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 space-y-4">
@@ -181,7 +210,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
         <section className="px-4 sm:px-8">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-foreground">Weekly Schedule</h2>
-            <Sheet open={scheduleOpen} onOpenChange={setScheduleOpen}>
+            <Sheet open={scheduleOpen} onOpenChange={(v) => dispatch({ type: 'SET_SCHEDULE_OPEN', value: v })}>
               <SheetTrigger className="flex items-center gap-1.5 text-[12px] text-foreground/45 hover:text-foreground/70 transition-colors bg-transparent border-none cursor-pointer">
                 <Settings2 className="size-3.5" />
                 Edit Schedule
@@ -190,15 +219,16 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
                 <SheetHeader className="mb-6">
                   <SheetTitle>Edit Schedule</SheetTitle>
                   <p className="text-[12px] text-foreground/45 mt-1">
-                    Changes to the weekly pattern take effect immediately. Date overrides can only be added from tomorrow onwards — today&apos;s schedule is locked.
+                    Changes to the weekly pattern take effect immediately. Date overrides can only be added from tomorrow onwards: today&apos;s schedule is locked.
                   </p>
                 </SheetHeader>
                 <ScheduleEditor
+                  key={scheduleRefresh}
                   memberId={memberId}
                   dayTypeNames={active.dayTypes.map((d) => d.name)}
                   initialSchedule={active.schedule}
                   mode="edit"
-                  onSave={() => { setScheduleOpen(false); setScheduleRefresh((n) => n + 1); }}
+                  onSave={() => { dispatch({ type: 'SET_SCHEDULE_OPEN', value: false }); dispatch({ type: 'SET_SCHEDULE_REFRESH', value: scheduleRefresh + 1 }); }}
                 />
               </SheetContent>
             </Sheet>
@@ -323,7 +353,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
           {recentLogs.length > logVisible && (
             <button
               type="button"
-              onClick={() => setLogVisible((c) => c + 10)}
+              onClick={() => dispatch({ type: 'SET_LOG_VISIBLE', value: logVisible + 10 })}
               className="mt-3 w-full rounded-xl border border-foreground/10 py-2.5 text-sm text-foreground/50 hover:text-foreground/75 hover:border-foreground/20 transition-colors"
             >
               Show {Math.min(10, recentLogs.length - logVisible)} more
@@ -369,7 +399,7 @@ function ChangePlanDialog({
   templates: TemplateOption[];
   triggerLabel: string;
 }) {
-  const router = useRouter();
+  const { push } = useRouter();
   const { basePath } = useMemberHub();
   const [open, setOpen] = useState(false);
   const [comboOpen, setComboOpen] = useState(false);
@@ -379,7 +409,7 @@ function ChangePlanDialog({
     const url = selectedId
       ? `${basePath}/nutrition/new?templateId=${selectedId}`
       : `${basePath}/nutrition/new`;
-    router.push(url);
+    push(url);
     setOpen(false);
   }
 
@@ -409,10 +439,11 @@ function ChangePlanDialog({
                 variant="outline"
                 role="combobox"
                 aria-expanded={comboOpen}
+                aria-controls="nutrition-search-listbox"
                 className="w-full justify-between text-sm font-normal text-foreground/70"
               >
                 {selectedName ?? 'Search templates...'}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
               </Button>
             } />
             {comboOpen && (
@@ -421,7 +452,7 @@ function ChangePlanDialog({
                   <PopoverPopup className="w-full p-0">
                     <Command>
                       <CommandInput placeholder="Search templates..." />
-                      <CommandList>
+                      <CommandList id="nutrition-search-listbox">
                         <CommandEmpty>No templates found.</CommandEmpty>
                         <CommandGroup>
                           {templates.map((t) => (
@@ -434,7 +465,7 @@ function ChangePlanDialog({
                               }}
                             >
                               <Check
-                                className={cn('mr-2 h-4 w-4', selectedId === t._id ? 'opacity-100' : 'opacity-0')}
+                                className={cn('mr-2 size-4', selectedId === t._id ? 'opacity-100' : 'opacity-0')}
                               />
                               {t.name}
                             </CommandItem>

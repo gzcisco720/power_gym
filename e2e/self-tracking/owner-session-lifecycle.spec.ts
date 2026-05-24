@@ -139,6 +139,13 @@ test.describe('owner: my-training session lifecycle', () => {
     };
     expect(body.error).toBe('ACTIVE_SESSION_EXISTS');
     expect(body.activeSession.dayName).toBe('Freestyle');
+
+    // Clean up: delete the active session so it doesn't pollute subsequent tests
+    const activeRes = await request.get('/api/me/workout-logs/active');
+    const active = (await activeRes.json()) as { _id?: string } | null;
+    if (active?._id) {
+      await request.delete(`/api/me/workout-logs/${active._id}`);
+    }
   });
 
   // ── New logging UX: submit-time validation ───────────────────────────────
@@ -153,7 +160,8 @@ test.describe('owner: my-training session lifecycle', () => {
     await page.getByRole('button', { name: /\+ add exercise/i }).click();
     await expect(page.getByRole('heading', { name: /select exercise/i })).toBeVisible();
     await page.getByRole('button', { name: /^bench press/i }).first().click();
-    await expect(page.getByText('Bench Press').first()).toBeVisible();
+    // Wait for Set 1 weight input to confirm the exercise was persisted to the log
+    await expect(page.getByLabel('Set 1 weight')).toBeVisible({ timeout: 8000 });
 
     await page.getByRole('button', { name: /^finish$/i }).click();
     await expect(page.getByText(/fill in at least one set/i)).toBeVisible({ timeout: 5000 });
@@ -204,11 +212,11 @@ test.describe('owner: my-training session lifecycle', () => {
       timeout: 5000,
     });
 
-    // Fill in RPE before confirming
+    // Fill in RPE before confirming — wait explicitly for the input to be visible
+    // since the dialog has an entry animation that may delay rendering of inner fields
     const rpeInput = page.getByLabel(/rpe/i);
-    if (await rpeInput.isVisible()) {
-      await rpeInput.fill('8');
-    }
+    await expect(rpeInput).toBeVisible({ timeout: 10000 });
+    await rpeInput.fill('8');
 
     await page.getByRole('button', { name: /^finish workout$/i }).click();
     await page.waitForURL(/\/owner\/my-training$/, { timeout: 15000 });

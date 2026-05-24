@@ -49,7 +49,8 @@ describe('GymInfoTab branding section', () => {
       />,
     );
     const img = screen.getByAltText('Gym logo');
-    expect(img).toHaveAttribute('src', 'https://cdn.example.com/logo.png');
+    expect(img).toBeInTheDocument();
+    expect(img.getAttribute('src')).toContain('cdn.example.com');
   });
 
   it('shows crop dialog after a logo file is selected', () => {

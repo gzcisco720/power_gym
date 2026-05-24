@@ -45,7 +45,7 @@ interface ConflictInfo {
 }
 
 export function MemberPlanPathCard({ plan, basePath }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
   const [starting, setStarting] = useState(false);
   const [conflict, setConflict] = useState<ConflictInfo | null>(null);
   const [pendingDay, setPendingDay] = useState<MemberPlanDay | null>(null);
@@ -73,7 +73,7 @@ export function MemberPlanPathCard({ plan, basePath }: Props) {
       });
       if (res.ok) {
         const log = (await res.json()) as { _id: string };
-        router.push(`${basePath}/session/${log._id}`);
+        push(`${basePath}/session/${log._id}`);
         return;
       }
       if (res.status === 409) {

@@ -10,21 +10,21 @@ test.describe('Member: Check-In', () => {
   });
 
   test('navigating to /member/check-in shows the form', async ({ page }) => {
-    await page.goto('/member/check-in');
+    await page.goto('/member/check-in/new');
     await expect(page.getByText('Weekly Check-In')).toBeVisible();
-    await expect(page.getByText('Weekly Ratings (1–10)')).toBeVisible();
+    await expect(page.getByText('How are you feeling?')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Submit Check-In' })).toBeVisible();
   });
 
   test('diet adherence toggle buttons are all present', async ({ page }) => {
-    await page.goto('/member/check-in');
-    await expect(page.getByRole('button', { name: 'yes' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'partial' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'no' })).toBeVisible();
+    await page.goto('/member/check-in/new');
+    await expect(page.getByRole('button', { name: 'Yes' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Partial' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'No' })).toBeVisible();
   });
 
   test('can submit the check-in form and sees confirmation', async ({ page }) => {
-    await page.goto('/member/check-in');
+    await page.goto('/member/check-in/new');
 
     // Fill in optional text areas
     await page.getByPlaceholder('Describe your diet this week...').fill('Ate clean all week');

@@ -75,7 +75,7 @@ export async function MemberNutritionLanding() {
 
   const freestyleCompleted = recent.filter((l) => l.dayCompleted).length;
   // Count plan-based completed days in the last 14 days for state detection
-  const planRecentDates = new Set(planMonthLogs.filter((l) => l.dayCompleted).map((l) => l.date));
+  const planRecentDates = new Set(planMonthLogs.flatMap((l) => l.dayCompleted ? [l.date] : []));
   const totalCompletedCount = freestyleCompleted + planRecentDates.size;
   const hasUsedTemplate = recent.some((l) => l.sourceTemplateId !== null) || planMonthLogs.length > 0;
   const state = detectLandingState({ completedSessionCount: totalCompletedCount, hasUsedTemplate });

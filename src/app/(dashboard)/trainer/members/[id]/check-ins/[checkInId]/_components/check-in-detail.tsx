@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import type { ICheckIn } from '@/lib/db/models/check-in.model';
 
 interface Props {
@@ -127,15 +128,16 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
 
           {otherCheckIns.length > 0 && (
             <div className="mb-4">
-              <label className="mb-1 block text-[12px] text-[#666]">
+              <label htmlFor="compare-checkin" className="mb-1 block text-[12px] text-[#666]">
                 Compare with another check-in
               </label>
               <select
+                id="compare-checkin"
                 value={compareId}
                 onChange={(e) => setCompareId(e.target.value)}
                 className="rounded-md border border-[#1a1a1a] bg-[#0d0d0d] px-3 py-2 text-[13px] text-white"
               >
-                <option value="">— No comparison —</option>
+                <option value="">No comparison</option>
                 {otherCheckIns.map((c) => {
                   const cid = String((c as ICheckIn & { _id: unknown })._id);
                   return (
@@ -157,8 +159,9 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
                   </p>
                   <div className="space-y-2">
                     {checkIn.photos.map((url, i) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img key={`${checkInId}-${i}`} src={url} alt={`Photo ${i + 1}`} className="w-full rounded object-cover" />
+                      <div key={url} className="relative w-full aspect-square rounded overflow-hidden">
+                        <Image src={url} alt={`Photo ${i + 1}`} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -168,16 +171,16 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
                   </p>
                   <div className="space-y-2">
                     {compareCheckIn.photos.map((url, i) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img key={`compare-${i}`} src={url} alt={`Comparison photo ${i + 1}`} className="w-full rounded object-cover" />
+                      <div key={url} className="relative w-full aspect-square rounded overflow-hidden">
+                        <Image src={url} alt={`Comparison photo ${i + 1}`} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
+                      </div>
                     ))}
                   </div>
                 </div>
               </>
             ) : (
               checkIn.photos.map((url, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={i} src={url} alt={`Photo ${i + 1}`} className="h-40 w-40 rounded object-cover" />
+                <Image key={url} src={url} alt={`Photo ${i + 1}`} width={160} height={160} className="rounded object-cover" />
               ))
             )}
           </div>

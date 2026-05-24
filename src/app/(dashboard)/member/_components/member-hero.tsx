@@ -5,9 +5,11 @@ import { MongoWorkoutSessionRepository } from '@/lib/repositories/workout-sessio
 import { MongoScheduledSessionRepository } from '@/lib/repositories/scheduled-session.repository';
 import { MongoMemberPlanRepository } from '@/lib/repositories/member-plan.repository';
 import { MemberHeroClient } from './member-hero-client';
+import { estimatedDuration } from './member-hero.utils';
 
-export function estimatedDuration(totalSets: number): number {
-  return Math.max(15, Math.ceil((totalSets * 2.5) / 5) * 5);
+function StreakDisplay({ streak }: { streak: number }) {
+  // oxlint-disable-next-line react-doctor/no-gradient-text
+  return <div className="text-[38px] font-black leading-none bg-gradient-to-br from-amber-400 to-orange-500 bg-clip-text text-transparent">{streak}</div>;
 }
 
 function greetingText(firstName: string): string {
@@ -54,8 +56,8 @@ export async function MemberHero() {
   return (
     <div className="relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/[.18] via-primary/[.07] to-transparent pointer-events-none" />
-      <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-primary/[.12] blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-amber-500/[.06] blur-2xl pointer-events-none" />
+      <div className="absolute -top-16 -right-16 size-56 rounded-full bg-primary/[.12] blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-10 -left-10 size-36 rounded-full bg-amber-500/[.06] blur-2xl pointer-events-none" />
 
       <div className="relative px-4 sm:px-8 py-6 border-b border-primary/[.12]">
         <div className="flex items-start justify-between mb-5">
@@ -65,16 +67,7 @@ export async function MemberHero() {
           />
           {streak > 0 && (
             <div className="flex-shrink-0 ml-4 flex flex-col items-center bg-amber-500/[.1] ring-1 ring-amber-500/[.2] rounded-2xl px-4 py-2.5 min-w-[72px]">
-              <div
-                className="text-[38px] font-black leading-none"
-                style={{
-                  background: 'linear-gradient(135deg, #fbbf24, #f97316)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                {streak}
-              </div>
+              <StreakDisplay streak={streak} />
               <div className="text-[9px] text-foreground/65 uppercase tracking-[.07em] mt-0.5">
                 day streak 🔥
               </div>

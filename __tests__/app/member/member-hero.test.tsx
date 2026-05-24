@@ -1,4 +1,4 @@
-import { estimatedDuration } from '@/app/(dashboard)/member/_components/member-hero';
+import { estimatedDuration } from '@/app/(dashboard)/member/_components/member-hero.utils';
 
 describe('estimatedDuration', () => {
   it('rounds up to nearest 5 minutes', () => {

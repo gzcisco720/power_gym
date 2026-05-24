@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { variants } from '@/lib/animations/variants';
 
 interface Props {
@@ -9,17 +9,17 @@ interface Props {
 
 export function PathCardsGrid({ children }: Props) {
   return (
-    <motion.div
+    <m.div
       className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
       variants={variants.staggerContainer}
       initial="hidden"
       animate="visible"
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 
 export function PathCardItem({ children }: { children: React.ReactNode }) {
-  return <motion.div variants={variants.staggerItem}>{children}</motion.div>;
+  return <m.div variants={variants.staggerItem}>{children}</m.div>;
 }

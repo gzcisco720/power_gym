@@ -44,6 +44,7 @@ export function WorkoutCompleteModal({ onConfirm, onCancel, isLoading }: Workout
             step={1}
             value={rpe}
             onChange={(e) => setRpe(Number(e.target.value))}
+            aria-label="Workout intensity (RPE)"
             className="w-full accent-white cursor-pointer"
           />
           <div className="flex justify-between text-[9px] text-[#444]">
@@ -73,6 +74,7 @@ export function WorkoutCompleteModal({ onConfirm, onCancel, isLoading }: Workout
         </Button>
 
         <button
+          type="button"
           onClick={onCancel}
           className="w-full text-[11px] text-[#555] hover:text-[#888] transition-colors text-center"
         >

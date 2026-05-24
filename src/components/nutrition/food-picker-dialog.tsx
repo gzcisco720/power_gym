@@ -1,5 +1,6 @@
 'use client';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useReducer } from 'react';
+import Image from 'next/image';
 import { Loader2Icon } from 'lucide-react';
 import {
   Dialog,
@@ -9,11 +10,12 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FoodPicker, computePickedFood } from '@/components/nutrition/food-picker';
+import { FoodPicker } from '@/components/nutrition/food-picker';
+import { computePickedFood } from '@/components/nutrition/food-picker.utils';
 import { FoodForm } from '@/components/nutrition/food-form';
 import { calculateMacros } from '@/lib/nutrition/macros';
 import { cn } from '@/lib/utils';
-import type { FoodEntry, FoodServing, PickedFood } from '@/components/nutrition/food-picker';
+import type { FoodEntry, FoodServing, PickedFood } from '@/components/nutrition/food-picker.types';
 import type { IFood } from '@/lib/db/models/food.model';
 import type { FatSecretFood } from '@/lib/nutrition/fatsecret-client';
 
@@ -110,6 +112,35 @@ function NutrientRow({ label, value, indent }: { label: string; value: string; i
 // Detail view
 // ---------------------------------------------------------------------------
 
+interface DetailViewState {
+  servings: FoodServing[];
+  servingId: string;
+  qty: string;
+  loading: boolean;
+  imageUrl: string | undefined;
+  imgFailed: boolean;
+}
+
+type DetailViewAction =
+  | { type: 'SET_SERVINGS'; value: FoodServing[] }
+  | { type: 'SET_SERVING_ID'; value: string }
+  | { type: 'SET_QTY'; value: string }
+  | { type: 'SET_LOADING'; value: boolean }
+  | { type: 'SET_IMAGE_URL'; value: string | undefined }
+  | { type: 'SET_IMG_FAILED'; value: boolean };
+
+function detailViewReducer(state: DetailViewState, action: DetailViewAction): DetailViewState {
+  switch (action.type) {
+    case 'SET_SERVINGS': return { ...state, servings: action.value };
+    case 'SET_SERVING_ID': return { ...state, servingId: action.value };
+    case 'SET_QTY': return { ...state, qty: action.value };
+    case 'SET_LOADING': return { ...state, loading: action.value };
+    case 'SET_IMAGE_URL': return { ...state, imageUrl: action.value };
+    case 'SET_IMG_FAILED': return { ...state, imgFailed: action.value };
+    default: return state;
+  }
+}
+
 interface DetailViewProps {
   entry: FoodEntry;
   onBack: () => void;
@@ -117,31 +148,34 @@ interface DetailViewProps {
 }
 
 function DetailView({ entry, onBack, onAdd }: DetailViewProps) {
-  const [servings, setServings] = useState<FoodServing[]>(entry.servings);
-  const [servingId, setServingId] = useState(entry.defaultServingId);
-  const [qty, setQty] = useState('1');
-  const [loading, setLoading] = useState(entry.source === 'fatsecret' && !!entry.foodId);
-  const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
-  const [imgFailed, setImgFailed] = useState(false);
+  const [state, dispatch] = useReducer(detailViewReducer, undefined, () => ({
+    servings: entry.servings,
+    servingId: entry.defaultServingId,
+    qty: '1',
+    loading: entry.source === 'fatsecret' && !!entry.foodId,
+    imageUrl: undefined,
+    imgFailed: false,
+  }));
+  const { servings, servingId, qty, loading, imageUrl, imgFailed } = state;
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect, react-doctor/no-effect-event-handler
   useEffect(() => {
     if (entry.source !== 'fatsecret' || !entry.foodId) return;
-    let cancelled = false;
-    fetch(`/api/food/${entry.foodId}`)
+    const controller = new AbortController();
+    fetch(`/api/food/${entry.foodId}`, { signal: controller.signal })
       .then(async (res) => {
-        if (!res.ok || cancelled) return;
+        if (!res.ok) return;
         const { food } = (await res.json()) as { food: FatSecretFood };
-        if (cancelled || !food) return;
-        setServings(fatSecretFoodToServings(food));
-        setServingId(food.defaultServing.servingId);
-        if (food.imageUrl) setImageUrl(food.imageUrl);
+        if (!food) return;
+        dispatch({ type: 'SET_SERVINGS', value: fatSecretFoodToServings(food) });
+        dispatch({ type: 'SET_SERVING_ID', value: food.defaultServing.servingId });
+        if (food.imageUrl) dispatch({ type: 'SET_IMAGE_URL', value: food.imageUrl });
+        dispatch({ type: 'SET_LOADING', value: false });
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+      .catch((err: unknown) => {
+        if (err instanceof Error && err.name !== 'AbortError') dispatch({ type: 'SET_LOADING', value: false });
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [entry.foodId, entry.source]);
 
   const qtyNum = parseFloat(qty) || 0;
@@ -197,12 +231,13 @@ function DetailView({ entry, onBack, onAdd }: DetailViewProps) {
           <h2 className="font-semibold text-base leading-snug">{entry.name}</h2>
         </div>
         {imageUrl && !imgFailed && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={imageUrl}
             alt={entry.name}
-            className="size-20 rounded-xl object-cover shrink-0 ring-1 ring-foreground/10"
-            onError={() => setImgFailed(true)}
+            width={80}
+            height={80}
+            className="rounded-xl object-cover shrink-0 ring-1 ring-foreground/10"
+            onError={() => dispatch({ type: 'SET_IMG_FAILED', value: true })}
           />
         )}
       </div>
@@ -221,7 +256,7 @@ function DetailView({ entry, onBack, onAdd }: DetailViewProps) {
                 <button
                   key={s.id}
                   type="button"
-                  onClick={() => setServingId(s.id)}
+                  onClick={() => dispatch({ type: 'SET_SERVING_ID', value: s.id })}
                   className={cn(
                     'rounded-full border px-3 py-1 text-xs transition-colors',
                     s.id === servingId
@@ -237,13 +272,14 @@ function DetailView({ entry, onBack, onAdd }: DetailViewProps) {
 
           {/* Quantity */}
           <div className="space-y-1">
-            <label className="text-xs font-medium text-foreground/65">Quantity</label>
+            <label htmlFor="food-picker-qty" className="text-xs font-medium text-foreground/65">Quantity</label>
             <Input
+              id="food-picker-qty"
               type="text"
               inputMode="decimal"
               pattern="[0-9]*\.?[0-9]*"
               value={qty}
-              onChange={(e) => setQty(e.target.value)}
+              onChange={(e) => dispatch({ type: 'SET_QTY', value: e.target.value })}
               aria-label="Quantity"
             />
           </div>
@@ -400,6 +436,7 @@ export function FoodPickerDialog({
         )}
         {view === 'detail' && selectedEntry && (
           <DetailView
+            key={selectedEntry.foodId ?? selectedEntry.name}
             entry={selectedEntry}
             onBack={handleBack}
             onAdd={handleAdd}

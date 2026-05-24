@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import Image from 'next/image';
 import { Loader2, Plus } from 'lucide-react';
 
 interface Props {
@@ -24,21 +25,22 @@ export function CheckInPhotosSection({ photos, uploading, onFileChange }: Props)
 
       <div className="flex flex-wrap gap-2">
         {photos.map((url, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={i}
+          <Image
+            key={url}
             src={url}
             alt={`Photo ${i + 1}`}
-            className="w-16 h-16 rounded-lg object-cover ring-1 ring-foreground/10"
+            width={64}
+            height={64}
+            className="rounded-lg object-cover ring-1 ring-foreground/10"
           />
         ))}
 
         {uploading && (
           <div
             aria-label="Uploading..."
-            className="w-16 h-16 rounded-lg border border-dashed border-foreground/20 flex items-center justify-center"
+            className="size-16 rounded-lg border border-dashed border-foreground/20 flex items-center justify-center"
           >
-            <Loader2 className="w-4 h-4 text-foreground/40 animate-spin" />
+            <Loader2 className="size-4 text-foreground/40 animate-spin" />
           </div>
         )}
 
@@ -47,9 +49,9 @@ export function CheckInPhotosSection({ photos, uploading, onFileChange }: Props)
             type="button"
             aria-label="Add photo"
             onClick={() => inputRef.current?.click()}
-            className="w-16 h-16 rounded-lg border border-dashed border-foreground/20 flex items-center justify-center hover:border-foreground/40 transition-colors cursor-pointer"
+            className="size-16 rounded-lg border border-dashed border-foreground/20 flex items-center justify-center hover:border-foreground/40 transition-colors cursor-pointer"
           >
-            <Plus className="w-4 h-4 text-foreground/30" />
+            <Plus className="size-4 text-foreground/30" />
           </button>
         )}
       </div>
@@ -61,6 +63,7 @@ export function CheckInPhotosSection({ photos, uploading, onFileChange }: Props)
         multiple
         disabled={!canAdd}
         onChange={onFileChange}
+        aria-label="Upload check-in photos"
         className="hidden"
       />
     </div>

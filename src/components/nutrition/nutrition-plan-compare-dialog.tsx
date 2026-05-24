@@ -110,7 +110,7 @@ export function NutritionPlanCompareDialog({
         )}
 
         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-          Done
+          Close
         </Button>
       </DialogContent>
     </Dialog>

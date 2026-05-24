@@ -24,7 +24,7 @@ export default function JourneyHeader({ summary }: Props) {
     <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 to-primary/[0.03] p-4 shadow-[0_4px_24px_rgba(99,102,241,0.1)]">
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h1 className="text-foreground text-xl font-bold leading-tight">My Journey</h1>
+          <h1 className="text-foreground text-xl font-semibold leading-tight">My Journey</h1>
           <p className="text-foreground/65 text-xs mt-0.5">
             {summary.totalTests} tests · started {formatDate(summary.firstTestDate)}
           </p>

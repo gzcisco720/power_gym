@@ -1,5 +1,6 @@
 'use client';
 
+// oxlint-disable-next-line react-doctor/prefer-dynamic-import
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 import type { ICheckIn } from '@/lib/db/models/check-in.model';
 
@@ -102,21 +103,21 @@ export function CheckInTrends({ checkIns }: Props) {
               <div
                 key={i}
                 title={`${formatShortDate(ci.submittedAt)}: ${DIET_LABEL[ci.stuckToDiet]}`}
-                className={`w-5 h-5 rounded-sm ${DIET_COLOR[ci.stuckToDiet] ?? 'bg-muted'}`}
+                className={`size-5 rounded-sm ${DIET_COLOR[ci.stuckToDiet] ?? 'bg-muted'}`}
               />
             ))}
           </div>
           <div className="flex items-center gap-4 mt-4">
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-sm bg-emerald-500" />
+              <div className="size-3 rounded-sm bg-emerald-500" />
               <span className="text-[10px] text-foreground/50">Stuck</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-sm bg-amber-500" />
+              <div className="size-3 rounded-sm bg-amber-500" />
               <span className="text-[10px] text-foreground/50">Partial</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-sm bg-rose-500" />
+              <div className="size-3 rounded-sm bg-rose-500" />
               <span className="text-[10px] text-foreground/50">Off track</span>
             </div>
           </div>

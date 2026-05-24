@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { SessionEventCard } from './session-event-card';
 import { timeToMinutes } from '@/lib/time';
 import { variants } from '@/lib/animations/variants';
@@ -89,7 +89,7 @@ export function WeekCalendarGrid({
       <div className="flex border-b border-[#1e1e2e] sticky top-0 bg-[#0c0c0c] z-10">
         <div className="w-14 flex-shrink-0" />
         {days.map((day, i) => (
-          <div key={i} className="flex-1 text-center py-2 text-xs text-[#888]">
+          <div key={day.toISOString()} className="flex-1 text-center py-2 text-xs text-[#888]">
             <div>{DAYS[i]}</div>
             <div className="text-white font-semibold">{day.getDate()}</div>
           </div>
@@ -110,15 +110,17 @@ export function WeekCalendarGrid({
         </div>
 
         {days.map((day, di) => (
-          <div key={di} className="flex-1 relative border-l border-[#1a1a2e]">
+          <div key={day.toISOString()} className="flex-1 relative border-l border-[#1a1a2e]">
             {Array.from({ length: (HOUR_END - HOUR_START) * 2 }, (_, si) => {
               const totalMin = HOUR_START * 60 + si * 30;
               const hh = Math.floor(totalMin / 60);
               const mm = totalMin % 60;
               const time = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
               return (
-                <div
+                <button
+                  type="button"
                   key={si}
+                  aria-label={`Add session at ${time}`}
                   className="absolute inset-x-0 border-t border-[#111] cursor-pointer hover:bg-white/5 transition-colors"
                   style={{ top: si * SLOT_HEIGHT, height: SLOT_HEIGHT }}
                   onClick={() => onSlotClick(day, time)}
@@ -126,7 +128,7 @@ export function WeekCalendarGrid({
               );
             })}
 
-            <motion.div
+            <m.div
               variants={variants.staggerContainer}
               initial="hidden"
               animate="visible"
@@ -134,7 +136,7 @@ export function WeekCalendarGrid({
               {sessionsByDay[di].map((s) => {
                 const heightPx = getHeightPx(s.startTime, s.endTime);
                 return (
-                  <motion.div
+                  <m.div
                     key={s._id}
                     variants={variants.staggerItem}
                     className="absolute inset-x-0"
@@ -150,10 +152,10 @@ export function WeekCalendarGrid({
                       heightPx={heightPx}
                       onClick={() => onSessionClick(s)}
                     />
-                  </motion.div>
+                  </m.div>
                 );
               })}
-            </motion.div>
+            </m.div>
           </div>
         ))}
       </div>

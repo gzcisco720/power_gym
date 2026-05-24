@@ -5,6 +5,7 @@ import { connectDB } from '@/lib/db/connect';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { ROLE_DEFAULT_PATH } from '@/lib/auth/middleware-helpers';
 import { getGymBranding } from '@/lib/db/queries/gym-branding';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { LoginButton } from './_components/login-button';
@@ -32,12 +33,15 @@ export default async function LoginPage({
           {branding.loginLogoUrl || branding.name ? (
             <>
               {branding.loginLogoUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={branding.loginLogoUrl}
-                  alt={gymName}
-                  className="max-w-[200px] max-h-[120px] object-contain mb-5"
-                />
+                <div className="relative max-w-[200px] max-h-[120px] mb-5">
+                  <Image
+                    src={branding.loginLogoUrl}
+                    alt={gymName}
+                    width={200}
+                    height={120}
+                    className="object-contain"
+                  />
+                </div>
               )}
               {branding.name && (
                 <div className="text-[11px] font-bold tracking-[5px] text-white uppercase">
@@ -46,7 +50,7 @@ export default async function LoginPage({
               )}
             </>
           ) : (
-            <h1 className="text-[28px] font-bold tracking-[-0.5px] text-white">Sign in</h1>
+            <h1 className="text-[28px] font-semibold tracking-[-0.5px] text-white">Sign in</h1>
           )}
         </div>
 
@@ -75,14 +79,17 @@ export default async function LoginPage({
               // fall through
             }
 
+            let loginErrorType: string | null = null;
             try {
               await signIn('credentials', { email, password, remember, redirectTo });
             } catch (error) {
               if (error instanceof AuthError) {
-                redirect(`/login?error=${error.type}`);
+                loginErrorType = error.type;
+              } else {
+                throw error;
               }
-              throw error;
             }
+            if (loginErrorType) redirect(`/login?error=${loginErrorType}`);
           }}
           className="space-y-4"
         >
@@ -120,7 +127,8 @@ export default async function LoginPage({
               id="remember"
               name="remember"
               type="checkbox"
-              className="h-3.5 w-3.5 rounded border-[#333] bg-[#0c0c0c] accent-white cursor-pointer"
+              aria-label="Remember me"
+              className="size-3.5 rounded border-[#333] bg-[#0c0c0c] accent-white cursor-pointer"
             />
             <label htmlFor="remember" className="text-[13px] text-[#666] cursor-pointer select-none">
               Remember me

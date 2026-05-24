@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import type { IDayType } from '@/lib/db/models/nutrition-template.model';
 
 export function NewNutritionTemplateClient({ backPath = '/trainer/nutrition' }: { backPath?: string }) {
-  const router = useRouter();
+  const { push } = useRouter();
 
   async function handleSubmit(data: {
     name: string;
@@ -25,14 +25,14 @@ export function NewNutritionTemplateClient({ backPath = '/trainer/nutrition' }: 
       return;
     }
     toast.success('Nutrition plan saved');
-    router.push(backPath);
+    push(backPath);
   }
 
   return (
     <div>
       <PageHeader title="New Nutrition Plan" />
       <div className="px-4 sm:px-8 py-7">
-        <NutritionTemplateForm onSubmit={handleSubmit} onCancel={() => router.push(backPath)} />
+        <NutritionTemplateForm onSubmit={handleSubmit} onCancel={() => push(backPath)} />
       </div>
     </div>
   );

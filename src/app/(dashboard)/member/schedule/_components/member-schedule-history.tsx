@@ -23,6 +23,7 @@ export function MemberScheduleHistory({ sessions, defaultOpen = false }: Props) 
   return (
     <div className="pt-3 border-t border-foreground/[.06]">
       <button
+        type="button"
         onClick={() => setOpen((v) => !v)}
         className="text-[12px] text-foreground/65 hover:text-foreground/80 transition-colors cursor-pointer"
       >
@@ -62,6 +63,7 @@ export function MemberScheduleHistory({ sessions, defaultOpen = false }: Props) 
           })}
           {!showAll && hiddenCount > 0 && (
             <button
+              type="button"
               onClick={() => setShowAll(true)}
               className="text-[12px] text-foreground/65 hover:text-foreground/80 transition-colors cursor-pointer"
             >

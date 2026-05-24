@@ -1,69 +1,90 @@
 'use client';
 
-import { useState } from 'react';
+import { useReducer } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ImageIcon, Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { variants } from '@/lib/animations/variants';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ImageLightbox } from '@/components/shared/image-lightbox';
 import { AddEquipmentDialog } from './add-equipment-dialog';
 import { EditEquipmentDialog } from './edit-equipment-dialog';
-import type { EquipmentStatus } from '@/lib/db/models/equipment.model';
 import type { NewEquipmentItem } from './add-equipment-dialog';
-
-export interface EquipmentItem {
-  _id: string;
-  name: string;
-  status: EquipmentStatus;
-  brand: string | null;
-  quantity: number;
-  images: string[];
-  note: string | null;
-  trackCondition: boolean;
-}
+import type { EquipmentItem } from './equipment.types';
+import { STATUS_COLOURS } from './equipment.types';
 
 interface Props {
   initialItems: EquipmentItem[];
 }
 
-export const STATUS_COLOURS: Record<EquipmentStatus, string> = {
-  active: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  maintenance: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-  retired: 'bg-[#333] text-[#666] border-[#222]',
-};
+interface EquipmentClientState {
+  items: EquipmentItem[];
+  showAdd: boolean;
+  editTarget: EquipmentItem | null;
+  deletingId: string | null;
+  lightbox: { images: string[]; index: number } | null;
+}
+
+type EquipmentClientAction =
+  | { type: 'ADD_ITEM'; item: EquipmentItem }
+  | { type: 'UPDATE_ITEM'; updated: EquipmentItem }
+  | { type: 'DELETE_ITEM'; id: string }
+  | { type: 'SET_SHOW_ADD'; value: boolean }
+  | { type: 'SET_EDIT_TARGET'; item: EquipmentItem | null }
+  | { type: 'SET_DELETING_ID'; id: string | null }
+  | { type: 'SET_LIGHTBOX'; value: { images: string[]; index: number } | null };
+
+function equipmentClientReducer(state: EquipmentClientState, action: EquipmentClientAction): EquipmentClientState {
+  switch (action.type) {
+    case 'ADD_ITEM': return { ...state, items: [...state.items, action.item] };
+    case 'UPDATE_ITEM': return {
+      ...state,
+      items: state.items.map((i) => i._id === action.updated._id ? action.updated : i),
+      editTarget: state.editTarget?._id === action.updated._id ? action.updated : state.editTarget,
+    };
+    case 'DELETE_ITEM': return { ...state, items: state.items.filter((i) => i._id !== action.id), deletingId: null };
+    case 'SET_SHOW_ADD': return { ...state, showAdd: action.value };
+    case 'SET_EDIT_TARGET': return { ...state, editTarget: action.item };
+    case 'SET_DELETING_ID': return { ...state, deletingId: action.id };
+    case 'SET_LIGHTBOX': return { ...state, lightbox: action.value };
+    default: return state;
+  }
+}
 
 export function EquipmentClient({ initialItems }: Props) {
-  const router = useRouter();
-  const [items, setItems] = useState<EquipmentItem[]>(initialItems);
-  const [showAdd, setShowAdd] = useState(false);
-  const [editTarget, setEditTarget] = useState<EquipmentItem | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
+  const { refresh } = useRouter();
+  const [state, dispatch] = useReducer(equipmentClientReducer, {
+    items: initialItems,
+    showAdd: false,
+    editTarget: null,
+    deletingId: null,
+    lightbox: null,
+  });
+  const { items, showAdd, editTarget, deletingId, lightbox } = state;
 
   function handleCreated(item: NewEquipmentItem) {
-    setItems((prev) => [...prev, item]);
-    router.refresh();
+    dispatch({ type: 'ADD_ITEM', item });
+    refresh();
   }
 
   function handleUpdated(updated: EquipmentItem) {
-    setItems((prev) => prev.map((i) => i._id === updated._id ? updated : i));
-    setEditTarget((prev) => prev?._id === updated._id ? updated : prev);
+    dispatch({ type: 'UPDATE_ITEM', updated });
   }
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this equipment? This cannot be undone.')) return;
-    setDeletingId(id);
+    dispatch({ type: 'SET_DELETING_ID', id });
     try {
       const res = await fetch(`/api/owner/equipment/${id}`, { method: 'DELETE' });
       if (!res.ok) { toast.error('Failed to delete'); return; }
-      setItems((prev) => prev.filter((i) => i._id !== id));
+      dispatch({ type: 'DELETE_ITEM', id });
       toast.success('Equipment deleted');
-      router.refresh();
+      refresh();
     } finally {
-      setDeletingId(null);
+      dispatch({ type: 'SET_DELETING_ID', id: null });
     }
   }
 
@@ -72,7 +93,7 @@ export function EquipmentClient({ initialItems }: Props) {
       <div className="space-y-4">
         <div className="flex justify-end">
           <Button
-            onClick={() => setShowAdd(true)}
+            onClick={() => dispatch({ type: 'SET_SHOW_ADD', value: true })}
             className="bg-white text-black hover:bg-white/90 font-semibold text-sm"
           >
             + Add Equipment
@@ -96,32 +117,40 @@ export function EquipmentClient({ initialItems }: Props) {
               <div></div>
             </div>
 
-            <motion.div
+            <m.div
               variants={variants.staggerContainer}
               initial="hidden"
               animate="visible"
             >
             {items.map((item) => (
-              <motion.div
+              <m.div
                 key={item._id}
                 variants={variants.staggerItem}
                 className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_140px_60px_110px_120px_60px] items-center px-5 py-3.5 border-b border-[#0f0f0f] last:border-0 gap-2"
               >
                 <div className="flex items-center gap-3">
                   {item.images?.[0] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={item.images[0]}
-                      alt={item.name}
-                      onClick={() => setLightbox({ images: item.images, index: 0 })}
-                      className="w-8 h-8 object-cover rounded-md border border-[#222] shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => dispatch({ type: 'SET_LIGHTBOX', value: { images: item.images, index: 0 } })}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') dispatch({ type: 'SET_LIGHTBOX', value: { images: item.images, index: 0 } }); }}
+                      className="size-8 rounded-md border border-[#222] shrink-0 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden relative"
+                      aria-label={`View ${item.name} image`}
+                    >
+                      <Image
+                        src={item.images[0]}
+                        alt={item.name}
+                        fill
+                        sizes="32px"
+                        className="object-cover"
+                      />
+                    </button>
                   ) : (
                     <div
                       aria-label="No image"
-                      className="w-8 h-8 rounded-md border border-[#1e1e1e] bg-[#111] flex items-center justify-center shrink-0"
+                      className="size-8 rounded-md border border-[#1e1e1e] bg-[#111] flex items-center justify-center shrink-0"
                     >
-                      <ImageIcon className="w-3.5 h-3.5 text-[#333]" />
+                      <ImageIcon className="size-3.5 text-[#333]" />
                     </div>
                   )}
                   <div>
@@ -140,14 +169,14 @@ export function EquipmentClient({ initialItems }: Props) {
                       {item.status}
                     </span>
                   ) : (
-                    <span className="text-[11px] text-[#3a3a3a]">—</span>
+                    <span className="text-[11px] text-[#3a3a3a]">N/A</span>
                   )}
                 </div>
 
                 <div className="hidden sm:flex justify-center">
                   <Button
                     variant="ghost"
-                    onClick={() => setEditTarget(item)}
+                    onClick={() => dispatch({ type: 'SET_EDIT_TARGET', item })}
                     className="text-[#555] hover:text-[#aaa] hover:bg-[#141414] text-xs h-7 px-3"
                   >
                     Edit
@@ -162,26 +191,26 @@ export function EquipmentClient({ initialItems }: Props) {
                     className="text-[#555] hover:text-red-400 hover:bg-[#141414] text-xs h-7 px-2 disabled:opacity-50"
                   >
                     {deletingId === item._id
-                      ? <Loader2 className="h-3 w-3 animate-spin" />
+                      ? <Loader2 className="size-3 animate-spin" />
                       : 'Delete'}
                   </Button>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
-            </motion.div>
+            </m.div>
           </Card>
         )}
       </div>
 
       <AddEquipmentDialog
         open={showAdd}
-        onClose={() => setShowAdd(false)}
+        onClose={() => dispatch({ type: 'SET_SHOW_ADD', value: false })}
         onCreated={handleCreated}
       />
 
       <EditEquipmentDialog
         equipment={editTarget}
-        onClose={() => setEditTarget(null)}
+        onClose={() => dispatch({ type: 'SET_EDIT_TARGET', item: null })}
         onUpdated={handleUpdated}
       />
 
@@ -189,7 +218,7 @@ export function EquipmentClient({ initialItems }: Props) {
         images={lightbox?.images ?? []}
         initialIndex={lightbox?.index ?? 0}
         open={lightbox !== null}
-        onClose={() => setLightbox(null)}
+        onClose={() => dispatch({ type: 'SET_LIGHTBOX', value: null })}
       />
     </>
   );

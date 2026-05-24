@@ -17,7 +17,7 @@ export async function TrainerCompliance() {
     return (
       <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4 flex flex-col min-h-[180px]">
         <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-3">
-          Member Compliance — 30 days
+          Member Compliance (30 days)
         </div>
         <div className="flex-1 flex items-center justify-center">
           <p className="text-xs text-foreground/40">No members yet</p>
@@ -45,7 +45,7 @@ export async function TrainerCompliance() {
   return (
     <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4 flex flex-col min-h-[180px]">
       <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-3">
-        Member Compliance — 30 days
+        Member Compliance (30 days)
       </div>
       <div className="flex-1 space-y-3">
         {shown.map(({ name, pct }) => {

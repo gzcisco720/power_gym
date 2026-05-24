@@ -4,7 +4,7 @@ import { AppShell } from '@/components/shared/app-shell';
 jest.mock('next/navigation', () => ({ usePathname: () => '/owner', useRouter: () => ({}) }));
 
 const baseProps = {
-  role: 'owner' as const,
+  userRole: 'owner' as const,
   userName: 'Jane Smith',
   children: <div />,
 };
@@ -28,7 +28,8 @@ describe('AppShell gym branding', () => {
       />,
     );
     const img = screen.getAllByAltText('Gym logo')[0];
-    expect(img).toHaveAttribute('src', 'https://cdn.example.com/logo.png');
+    expect(img).toBeInTheDocument();
+    expect(img.getAttribute('src')).toContain('cdn.example.com');
   });
 
   it('renders initial-letter fallback when logoUrl is null', () => {

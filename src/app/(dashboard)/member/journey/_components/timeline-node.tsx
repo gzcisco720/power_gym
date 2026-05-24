@@ -5,9 +5,10 @@ import type { JourneyItem } from '@/lib/types/journey';
 interface Props {
   item: JourneyItem;
   isLast: boolean;
+  priority?: boolean;
 }
 
-export default function TimelineNode({ item, isLast }: Props) {
+export default function TimelineNode({ item, isLast, priority = false }: Props) {
   const { bodyTest } = item;
 
   const bfDelta = bodyTest.deltaBodyFatPct;
@@ -19,7 +20,7 @@ export default function TimelineNode({ item, isLast }: Props) {
     <div className="flex items-stretch gap-3">
       {/* Track: dot + connecting line */}
       <div className="flex flex-col items-center w-3.5 shrink-0">
-        <div className="mt-2.5 w-2.5 h-2.5 rounded-full bg-primary/40 border border-primary/20 shrink-0 z-10" />
+        <div className="mt-2.5 size-2.5 rounded-full bg-primary/40 border border-primary/20 shrink-0 z-10" />
         {!isLast && <div className="flex-1 w-0.5 bg-primary/20 rounded-full mt-1 min-h-2" />}
       </div>
 
@@ -41,14 +42,15 @@ export default function TimelineNode({ item, isLast }: Props) {
           </div>
 
           {/* Photo thumbnail */}
-          <div className="w-9 h-9 rounded-md overflow-hidden shrink-0">
+          <div className="size-9 rounded-md overflow-hidden shrink-0" style={{ position: 'relative' }}>
             {item.checkInPhoto ? (
               <Image
                 src={item.checkInPhoto}
                 alt="Check-in photo"
-                width={36}
-                height={36}
-                className="w-full h-full object-cover"
+                fill
+                sizes="36px"
+                className="object-cover"
+                priority={priority}
               />
             ) : (
               <div className="w-full h-full bg-foreground/[0.04] flex items-center justify-center border border-dashed border-foreground/10">

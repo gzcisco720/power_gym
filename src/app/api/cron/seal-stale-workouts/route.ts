@@ -19,17 +19,12 @@ export async function GET(req: Request): Promise<Response> {
     sessionRepo.findStaleActive(STALE_AFTER_HOURS),
   ]);
 
-  let selfWorkoutLogs = 0;
-  for (const log of staleSelf) {
-    const result = await selfRepo.autoSeal(log._id.toString());
-    if (result?.autoSealed) selfWorkoutLogs++;
-  }
-
-  let workoutSessions = 0;
-  for (const sess of staleSessions) {
-    const result = await sessionRepo.autoSeal(sess._id.toString());
-    if (result?.autoSealed) workoutSessions++;
-  }
+  const [selfResults, sessionResults] = await Promise.all([
+    Promise.all(staleSelf.map((log) => selfRepo.autoSeal(log._id.toString()))),
+    Promise.all(staleSessions.map((sess) => sessionRepo.autoSeal(sess._id.toString()))),
+  ]);
+  const selfWorkoutLogs = selfResults.filter((r) => r?.autoSealed).length;
+  const workoutSessions = sessionResults.filter((r) => r?.autoSealed).length;
 
   return Response.json({ sealed: { selfWorkoutLogs, workoutSessions } });
 }

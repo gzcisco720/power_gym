@@ -17,7 +17,8 @@ export function SaveAsTemplateCheckbox({ value, onChange }: Props) {
           onChange={(e) =>
             onChange(e.target.checked ? { name: '', description: '' } : null)
           }
-          className="h-4 w-4"
+          aria-label="Save as template"
+          className="size-4"
         />
         Save as template
       </label>

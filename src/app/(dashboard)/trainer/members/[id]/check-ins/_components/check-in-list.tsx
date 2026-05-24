@@ -39,7 +39,7 @@ export function CheckInList({ checkIns }: Props) {
     <section className="px-4 sm:px-8">
       <SectionHeader title={`Check-In History${checkIns.length ? ` (${checkIns.length})` : ''}`} />
       {checkIns.length === 0 ? (
-        <div className="mt-3 rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-4">
+        <div className="mt-3 rounded-xl bg-card ring-1 ring-foreground/10 p-4">
           <p className="text-sm text-foreground/65">No check-ins submitted yet.</p>
         </div>
       ) : (

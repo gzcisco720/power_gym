@@ -18,6 +18,7 @@ jest.mock('@/components/self-tracking/active-session-conflict-dialog', () => ({
     onDeleteAndStart: () => void;
   }) =>
     open ? (
+      // oxlint-disable-next-line react-doctor/prefer-tag-over-role
       <div role="dialog" data-testid="conflict-dialog">
         <span>Active session: {dayName}</span>
         <button onClick={onDeleteAndStart}>Delete and Start</button>

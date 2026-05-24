@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const { push } = useRouter();
   const token = searchParams.get('token') ?? '';
   const userId = searchParams.get('id') ?? '';
 
@@ -34,7 +34,7 @@ function ResetPasswordForm() {
     if (!res.ok) {
       setError(data.error ?? 'Reset failed. The link may have expired.');
     } else {
-      router.push('/login?message=password-reset');
+      push('/login?message=password-reset');
     }
   }
 
@@ -101,7 +101,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-sm space-y-8">
         <div>
           <div className="text-[11px] font-bold tracking-[3px] text-white mb-1">POWER GYM</div>
-          <h1 className="text-[24px] font-bold tracking-[-0.5px] text-white">Reset password</h1>
+          <h1 className="text-[24px] font-semibold tracking-[-0.5px] text-white">Reset password</h1>
           <p className="mt-1 text-[13px] text-[#888]">Enter your new password below.</p>
         </div>
         <Suspense>

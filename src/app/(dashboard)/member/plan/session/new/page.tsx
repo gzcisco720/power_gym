@@ -27,6 +27,7 @@ export default async function SessionNewPage({
   const cookieStore = await cookies();
   const res = await fetch(`${process.env.AUTH_URL}/api/sessions`, {
     method: 'POST',
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
       Cookie: cookieStore.toString(),

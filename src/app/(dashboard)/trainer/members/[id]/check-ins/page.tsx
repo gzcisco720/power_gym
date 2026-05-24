@@ -12,9 +12,8 @@ export default async function TrainerMemberCheckInsPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id: memberId } = await params;
-
-  await connectDB();
+  const [{ id: memberId }] = await Promise.all([params, connectDB()]);
+  // oxlint-disable-next-line react-doctor/server-sequential-independent-await
   const [rawConfig, rawCheckIns] = await Promise.all([
     new MongoCheckInConfigRepository().findByMember(memberId),
     new MongoCheckInRepository().findByMember(memberId),

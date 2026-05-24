@@ -19,41 +19,7 @@ import {
 } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import type { SerializedInjury } from '../page';
-
-export interface InjuryFormData {
-  title: string;
-  injuryType: string;
-  bodyPart: string;
-  bodySide: string;
-  affectedMovements: string;
-  doctorRestrictions: string;
-  rehabilitationStatus: string;
-  trainerNotes: string;
-}
-
-export const EMPTY_INJURY_FORM: InjuryFormData = {
-  title: '',
-  injuryType: '',
-  bodyPart: '',
-  bodySide: '',
-  affectedMovements: '',
-  doctorRestrictions: '',
-  rehabilitationStatus: '',
-  trainerNotes: '',
-};
-
-export function injuryToForm(injury: SerializedInjury): InjuryFormData {
-  return {
-    title: injury.title,
-    injuryType: injury.injuryType ?? '',
-    bodyPart: injury.bodyPart ?? '',
-    bodySide: injury.bodySide ?? '',
-    affectedMovements: injury.affectedMovements ?? '',
-    doctorRestrictions: injury.doctorRestrictions ?? '',
-    rehabilitationStatus: injury.rehabilitationStatus ?? '',
-    trainerNotes: injury.trainerNotes ?? '',
-  };
-}
+import type { InjuryFormData } from './injury-sheet.types';
 
 interface Props {
   open: boolean;
@@ -112,7 +78,7 @@ export function InjurySheet({ open, onOpenChange, editing, form, onFormChange, o
           </FieldRow>
 
           <FieldRow label="Injury Type">
-            <Select value={form.injuryType} onValueChange={(v) => onFormChange('injuryType', v)}>
+            <Select value={form.injuryType} onValueChange={(v) => onFormChange('injuryType', v ?? '')}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
@@ -126,7 +92,7 @@ export function InjurySheet({ open, onOpenChange, editing, form, onFormChange, o
 
           <div className="grid grid-cols-2 gap-3">
             <FieldRow label="Body Part">
-              <Select value={form.bodyPart} onValueChange={(v) => onFormChange('bodyPart', v)}>
+              <Select value={form.bodyPart} onValueChange={(v) => onFormChange('bodyPart', v ?? '')}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select part" />
                 </SelectTrigger>
@@ -144,7 +110,7 @@ export function InjurySheet({ open, onOpenChange, editing, form, onFormChange, o
             </FieldRow>
 
             <FieldRow label="Side">
-              <Select value={form.bodySide} onValueChange={(v) => onFormChange('bodySide', v)}>
+              <Select value={form.bodySide} onValueChange={(v) => onFormChange('bodySide', v ?? '')}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select side" />
                 </SelectTrigger>
@@ -177,7 +143,7 @@ export function InjurySheet({ open, onOpenChange, editing, form, onFormChange, o
           <FieldRow label="Rehabilitation Status">
             <Select
               value={form.rehabilitationStatus}
-              onValueChange={(v) => onFormChange('rehabilitationStatus', v)}
+              onValueChange={(v) => onFormChange('rehabilitationStatus', v ?? '')}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select status" />
@@ -200,7 +166,7 @@ export function InjurySheet({ open, onOpenChange, editing, form, onFormChange, o
           </FieldRow>
 
           {hasMemberData && (
-            <div className="rounded-lg bg-muted/50 ring-1 ring-foreground/8 px-3 py-3 space-y-2">
+            <div className="rounded-lg bg-muted/50 ring-1 ring-foreground/8 p-3 space-y-2">
               <p className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold">
                 Member-reported
               </p>

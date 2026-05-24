@@ -10,10 +10,8 @@ export default async function TrainerLogSessionPage({
 }: {
   params: Promise<{ id: string; sessionId: string }>;
 }) {
-  const session = await auth();
+  const [session, { id: memberId, sessionId }] = await Promise.all([auth(), params]);
   if (!session?.user) redirect('/login');
-
-  const { id: memberId, sessionId } = await params;
 
   await connectDB();
   const [workoutSession, member] = await Promise.all([

@@ -100,14 +100,14 @@ export class MongoUserRepository implements IUserRepository {
     ]);
 
     const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const rowMap = new Map(rows.map((r) => [`${r._id.year}-${r._id.month}`, r.count]));
     const result: { label: string; newCount: number }[] = [];
     for (let i = months - 1; i >= 0; i--) {
       const d = new Date();
       d.setMonth(d.getMonth() - i);
       const year = d.getFullYear();
       const month = d.getMonth() + 1;
-      const found = rows.find(r => r._id.year === year && r._id.month === month);
-      result.push({ label: MONTHS[month - 1], newCount: found?.count ?? 0 });
+      result.push({ label: MONTHS[month - 1], newCount: rowMap.get(`${year}-${month}`) ?? 0 });
     }
     return result;
   }

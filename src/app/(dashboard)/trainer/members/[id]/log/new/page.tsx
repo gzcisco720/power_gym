@@ -11,11 +11,8 @@ export default async function TrainerLogNewPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ day?: string }>;
 }) {
-  const session = await auth();
+  const [session, { id: memberId }, { day }] = await Promise.all([auth(), params, searchParams]);
   if (!session?.user) redirect('/login');
-
-  const { id: memberId } = await params;
-  const { day } = await searchParams;
   const dayNumber = parseInt(day ?? '1', 10);
 
   await connectDB();
@@ -30,6 +27,7 @@ export default async function TrainerLogNewPage({
   const cookieStore = await cookies();
   const res = await fetch(`${process.env.AUTH_URL}/api/sessions`, {
     method: 'POST',
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
       Cookie: cookieStore.toString(),

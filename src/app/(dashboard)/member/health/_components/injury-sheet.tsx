@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -97,15 +97,15 @@ function existingToForm(existing: SerializedInjury | undefined): FormState {
 export function InjurySheet({ open, onOpenChange, memberId, existing, onSaved }: InjurySheetProps) {
   const [form, setForm] = useState<FormState>(() => existingToForm(existing));
   const [saving, setSaving] = useState(false);
-  const [prevExisting, setPrevExisting] = useState(existing);
-  const [prevOpen, setPrevOpen] = useState(open);
+  const prevExistingRef = useRef(existing);
+  const prevOpenRef = useRef(open);
 
   // Reset form when sheet opens or existing changes — synchronous setState during render
-  const openChanged = open !== prevOpen;
-  const existingChanged = existing !== prevExisting;
+  const openChanged = open !== prevOpenRef.current;
+  const existingChanged = existing !== prevExistingRef.current;
   if (openChanged || existingChanged) {
-    setPrevOpen(open);
-    setPrevExisting(existing);
+    prevOpenRef.current = open;
+    prevExistingRef.current = existing;
     if (open) {
       setForm(existingToForm(existing));
     }
@@ -169,7 +169,7 @@ export function InjurySheet({ open, onOpenChange, memberId, existing, onSaved }:
           <SheetTitle>{existing ? 'Edit Injury' : 'Report Injury'}</SheetTitle>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="px-5 py-5 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <FieldRow label="Title" required>
             <Input
               value={form.title}
@@ -179,7 +179,7 @@ export function InjurySheet({ open, onOpenChange, memberId, existing, onSaved }:
           </FieldRow>
 
           <FieldRow label="Injury Type">
-            <Select value={form.injuryType} onValueChange={(v) => set('injuryType', v)}>
+            <Select value={form.injuryType} onValueChange={(v) => set('injuryType', v ?? '')}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select type…" />
               </SelectTrigger>
@@ -192,7 +192,7 @@ export function InjurySheet({ open, onOpenChange, memberId, existing, onSaved }:
           </FieldRow>
 
           <FieldRow label="Body Part">
-            <Select value={form.bodyPart} onValueChange={(v) => { set('bodyPart', v); set('bodySide', ''); }}>
+            <Select value={form.bodyPart} onValueChange={(v) => { set('bodyPart', v ?? ''); set('bodySide', ''); }}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select body part…" />
               </SelectTrigger>
@@ -211,7 +211,7 @@ export function InjurySheet({ open, onOpenChange, memberId, existing, onSaved }:
 
           {form.bodyPart && (
             <FieldRow label="Side">
-              <Select value={form.bodySide} onValueChange={(v) => set('bodySide', v)}>
+              <Select value={form.bodySide} onValueChange={(v) => set('bodySide', v ?? '')}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select side…" />
                 </SelectTrigger>
@@ -277,7 +277,8 @@ export function InjurySheet({ open, onOpenChange, memberId, existing, onSaved }:
               type="checkbox"
               checked={form.seenDoctor}
               onChange={(e) => set('seenDoctor', e.target.checked)}
-              className="h-4 w-4 rounded border border-input accent-primary cursor-pointer"
+              aria-label="I have seen a doctor for this"
+              className="size-4 rounded border border-input accent-primary cursor-pointer"
             />
             <label htmlFor="seen-doctor" className="text-sm text-foreground/80 cursor-pointer select-none">
               I have seen a doctor for this
@@ -331,7 +332,7 @@ export function InjurySheet({ open, onOpenChange, memberId, existing, onSaved }:
               disabled={saving || !form.title.trim()}
               className="font-semibold"
             >
-              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : existing ? 'Save Changes' : 'Report Injury'}
+              {saving ? <Loader2 className="size-3.5 animate-spin" /> : existing ? 'Save Changes' : 'Report Injury'}
             </Button>
           </div>
         </form>

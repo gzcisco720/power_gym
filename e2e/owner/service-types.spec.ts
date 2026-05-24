@@ -12,13 +12,13 @@ test.describe('Owner: Service Types', () => {
 
   test('owner can create a service type', async ({ page }) => {
     await page.goto('/owner/services');
-    await page.getByRole('button', { name: '+ Add Service' }).click();
+    await page.getByRole('button', { name: 'Add Service' }).click();
     await page.getByLabel('Name').fill('E2E Test PT Session');
     await page.getByLabel('Duration (min)').fill('60');
-    await page.getByLabel('Price per Session').fill('250');
+    await page.getByLabel('Price (AUD)').fill('250');
     await page.getByRole('button', { name: 'Save' }).click();
-    await expect(page.getByText('E2E Test PT Session')).toBeVisible();
-    await expect(page.getByText('AUD 250')).toBeVisible();
+    await expect(page.getByText('E2E Test PT Session').first()).toBeVisible();
+    await expect(page.getByText('AUD / session').first()).toBeVisible();
   });
 
   test('created service type appears in services list', async ({ page }) => {
@@ -26,10 +26,10 @@ test.describe('Owner: Service Types', () => {
     await page.goto('/owner/services');
     const hasService = await page.getByText('E2E Test PT Session').isVisible().catch(() => false);
     if (!hasService) {
-      await page.getByRole('button', { name: '+ Add Service' }).click();
+      await page.getByRole('button', { name: 'Add Service' }).click();
       await page.getByLabel('Name').fill('E2E Test PT Session');
       await page.getByLabel('Duration (min)').fill('60');
-      await page.getByLabel('Price per Session').fill('250');
+      await page.getByLabel('Price (AUD)').fill('250');
       await page.getByRole('button', { name: 'Save' }).click();
     }
 
@@ -37,20 +37,20 @@ test.describe('Owner: Service Types', () => {
   });
 
   test('owner can deactivate a service type', async ({ page }) => {
-    // Ensure a service type exists
+    // Ensure an active service type named "E2E Test PT Session" exists
     await page.goto('/owner/services');
-    const hasService = await page.getByText('E2E Test PT Session').isVisible().catch(() => false);
+    const hasService = await page.getByText('E2E Test PT Session').first().isVisible().catch(() => false);
     if (!hasService) {
-      await page.getByRole('button', { name: '+ Add Service' }).click();
+      await page.getByRole('button', { name: 'Add Service' }).click();
       await page.getByLabel('Name').fill('E2E Test PT Session');
       await page.getByLabel('Duration (min)').fill('60');
-      await page.getByLabel('Price per Session').fill('250');
+      await page.getByLabel('Price (AUD)').fill('250');
       await page.getByRole('button', { name: 'Save' }).click();
-      await expect(page.getByText('E2E Test PT Session')).toBeVisible();
+      await expect(page.getByText('E2E Test PT Session').first()).toBeVisible();
     }
 
     // Click to edit
-    await page.getByText('E2E Test PT Session').click();
+    await page.getByText('E2E Test PT Session').first().click();
     await expect(page.getByRole('button', { name: 'Deactivate' })).toBeVisible();
     await page.getByRole('button', { name: 'Deactivate' }).click();
 

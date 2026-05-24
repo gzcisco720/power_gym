@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { m, useReducedMotion } from 'framer-motion';
 import { PageHeader } from '@/components/shared/page-header';
 import { StatCard } from '@/components/shared/stat-card';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -29,7 +29,7 @@ export function BodyTestViewer({ tests }: Props) {
   const shouldReduce = useReducedMotion();
   const [showImprovement, setShowImprovement] = useState(() => {
     if (tests.length < 2) return false;
-    const byDate = [...tests].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const byDate = tests.toSorted((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     return byDate[0].bodyFatPct < byDate[1].bodyFatPct;
   });
 
@@ -47,12 +47,12 @@ export function BodyTestViewer({ tests }: Props) {
     );
   }
 
-  const sorted = [...tests].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const sorted = tests.toSorted((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const latest = sorted[0];
   const previous = sorted.length > 1 ? sorted[1] : null;
 
-  const chartData = [...tests]
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  const chartData = tests
+    .toSorted((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .map((t) => ({
       date: new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       Weight: t.weight,
@@ -102,7 +102,7 @@ export function BodyTestViewer({ tests }: Props) {
           <SectionHeader title="All Records" />
           <div className="mt-3 space-y-2">
             {sorted.map((t, i) => (
-              <motion.div
+              <m.div
                 key={t._id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -155,7 +155,7 @@ export function BodyTestViewer({ tests }: Props) {
                     </div>
                   </div>
                 )}
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>

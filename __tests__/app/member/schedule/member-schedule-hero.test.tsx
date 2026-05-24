@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { MemberScheduleHero, daysUntil } from '@/app/(dashboard)/member/schedule/_components/member-schedule-hero';
+import { MemberScheduleHero } from '@/app/(dashboard)/member/schedule/_components/member-schedule-hero';
+import { daysUntil } from '@/app/(dashboard)/member/schedule/_components/member-schedule-hero.utils';
 import type { SessionDto } from '@/app/(dashboard)/member/schedule/_components/types';
 
 const TODAY = new Date('2026-05-20T10:00:00');

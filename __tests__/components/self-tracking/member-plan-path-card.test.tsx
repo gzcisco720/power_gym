@@ -18,6 +18,7 @@ jest.mock('@/components/self-tracking/active-session-conflict-dialog', () => ({
     onDeleteAndStart: () => void;
   }) =>
     open ? (
+      // oxlint-disable-next-line react-doctor/prefer-tag-over-role
       <div role="dialog" data-testid="conflict-dialog">
         <span>Active: {dayName}</span>
         <button onClick={onDeleteAndStart}>Delete and Start</button>
@@ -38,6 +39,7 @@ jest.mock('@/components/self-tracking/day-already-logged-dialog', () => ({
     onClose: () => void;
   }) =>
     open ? (
+      // oxlint-disable-next-line react-doctor/prefer-tag-over-role
       <div role="dialog" data-testid="already-logged-dialog">
         <span>Already logged: {dayName}</span>
         <button onClick={onClose}>Got it</button>

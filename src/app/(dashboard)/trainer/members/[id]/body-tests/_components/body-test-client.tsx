@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trash2 } from 'lucide-react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { m, useReducedMotion } from 'framer-motion';
 import { variants } from '@/lib/animations/variants';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -46,13 +46,13 @@ function formatTestDate(iso: string): string {
 }
 
 function sortByDateDesc(tests: BodyTestRecord[]): BodyTestRecord[] {
-  return [...tests].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return tests.toSorted((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 export function BodyTestClient({ memberId, memberName, initialTests, defaultSex, defaultAge }: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const shouldReduce = useReducedMotion();
-  const [tests, setTests] = useState<BodyTestRecord[]>(sortByDateDesc(initialTests));
+  const [tests, setTests] = useState<BodyTestRecord[]>(() => sortByDateDesc(initialTests));
   const [deleteTarget, setDeleteTarget] = useState<BodyTestRecord | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -61,8 +61,8 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
   const bfChange = latest && prev ? latest.bodyFatPct - prev.bodyFatPct : null;
 
   // Compute chart points in chronological order from the sorted-desc list
-  const chartPoints = [...tests]
-    .reverse()
+  const chartPoints = tests
+    .toReversed()
     .map((t) => ({
       date: `${MONTHS[new Date(t.date).getMonth()]} ${new Date(t.date).getDate()}`,
       weight: parseFloat(t.weight.toFixed(1)),
@@ -78,7 +78,7 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
 
   function handleSaved(test: BodyTestRecord) {
     setTests((current) => sortByDateDesc([test, ...current]));
-    router.refresh();
+    refresh();
   }
 
   async function handleDeleteConfirm() {
@@ -93,7 +93,7 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
       }
       setTests((current) => current.filter((t) => t._id !== deleteTarget._id));
       toast.success('Body test deleted');
-      router.refresh();
+      refresh();
     } finally {
       setDeleting(false);
       setDeleteTarget(null);
@@ -149,14 +149,14 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
             </div>
 
             {/* Test cards */}
-            <motion.div
+            <m.div
               className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
               variants={variants.staggerContainer}
               initial="hidden"
               animate="visible"
             >
               {tests.map((test) => (
-                <motion.div
+                <m.div
                   key={test._id}
                   variants={shouldReduce ? undefined : variants.staggerItem}
                   initial={shouldReduce ? { opacity: 1 } : undefined}
@@ -185,11 +185,11 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
                     className="absolute right-2 top-2 size-8 text-foreground/30 hover:bg-muted hover:text-destructive"
                     aria-label="Delete"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="size-4" />
                   </Button>
-                </motion.div>
+                </m.div>
               ))}
-            </motion.div>
+            </m.div>
           </>
         )}
       </div>
@@ -199,7 +199,7 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
           <DialogHeader>
             <DialogTitle>Delete Body Test</DialogTitle>
             <DialogDescription className="text-foreground/65">
-              {deleteTarget ? formatTestDate(deleteTarget.date) : ''} — are you sure? This cannot be undone.
+              {deleteTarget ? formatTestDate(deleteTarget.date) : ''}: are you sure? This cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

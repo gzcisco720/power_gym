@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -15,7 +15,7 @@ import { FoodPickerDialog } from '@/components/nutrition/food-picker-dialog';
 import type { IDailyLogMeal } from '@/lib/db/models/nutrition-daily-log.model';
 import type { ISelfMeal, ISelfMealItem } from '@/lib/db/models/self-nutrition-log.model';
 import type { MacroSnapshot } from '@/lib/nutrition/macros';
-import type { PickedFood } from '@/components/nutrition/food-picker';
+import type { PickedFood } from '@/components/nutrition/food-picker.types';
 import { NutritionPlanCompareDialog } from '@/components/nutrition/nutrition-plan-compare-dialog';
 import type { PlanDayType } from '@/components/nutrition/nutrition-plan-compare-dialog';
 
@@ -99,79 +99,100 @@ function pickedFoodToItem(picked: PickedFood): ISelfMealItem {
   return item;
 }
 
+interface SelfNutritionDayViewState {
+  date: string;
+  log: SelfNutritionLog | null;
+  pickerForMeal: number | null;
+  submittingComplete: boolean;
+  confirmOpen: boolean;
+  celebrationMacros: { proteinG: number; carbsG: number; fatG: number } | null;
+  compareOpen: boolean;
+}
+
+type SelfNutritionDayViewAction =
+  | { type: 'SET_DATE'; value: string }
+  | { type: 'SET_LOG'; value: SelfNutritionLog | null }
+  | { type: 'SET_PICKER_FOR_MEAL'; value: number | null }
+  | { type: 'SET_SUBMITTING_COMPLETE'; value: boolean }
+  | { type: 'SET_CONFIRM_OPEN'; value: boolean }
+  | { type: 'SET_CELEBRATION_MACROS'; value: { proteinG: number; carbsG: number; fatG: number } | null }
+  | { type: 'SET_COMPARE_OPEN'; value: boolean };
+
+function selfNutritionDayViewReducer(state: SelfNutritionDayViewState, action: SelfNutritionDayViewAction): SelfNutritionDayViewState {
+  switch (action.type) {
+    case 'SET_DATE': return { ...state, date: action.value };
+    case 'SET_LOG': return { ...state, log: action.value };
+    case 'SET_PICKER_FOR_MEAL': return { ...state, pickerForMeal: action.value };
+    case 'SET_SUBMITTING_COMPLETE': return { ...state, submittingComplete: action.value };
+    case 'SET_CONFIRM_OPEN': return { ...state, confirmOpen: action.value };
+    case 'SET_CELEBRATION_MACROS': return { ...state, celebrationMacros: action.value };
+    case 'SET_COMPARE_OPEN': return { ...state, compareOpen: action.value };
+    default: return state;
+  }
+}
+
 export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChange, initialTemplateId, initialDayTypeName, planDayTypes, noDateNav = false }: Props) {
   // initialDate is intentionally used only as the initial value for date state.
   // The parent supplies a `key` prop to force remount when URL date changes.
-  const [date, setDateInternal] = useState(initialDate);
-
-  const [log, setLog] = useState<SelfNutritionLog | null>(null);
-  const [pickerForMeal, setPickerForMeal] = useState<number | null>(null);
-  const [submittingComplete, setSubmittingComplete] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [celebrationMacros, setCelebrationMacros] = useState<{
-    proteinG: number;
-    carbsG: number;
-    fatG: number;
-  } | null>(null);
-  const [compareOpen, setCompareOpen] = useState(false);
+  const [state, dispatch] = useReducer(selfNutritionDayViewReducer, {
+    date: initialDate, log: null, pickerForMeal: null, submittingComplete: false,
+    confirmOpen: false, celebrationMacros: null, compareOpen: false,
+  });
+  const { date, log, pickerForMeal, submittingComplete, confirmOpen, celebrationMacros, compareOpen } = state;
 
   function setDate(next: string): void {
-    setDateInternal(next);
+    dispatch({ type: 'SET_DATE', value: next });
     onDateChange?.(next);
   }
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
 
     async function load(): Promise<void> {
-      const res = await fetch(`/api/me/nutrition-logs/${date}`);
-      if (cancelled) return;
+      const res = await fetch(`/api/me/nutrition-logs/${date}`, { signal: controller.signal });
       const data = res.ok ? ((await res.json()) as SelfNutritionLog | null) : null;
 
       if (data) {
-        setLog(data);
+        dispatch({ type: 'SET_LOG', value: data });
         return;
       }
 
       // No existing log — check if we should init from template
       if (initialTemplateId && initialDayTypeName) {
-        const tplRes = await fetch(`/api/nutrition-templates/${initialTemplateId}`);
-        if (!cancelled && tplRes.ok) {
+        const tplRes = await fetch(`/api/nutrition-templates/${initialTemplateId}`, { signal: controller.signal });
+        if (tplRes.ok) {
           const tpl = (await tplRes.json()) as {
             dayTypes: Array<{ name: string; meals: ISelfMeal[] }>;
           };
           const dayType = tpl.dayTypes.find((dt) => dt.name === initialDayTypeName);
           if (dayType) {
-            setLog({
+            dispatch({ type: 'SET_LOG', value: {
               date,
               sourceTemplateId: initialTemplateId,
               sourceTemplateDayTypeName: initialDayTypeName,
               dayLabel: initialDayTypeName,
               meals: dayType.meals.map((m) => ({ ...m, completed: false })),
               dayCompleted: false,
-            });
+            } });
             return;
           }
         }
       }
 
       // Fallback to freestyle defaults
-      if (!cancelled) {
-        setLog({
-          date,
-          sourceTemplateId: null,
-          sourceTemplateDayTypeName: null,
-          dayLabel: 'Freestyle',
-          meals: DEFAULT_MEALS,
-          dayCompleted: false,
-        });
-      }
+      dispatch({ type: 'SET_LOG', value: {
+        date,
+        sourceTemplateId: null,
+        sourceTemplateDayTypeName: null,
+        dayLabel: 'Freestyle',
+        meals: DEFAULT_MEALS,
+        dayCompleted: false,
+      } });
     }
 
-    void load();
-    return () => {
-      cancelled = true;
-    };
+    void load().catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, [date, initialTemplateId, initialDayTypeName]);
 
   const macros = useMemo(
@@ -192,7 +213,7 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
   const sealedTotal = useMemo(() => (log ? sealedKcal(log.meals) : 0), [log]);
 
   async function persist(next: SelfNutritionLog): Promise<void> {
-    setLog(next);
+    dispatch({ type: 'SET_LOG', value: next });
     if (readOnly) return;
     await fetch(`/api/me/nutrition-logs/${date}`, {
       method: 'PUT',
@@ -209,20 +230,20 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
 
   async function markDayComplete(opts: { markAll: boolean }): Promise<void> {
     if (!log) return;
-    setSubmittingComplete(true);
+    dispatch({ type: 'SET_SUBMITTING_COMPLETE', value: true });
     const nextMeals = opts.markAll
       ? log.meals.map((m) => ({ ...m, completed: true }))
       : log.meals;
     const next: SelfNutritionLog = { ...log, meals: nextMeals, dayCompleted: true };
     const completedMacros = aggregate(nextMeals);
     await persist(next);
-    setSubmittingComplete(false);
-    setConfirmOpen(false);
-    setCelebrationMacros({
+    dispatch({ type: 'SET_SUBMITTING_COMPLETE', value: false });
+    dispatch({ type: 'SET_CONFIRM_OPEN', value: false });
+    dispatch({ type: 'SET_CELEBRATION_MACROS', value: {
       proteinG: Math.round(completedMacros.protein),
       carbsG: Math.round(completedMacros.carbs),
       fatG: Math.round(completedMacros.fat),
-    });
+    } });
   }
 
   if (!log) return <div className="p-4 text-foreground/65 text-sm">Loading…</div>;
@@ -254,12 +275,13 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
               selectedDate={date}
               trigger={
                 <button
+                  type="button"
                   className="inline-flex items-center gap-1 text-sm font-semibold hover:underline"
                   disabled={readOnly}
                   aria-label={`Open calendar (${date})`}
                 >
                   {date}
-                  <ChevronDown className="h-3 w-3 text-foreground/65" />
+                  <ChevronDown className="size-3 text-foreground/65" />
                 </button>
               }
             />
@@ -281,10 +303,10 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
         <div className="space-y-3">
           {log.meals.map((m, i) => (
             <MealSection
-              key={i}
+              key={m.name}
               meal={m as unknown as IDailyLogMeal}
               locked={isLocked}
-              onAddFood={() => setPickerForMeal(i)}
+              onAddFood={() => dispatch({ type: 'SET_PICKER_FOR_MEAL', value: i })}
               onToggleComplete={() => {
                 const next: SelfNutritionLog = {
                   ...log,
@@ -310,7 +332,7 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
         <FoodPickerDialog
           open={pickerForMeal !== null}
           onOpenChange={(o) => {
-            if (!o) setPickerForMeal(null);
+            if (!o) dispatch({ type: 'SET_PICKER_FOR_MEAL', value: null });
           }}
           memberId={null}
           onSelect={(picked) => {
@@ -322,7 +344,7 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
                 j === pickerForMeal ? { ...mm, items: [...mm.items, item] } : mm,
               ),
             };
-            setPickerForMeal(null);
+            dispatch({ type: 'SET_PICKER_FOR_MEAL', value: null });
             void persist(next);
           }}
         />
@@ -361,14 +383,14 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
           dayCompleted={log.dayCompleted}
           kcal={log.dayCompleted ? Math.round(sealedTotal) : Math.round(macros.kcal)}
           totalItems={totalItems}
-          onRequestComplete={() => setConfirmOpen(true)}
+          onRequestComplete={() => dispatch({ type: 'SET_CONFIRM_OPEN', value: true })}
           submitting={submittingComplete}
         />
       )}
 
       <DayCompleteConfirmDialog
         open={confirmOpen}
-        onOpenChange={setConfirmOpen}
+        onOpenChange={(v) => dispatch({ type: 'SET_CONFIRM_OPEN', value: v })}
         totalMeals={log.meals.length}
         completedMeals={completedMeals}
         sealedKcal={Math.round(sealedTotal)}
@@ -385,9 +407,9 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
               carbsG={celebrationMacros.carbsG}
               fatG={celebrationMacros.fatG}
               onComplete={() => {
-                setCelebrationMacros(null);
+                dispatch({ type: 'SET_CELEBRATION_MACROS', value: null });
                 if (planDayTypes && planDayTypes.length > 0) {
-                  setCompareOpen(true);
+                  dispatch({ type: 'SET_COMPARE_OPEN', value: true });
                 }
               }}
             />
@@ -398,7 +420,7 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
       {planDayTypes && planDayTypes.length > 0 && log && (
         <NutritionPlanCompareDialog
           open={compareOpen}
-          onOpenChange={setCompareOpen}
+          onOpenChange={(v) => dispatch({ type: 'SET_COMPARE_OPEN', value: v })}
           date={date}
           loggedKcal={Math.round(macros.kcal)}
           loggedProtein={Math.round(macros.protein)}

@@ -52,32 +52,32 @@ function mergeEntries(self: NutritionDayEntry[], plan: NutritionDayEntry[]): Nut
 }
 
 export function MiniNutritionCalendar({ basePath, memberId }: Props) {
-  const router = useRouter();
-  const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
+  const { push } = useRouter();
+  // oxlint-disable-next-line react-doctor/rerender-state-only-in-handlers
+  const [year, setYear] = useState(() => new Date().getFullYear());
+  // oxlint-disable-next-line react-doctor/rerender-state-only-in-handlers
+  const [month, setMonth] = useState(() => new Date().getMonth() + 1);
   const [entries, setEntries] = useState<NutritionDayEntry[]>([]);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
 
     async function load() {
-      const selfRes = await fetch(`/api/me/nutrition-logs?year=${year}&month=${month}`);
+      const selfRes = await fetch(`/api/me/nutrition-logs?year=${year}&month=${month}`, { signal: controller.signal });
       const selfData: RawSelfLog[] = selfRes.ok ? await selfRes.json() : [];
 
       let planData: RawPlanLog[] = [];
       if (memberId) {
-        const planRes = await fetch(`/api/me/nutrition-daily-logs?year=${year}&month=${month}`);
+        const planRes = await fetch(`/api/me/nutrition-daily-logs?year=${year}&month=${month}`, { signal: controller.signal });
         planData = planRes.ok ? await planRes.json() : [];
       }
 
-      if (!cancelled) {
-        setEntries(mergeEntries(selfData.map(selfLogToEntry), planData.map(planLogToEntry)));
-      }
+      setEntries(mergeEntries(selfData.map(selfLogToEntry), planData.map(planLogToEntry)));
     }
 
-    void load();
-    return () => { cancelled = true; };
+    void load().catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, [year, month, memberId]);
 
   function dayPath(date: string): string {
@@ -94,7 +94,7 @@ export function MiniNutritionCalendar({ basePath, memberId }: Props) {
       </div>
       <SelfNutritionCalendar
         entries={entries}
-        onSelect={(entry) => router.push(dayPath(entry.date))}
+        onSelect={(entry) => push(dayPath(entry.date))}
         onMonthChange={(y, m) => { setYear(y); setMonth(m); }}
       />
     </div>

@@ -46,7 +46,7 @@ export function DayTabs({ days, activeIndex, onChange, onAddDay, readOnly = fals
           onClick={onAddDay}
           className="inline-flex items-center gap-1 py-1.5 px-2 text-xs text-foreground/65 hover:text-foreground transition-colors shrink-0 cursor-pointer"
         >
-          <Plus className="h-3.5 w-3.5" /> Add Day
+          <Plus className="size-3.5" /> Add Day
         </button>
       )}
     </div>
