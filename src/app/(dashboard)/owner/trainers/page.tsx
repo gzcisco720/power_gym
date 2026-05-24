@@ -13,8 +13,10 @@ export default async function OwnerTrainersPage() {
   const userRepo = new MongoUserRepository();
   const sessionRepo = new MongoWorkoutSessionRepository();
 
-  const trainers = await userRepo.findByRole('trainer');
-  const allMembers = await userRepo.findAllMembers();
+  const [trainers, allMembers] = await Promise.all([
+    userRepo.findByRole('trainer'),
+    userRepo.findAllMembers(),
+  ]);
 
   const startOfMonth = new Date();
   startOfMonth.setDate(1);

@@ -10,8 +10,10 @@ export default async function OwnerCalendarPage() {
 
   await connectDB();
   const userRepo = new MongoUserRepository();
-  const trainers = await userRepo.findByRole('trainer');
-  const members = await userRepo.findAllMembers();
+  const [trainers, members] = await Promise.all([
+    userRepo.findByRole('trainer'),
+    userRepo.findAllMembers(),
+  ]);
 
   const trainerDtos = [
     { _id: session.user.id ?? '', name: 'Me (Owner)' },
