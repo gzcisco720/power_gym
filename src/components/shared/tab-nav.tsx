@@ -17,7 +17,7 @@ interface TabNavProps {
 export function TabNav({ base, tabs }: TabNavProps) {
   const pathname = usePathname();
   return (
-    <div className="flex gap-0 border-b border-foreground/[.06] px-4 sm:px-8 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="flex gap-0 border-b border-foreground/[.06] px-4 sm:px-8 overflow-x-auto">
       {tabs.map((tab) => {
         const href = `${base}${tab.segment}`;
         const isActive = tab.segment === '' ? pathname === href : pathname.startsWith(href);

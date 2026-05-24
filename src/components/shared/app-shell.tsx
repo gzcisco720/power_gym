@@ -166,7 +166,7 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, gy
         </div>
       </div>
 
-      <nav className="flex-1 space-y-1 px-2 py-4">
+      <nav className="flex-1 overflow-y-auto space-y-1 px-2 py-4">
         {groups.map((group) => (
           <div key={group.group} className="mb-2">
             <div className="px-3 pb-1 pt-2 text-[8px] font-semibold uppercase tracking-[2px] text-foreground/25">
@@ -300,7 +300,7 @@ export function AppShell({ role, userName, userEmail = '', avatarUrl = null, gym
           <span className="text-[11px] font-bold tracking-[3px] text-white">{gymDisplayName}</span>
         </div>
 
-        <main className="flex-1 overflow-y-auto bg-[#050505] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-[#050505]">{children}</main>
       </div>
     </div>
   );
