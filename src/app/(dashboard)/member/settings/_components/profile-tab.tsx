@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -37,6 +37,7 @@ const FITNESS_LEVELS = [
 export function MemberProfileTab(props: Props) {
   const { refresh } = useRouter();
   const [avatarUrl, setAvatarUrl] = useState(props.avatarUrl);
+  useEffect(() => { setAvatarUrl(props.avatarUrl); }, [props.avatarUrl]);
   const [saving, setSaving] = useState(false);
   const [editingEmail, setEditingEmail] = useState(false);
   const [newEmail, setNewEmail] = useState('');

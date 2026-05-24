@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -30,6 +30,11 @@ export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule, onSave
   });
   const [iterate, setIterate] = useState(initialSchedule.iterate);
   const [overrides, setOverrides] = useState<ICalendarOverride[]>(initialSchedule.calendarOverrides);
+
+  useEffect(() => {
+    setIterate(initialSchedule.iterate);
+    setOverrides(initialSchedule.calendarOverrides);
+  }, [initialSchedule]);
   const [newDate, setNewDate] = useState('');
   const [newDayType, setNewDayType] = useState(dayTypeNames[0] ?? '');
   const [saving, setSaving] = useState(false);
