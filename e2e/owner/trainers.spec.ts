@@ -16,7 +16,7 @@ test.describe('Owner: Trainers', () => {
     await page.waitForURL(/\/owner\/trainers\/.+$/);
     await page.locator('a[href*="/owner/trainers/"][href$="/members"]').click();
     await page.waitForURL(/\/owner\/trainers\/.+\/members$/);
-    await expect(page.getByText('Test Member', { exact: true })).toBeVisible();
+    await expect(page.getByText('Test Member', { exact: true }).first()).toBeVisible();
   });
 
   test('View link navigates to trainer hub', async ({ page }) => {

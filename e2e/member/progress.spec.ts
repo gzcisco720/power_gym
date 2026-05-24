@@ -13,6 +13,8 @@ test.describe('Member: Progress', () => {
     await expect(page.getByText('Strength Progress')).toBeVisible();
     await expect(page.getByRole('combobox')).toBeVisible();
     await page.selectOption('select', { label: 'Bench Press' });
-    await expect(page.locator('.recharts-responsive-container')).toBeVisible();
+    // Scope to the Strength Progress card (contains the combobox) to avoid matching the body-chart container
+    const strengthCard = page.locator('div.rounded-xl').filter({ has: page.getByRole('combobox') });
+    await expect(strengthCard.locator('.recharts-responsive-container')).toBeVisible({ timeout: 8000 });
   });
 });

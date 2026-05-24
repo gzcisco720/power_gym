@@ -1,6 +1,4 @@
 import { redirect } from 'next/navigation';
-import { auth } from '@/lib/auth/auth';
-import { ROLE_DEFAULT_PATH } from '@/lib/auth/middleware-helpers';
 import { connectDB } from '@/lib/db/connect';
 import { MongoInviteRepository } from '@/lib/repositories/invite.repository';
 import { validateInviteToken } from '@/lib/auth/invite';
@@ -11,9 +9,6 @@ interface Props {
 }
 
 export default async function RegisterPage({ searchParams }: Props) {
-  const session = await auth();
-  if (session?.user) redirect(ROLE_DEFAULT_PATH[session.user.role]);
-
   const { token } = await searchParams;
 
   let isFirstUser = false;
