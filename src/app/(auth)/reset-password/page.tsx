@@ -6,10 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 function ResetPasswordForm() {
-  const searchParams = useSearchParams();
+  const { get } = useSearchParams();
   const { push } = useRouter();
-  const token = searchParams.get('token') ?? '';
-  const userId = searchParams.get('id') ?? '';
+  const token = get('token') ?? '';
+  const userId = get('id') ?? '';
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
