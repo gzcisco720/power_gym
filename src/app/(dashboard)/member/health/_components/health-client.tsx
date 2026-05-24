@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useReducer, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Pencil, Check, RotateCcw, Trash2, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
@@ -60,6 +60,32 @@ type ConfirmAction =
   | { type: 'end-medication'; id: string }
   | { type: 'delete-medication'; id: string };
 
+interface InjurySectionState {
+  sheetOpen: boolean;
+  editingInjury: SerializedInjury | undefined;
+  historyOpen: boolean;
+  confirm: ConfirmAction | null;
+  actioning: boolean;
+}
+
+type InjurySectionAction =
+  | { type: 'SET_SHEET_OPEN'; value: boolean }
+  | { type: 'SET_EDITING_INJURY'; value: SerializedInjury | undefined }
+  | { type: 'SET_HISTORY_OPEN'; value: boolean }
+  | { type: 'SET_CONFIRM'; value: ConfirmAction | null }
+  | { type: 'SET_ACTIONING'; value: boolean };
+
+function injurySectionReducer(state: InjurySectionState, action: InjurySectionAction): InjurySectionState {
+  switch (action.type) {
+    case 'SET_SHEET_OPEN': return { ...state, sheetOpen: action.value };
+    case 'SET_EDITING_INJURY': return { ...state, editingInjury: action.value };
+    case 'SET_HISTORY_OPEN': return { ...state, historyOpen: action.value };
+    case 'SET_CONFIRM': return { ...state, confirm: action.value };
+    case 'SET_ACTIONING': return { ...state, actioning: action.value };
+    default: return state;
+  }
+}
+
 function InjurySection({
   memberId,
   injuries,
@@ -70,11 +96,10 @@ function InjurySection({
   onInjuriesChange: (injuries: SerializedInjury[]) => void;
 }) {
   const { refresh } = useRouter();
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [editingInjury, setEditingInjury] = useState<SerializedInjury | undefined>();
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [confirm, setConfirm] = useState<ConfirmAction | null>(null);
-  const [actioning, setActioning] = useState(false);
+  const [state, dispatch] = useReducer(injurySectionReducer, {
+    sheetOpen: false, editingInjury: undefined, historyOpen: false, confirm: null, actioning: false,
+  });
+  const { sheetOpen, editingInjury, historyOpen, confirm, actioning } = state;
 
   const { active, resolved } = useMemo(
     () => ({
@@ -85,13 +110,13 @@ function InjurySection({
   );
 
   function openAdd() {
-    setEditingInjury(undefined);
-    setSheetOpen(true);
+    dispatch({ type: 'SET_EDITING_INJURY', value: undefined });
+    dispatch({ type: 'SET_SHEET_OPEN', value: true });
   }
 
   function openEdit(injury: SerializedInjury) {
-    setEditingInjury(injury);
-    setSheetOpen(true);
+    dispatch({ type: 'SET_EDITING_INJURY', value: injury });
+    dispatch({ type: 'SET_SHEET_OPEN', value: true });
   }
 
   function handleSaved(saved: SerializedInjury) {
@@ -105,7 +130,7 @@ function InjurySection({
 
   async function executeConfirm() {
     if (!confirm) return;
-    setActioning(true);
+    dispatch({ type: 'SET_ACTIONING', value: true });
     try {
       if (confirm.type === 'resolve') {
         const res = await fetch(`/api/members/${memberId}/injuries/${confirm.id}`, {
@@ -137,8 +162,8 @@ function InjurySection({
         refresh();
       }
     } finally {
-      setActioning(false);
-      setConfirm(null);
+      dispatch({ type: 'SET_ACTIONING', value: false });
+      dispatch({ type: 'SET_CONFIRM', value: null });
     }
   }
 
@@ -224,7 +249,7 @@ function InjurySection({
                     variant="ghost"
                     size="icon-sm"
                     aria-label="Mark as resolved"
-                    onClick={() => setConfirm({ type: 'resolve', id: injury._id })}
+                    onClick={() => dispatch({ type: 'SET_CONFIRM', value: { type: 'resolve', id: injury._id } })}
                     className="text-foreground/65 hover:text-foreground"
                   >
                     <Check className="size-3.5" />
@@ -233,7 +258,7 @@ function InjurySection({
                     variant="ghost"
                     size="icon-sm"
                     aria-label="Delete injury"
-                    onClick={() => setConfirm({ type: 'delete-injury', id: injury._id })}
+                    onClick={() => dispatch({ type: 'SET_CONFIRM', value: { type: 'delete-injury', id: injury._id } })}
                     className="text-foreground/65 hover:text-destructive"
                   >
                     <Trash2 className="size-3.5" />
@@ -249,7 +274,7 @@ function InjurySection({
         <div className="mt-3">
           <button
             type="button"
-            onClick={() => setHistoryOpen((o) => !o)}
+            onClick={() => dispatch({ type: 'SET_HISTORY_OPEN', value: !historyOpen })}
             aria-expanded={historyOpen}
             className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-foreground/40 font-semibold hover:text-foreground/65 transition-colors"
           >
@@ -281,7 +306,7 @@ function InjurySection({
                         variant="ghost"
                         size="icon-sm"
                         aria-label="Reopen injury"
-                        onClick={() => setConfirm({ type: 'reopen', id: injury._id })}
+                        onClick={() => dispatch({ type: 'SET_CONFIRM', value: { type: 'reopen', id: injury._id } })}
                         className="text-foreground/65 hover:text-foreground"
                       >
                         <RotateCcw className="size-3.5" />
@@ -290,7 +315,7 @@ function InjurySection({
                         variant="ghost"
                         size="icon-sm"
                         aria-label="Delete injury"
-                        onClick={() => setConfirm({ type: 'delete-injury', id: injury._id })}
+                        onClick={() => dispatch({ type: 'SET_CONFIRM', value: { type: 'delete-injury', id: injury._id } })}
                         className="text-foreground/65 hover:text-destructive"
                       >
                         <Trash2 className="size-3.5" />
@@ -307,21 +332,21 @@ function InjurySection({
       <InjurySheet
         key={editingInjury?._id ?? 'new-injury'}
         open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        onOpenChange={(v) => dispatch({ type: 'SET_SHEET_OPEN', value: v })}
         memberId={memberId}
         existing={editingInjury}
         onSaved={handleSaved}
       />
 
       {/* Resolve confirm */}
-      <Dialog open={confirm?.type === 'resolve'} onOpenChange={(o) => !o && setConfirm(null)}>
+      <Dialog open={confirm?.type === 'resolve'} onOpenChange={(o) => !o && dispatch({ type: 'SET_CONFIRM', value: null })}>
         <DialogContent className="sm:max-w-sm">
           <DialogTitle>Mark as resolved?</DialogTitle>
           <p className="text-xs text-foreground/65 -mt-1">
             This will move the record to History. You can reopen it anytime.
           </p>
           <div className="flex justify-end gap-2 mt-3">
-            <Button variant="ghost" size="sm" onClick={() => setConfirm(null)} className="text-xs">Cancel</Button>
+            <Button variant="ghost" size="sm" onClick={() => dispatch({ type: 'SET_CONFIRM', value: null })} className="text-xs">Cancel</Button>
             <Button size="sm" onClick={executeConfirm} disabled={actioning} className="text-xs font-semibold">
               {actioning ? <Loader2 className="size-3 animate-spin" /> : 'Mark Resolved'}
             </Button>
@@ -330,14 +355,14 @@ function InjurySection({
       </Dialog>
 
       {/* Reopen confirm */}
-      <Dialog open={confirm?.type === 'reopen'} onOpenChange={(o) => !o && setConfirm(null)}>
+      <Dialog open={confirm?.type === 'reopen'} onOpenChange={(o) => !o && dispatch({ type: 'SET_CONFIRM', value: null })}>
         <DialogContent className="sm:max-w-sm">
           <DialogTitle>Reopen this injury?</DialogTitle>
           <p className="text-xs text-foreground/65 -mt-1">
             Use this if the issue has returned.
           </p>
           <div className="flex justify-end gap-2 mt-3">
-            <Button variant="ghost" size="sm" onClick={() => setConfirm(null)} className="text-xs">Cancel</Button>
+            <Button variant="ghost" size="sm" onClick={() => dispatch({ type: 'SET_CONFIRM', value: null })} className="text-xs">Cancel</Button>
             <Button size="sm" onClick={executeConfirm} disabled={actioning} className="text-xs font-semibold">
               {actioning ? <Loader2 className="size-3 animate-spin" /> : 'Reopen'}
             </Button>
@@ -346,12 +371,12 @@ function InjurySection({
       </Dialog>
 
       {/* Delete injury confirm */}
-      <Dialog open={confirm?.type === 'delete-injury'} onOpenChange={(o) => !o && setConfirm(null)}>
+      <Dialog open={confirm?.type === 'delete-injury'} onOpenChange={(o) => !o && dispatch({ type: 'SET_CONFIRM', value: null })}>
         <DialogContent className="sm:max-w-sm">
           <DialogTitle>Delete this record?</DialogTitle>
           <p className="text-xs text-foreground/65 -mt-1">This cannot be undone.</p>
           <div className="flex justify-end gap-2 mt-3">
-            <Button variant="ghost" size="sm" onClick={() => setConfirm(null)} className="text-xs">Cancel</Button>
+            <Button variant="ghost" size="sm" onClick={() => dispatch({ type: 'SET_CONFIRM', value: null })} className="text-xs">Cancel</Button>
             <Button variant="destructive" size="sm" onClick={executeConfirm} disabled={actioning} className="text-xs font-semibold">
               {actioning ? <Loader2 className="size-3 animate-spin" /> : 'Delete'}
             </Button>
@@ -364,6 +389,32 @@ function InjurySection({
 
 // ─── Medication Section ───────────────────────────────────────────────────────
 
+interface MedicationSectionState {
+  dialogOpen: boolean;
+  editingMed: SerializedMedication | undefined;
+  endedOpen: boolean;
+  confirm: ConfirmAction | null;
+  actioning: boolean;
+}
+
+type MedicationSectionAction =
+  | { type: 'SET_DIALOG_OPEN'; value: boolean }
+  | { type: 'SET_EDITING_MED'; value: SerializedMedication | undefined }
+  | { type: 'SET_ENDED_OPEN'; value: boolean }
+  | { type: 'SET_CONFIRM'; value: ConfirmAction | null }
+  | { type: 'SET_ACTIONING'; value: boolean };
+
+function medicationSectionReducer(state: MedicationSectionState, action: MedicationSectionAction): MedicationSectionState {
+  switch (action.type) {
+    case 'SET_DIALOG_OPEN': return { ...state, dialogOpen: action.value };
+    case 'SET_EDITING_MED': return { ...state, editingMed: action.value };
+    case 'SET_ENDED_OPEN': return { ...state, endedOpen: action.value };
+    case 'SET_CONFIRM': return { ...state, confirm: action.value };
+    case 'SET_ACTIONING': return { ...state, actioning: action.value };
+    default: return state;
+  }
+}
+
 function MedicationSection({
   memberId,
   medications,
@@ -374,11 +425,10 @@ function MedicationSection({
   onMedicationsChange: (medications: SerializedMedication[]) => void;
 }) {
   const { refresh } = useRouter();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingMed, setEditingMed] = useState<SerializedMedication | undefined>();
-  const [endedOpen, setEndedOpen] = useState(false);
-  const [confirm, setConfirm] = useState<ConfirmAction | null>(null);
-  const [actioning, setActioning] = useState(false);
+  const [state, dispatch] = useReducer(medicationSectionReducer, {
+    dialogOpen: false, editingMed: undefined, endedOpen: false, confirm: null, actioning: false,
+  });
+  const { dialogOpen, editingMed, endedOpen, confirm, actioning } = state;
 
   const { active, ended } = useMemo(
     () => ({
@@ -389,13 +439,13 @@ function MedicationSection({
   );
 
   function openAdd() {
-    setEditingMed(undefined);
-    setDialogOpen(true);
+    dispatch({ type: 'SET_EDITING_MED', value: undefined });
+    dispatch({ type: 'SET_DIALOG_OPEN', value: true });
   }
 
   function openEdit(med: SerializedMedication) {
-    setEditingMed(med);
-    setDialogOpen(true);
+    dispatch({ type: 'SET_EDITING_MED', value: med });
+    dispatch({ type: 'SET_DIALOG_OPEN', value: true });
   }
 
   function handleSaved(saved: SerializedMedication) {
@@ -409,7 +459,7 @@ function MedicationSection({
 
   async function executeConfirm() {
     if (!confirm) return;
-    setActioning(true);
+    dispatch({ type: 'SET_ACTIONING', value: true });
     try {
       if (confirm.type === 'end-medication') {
         const res = await fetch(`/api/members/${memberId}/medications/${confirm.id}`, {
@@ -430,8 +480,8 @@ function MedicationSection({
         refresh();
       }
     } finally {
-      setActioning(false);
-      setConfirm(null);
+      dispatch({ type: 'SET_ACTIONING', value: false });
+      dispatch({ type: 'SET_CONFIRM', value: null });
     }
   }
 
@@ -484,7 +534,7 @@ function MedicationSection({
                     variant="ghost"
                     size="icon-sm"
                     aria-label="End medication"
-                    onClick={() => setConfirm({ type: 'end-medication', id: med._id })}
+                    onClick={() => dispatch({ type: 'SET_CONFIRM', value: { type: 'end-medication', id: med._id } })}
                     className="text-foreground/65 hover:text-foreground"
                   >
                     <Check className="size-3.5" />
@@ -493,7 +543,7 @@ function MedicationSection({
                     variant="ghost"
                     size="icon-sm"
                     aria-label="Delete medication"
-                    onClick={() => setConfirm({ type: 'delete-medication', id: med._id })}
+                    onClick={() => dispatch({ type: 'SET_CONFIRM', value: { type: 'delete-medication', id: med._id } })}
                     className="text-foreground/65 hover:text-destructive"
                   >
                     <Trash2 className="size-3.5" />
@@ -509,7 +559,7 @@ function MedicationSection({
         <div className="mt-3">
           <button
             type="button"
-            onClick={() => setEndedOpen((o) => !o)}
+            onClick={() => dispatch({ type: 'SET_ENDED_OPEN', value: !endedOpen })}
             aria-expanded={endedOpen}
             className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-foreground/40 font-semibold hover:text-foreground/65 transition-colors"
           >
@@ -532,7 +582,7 @@ function MedicationSection({
                       variant="ghost"
                       size="icon-sm"
                       aria-label="Delete medication"
-                      onClick={() => setConfirm({ type: 'delete-medication', id: med._id })}
+                      onClick={() => dispatch({ type: 'SET_CONFIRM', value: { type: 'delete-medication', id: med._id } })}
                       className="text-foreground/65 hover:text-destructive shrink-0"
                     >
                       <Trash2 className="size-3.5" />
@@ -548,19 +598,19 @@ function MedicationSection({
       <MedicationDialog
         key={editingMed?._id ?? 'new-medication'}
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onOpenChange={(v) => dispatch({ type: 'SET_DIALOG_OPEN', value: v })}
         memberId={memberId}
         existing={editingMed}
         onSaved={handleSaved}
       />
 
       {/* End confirm */}
-      <Dialog open={confirm?.type === 'end-medication'} onOpenChange={(o) => !o && setConfirm(null)}>
+      <Dialog open={confirm?.type === 'end-medication'} onOpenChange={(o) => !o && dispatch({ type: 'SET_CONFIRM', value: null })}>
         <DialogContent className="sm:max-w-sm">
           <DialogTitle>Mark as ended?</DialogTitle>
           <p className="text-xs text-foreground/65 -mt-1">This will move it to the Ended section.</p>
           <div className="flex justify-end gap-2 mt-3">
-            <Button variant="ghost" size="sm" onClick={() => setConfirm(null)} className="text-xs">Cancel</Button>
+            <Button variant="ghost" size="sm" onClick={() => dispatch({ type: 'SET_CONFIRM', value: null })} className="text-xs">Cancel</Button>
             <Button size="sm" onClick={executeConfirm} disabled={actioning} className="text-xs font-semibold">
               {actioning ? <Loader2 className="size-3 animate-spin" /> : 'Mark Ended'}
             </Button>
@@ -569,12 +619,12 @@ function MedicationSection({
       </Dialog>
 
       {/* Delete confirm */}
-      <Dialog open={confirm?.type === 'delete-medication'} onOpenChange={(o) => !o && setConfirm(null)}>
+      <Dialog open={confirm?.type === 'delete-medication'} onOpenChange={(o) => !o && dispatch({ type: 'SET_CONFIRM', value: null })}>
         <DialogContent className="sm:max-w-sm">
           <DialogTitle>Delete this medication record?</DialogTitle>
           <p className="text-xs text-foreground/65 -mt-1">This cannot be undone.</p>
           <div className="flex justify-end gap-2 mt-3">
-            <Button variant="ghost" size="sm" onClick={() => setConfirm(null)} className="text-xs">Cancel</Button>
+            <Button variant="ghost" size="sm" onClick={() => dispatch({ type: 'SET_CONFIRM', value: null })} className="text-xs">Cancel</Button>
             <Button variant="destructive" size="sm" onClick={executeConfirm} disabled={actioning} className="text-xs font-semibold">
               {actioning ? <Loader2 className="size-3 animate-spin" /> : 'Delete'}
             </Button>

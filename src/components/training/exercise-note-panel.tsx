@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useReducer, useEffect } from 'react';
 
 interface NoteEntry {
   _id: string;
@@ -20,26 +20,51 @@ interface ExerciseNotePanelProps {
   sessionId: string;
 }
 
+interface ExerciseNotePanelState {
+  noteDoc: ExerciseNoteDoc | null;
+  newNote: string;
+  editingId: string | null;
+  editContent: string;
+  saving: boolean;
+}
+
+type ExerciseNotePanelAction =
+  | { type: 'SET_NOTE_DOC'; value: ExerciseNoteDoc | null }
+  | { type: 'SET_NEW_NOTE'; value: string }
+  | { type: 'SET_EDITING_ID'; value: string | null }
+  | { type: 'SET_EDIT_CONTENT'; value: string }
+  | { type: 'SET_SAVING'; value: boolean };
+
+function exerciseNotePanelReducer(state: ExerciseNotePanelState, action: ExerciseNotePanelAction): ExerciseNotePanelState {
+  switch (action.type) {
+    case 'SET_NOTE_DOC': return { ...state, noteDoc: action.value };
+    case 'SET_NEW_NOTE': return { ...state, newNote: action.value };
+    case 'SET_EDITING_ID': return { ...state, editingId: action.value };
+    case 'SET_EDIT_CONTENT': return { ...state, editContent: action.value };
+    case 'SET_SAVING': return { ...state, saving: action.value };
+    default: return state;
+  }
+}
+
 export function ExerciseNotePanel({ memberId, exerciseId, exerciseName, sessionId }: ExerciseNotePanelProps) {
-  const [noteDoc, setNoteDoc] = useState<ExerciseNoteDoc | null>(null);
-  const [newNote, setNewNote] = useState('');
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editContent, setEditContent] = useState('');
-  const [saving, setSaving] = useState(false);
+  const [state, dispatch] = useReducer(exerciseNotePanelReducer, {
+    noteDoc: null, newNote: '', editingId: null, editContent: '', saving: false,
+  });
+  const { noteDoc, newNote, editingId, editContent, saving } = state;
 
   // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
     fetch(`/api/exercise-notes?memberId=${memberId}&exerciseId=${exerciseId}`, { signal: controller.signal })
       .then((r) => r.json())
-      .then((data: ExerciseNoteDoc | null) => setNoteDoc(data))
+      .then((data: ExerciseNoteDoc | null) => dispatch({ type: 'SET_NOTE_DOC', value: data }))
       .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
     return () => controller.abort();
   }, [memberId, exerciseId]);
 
   async function addNote() {
     if (!newNote.trim()) return;
-    setSaving(true);
+    dispatch({ type: 'SET_SAVING', value: true });
     try {
       const res = await fetch('/api/exercise-notes', {
         method: 'POST',
@@ -54,17 +79,17 @@ export function ExerciseNotePanel({ memberId, exerciseId, exerciseName, sessionI
       });
       if (res.ok) {
         const updated = (await res.json()) as ExerciseNoteDoc;
-        setNoteDoc(updated);
-        setNewNote('');
+        dispatch({ type: 'SET_NOTE_DOC', value: updated });
+        dispatch({ type: 'SET_NEW_NOTE', value: '' });
       }
     } finally {
-      setSaving(false);
+      dispatch({ type: 'SET_SAVING', value: false });
     }
   }
 
   async function saveEdit(entryId: string) {
     if (!noteDoc || !editContent.trim()) return;
-    setSaving(true);
+    dispatch({ type: 'SET_SAVING', value: true });
     try {
       const res = await fetch(`/api/exercise-notes/${entryId}`, {
         method: 'PATCH',
@@ -73,11 +98,11 @@ export function ExerciseNotePanel({ memberId, exerciseId, exerciseName, sessionI
       });
       if (res.ok) {
         const updated = (await res.json()) as ExerciseNoteDoc;
-        setNoteDoc(updated);
-        setEditingId(null);
+        dispatch({ type: 'SET_NOTE_DOC', value: updated });
+        dispatch({ type: 'SET_EDITING_ID', value: null });
       }
     } finally {
-      setSaving(false);
+      dispatch({ type: 'SET_SAVING', value: false });
     }
   }
 
@@ -96,7 +121,7 @@ export function ExerciseNotePanel({ memberId, exerciseId, exerciseName, sessionI
             <div className="space-y-1">
               <textarea
                 value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
+                onChange={(e) => dispatch({ type: 'SET_EDIT_CONTENT', value: e.target.value })}
                 aria-label="Edit note"
                 className="w-full bg-[#111] border border-[#2a2a2a] rounded text-[10px] text-white p-1.5 resize-none"
                 rows={2}
@@ -112,7 +137,7 @@ export function ExerciseNotePanel({ memberId, exerciseId, exerciseName, sessionI
                 </button>
                 <button
                   type="button"
-                  onClick={() => setEditingId(null)}
+                  onClick={() => dispatch({ type: 'SET_EDITING_ID', value: null })}
                   className="text-[9px] text-[#555] hover:text-[#888]"
                 >
                   Cancel
@@ -124,7 +149,7 @@ export function ExerciseNotePanel({ memberId, exerciseId, exerciseName, sessionI
               <div className="text-[10px] text-[#888]">{entry.content}</div>
               <button
                 type="button"
-                onClick={() => { setEditingId(entry._id); setEditContent(entry.content); }}
+                onClick={() => { dispatch({ type: 'SET_EDITING_ID', value: entry._id }); dispatch({ type: 'SET_EDIT_CONTENT', value: entry.content }); }}
                 className="text-[8px] text-[#444] hover:text-[#666] shrink-0"
               >
                 Edit
@@ -138,7 +163,7 @@ export function ExerciseNotePanel({ memberId, exerciseId, exerciseName, sessionI
         <input
           type="text"
           value={newNote}
-          onChange={(e) => setNewNote(e.target.value)}
+          onChange={(e) => dispatch({ type: 'SET_NEW_NOTE', value: e.target.value })}
           placeholder="Add a note..."
           onKeyDown={(e) => { if (e.key === 'Enter') void addNote(); }}
           aria-label="New exercise note"

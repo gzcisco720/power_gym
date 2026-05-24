@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useReducer } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -19,17 +19,45 @@ interface Props {
   certifications: string[];
 }
 
+interface OwnerProfileTabState {
+  avatarUrl: string | null;
+  saving: boolean;
+  editingEmail: boolean;
+  newEmail: string;
+  savingEmail: boolean;
+}
+
+type OwnerProfileTabAction =
+  | { type: 'SET_AVATAR_URL'; value: string | null }
+  | { type: 'SET_SAVING'; value: boolean }
+  | { type: 'SET_EDITING_EMAIL'; value: boolean }
+  | { type: 'SET_NEW_EMAIL'; value: string }
+  | { type: 'SET_SAVING_EMAIL'; value: boolean };
+
+function ownerProfileTabReducer(state: OwnerProfileTabState, action: OwnerProfileTabAction): OwnerProfileTabState {
+  switch (action.type) {
+    case 'SET_AVATAR_URL': return { ...state, avatarUrl: action.value };
+    case 'SET_SAVING': return { ...state, saving: action.value };
+    case 'SET_EDITING_EMAIL': return { ...state, editingEmail: action.value };
+    case 'SET_NEW_EMAIL': return { ...state, newEmail: action.value };
+    case 'SET_SAVING_EMAIL': return { ...state, savingEmail: action.value };
+    default: return state;
+  }
+}
+
 export function OwnerProfileTab(props: Props) {
   const { refresh } = useRouter();
-  // oxlint-disable-next-line react-doctor/no-derived-useState
-  const [avatarUrl, setAvatarUrl] = useState(props.avatarUrl);
-  const [saving, setSaving] = useState(false);
-  const [editingEmail, setEditingEmail] = useState(false);
-  const [newEmail, setNewEmail] = useState('');
-  const [savingEmail, setSavingEmail] = useState(false);
+  const [state, dispatch] = useReducer(ownerProfileTabReducer, undefined, () => ({
+    avatarUrl: props.avatarUrl,
+    saving: false,
+    editingEmail: false,
+    newEmail: '',
+    savingEmail: false,
+  }));
+  const { avatarUrl, saving, editingEmail, newEmail, savingEmail } = state;
 
   async function handleEmailSave() {
-    setSavingEmail(true);
+    dispatch({ type: 'SET_SAVING_EMAIL', value: true });
     try {
       const res = await fetch('/api/account/email', {
         method: 'PATCH',
@@ -41,10 +69,10 @@ export function OwnerProfileTab(props: Props) {
         toast.error(data.error ?? 'Failed to update email');
       } else {
         toast.success('Email updated — please sign in again to refresh your session');
-        setEditingEmail(false);
+        dispatch({ type: 'SET_EDITING_EMAIL', value: false });
       }
     } finally {
-      setSavingEmail(false);
+      dispatch({ type: 'SET_SAVING_EMAIL', value: false });
     }
   }
   const userInitials = `${props.firstName[0] ?? ''}${props.lastName[0] ?? ''}`.toUpperCase();
@@ -54,18 +82,18 @@ export function OwnerProfileTab(props: Props) {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setSaving(true);
+    dispatch({ type: 'SET_SAVING', value: true });
     const formData = new FormData(e.currentTarget);
     if (avatarUrl) formData.set('avatarUrl', avatarUrl);
     const result = await updateOwnerProfileAction({ error: '' }, formData);
-    setSaving(false);
+    dispatch({ type: 'SET_SAVING', value: false });
     if (result.error) toast.error(result.error);
     else { toast.success('Profile saved'); refresh(); }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <AvatarUpload avatarUrl={avatarUrl} initials={userInitials} onUpload={setAvatarUrl} />
+      <AvatarUpload avatarUrl={avatarUrl} initials={userInitials} onUpload={(url) => dispatch({ type: 'SET_AVATAR_URL', value: url })} />
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
@@ -92,7 +120,7 @@ export function OwnerProfileTab(props: Props) {
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => setEditingEmail(true)}
+              onClick={() => dispatch({ type: 'SET_EDITING_EMAIL', value: true })}
               className="text-foreground/65 hover:text-foreground text-xs cursor-pointer"
             >
               Change
@@ -103,7 +131,7 @@ export function OwnerProfileTab(props: Props) {
             <Input
               type="email"
               value={newEmail}
-              onChange={(e) => setNewEmail(e.target.value)}
+              onChange={(e) => dispatch({ type: 'SET_NEW_EMAIL', value: e.target.value })}
               placeholder="new@email.com"
               autoFocus
               className="bg-card border-foreground/10 text-foreground"
@@ -122,7 +150,7 @@ export function OwnerProfileTab(props: Props) {
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => { setEditingEmail(false); setNewEmail(''); }}
+                onClick={() => { dispatch({ type: 'SET_EDITING_EMAIL', value: false }); dispatch({ type: 'SET_NEW_EMAIL', value: '' }); }}
                 className="text-foreground/65 cursor-pointer"
               >
                 Cancel

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { Loader2Icon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -149,39 +149,68 @@ function FoodTableHeader() {
 
 const PAGE_SIZE = 20;
 
+interface AllTabState {
+  q: string;
+  results: FatSecretFood[];
+  total: number;
+  loading: boolean;
+  loadingMore: boolean;
+  hasSearched: boolean;
+}
+
+type AllTabAction =
+  | { type: 'SET_Q'; value: string }
+  | { type: 'SET_RESULTS'; value: FatSecretFood[] }
+  | { type: 'APPEND_RESULTS'; value: FatSecretFood[] }
+  | { type: 'SET_TOTAL'; value: number }
+  | { type: 'SET_LOADING'; value: boolean }
+  | { type: 'SET_LOADING_MORE'; value: boolean }
+  | { type: 'SET_HAS_SEARCHED'; value: boolean };
+
+function allTabReducer(state: AllTabState, action: AllTabAction): AllTabState {
+  switch (action.type) {
+    case 'SET_Q': return { ...state, q: action.value };
+    case 'SET_RESULTS': return { ...state, results: action.value };
+    case 'APPEND_RESULTS': return { ...state, results: [...state.results, ...action.value] };
+    case 'SET_TOTAL': return { ...state, total: action.value };
+    case 'SET_LOADING': return { ...state, loading: action.value };
+    case 'SET_LOADING_MORE': return { ...state, loadingMore: action.value };
+    case 'SET_HAS_SEARCHED': return { ...state, hasSearched: action.value };
+    default: return state;
+  }
+}
+
 function AllTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void }) {
-  const [q, setQ] = useState('');
-  const [results, setResults] = useState<FatSecretFood[]>([]);
-  const [total, setTotal] = useState(0);
+  const [state, dispatch] = useReducer(allTabReducer, {
+    q: '', results: [], total: 0, loading: false, loadingMore: false, hasSearched: false,
+  });
+  const { q, results, total, loading, loadingMore, hasSearched } = state;
   const pageRef = useRef(0);
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
 
   async function runSearch(newPage = 0): Promise<void> {
     const query = q.trim();
     if (!query) return;
-    if (newPage === 0) setLoading(true);
-    else setLoadingMore(true);
+    if (newPage === 0) dispatch({ type: 'SET_LOADING', value: true });
+    else dispatch({ type: 'SET_LOADING_MORE', value: true });
     try {
       const url = `/api/food-search?q=${encodeURIComponent(query)}&page_size=${PAGE_SIZE}&page_number=${newPage}`;
       const res = await fetch(url);
       if (!res.ok) {
-        if (newPage === 0) setResults([]);
+        if (newPage === 0) dispatch({ type: 'SET_RESULTS', value: [] });
         return;
       }
       const data = (await res.json()) as { results: FatSecretFood[]; total: number; page: number };
       if (newPage === 0) {
-        setResults(data.results);
+        dispatch({ type: 'SET_RESULTS', value: data.results });
       } else {
-        setResults((prev) => [...prev, ...data.results]);
+        dispatch({ type: 'APPEND_RESULTS', value: data.results });
       }
-      setTotal(data.total);
+      dispatch({ type: 'SET_TOTAL', value: data.total });
       pageRef.current = newPage;
     } finally {
-      setHasSearched(true);
-      setLoading(false);
-      setLoadingMore(false);
+      dispatch({ type: 'SET_HAS_SEARCHED', value: true });
+      dispatch({ type: 'SET_LOADING', value: false });
+      dispatch({ type: 'SET_LOADING_MORE', value: false });
     }
   }
 
@@ -228,7 +257,7 @@ function AllTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void }) 
         <Input
           placeholder="Search foods..."
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => dispatch({ type: 'SET_Q', value: e.target.value })}
         />
         <Button type="submit" disabled={loading || !q.trim()}>
           {loading ? <Loader2Icon className="size-4 animate-spin" /> : 'Search'}

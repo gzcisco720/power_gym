@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useReducer } from 'react';
 import { useMemberHub } from '../../_components/member-hub-provider';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -240,6 +240,35 @@ function ExerciseStrengthChart({
   );
 }
 
+interface TrainerMemberPlanClientState {
+  selectedTemplate: string;
+  assigning: boolean;
+  selectedDay: number;
+  peekSession: SessionSummary | null;
+  conflictBanner: ActiveConflict | null;
+  visibleCount: number;
+}
+
+type TrainerMemberPlanClientAction =
+  | { type: 'SET_SELECTED_TEMPLATE'; value: string }
+  | { type: 'SET_ASSIGNING'; value: boolean }
+  | { type: 'SET_SELECTED_DAY'; value: number }
+  | { type: 'SET_PEEK_SESSION'; value: SessionSummary | null }
+  | { type: 'SET_CONFLICT_BANNER'; value: ActiveConflict | null }
+  | { type: 'SET_VISIBLE_COUNT'; value: number };
+
+function trainerMemberPlanClientReducer(state: TrainerMemberPlanClientState, action: TrainerMemberPlanClientAction): TrainerMemberPlanClientState {
+  switch (action.type) {
+    case 'SET_SELECTED_TEMPLATE': return { ...state, selectedTemplate: action.value };
+    case 'SET_ASSIGNING': return { ...state, assigning: action.value };
+    case 'SET_SELECTED_DAY': return { ...state, selectedDay: action.value };
+    case 'SET_PEEK_SESSION': return { ...state, peekSession: action.value };
+    case 'SET_CONFLICT_BANNER': return { ...state, conflictBanner: action.value };
+    case 'SET_VISIBLE_COUNT': return { ...state, visibleCount: action.value };
+    default: return state;
+  }
+}
+
 export function TrainerMemberPlanClient({
   memberId,
   templates,
@@ -251,23 +280,26 @@ export function TrainerMemberPlanClient({
 }: Props) {
   const { refresh } = useRouter();
   const { basePath } = useMemberHub();
-  const [selectedTemplate, setSelectedTemplate] = useState('');
-  const [assigning, setAssigning] = useState(false);
-  const [selectedDay, setSelectedDay] = useState<number>(activePlan?.days[0]?.dayNumber ?? 1);
-  const [peekSession, setPeekSession] = useState<SessionSummary | null>(null);
+  const [state, dispatch] = useReducer(trainerMemberPlanClientReducer, undefined, () => ({
+    selectedTemplate: '',
+    assigning: false,
+    selectedDay: activePlan?.days[0]?.dayNumber ?? 1,
+    peekSession: null,
+    conflictBanner: conflict ?? null,
+    visibleCount: 8,
+  }));
+  const { selectedTemplate, assigning, selectedDay, peekSession, conflictBanner, visibleCount } = state;
 
-  const [conflictBanner, setConflictBanner] = useState<ActiveConflict | null>(conflict ?? null);
   const prevSessionsRef = useRef(sessions);
-  const [visibleCount, setVisibleCount] = useState(8);
 
   if (prevSessionsRef.current !== sessions) {
     prevSessionsRef.current = sessions;
-    setVisibleCount(8);
+    dispatch({ type: 'SET_VISIBLE_COUNT', value: 8 });
   }
 
   async function assignPlan(): Promise<boolean> {
     if (!selectedTemplate) return false;
-    setAssigning(true);
+    dispatch({ type: 'SET_ASSIGNING', value: true });
     try {
       const res = await fetch(`/api/members/${memberId}/plan`, {
         method: 'POST',
@@ -280,14 +312,14 @@ export function TrainerMemberPlanClient({
         return false;
       }
       toast.success('Plan assigned');
-      setSelectedTemplate('');
+      dispatch({ type: 'SET_SELECTED_TEMPLATE', value: '' });
       refresh();
       return true;
     } catch {
       toast.error('Something went wrong');
       return false;
     } finally {
-      setAssigning(false);
+      dispatch({ type: 'SET_ASSIGNING', value: false });
     }
   }
 
@@ -325,7 +357,7 @@ export function TrainerMemberPlanClient({
             </a>
             <button
               type="button"
-              onClick={() => setConflictBanner(null)}
+              onClick={() => dispatch({ type: 'SET_CONFLICT_BANNER', value: null })}
               aria-label="Dismiss"
               className="shrink-0 rounded-md p-1 text-foreground/65 hover:text-foreground hover:bg-muted/50 transition-colors text-xs"
             >
@@ -354,7 +386,7 @@ export function TrainerMemberPlanClient({
               <div className="flex flex-wrap items-center gap-2 shrink-0">
                 <select
                   value={selectedDay}
-                  onChange={(e) => setSelectedDay(Number(e.target.value))}
+                  onChange={(e) => dispatch({ type: 'SET_SELECTED_DAY', value: Number(e.target.value) })}
                   aria-label="Select day to log"
                   className="rounded-md bg-muted border border-border/60 px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
                 >
@@ -374,7 +406,7 @@ export function TrainerMemberPlanClient({
                   templates={templates}
                   assigning={assigning}
                   selectedTemplate={selectedTemplate}
-                  onSelect={setSelectedTemplate}
+                  onSelect={(id) => dispatch({ type: 'SET_SELECTED_TEMPLATE', value: id })}
                   onAssign={assignPlan}
                 />
               </div>
@@ -387,7 +419,7 @@ export function TrainerMemberPlanClient({
               templates={templates}
               assigning={assigning}
               selectedTemplate={selectedTemplate}
-              onSelect={setSelectedTemplate}
+              onSelect={(id) => dispatch({ type: 'SET_SELECTED_TEMPLATE', value: id })}
               onAssign={assignPlan}
               triggerLabel="Assign Plan"
             />
@@ -474,7 +506,7 @@ export function TrainerMemberPlanClient({
                       <li key={s._id}>
                         <button
                           type="button"
-                          onClick={() => setPeekSession(s)}
+                          onClick={() => dispatch({ type: 'SET_PEEK_SESSION', value: s })}
                           className="w-full rounded-xl bg-card ring-1 ring-foreground/10 hover:ring-foreground/25 transition-colors flex items-stretch text-left cursor-pointer overflow-hidden"
                         >
                           <div className={`w-1 shrink-0 ${dayAccentBg(s.dayName)}`} />
@@ -514,7 +546,7 @@ export function TrainerMemberPlanClient({
           {sessions.length > visibleCount && (
             <button
               type="button"
-              onClick={() => setVisibleCount((c) => c + 8)}
+              onClick={() => dispatch({ type: 'SET_VISIBLE_COUNT', value: visibleCount + 8 })}
               className="mt-4 w-full rounded-xl border border-foreground/10 py-2.5 text-sm text-foreground/50 hover:text-foreground/75 hover:border-foreground/20 transition-colors"
             >
               Show {Math.min(8, sessions.length - visibleCount)} more sessions
@@ -526,7 +558,7 @@ export function TrainerMemberPlanClient({
             session={peekSession}
             open={peekSession !== null}
             onOpenChange={(open) => {
-              if (!open) setPeekSession(null);
+              if (!open) dispatch({ type: 'SET_PEEK_SESSION', value: null });
             }}
           />
         </section>

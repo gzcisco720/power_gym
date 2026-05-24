@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useReducer } from 'react';
 import { useMemberHub } from '../../_components/member-hub-provider';
 import { useRouter } from 'next/navigation';
 import { Settings2, Check, ChevronsUpDown } from 'lucide-react';
@@ -71,13 +71,40 @@ function computeDayMacros(dayType: IDayType) {
   };
 }
 
+interface TrainerMemberNutritionClientState {
+  active: IMemberNutritionPlan | null;
+  history: IMemberNutritionPlan[];
+  loading: boolean;
+  logVisible: number;
+  scheduleOpen: boolean;
+  scheduleRefresh: number;
+}
+
+type TrainerMemberNutritionClientAction =
+  | { type: 'SET_ACTIVE'; value: IMemberNutritionPlan | null }
+  | { type: 'SET_HISTORY'; value: IMemberNutritionPlan[] }
+  | { type: 'SET_LOADING'; value: boolean }
+  | { type: 'SET_LOG_VISIBLE'; value: number }
+  | { type: 'SET_SCHEDULE_OPEN'; value: boolean }
+  | { type: 'SET_SCHEDULE_REFRESH'; value: number };
+
+function trainerMemberNutritionClientReducer(state: TrainerMemberNutritionClientState, action: TrainerMemberNutritionClientAction): TrainerMemberNutritionClientState {
+  switch (action.type) {
+    case 'SET_ACTIVE': return { ...state, active: action.value };
+    case 'SET_HISTORY': return { ...state, history: action.value };
+    case 'SET_LOADING': return { ...state, loading: action.value };
+    case 'SET_LOG_VISIBLE': return { ...state, logVisible: action.value };
+    case 'SET_SCHEDULE_OPEN': return { ...state, scheduleOpen: action.value };
+    case 'SET_SCHEDULE_REFRESH': return { ...state, scheduleRefresh: action.value };
+    default: return state;
+  }
+}
+
 export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, dayTypeTargets }: Props) {
-  const [active, setActive] = useState<IMemberNutritionPlan | null>(null);
-  const [history, setHistory] = useState<IMemberNutritionPlan[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [logVisible, setLogVisible] = useState(10);
-  const [scheduleOpen, setScheduleOpen] = useState(false);
-  const [scheduleRefresh, setScheduleRefresh] = useState(0);
+  const [state, dispatch] = useReducer(trainerMemberNutritionClientReducer, {
+    active: null, history: [], loading: true, logVisible: 10, scheduleOpen: false, scheduleRefresh: 0,
+  });
+  const { active, history, loading, logVisible, scheduleOpen, scheduleRefresh } = state;
 
   // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
@@ -86,9 +113,9 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
       fetch(`/api/members/${memberId}/nutrition`, { signal: controller.signal }).then((r) => r.json()),
       fetch(`/api/members/${memberId}/nutrition/history`, { signal: controller.signal }).then((r) => r.json()),
     ]).then(([a, h]: [IMemberNutritionPlan | null, IMemberNutritionPlan[]]) => {
-      setActive(a);
-      setHistory(h);
-      setLoading(false);
+      dispatch({ type: 'SET_ACTIVE', value: a });
+      dispatch({ type: 'SET_HISTORY', value: h });
+      dispatch({ type: 'SET_LOADING', value: false });
     }).catch((err: unknown) => {
       if (err instanceof Error && err.name !== 'AbortError') console.error(err);
     });
@@ -183,7 +210,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
         <section className="px-4 sm:px-8">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-foreground">Weekly Schedule</h2>
-            <Sheet open={scheduleOpen} onOpenChange={setScheduleOpen}>
+            <Sheet open={scheduleOpen} onOpenChange={(v) => dispatch({ type: 'SET_SCHEDULE_OPEN', value: v })}>
               <SheetTrigger className="flex items-center gap-1.5 text-[12px] text-foreground/45 hover:text-foreground/70 transition-colors bg-transparent border-none cursor-pointer">
                 <Settings2 className="size-3.5" />
                 Edit Schedule
@@ -201,7 +228,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
                   dayTypeNames={active.dayTypes.map((d) => d.name)}
                   initialSchedule={active.schedule}
                   mode="edit"
-                  onSave={() => { setScheduleOpen(false); setScheduleRefresh((n) => n + 1); }}
+                  onSave={() => { dispatch({ type: 'SET_SCHEDULE_OPEN', value: false }); dispatch({ type: 'SET_SCHEDULE_REFRESH', value: scheduleRefresh + 1 }); }}
                 />
               </SheetContent>
             </Sheet>
@@ -326,7 +353,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
           {recentLogs.length > logVisible && (
             <button
               type="button"
-              onClick={() => setLogVisible((c) => c + 10)}
+              onClick={() => dispatch({ type: 'SET_LOG_VISIBLE', value: logVisible + 10 })}
               className="mt-3 w-full rounded-xl border border-foreground/10 py-2.5 text-sm text-foreground/50 hover:text-foreground/75 hover:border-foreground/20 transition-colors"
             >
               Show {Math.min(10, recentLogs.length - logVisible)} more

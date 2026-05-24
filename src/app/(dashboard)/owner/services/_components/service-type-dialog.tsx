@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useReducer } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -30,24 +30,56 @@ interface ServiceTypeDialogProps {
   onClose: () => void;
 }
 
+interface ServiceTypeDialogState {
+  name: string;
+  durationMin: string;
+  pricePerSession: string;
+  note: string;
+  loading: boolean;
+  error: string;
+}
+
+type ServiceTypeDialogAction =
+  | { type: 'SET_NAME'; value: string }
+  | { type: 'SET_DURATION_MIN'; value: string }
+  | { type: 'SET_PRICE_PER_SESSION'; value: string }
+  | { type: 'SET_NOTE'; value: string }
+  | { type: 'SET_LOADING'; value: boolean }
+  | { type: 'SET_ERROR'; value: string };
+
+function serviceTypeDialogReducer(state: ServiceTypeDialogState, action: ServiceTypeDialogAction): ServiceTypeDialogState {
+  switch (action.type) {
+    case 'SET_NAME': return { ...state, name: action.value };
+    case 'SET_DURATION_MIN': return { ...state, durationMin: action.value };
+    case 'SET_PRICE_PER_SESSION': return { ...state, pricePerSession: action.value };
+    case 'SET_NOTE': return { ...state, note: action.value };
+    case 'SET_LOADING': return { ...state, loading: action.value };
+    case 'SET_ERROR': return { ...state, error: action.value };
+    default: return state;
+  }
+}
+
 export function ServiceTypeDialog({ open, serviceType, onSuccess, onClose }: ServiceTypeDialogProps) {
   const isEdit = !!serviceType;
-  const [name, setName] = useState(serviceType?.name ?? '');
-  const [durationMin, setDurationMin] = useState(String(serviceType?.durationMin ?? 60));
-  const [pricePerSession, setPricePerSession] = useState(String(serviceType?.pricePerSession ?? ''));
-  const [note, setNote] = useState(serviceType?.note ?? '');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [state, dispatch] = useReducer(serviceTypeDialogReducer, undefined, () => ({
+    name: serviceType?.name ?? '',
+    durationMin: String(serviceType?.durationMin ?? 60),
+    pricePerSession: String(serviceType?.pricePerSession ?? ''),
+    note: serviceType?.note ?? '',
+    loading: false,
+    error: '',
+  }));
+  const { name, durationMin, pricePerSession, note, loading, error } = state;
 
   async function handleSubmit() {
-    if (!name.trim()) { setError('Name is required'); return; }
+    if (!name.trim()) { dispatch({ type: 'SET_ERROR', value: 'Name is required' }); return; }
     const dur = Number(durationMin);
     const price = Number(pricePerSession);
-    if (!dur || dur < 1) { setError('Duration must be at least 1 minute'); return; }
-    if (isNaN(price) || price < 0) { setError('Price must be a non-negative number'); return; }
+    if (!dur || dur < 1) { dispatch({ type: 'SET_ERROR', value: 'Duration must be at least 1 minute' }); return; }
+    if (isNaN(price) || price < 0) { dispatch({ type: 'SET_ERROR', value: 'Price must be a non-negative number' }); return; }
 
-    setError('');
-    setLoading(true);
+    dispatch({ type: 'SET_ERROR', value: '' });
+    dispatch({ type: 'SET_LOADING', value: true });
     try {
       const url = isEdit ? `/api/service-types/${serviceType._id}` : '/api/service-types';
       const method = isEdit ? 'PATCH' : 'POST';
@@ -61,28 +93,28 @@ export function ServiceTypeDialog({ open, serviceType, onSuccess, onClose }: Ser
           note: note.trim() || null,
         }),
       });
-      if (!res.ok) { setError('Failed to save'); return; }
+      if (!res.ok) { dispatch({ type: 'SET_ERROR', value: 'Failed to save' }); return; }
       onSuccess();
       onClose();
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', value: false });
     }
   }
 
   async function handleDeactivate() {
     if (!serviceType) return;
-    setLoading(true);
+    dispatch({ type: 'SET_LOADING', value: true });
     try {
       const res = await fetch(`/api/service-types/${serviceType._id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !serviceType.isActive }),
       });
-      if (!res.ok) { setError('Failed to update'); return; }
+      if (!res.ok) { dispatch({ type: 'SET_ERROR', value: 'Failed to update' }); return; }
       onSuccess();
       onClose();
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', value: false });
     }
   }
 
@@ -99,7 +131,7 @@ export function ServiceTypeDialog({ open, serviceType, onSuccess, onClose }: Ser
               id="stName"
               className="mt-1"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => dispatch({ type: 'SET_NAME', value: e.target.value })}
               placeholder="1hr Personal Training"
             />
           </div>
@@ -113,7 +145,7 @@ export function ServiceTypeDialog({ open, serviceType, onSuccess, onClose }: Ser
                 inputMode="decimal"
                 className="mt-1"
                 value={durationMin}
-                onChange={(e) => setDurationMin(e.target.value)}
+                onChange={(e) => dispatch({ type: 'SET_DURATION_MIN', value: e.target.value })}
               />
             </div>
             <div className="flex-1">
@@ -124,7 +156,7 @@ export function ServiceTypeDialog({ open, serviceType, onSuccess, onClose }: Ser
                 inputMode="decimal"
                 className="mt-1"
                 value={pricePerSession}
-                onChange={(e) => setPricePerSession(e.target.value)}
+                onChange={(e) => dispatch({ type: 'SET_PRICE_PER_SESSION', value: e.target.value })}
                 placeholder="300"
               />
             </div>
@@ -139,7 +171,7 @@ export function ServiceTypeDialog({ open, serviceType, onSuccess, onClose }: Ser
               className="mt-1 resize-none"
               rows={3}
               value={note}
-              onChange={(e) => setNote(e.target.value)}
+              onChange={(e) => dispatch({ type: 'SET_NOTE', value: e.target.value })}
               placeholder="e.g. Includes program design and session recap"
             />
           </div>

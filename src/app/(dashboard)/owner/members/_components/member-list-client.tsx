@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useReducer } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -33,6 +33,35 @@ interface Props {
   newThisMonth: number;
 }
 
+interface MemberListClientState {
+  reassigning: MemberRow | null;
+  unassigning: MemberRow | null;
+  unassignSaving: boolean;
+  search: string;
+  trainerFilter: string;
+  page: number;
+}
+
+type MemberListClientAction =
+  | { type: 'SET_REASSIGNING'; value: MemberRow | null }
+  | { type: 'SET_UNASSIGNING'; value: MemberRow | null }
+  | { type: 'SET_UNASSIGN_SAVING'; value: boolean }
+  | { type: 'SET_SEARCH'; value: string }
+  | { type: 'SET_TRAINER_FILTER'; value: string }
+  | { type: 'SET_PAGE'; value: number };
+
+function memberListClientReducer(state: MemberListClientState, action: MemberListClientAction): MemberListClientState {
+  switch (action.type) {
+    case 'SET_REASSIGNING': return { ...state, reassigning: action.value };
+    case 'SET_UNASSIGNING': return { ...state, unassigning: action.value };
+    case 'SET_UNASSIGN_SAVING': return { ...state, unassignSaving: action.value };
+    case 'SET_SEARCH': return { ...state, search: action.value };
+    case 'SET_TRAINER_FILTER': return { ...state, trainerFilter: action.value };
+    case 'SET_PAGE': return { ...state, page: action.value };
+    default: return state;
+  }
+}
+
 export function MemberListClient({
   members,
   trainers,
@@ -41,16 +70,14 @@ export function MemberListClient({
   newThisMonth,
 }: Props) {
   const { refresh } = useRouter();
-  const [reassigning, setReassigning] = useState<MemberRow | null>(null);
-  const [unassigning, setUnassigning] = useState<MemberRow | null>(null);
-  const [unassignSaving, setUnassignSaving] = useState(false);
-  const [search, setSearch] = useState('');
-  const [trainerFilter, setTrainerFilter] = useState('all');
-  const [page, setPage] = useState(1);
+  const [state, dispatch] = useReducer(memberListClientReducer, {
+    reassigning: null, unassigning: null, unassignSaving: false, search: '', trainerFilter: 'all', page: 1,
+  });
+  const { reassigning, unassigning, unassignSaving, search, trainerFilter, page } = state;
 
   async function handleUnassign() {
     if (!unassigning) return;
-    setUnassignSaving(true);
+    dispatch({ type: 'SET_UNASSIGN_SAVING', value: true });
     try {
       const res = await fetch(`/api/owner/members/${unassigning._id}/trainer`, {
         method: 'PATCH',
@@ -63,12 +90,12 @@ export function MemberListClient({
         return;
       }
       toast.success(`${unassigning.name} unassigned`);
-      setUnassigning(null);
+      dispatch({ type: 'SET_UNASSIGNING', value: null });
       refresh();
     } catch {
       toast.error('Something went wrong');
     } finally {
-      setUnassignSaving(false);
+      dispatch({ type: 'SET_UNASSIGN_SAVING', value: false });
     }
   }
 
@@ -91,13 +118,13 @@ export function MemberListClient({
   const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   function handleFilterChange(value: string) {
-    setTrainerFilter(value);
-    setPage(1);
+    dispatch({ type: 'SET_TRAINER_FILTER', value });
+    dispatch({ type: 'SET_PAGE', value: 1 });
   }
 
   function handleSearch(value: string) {
-    setSearch(value);
-    setPage(1);
+    dispatch({ type: 'SET_SEARCH', value });
+    dispatch({ type: 'SET_PAGE', value: 1 });
   }
 
   return (
@@ -201,7 +228,7 @@ export function MemberListClient({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setReassigning(member)}
+                  onClick={() => dispatch({ type: 'SET_REASSIGNING', value: member })}
                   className="text-primary-light/70 hover:text-primary-light hover:bg-primary/10 text-xs h-7 px-2"
                 >
                   Reassign
@@ -210,7 +237,7 @@ export function MemberListClient({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setUnassigning(member)}
+                    onClick={() => dispatch({ type: 'SET_UNASSIGNING', value: member })}
                     className="text-destructive/60 hover:text-destructive hover:bg-destructive/10 text-xs h-7 px-2"
                   >
                     Unassign
@@ -227,7 +254,7 @@ export function MemberListClient({
         <div className="mt-4 flex justify-center items-center gap-1.5">
           <button
             type="button"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            onClick={() => dispatch({ type: 'SET_PAGE', value: Math.max(1, page - 1) })}
             disabled={safePage <= 1}
             className="h-8 px-3 rounded-lg text-sm text-foreground/40 bg-white/[.03] ring-1 ring-white/[.07] disabled:opacity-30 hover:ring-white/20 transition-all"
           >
@@ -237,7 +264,7 @@ export function MemberListClient({
             <button
               type="button"
               key={n}
-              onClick={() => setPage(n)}
+              onClick={() => dispatch({ type: 'SET_PAGE', value: n })}
               className={`size-8 rounded-lg text-sm font-medium transition-all ${
                 n === safePage
                   ? 'bg-primary/20 ring-1 ring-primary/40 text-primary-light'
@@ -249,7 +276,7 @@ export function MemberListClient({
           ))}
           <button
             type="button"
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            onClick={() => dispatch({ type: 'SET_PAGE', value: Math.min(totalPages, page + 1) })}
             disabled={safePage >= totalPages}
             className="h-8 px-3 rounded-lg text-sm text-foreground/40 bg-white/[.03] ring-1 ring-white/[.07] disabled:opacity-30 hover:ring-white/20 transition-all"
           >
@@ -264,7 +291,7 @@ export function MemberListClient({
           memberName={reassigning.name}
           currentTrainerId={reassigning.trainerId}
           trainers={trainers}
-          onClose={() => setReassigning(null)}
+          onClose={() => dispatch({ type: 'SET_REASSIGNING', value: null })}
         />
       )}
 
@@ -290,7 +317,7 @@ export function MemberListClient({
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => setUnassigning(null)}
+                onClick={() => dispatch({ type: 'SET_UNASSIGNING', value: null })}
                 disabled={unassignSaving}
                 className="text-foreground/65 hover:text-foreground text-sm"
               >
