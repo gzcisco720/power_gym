@@ -41,22 +41,23 @@ async function sendSessionBookedEmails(params: {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
   const emailService = getEmailService();
-  for (const memberDoc of memberDocs) {
-    if (!memberDoc) continue;
-    try {
-      await emailService.sendSessionBooked({
-        to: memberDoc.email,
-        trainerName: trainer?.name ?? 'Your trainer',
-        date: dateLabel,
-        startTime: params.startTime,
-        endTime: params.endTime,
-        isRecurring: params.isRecurring,
-        sessionCount: params.sessionCount,
-      });
-    } catch (e) {
-      console.error('sendSessionBooked failed:', e);
-    }
-  }
+  await Promise.all(
+    memberDocs.filter((m): m is NonNullable<typeof m> => m !== null).map(async (memberDoc) => {
+      try {
+        await emailService.sendSessionBooked({
+          to: memberDoc.email,
+          trainerName: trainer?.name ?? 'Your trainer',
+          date: dateLabel,
+          startTime: params.startTime,
+          endTime: params.endTime,
+          isRecurring: params.isRecurring,
+          sessionCount: params.sessionCount,
+        });
+      } catch (e) {
+        console.error('sendSessionBooked failed:', e);
+      }
+    }),
+  );
 }
 
 export async function POST(req: Request): Promise<Response> {

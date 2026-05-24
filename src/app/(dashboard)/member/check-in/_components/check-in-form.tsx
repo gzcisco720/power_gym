@@ -82,11 +82,7 @@ export function CheckInForm({ alreadySubmitted }: Props) {
     try {
       const result = await getCheckInSignatureAction();
       if (result.error) { setError(result.error); return; }
-      const urls: string[] = [];
-      for (const file of files) {
-        const url = await uploadFile(file, result.config!);
-        urls.push(url);
-      }
+      const urls = await Promise.all(files.map((file) => uploadFile(file, result.config!)));
       setPhotos((prev) => [...prev, ...urls]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Photo upload failed');

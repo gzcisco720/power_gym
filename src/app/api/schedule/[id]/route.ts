@@ -139,21 +139,22 @@ export async function DELETE(req: Request, { params }: RouteContext): Promise<Re
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     });
     const emailService = getEmailService();
-    for (const memberDoc of memberDocs) {
-      if (!memberDoc) continue;
-      try {
-        await emailService.sendSessionCancelled({
-          to: memberDoc.email,
-          trainerName: trainer?.name ?? 'Your trainer',
-          date: dateLabel,
-          startTime: existing.startTime,
-          endTime: existing.endTime,
-          isSeries,
-        });
-      } catch (e) {
-        console.error('sendSessionCancelled failed:', e);
-      }
-    }
+    await Promise.all(
+      memberDocs.filter((m): m is NonNullable<typeof m> => m !== null).map(async (memberDoc) => {
+        try {
+          await emailService.sendSessionCancelled({
+            to: memberDoc.email,
+            trainerName: trainer?.name ?? 'Your trainer',
+            date: dateLabel,
+            startTime: existing.startTime,
+            endTime: existing.endTime,
+            isSeries,
+          });
+        } catch (e) {
+          console.error('sendSessionCancelled failed:', e);
+        }
+      }),
+    );
 
     return Response.json({ success: true });
   } catch {

@@ -78,11 +78,7 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
     try {
       const result = await getEquipmentImageSignatureAction();
       if (result.error) { toast.error(result.error); return; }
-      const urls: string[] = [];
-      for (const file of files) {
-        const url = await uploadFile(file, result.config!);
-        urls.push(url);
-      }
+      const urls = await Promise.all(files.map((file) => uploadFile(file, result.config!)));
       setImages((prev) => [...prev, ...urls]);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Upload failed');
