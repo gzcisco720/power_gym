@@ -30,6 +30,8 @@ export function CheckInAnimation({ streakDays, weekDots, onComplete }: CheckInAn
   return (
     <div className="flex flex-col items-center gap-3 py-4">
       <div className="flex gap-1.5">
+        {/* oxlint-disable-next-line react-doctor/no-array-index-key */}
+        {/* oxlint-disable-next-line react-doctor/no-array-index-as-key */}
         {weekDots.map((done, i) => (
           <m.div
             key={i /* static 7-slot week dot array */}

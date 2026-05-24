@@ -110,8 +110,7 @@ function FoodRow({ name, brand, servingLabel, kcal, protein, carbs, fat, onClick
   const displayName = brand ? `${name} · ${brand}` : name;
   return (
     // oxlint-disable-next-line react-doctor/prefer-tag-over-role
-    <div
-      role="row"
+    <div role="row"
       tabIndex={0}
       className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 items-start p-2 cursor-pointer hover:bg-muted border-b last:border-b-0 text-sm"
       onClick={onClick}
@@ -248,6 +247,7 @@ function AllTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void }) 
 
   return (
     <div className="space-y-2 mt-2">
+      {/* oxlint-disable-next-line react-doctor/no-prevent-default */}
       <form
         className="flex gap-2"
         onSubmit={(e) => {

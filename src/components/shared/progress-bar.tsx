@@ -14,8 +14,7 @@ export function ProgressBar({ value, max, label }: ProgressBarProps) {
 
   return (
     // oxlint-disable-next-line react-doctor/prefer-tag-over-role
-    <div
-      role="progressbar"
+    <div role="progressbar"
       aria-valuenow={value}
       aria-valuemin={0}
       aria-valuemax={max}

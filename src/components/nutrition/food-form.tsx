@@ -410,6 +410,8 @@ export function FoodForm({
           </p>
 
           <div className="space-y-2">
+            {/* oxlint-disable-next-line react-doctor/no-array-index-key */}
+            {/* oxlint-disable-next-line react-doctor/no-array-index-as-key */}
             {servings.map((s, idx) => (
               <div key={idx /* serving rows have no stable id — index is intentional */} className="flex items-center gap-2">
                 <Input

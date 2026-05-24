@@ -288,7 +288,8 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
 
         {/* Day types */}
         <div className="px-4 sm:px-8 space-y-3">
-          {dayTypes.map((dt, dayIdx) => {
+          {/* oxlint-disable-next-line react-doctor/no-array-index-key */}
+        {dayTypes.map((dt, dayIdx) => {
             const macros = sumDayMacros(dt);
             const isCollapsed = collapsed[dayIdx] ?? false;
             return (

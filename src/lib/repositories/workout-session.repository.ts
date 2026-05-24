@@ -392,7 +392,7 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
 
     const toKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
     const daySet = new Set(
-      docs.filter((d) => d.completedAt).map((d) => toKey(new Date(d.completedAt!))),
+      docs.flatMap((d) => d.completedAt ? [toKey(new Date(d.completedAt))] : []),
     );
 
     const today = new Date();

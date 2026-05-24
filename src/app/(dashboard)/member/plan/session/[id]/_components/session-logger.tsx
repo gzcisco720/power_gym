@@ -249,7 +249,7 @@ export function SessionLogger({
     return () => controller.abort();
     // Runs once on mount; isCompleted and initialSession.sets are stable initial values guarded by hintsFetchedRef
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // oxlint-disable-line react-hooks/exhaustive-deps
+  }, []); // oxlint-disable-line react-doctor/exhaustive-deps
 
   function syncInputsToSession(updatedSession: Session) {
     const nextInputs = updatedSession.sets.length <= inputs.length
