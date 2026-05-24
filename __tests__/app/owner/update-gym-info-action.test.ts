@@ -1,5 +1,6 @@
 /** @jest-environment node */
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
+jest.mock('next/cache', () => ({ revalidatePath: jest.fn() }));
 
 const mockUpsert = jest.fn().mockResolvedValue({});
 

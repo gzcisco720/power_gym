@@ -1,6 +1,14 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { GymInfoTab } from '@/app/(dashboard)/owner/settings/_components/gym-info-tab';
 
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn(), refresh: jest.fn() }),
+}));
+
+jest.mock('@/app/(dashboard)/owner/settings/actions', () => ({
+  updateGymInfoAction: jest.fn(),
+}));
+
 jest.mock('@/lib/actions/get-gym-asset-signature', () => ({
   getGymAssetSignatureAction: jest.fn().mockResolvedValue({ provider: 'local', uploadUrl: '/api/upload', folder: 'gym-logos' }),
 }));

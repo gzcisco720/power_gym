@@ -62,7 +62,7 @@ describe('POST /api/schedule', () => {
     const res = await POST(new Request('http://localhost/api/schedule', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ memberIds: ['m1'], date: '2026-05-01', startTime: '09:00', endTime: '10:00', isRecurring: false }),
+      body: JSON.stringify({ memberIds: ['m1'], date: '2026-05-01', startTime: '09:00', endTime: '10:00', isRecurring: false, serviceTypeId: 'st1' }),
     }));
     expect(res.status).toBe(201);
     expect(mockRepo.create).toHaveBeenCalledWith(expect.objectContaining({ trainerId: 't1', seriesId: null }));
@@ -75,7 +75,7 @@ describe('POST /api/schedule', () => {
     const res = await POST(new Request('http://localhost/api/schedule', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ memberIds: ['m1'], date: '2026-05-01', startTime: '09:00', endTime: '10:00', isRecurring: true }),
+      body: JSON.stringify({ memberIds: ['m1'], date: '2026-05-01', startTime: '09:00', endTime: '10:00', isRecurring: true, serviceTypeId: 'st1' }),
     }));
     expect(res.status).toBe(201);
     const body = await res.json() as { sessions: unknown[] };
@@ -103,7 +103,7 @@ describe('POST /api/schedule', () => {
     const res = await POST(new Request('http://localhost/api/schedule', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ trainerId: 't1', memberIds: ['m1'], date: '2026-05-01', startTime: '09:00', endTime: '10:00', isRecurring: false }),
+      body: JSON.stringify({ trainerId: 't1', memberIds: ['m1'], date: '2026-05-01', startTime: '09:00', endTime: '10:00', isRecurring: false, serviceTypeId: 'st1' }),
     }));
     expect(res.status).toBe(201);
     expect(mockRepo.create).toHaveBeenCalledWith(expect.objectContaining({ trainerId: 't1' }));
@@ -129,7 +129,7 @@ describe('POST /api/schedule — email notification', () => {
     await POST(new Request('http://localhost/api/schedule', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ memberIds: ['m1'], date: '2026-05-01', startTime: '09:00', endTime: '10:00', isRecurring: false }),
+      body: JSON.stringify({ memberIds: ['m1'], date: '2026-05-01', startTime: '09:00', endTime: '10:00', isRecurring: false, serviceTypeId: 'st1' }),
     }));
     expect(sendSessionBookedMock).toHaveBeenCalledWith(expect.objectContaining({
       to: 'alice@test.com',
@@ -149,7 +149,7 @@ describe('POST /api/schedule — email notification', () => {
     await POST(new Request('http://localhost/api/schedule', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ memberIds: ['m1'], date: '2026-05-01', startTime: '09:00', endTime: '10:00', isRecurring: true }),
+      body: JSON.stringify({ memberIds: ['m1'], date: '2026-05-01', startTime: '09:00', endTime: '10:00', isRecurring: true, serviceTypeId: 'st1' }),
     }));
     expect(sendSessionBookedMock).toHaveBeenCalledWith(expect.objectContaining({
       to: 'alice@test.com',

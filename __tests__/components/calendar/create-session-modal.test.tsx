@@ -1,9 +1,19 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { CreateSessionModal } from '@/components/calendar/create-session-modal';
 
-global.fetch = jest.fn().mockResolvedValue({
-  ok: true,
-  json: async () => ({ sessions: [] }),
+global.fetch = jest.fn().mockImplementation((url: string) => {
+  if (typeof url === 'string' && url.includes('service-types')) {
+    return Promise.resolve({
+      ok: true,
+      json: async () => ({
+        serviceTypes: [{ _id: 'st1', name: 'PT Session', durationMin: 60, pricePerSession: 80, currency: 'AUD' }],
+      }),
+    });
+  }
+  return Promise.resolve({
+    ok: true,
+    json: async () => ({ sessions: [] }),
+  });
 }) as jest.Mock;
 
 const baseProps = {
@@ -35,6 +45,16 @@ describe('CreateSessionModal', () => {
 
   it('submits POST /api/schedule and calls fetch', async () => {
     render(<CreateSessionModal {...baseProps} />);
+
+    // Wait for service types to load from the mocked fetch
+    await waitFor(() => {
+      expect(screen.getByText(/PT Session/)).toBeInTheDocument();
+    });
+
+    // Select the service type
+    const serviceTypeSelect = document.getElementById('serviceType') as HTMLSelectElement;
+    fireEvent.change(serviceTypeSelect, { target: { value: 'st1' } });
+
     fireEvent.click(screen.getByRole('button', { name: /create/i }));
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(

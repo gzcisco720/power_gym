@@ -4,6 +4,10 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn(), refresh: jest.fn() }),
+}));
+
 jest.mock('@/app/(dashboard)/member/settings/actions', () => ({
   updateMemberProfileAction: jest.fn(),
 }));
