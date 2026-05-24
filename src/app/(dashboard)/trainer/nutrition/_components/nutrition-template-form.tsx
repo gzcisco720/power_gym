@@ -318,12 +318,11 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
         </Card>
 
         {/* Day types — rendered inline */}
-        {/* oxlint-disable-next-line react-doctor/no-array-index-key */}
         {dayTypes.map((dayType, dayIdx) => {
           const isCollapsed = collapsed[dayIdx] ?? false;
           const macros = sumDayMacros(dayType);
-
           return (
+            // oxlint-disable-next-line react-doctor/no-array-index-key
             <Card key={dayIdx /* no stable id on IDayType — index is intentional */} className="overflow-hidden">
               {/* Day type header — bold, distinct background */}
               <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/30 border-b border-border/50">

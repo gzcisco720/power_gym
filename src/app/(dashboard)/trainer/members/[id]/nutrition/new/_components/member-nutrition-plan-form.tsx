@@ -288,11 +288,11 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
 
         {/* Day types */}
         <div className="px-4 sm:px-8 space-y-3">
-          {/* oxlint-disable-next-line react-doctor/no-array-index-key */}
-        {dayTypes.map((dt, dayIdx) => {
+          {dayTypes.map((dt, dayIdx) => {
             const macros = sumDayMacros(dt);
             const isCollapsed = collapsed[dayIdx] ?? false;
             return (
+              // oxlint-disable-next-line react-doctor/no-array-index-key
               <div key={dayIdx /* no stable id on day types — index is intentional */} className="rounded-xl bg-card ring-1 ring-foreground/10">
                 {/* Day type header */}
                 <div className="flex items-center gap-2 px-4 py-3">

@@ -7,6 +7,11 @@ import { MongoMemberPlanRepository } from '@/lib/repositories/member-plan.reposi
 import { MemberHeroClient } from './member-hero-client';
 import { estimatedDuration } from './member-hero.utils';
 
+function StreakDisplay({ streak }: { streak: number }) {
+  // oxlint-disable-next-line react-doctor/no-gradient-text
+  return <div className="text-[38px] font-black leading-none bg-gradient-to-br from-amber-400 to-orange-500 bg-clip-text text-transparent">{streak}</div>;
+}
+
 function greetingText(firstName: string): string {
   const h = new Date().getHours();
   const salutation = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
@@ -62,17 +67,7 @@ export async function MemberHero() {
           />
           {streak > 0 && (
             <div className="flex-shrink-0 ml-4 flex flex-col items-center bg-amber-500/[.1] ring-1 ring-amber-500/[.2] rounded-2xl px-4 py-2.5 min-w-[72px]">
-              {/* oxlint-disable-next-line react-doctor/no-gradient-text */}
-              <div
-                className="text-[38px] font-black leading-none"
-                style={{
-                  background: 'linear-gradient(135deg, #fbbf24, #f97316)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                {streak}
-              </div>
+              <StreakDisplay streak={streak} />
               <div className="text-[9px] text-foreground/65 uppercase tracking-[.07em] mt-0.5">
                 day streak 🔥
               </div>

@@ -30,21 +30,21 @@ export function CheckInAnimation({ streakDays, weekDots, onComplete }: CheckInAn
   return (
     <div className="flex flex-col items-center gap-3 py-4">
       <div className="flex gap-1.5">
-        {/* oxlint-disable-next-line react-doctor/no-array-index-key */}
-        {/* oxlint-disable-next-line react-doctor/no-array-index-as-key */}
-        {weekDots.map((done, i) => (
-          <m.div
-            key={i /* static 7-slot week dot array */}
-            className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold ${
-              done ? 'bg-emerald-500 text-white' : 'bg-white/[.06] border border-white/10 text-foreground/20'
-            }`}
-            initial={{ scale: 0.6, opacity: 0.3 }}
-            animate={done ? { scale: 1, opacity: 1 } : { scale: 0.85, opacity: 0.4 }}
-            transition={{ delay: i * 0.07, type: 'spring', stiffness: 400, damping: 18 }}
-          >
-            {done ? '✓' : ''}
-          </m.div>
-        ))}
+        {weekDots.map((done, i) => {
+          return (
+            // oxlint-disable-next-line react-doctor/no-array-index-key, react-doctor/no-array-index-as-key
+            <m.div key={i /* static 7-slot week dot array */}
+              className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold ${
+                done ? 'bg-emerald-500 text-white' : 'bg-white/[.06] border border-white/10 text-foreground/20'
+              }`}
+              initial={{ scale: 0.6, opacity: 0.3 }}
+              animate={done ? { scale: 1, opacity: 1 } : { scale: 0.85, opacity: 0.4 }}
+              transition={{ delay: i * 0.07, type: 'spring', stiffness: 400, damping: 18 }}
+            >
+              {done ? '✓' : ''}
+            </m.div>
+          );
+        })}
       </div>
       <m.div
         className="text-sm font-bold text-foreground"

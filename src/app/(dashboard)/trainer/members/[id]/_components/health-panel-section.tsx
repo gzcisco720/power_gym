@@ -11,6 +11,7 @@ function formatSinceDate(date: Date): string {
 
 export async function HealthPanelSection({ memberId }: { memberId: string }) {
   const [session] = await Promise.all([auth(), connectDB()]);
+  // oxlint-disable-next-line react-doctor/server-sequential-independent-await
   const [injuries, allMeds] = await Promise.all([
     new MongoMemberInjuryRepository().findActiveByMember(memberId),
     new MongoMemberMedicationRepository().findByMember(memberId),

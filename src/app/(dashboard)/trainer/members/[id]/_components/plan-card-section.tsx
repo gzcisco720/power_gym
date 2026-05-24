@@ -16,6 +16,7 @@ function formatSessionDate(date: Date): string {
 
 export async function PlanCardSection({ memberId }: { memberId: string }) {
   const [session] = await Promise.all([auth(), connectDB()]);
+  // oxlint-disable-next-line react-doctor/server-sequential-independent-await
   const [plan, recentSessions] = await Promise.all([
     new MongoMemberPlanRepository().findActive(memberId),
     new MongoWorkoutSessionRepository().findRecentCompletedByMemberIds([memberId], 4),
