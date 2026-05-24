@@ -1,5 +1,5 @@
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-export const MOBILE_RE = /^[0-9\s+\-().]{7,20}$/;
+const MOBILE_RE = /^[0-9\s+\-().]{7,20}$/;
 export const PASSWORD_RE = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
 
 export function validateEmail(email: string): string | null {
