@@ -121,6 +121,11 @@ interface DetailViewProps {
 function DetailView({ entry, onBack, onAdd }: DetailViewProps) {
   const [servings, setServings] = useState<FoodServing[]>(entry.servings);
   const [servingId, setServingId] = useState(entry.defaultServingId);
+
+  useEffect(() => {
+    setServings(entry.servings);
+    setServingId(entry.defaultServingId);
+  }, [entry]);
   const [qty, setQty] = useState('1');
   const [loading, setLoading] = useState(entry.source === 'fatsecret' && !!entry.foodId);
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
@@ -128,22 +133,21 @@ function DetailView({ entry, onBack, onAdd }: DetailViewProps) {
 
   useEffect(() => {
     if (entry.source !== 'fatsecret' || !entry.foodId) return;
-    let cancelled = false;
-    fetch(`/api/food/${entry.foodId}`)
+    const controller = new AbortController();
+    fetch(`/api/food/${entry.foodId}`, { signal: controller.signal })
       .then(async (res) => {
-        if (!res.ok || cancelled) return;
+        if (!res.ok) return;
         const { food } = (await res.json()) as { food: FatSecretFood };
-        if (cancelled || !food) return;
+        if (!food) return;
         setServings(fatSecretFoodToServings(food));
         setServingId(food.defaultServing.servingId);
         if (food.imageUrl) setImageUrl(food.imageUrl);
+        setLoading(false);
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+      .catch((err: unknown) => {
+        if (err instanceof Error && err.name !== 'AbortError') setLoading(false);
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [entry.foodId, entry.source]);
 
   const qtyNum = parseFloat(qty) || 0;

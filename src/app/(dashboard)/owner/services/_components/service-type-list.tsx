@@ -25,16 +25,19 @@ export function ServiceTypeList() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    let cancelled = false;
-    fetch('/api/service-types')
+    const controller = new AbortController();
+    fetch('/api/service-types', { signal: controller.signal })
       .then((res) => res.json())
       .then((data: { serviceTypes: ServiceType[] }) => {
-        if (!cancelled) setServiceTypes(data.serviceTypes ?? []);
+        setServiceTypes(data.serviceTypes ?? []);
+        setLoading(false);
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+      .catch((err: unknown) => {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          setLoading(false);
+        }
       });
-    return () => { cancelled = true; };
+    return () => controller.abort();
   }, [refreshKey]);
 
   function reload() { setLoading(true); setRefreshKey((k) => k + 1); }

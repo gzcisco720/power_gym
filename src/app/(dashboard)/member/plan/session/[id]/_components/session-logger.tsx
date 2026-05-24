@@ -171,11 +171,13 @@ export function SessionLogger({
 
   useEffect(() => {
     if (exercisesFetchedRef.current) return;
-    fetch('/api/exercises')
+    exercisesFetchedRef.current = true;
+    const controller = new AbortController();
+    fetch('/api/exercises', { signal: controller.signal })
       .then((r) => r.json())
       .then((data: ExerciseOption[]) => setAvailableExercises(data))
-      .catch(() => {});
-    exercisesFetchedRef.current = true;
+      .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
@@ -185,8 +187,10 @@ export function SessionLogger({
     ];
     if (nonBwIds.length === 0) return;
     hintsFetchedRef.current = true;
+    const controller = new AbortController();
     fetch(
       `/api/members/${initialSession.memberId}/exercise-last-weights?exerciseIds=${nonBwIds.join(',')}`,
+      { signal: controller.signal },
     )
       .then((r) => r.json())
       .then((data: { hints: LastWeightHintDTO[] }) => {
@@ -194,7 +198,8 @@ export function SessionLogger({
         data.hints.forEach((h) => map.set(h.exerciseId, h));
         setWeightHints(map);
       })
-      .catch(() => {});
+      .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

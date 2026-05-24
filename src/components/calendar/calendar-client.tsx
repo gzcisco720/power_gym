@@ -60,17 +60,19 @@ export function CalendarClient({
   const memberMap = Object.fromEntries(members.map((m) => [m._id, m.name]));
 
   useEffect(() => {
-    fetch('/api/service-types/active')
+    const controller = new AbortController();
+    fetch('/api/service-types/active', { signal: controller.signal })
       .then((r) => r.json())
       .then((data: { serviceTypes: ServiceType[] }) => {
         const map = Object.fromEntries((data.serviceTypes ?? []).map((st) => [st._id, st.name]));
         setServiceTypeMap(map);
       })
-      .catch(() => {});
+      .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     const startIso = weekStart.toISOString();
     const end = new Date(weekStart);
     end.setDate(end.getDate() + 6);
@@ -81,14 +83,14 @@ export function CalendarClient({
       const url = filterTrainerId
         ? `/api/schedule?start=${startIso}&end=${endIso}&trainerId=${filterTrainerId}`
         : `/api/schedule?start=${startIso}&end=${endIso}`;
-      const res = await fetch(url);
-      if (!res.ok || cancelled) return;
+      const res = await fetch(url, { signal: controller.signal });
+      if (!res.ok) return;
       const data = await res.json() as SessionsApiResponse;
-      if (!cancelled) setSessions(data.sessions);
+      setSessions(data.sessions);
     }
 
-    void load();
-    return () => { cancelled = true; };
+    void load().catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, [weekStart, refreshTick, filterTrainerId]);
 
   function goToPrevWeek() {

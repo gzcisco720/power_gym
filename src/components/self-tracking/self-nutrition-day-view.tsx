@@ -121,11 +121,10 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
   }
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
 
     async function load(): Promise<void> {
-      const res = await fetch(`/api/me/nutrition-logs/${date}`);
-      if (cancelled) return;
+      const res = await fetch(`/api/me/nutrition-logs/${date}`, { signal: controller.signal });
       const data = res.ok ? ((await res.json()) as SelfNutritionLog | null) : null;
 
       if (data) {
@@ -135,8 +134,8 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
 
       // No existing log — check if we should init from template
       if (initialTemplateId && initialDayTypeName) {
-        const tplRes = await fetch(`/api/nutrition-templates/${initialTemplateId}`);
-        if (!cancelled && tplRes.ok) {
+        const tplRes = await fetch(`/api/nutrition-templates/${initialTemplateId}`, { signal: controller.signal });
+        if (tplRes.ok) {
           const tpl = (await tplRes.json()) as {
             dayTypes: Array<{ name: string; meals: ISelfMeal[] }>;
           };
@@ -156,22 +155,18 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
       }
 
       // Fallback to freestyle defaults
-      if (!cancelled) {
-        setLog({
-          date,
-          sourceTemplateId: null,
-          sourceTemplateDayTypeName: null,
-          dayLabel: 'Freestyle',
-          meals: DEFAULT_MEALS,
-          dayCompleted: false,
-        });
-      }
+      setLog({
+        date,
+        sourceTemplateId: null,
+        sourceTemplateDayTypeName: null,
+        dayLabel: 'Freestyle',
+        meals: DEFAULT_MEALS,
+        dayCompleted: false,
+      });
     }
 
-    void load();
-    return () => {
-      cancelled = true;
-    };
+    void load().catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, [date, initialTemplateId, initialDayTypeName]);
 
   const macros = useMemo(

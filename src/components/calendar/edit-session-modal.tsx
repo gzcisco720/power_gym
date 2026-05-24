@@ -52,14 +52,24 @@ export function EditSessionModal({
   const [customFee, setCustomFee] = useState(session.customFee != null ? String(session.customFee) : '');
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
 
+  useEffect(() => {
+    setStartTime(session.startTime);
+    setEndTime(session.endTime);
+    setServiceTypeId(session.customServiceName ? '__custom__' : (session.serviceTypeId ?? ''));
+    setCustomServiceName(session.customServiceName ?? '');
+    setCustomFee(session.customFee != null ? String(session.customFee) : '');
+  }, [session]);
+
   const isRecurring = session.seriesId !== null;
 
   useEffect(() => {
     if (!open) return;
-    fetch('/api/service-types/active')
+    const controller = new AbortController();
+    fetch('/api/service-types/active', { signal: controller.signal })
       .then((r) => r.json())
       .then((data: { serviceTypes: ServiceType[] }) => setServiceTypes(data.serviceTypes ?? []))
-      .catch(() => {});
+      .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, [open]);
 
   const isCustomService = serviceTypeId === '__custom__';

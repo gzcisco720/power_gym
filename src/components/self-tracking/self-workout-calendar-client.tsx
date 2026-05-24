@@ -33,23 +33,23 @@ export function SelfWorkoutCalendarClient({ basePath, initialDate }: Props) {
   const [logs, setLogs] = useState<SelfCalendarLog[] | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 7);
     const apiUrl =
       basePath === '/member/plan'
         ? `/api/sessions?memberId=me&start=${weekStart.toISOString()}&end=${weekEnd.toISOString()}`
         : `/api/me/workout-logs/range?start=${weekStart.toISOString()}&end=${weekEnd.toISOString()}`;
-    fetch(apiUrl)
+    fetch(apiUrl, { signal: controller.signal })
       .then((r) => r.json())
       .then((data: SelfCalendarLog[]) => {
-        if (!cancelled) setLogs(data);
+        setLogs(data);
       })
-      .catch(() => {
-        if (!cancelled) setLogs([]);
+      .catch((err: unknown) => {
+        if (err instanceof Error && err.name !== 'AbortError') setLogs([]);
       });
     return () => {
-      cancelled = true;
+      controller.abort();
       setLogs(null);
     };
   }, [weekStart, basePath]);

@@ -40,21 +40,24 @@ export function BillingSummaryClient({ userRole, memberHubBase }: BillingSummary
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     const from = period.from.toISOString();
     const to = period.to.toISOString();
-    fetch(`/api/billing?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
+    fetch(`/api/billing?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, { signal: controller.signal })
       .then((res) => {
         if (!res.ok) return null;
         return res.json() as Promise<SummaryData>;
       })
       .then((json) => {
-        if (!cancelled) setData(json ?? null);
+        setData(json ?? null);
+        setLoading(false);
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+      .catch((err: unknown) => {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          setLoading(false);
+        }
       });
-    return () => { cancelled = true; };
+    return () => controller.abort();
   }, [period]);
 
   function handlePeriodChange(p: BillingPeriod) {

@@ -229,7 +229,7 @@ describe('FoodPicker', () => {
     fireEvent.click(screen.getByRole('tab', { name: /recent/i }));
 
     await waitFor(() =>
-      expect(global.fetch).toHaveBeenCalledWith('/api/members/m1/nutrition/recent'),
+      expect(global.fetch).toHaveBeenCalledWith('/api/members/m1/nutrition/recent', expect.objectContaining({ signal: expect.any(AbortSignal) })),
     );
 
     await waitFor(() => expect(screen.getByText('Oats')).toBeInTheDocument());
@@ -276,7 +276,7 @@ describe('FoodPicker', () => {
     render(<FoodPicker memberId="m1" onSelectFood={onSelectFood} />);
     fireEvent.click(screen.getByRole('tab', { name: /my food/i }));
 
-    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith('/api/foods'));
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith('/api/foods', expect.objectContaining({ signal: expect.any(AbortSignal) })));
     await waitFor(() => expect(screen.getByText(/protein powder/i)).toBeInTheDocument());
   });
 

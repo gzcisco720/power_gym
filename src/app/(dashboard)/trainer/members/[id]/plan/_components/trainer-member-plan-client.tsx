@@ -120,20 +120,22 @@ function ExerciseStrengthChart({
 
   useEffect(() => {
     if (!selectedId) return;
+    const controller = new AbortController();
     async function load() {
       setLoading(true);
       try {
-        const r = await fetch(`/api/progress/${memberId}?exerciseId=${selectedId}`);
+        const r = await fetch(`/api/progress/${memberId}?exerciseId=${selectedId}`, { signal: controller.signal });
         if (!r.ok) throw new Error('Failed to fetch');
         const data = (await r.json()) as { history: HistoryPoint[] };
         setHistory(data.history ?? []);
-      } catch {
-        toast.error('Failed to load exercise history');
+      } catch (err) {
+        if (err instanceof Error && err.name !== 'AbortError') toast.error('Failed to load exercise history');
       } finally {
         setLoading(false);
       }
     }
     void load();
+    return () => controller.abort();
   }, [selectedId, memberId]);
 
   const chartData = history.map((h) => ({

@@ -39,21 +39,24 @@ export function MemberBillingDetail({ memberId }: MemberBillingDetailProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     const from = period.from.toISOString();
     const to = period.to.toISOString();
-    fetch(`/api/billing/member/${memberId}?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
+    fetch(`/api/billing/member/${memberId}?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, { signal: controller.signal })
       .then((res) => {
         if (!res.ok) return null;
         return res.json() as Promise<BillingData>;
       })
       .then((json) => {
-        if (!cancelled) setData(json ?? null);
+        setData(json ?? null);
+        setLoading(false);
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+      .catch((err: unknown) => {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          setLoading(false);
+        }
       });
-    return () => { cancelled = true; };
+    return () => controller.abort();
   }, [memberId, period]);
 
   function handlePeriodChange(p: BillingPeriod) {

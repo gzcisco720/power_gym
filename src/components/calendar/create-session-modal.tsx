@@ -77,10 +77,12 @@ export function CreateSessionModal({
 
   useEffect(() => {
     if (!open) return;
-    fetch('/api/service-types/active')
+    const controller = new AbortController();
+    fetch('/api/service-types/active', { signal: controller.signal })
       .then((r) => r.json())
       .then((data: { serviceTypes: ServiceType[] }) => setServiceTypes(data.serviceTypes ?? []))
-      .catch(() => {});
+      .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, [open]);
 
   const filteredMembers = members.filter((m) => m.trainerId === trainerId);

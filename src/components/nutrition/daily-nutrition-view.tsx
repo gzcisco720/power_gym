@@ -83,21 +83,20 @@ export function DailyNutritionView({ memberId, initialDate, forceDayType, planDa
   const [compareOpen, setCompareOpen] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
 
     async function load() {
       const url = forceDayType
         ? `/api/members/${memberId}/nutrition/log/${date}?dayTypeName=${encodeURIComponent(forceDayType)}`
         : `/api/members/${memberId}/nutrition/log/${date}`;
-      const res = await fetch(url);
-      if (cancelled) return;
+      const res = await fetch(url, { signal: controller.signal });
       const data = res.ok ? ((await res.json()) as DailyLog | null) : null;
       setLog(data);
       setLoading(false);
     }
 
-    void load();
-    return () => { cancelled = true; };
+    void load().catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, [memberId, date, forceDayType]);
 
   async function persist(next: DailyLog): Promise<void> {

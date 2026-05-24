@@ -26,16 +26,14 @@ export function MiniWorkoutCalendar({ basePath }: Props) {
   const [logs, setLogs] = useState<SelfLog[]>([]);
 
   useEffect(() => {
-    let cancelled = false;
-    fetch(`/api/me/workout-logs?year=${year}&month=${month}`)
+    const controller = new AbortController();
+    fetch(`/api/me/workout-logs?year=${year}&month=${month}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((data: SelfLog[]) => {
-        if (!cancelled) setLogs(data.filter((l) => l.completedAt !== null));
+        setLogs(data.filter((l) => l.completedAt !== null));
       })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
+      .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, [year, month]);
 
   return (

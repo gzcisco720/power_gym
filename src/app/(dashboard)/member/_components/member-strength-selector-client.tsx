@@ -23,20 +23,22 @@ export function MemberStrengthSelectorClient({ exercises, memberId }: Props) {
 
   useEffect(() => {
     if (!selectedExerciseId) return;
+    const controller = new AbortController();
     async function loadHistory() {
       setLoading(true);
       try {
-        const r = await fetch(`/api/progress/${memberId}?exerciseId=${selectedExerciseId}`);
+        const r = await fetch(`/api/progress/${memberId}?exerciseId=${selectedExerciseId}`, { signal: controller.signal });
         if (!r.ok) throw new Error('Failed to fetch');
         const data = (await r.json()) as { history: HistoryPoint[] };
         setHistory(data.history ?? []);
-      } catch {
-        toast.error('Failed to load exercise history');
+      } catch (err) {
+        if (err instanceof Error && err.name !== 'AbortError') toast.error('Failed to load exercise history');
       } finally {
         setLoading(false);
       }
     }
     void loadHistory();
+    return () => controller.abort();
   }, [selectedExerciseId, memberId]);
 
   const chartData = history.map((h) => ({

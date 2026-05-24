@@ -288,15 +288,15 @@ function RecentTab({
   const [items, setItems] = useState<RecentItem[]>([]);
 
   useEffect(() => {
-    let cancelled = false;
-    void fetch(`/api/members/${memberId}/nutrition/recent`).then(async (res) => {
-      if (!res.ok || cancelled) return;
-      const data = (await res.json()) as { recent: RecentItem[] };
-      if (!cancelled) setItems(data.recent);
-    });
-    return () => {
-      cancelled = true;
-    };
+    const controller = new AbortController();
+    fetch(`/api/members/${memberId}/nutrition/recent`, { signal: controller.signal })
+      .then(async (res) => {
+        if (!res.ok) return;
+        const data = (await res.json()) as { recent: RecentItem[] };
+        setItems(data.recent);
+      })
+      .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, [memberId]);
 
   function handleRowClick(it: RecentItem): void {
@@ -358,16 +358,16 @@ function MyFoodTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void 
   const [items, setItems] = useState<MyFoodItem[]>([]);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     const handle = setTimeout(async () => {
       const url = q ? `/api/foods?q=${encodeURIComponent(q)}` : '/api/foods';
-      const res = await fetch(url);
-      if (!res.ok || cancelled) return;
+      const res = await fetch(url, { signal: controller.signal });
+      if (!res.ok) return;
       const data = (await res.json()) as { foods: MyFoodItem[] };
-      if (!cancelled) setItems(data.foods);
+      setItems(data.foods);
     }, 300);
     return () => {
-      cancelled = true;
+      controller.abort();
       clearTimeout(handle);
     };
   }, [q]);

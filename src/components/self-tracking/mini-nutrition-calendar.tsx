@@ -59,25 +59,23 @@ export function MiniNutritionCalendar({ basePath, memberId }: Props) {
   const [entries, setEntries] = useState<NutritionDayEntry[]>([]);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
 
     async function load() {
-      const selfRes = await fetch(`/api/me/nutrition-logs?year=${year}&month=${month}`);
+      const selfRes = await fetch(`/api/me/nutrition-logs?year=${year}&month=${month}`, { signal: controller.signal });
       const selfData: RawSelfLog[] = selfRes.ok ? await selfRes.json() : [];
 
       let planData: RawPlanLog[] = [];
       if (memberId) {
-        const planRes = await fetch(`/api/me/nutrition-daily-logs?year=${year}&month=${month}`);
+        const planRes = await fetch(`/api/me/nutrition-daily-logs?year=${year}&month=${month}`, { signal: controller.signal });
         planData = planRes.ok ? await planRes.json() : [];
       }
 
-      if (!cancelled) {
-        setEntries(mergeEntries(selfData.map(selfLogToEntry), planData.map(planLogToEntry)));
-      }
+      setEntries(mergeEntries(selfData.map(selfLogToEntry), planData.map(planLogToEntry)));
     }
 
-    void load();
-    return () => { cancelled = true; };
+    void load().catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, [year, month, memberId]);
 
   function dayPath(date: string): string {

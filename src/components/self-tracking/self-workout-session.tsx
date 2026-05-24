@@ -130,11 +130,10 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
   const [savingSets, setSavingSets] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
-    fetch(`/api/me/workout-logs/${logId}`)
+    const controller = new AbortController();
+    fetch(`/api/me/workout-logs/${logId}`, { signal: controller.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((d: ISelfWorkoutLog | null) => {
-        if (cancelled) return;
         setLog(d);
         if (d) {
           setInputs(d.sets.map((s) => ({
@@ -149,25 +148,21 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
         }
         setLoading(false);
       })
-      .catch(() => {
-        if (!cancelled) setLoading(false);
+      .catch((err: unknown) => {
+        if (err instanceof Error && err.name !== 'AbortError') setLoading(false);
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [logId]);
 
   useEffect(() => {
-    let cancelled = false;
-    fetch('/api/exercises')
+    const controller = new AbortController();
+    fetch('/api/exercises', { signal: controller.signal })
       .then((r) => (r.ok ? r.json() : []))
       .then((data: ExerciseOption[]) => {
-        if (!cancelled) setAvailableExercises(data);
+        setAvailableExercises(data);
       })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
+      .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
+    return () => controller.abort();
   }, []);
 
   const isFreestyle = log?.sourceTemplateId == null;

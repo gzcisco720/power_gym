@@ -96,6 +96,7 @@ describe('ProgressClient', () => {
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
         `/api/progress/${MEMBER_ID}?exerciseId=${EXERCISE.exerciseId}`,
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
       );
     });
   });
