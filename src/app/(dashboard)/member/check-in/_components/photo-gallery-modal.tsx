@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { format } from 'date-fns';
 
 interface PhotoEntry {
@@ -59,9 +60,8 @@ function Lightbox({ photos, initialIdx, onClose }: LightboxProps) {
         <button type="button" onClick={onClose} aria-label="Close lightbox" className="w-8 h-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 flex items-center justify-center text-foreground/60">✕</button>
       </div>
 
-      <div className="max-h-[60vh] max-w-[300px] rounded-xl overflow-hidden border border-foreground/10 shadow-2xl">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={photo.url} alt="" className="w-full display-block" />
+      <div className="max-h-[60vh] max-w-[300px] rounded-xl overflow-hidden border border-foreground/10 shadow-2xl relative">
+        <Image src={photo.url} alt="" width={300} height={400} className="w-full object-cover" />
       </div>
       <div className="text-center">
         <div className="text-sm font-semibold">{format(new Date(photo.submittedAt), 'd MMMM yyyy')}</div>
@@ -147,8 +147,7 @@ export function PhotoGalleryModal({ open, onClose, photos, totalCount }: Props) 
                     onClick={() => setLightboxIdx(globalIdx >= 0 ? globalIdx : 0)}
                     className="aspect-[3/4] rounded-lg overflow-hidden border-2 border-foreground/[0.06] hover:border-foreground/[0.18] transition-colors relative"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photo.url} alt="" className="w-full h-full object-cover block" />
+                    <Image src={photo.url} alt="" fill className="object-cover" />
                     <div className="absolute bottom-0 inset-x-0 py-1 px-1.5 bg-gradient-to-t from-background/75 to-transparent text-[9px] text-foreground/55">
                       {format(new Date(photo.submittedAt), 'd MMM')}
                     </div>

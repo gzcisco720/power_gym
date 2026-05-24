@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Props {
@@ -75,10 +76,11 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props
         </>
       )}
 
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={images[index]}
         alt={`Image ${index + 1} of ${images.length}`}
+        width={1200}
+        height={900}
         className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
         onClick={(e) => e.stopPropagation()}
       />

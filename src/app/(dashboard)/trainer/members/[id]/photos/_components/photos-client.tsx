@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface PhotoItem {
   key: string;
@@ -115,11 +116,11 @@ export function PhotosClient({ photos }: Props) {
                   : 'border-transparent'
               } ${isDimmed ? 'opacity-35' : 'opacity-100'} ${!selectMode ? 'cursor-default' : 'cursor-pointer'}`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={photo.photoUrl}
                 alt={`Check-in photo ${formatDate(photo.submittedAt)}`}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
               />
               {/* Date label */}
               <div className="absolute bottom-0 inset-x-0 px-1.5 py-1 bg-gradient-to-t from-black/70 to-transparent">
@@ -183,11 +184,11 @@ export function PhotosClient({ photos }: Props) {
               {[compareLeft, compareRight].map((photo) => (
                 <div key={photo.key}>
                   <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={photo.photoUrl}
                       alt={`Check-in ${formatDate(photo.submittedAt)}`}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                   </div>
                   <div className="text-[11px] text-foreground/40 mb-2">{formatDate(photo.submittedAt)}</div>

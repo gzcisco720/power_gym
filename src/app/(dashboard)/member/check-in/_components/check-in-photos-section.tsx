@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import Image from 'next/image';
 import { Loader2, Plus } from 'lucide-react';
 
 interface Props {
@@ -24,12 +25,13 @@ export function CheckInPhotosSection({ photos, uploading, onFileChange }: Props)
 
       <div className="flex flex-wrap gap-2">
         {photos.map((url, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             key={i}
             src={url}
             alt={`Photo ${i + 1}`}
-            className="w-16 h-16 rounded-lg object-cover ring-1 ring-foreground/10"
+            width={64}
+            height={64}
+            className="rounded-lg object-cover ring-1 ring-foreground/10"
           />
         ))}
 

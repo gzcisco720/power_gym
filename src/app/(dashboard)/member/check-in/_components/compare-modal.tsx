@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import type { CheckInRecord } from '@/lib/check-in-stats';
 import { format } from 'date-fns';
 
@@ -26,12 +27,12 @@ function PhotoColumn({ checkIn, side }: { checkIn: CheckInRecord; side: 'before'
           <span className="text-[10px] text-foreground/35 ml-2">{checkIn.weight} kg</span>
         )}
       </div>
-      <div className="flex-1 overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+      <div className="flex-1 overflow-hidden relative">
+        <Image
           src={photos[selectedIdx]}
           alt={`${side} photo`}
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
         />
       </div>
       {photos.length > 1 && (
@@ -41,10 +42,9 @@ function PhotoColumn({ checkIn, side }: { checkIn: CheckInRecord; side: 'before'
               type="button"
               key={url}
               onClick={() => setSelectedIdx(i)}
-              className={`w-10 h-12 rounded overflow-hidden border-2 flex-shrink-0 ${i === selectedIdx ? 'border-primary' : 'border-foreground/10'}`}
+              className={`w-10 h-12 rounded overflow-hidden border-2 flex-shrink-0 relative ${i === selectedIdx ? 'border-primary' : 'border-foreground/10'}`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="" className="w-full h-full object-cover" />
+              <Image src={url} alt="" fill className="object-cover" />
             </button>
           ))}
         </div>

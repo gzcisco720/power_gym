@@ -76,8 +76,10 @@ describe('EquipmentClient', () => {
 
   it('shows thumbnail img for equipment with images', () => {
     render(<EquipmentClient initialItems={mockItems} />);
-    const thumbnail = screen.getByRole('button', { name: /smith machine/i });
-    expect(thumbnail).toHaveAttribute('src', IMAGE_URL);
+    const thumbnailBtn = screen.getByRole('button', { name: /view smith machine image/i });
+    const img = thumbnailBtn.querySelector('img');
+    expect(img).toBeInTheDocument();
+    expect(img?.getAttribute('src')).toContain('sample.jpg');
   });
 
   it('opens lightbox when thumbnail clicked', () => {

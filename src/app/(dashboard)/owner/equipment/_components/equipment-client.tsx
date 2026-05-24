@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ImageIcon, Loader2 } from 'lucide-react';
@@ -93,16 +94,20 @@ export function EquipmentClient({ initialItems }: Props) {
               >
                 <div className="flex items-center gap-3">
                   {item.images?.[0] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={item.images[0]}
-                      alt={item.name}
-                      role="button"
-                      tabIndex={0}
+                    <button
+                      type="button"
                       onClick={() => setLightbox({ images: item.images, index: 0 })}
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setLightbox({ images: item.images, index: 0 }); }}
-                      className="w-8 h-8 object-cover rounded-md border border-[#222] shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                    />
+                      className="w-8 h-8 rounded-md border border-[#222] shrink-0 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden relative"
+                      aria-label={`View ${item.name} image`}
+                    >
+                      <Image
+                        src={item.images[0]}
+                        alt={item.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </button>
                   ) : (
                     <div
                       aria-label="No image"

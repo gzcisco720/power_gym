@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
 import { MongoCheckInRepository } from '@/lib/repositories/check-in.repository';
 import { PageHeader } from '@/components/shared/page-header';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { format } from 'date-fns';
@@ -144,9 +145,8 @@ export default async function MemberCheckInDetailPage({ params }: { params: Prom
             </div>
             <div className="grid grid-cols-3 gap-[3px] p-[3px]">
               {c.photos.map((url, i) => (
-                <div key={i} className="aspect-square rounded-[5px] overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={url} alt="" className="w-full h-full object-cover block" />
+                <div key={i} className="aspect-square rounded-[5px] overflow-hidden relative">
+                  <Image src={url} alt="" fill className="object-cover" />
                 </div>
               ))}
             </div>

@@ -21,7 +21,7 @@ describe('ImageLightbox', () => {
       />,
     );
     const img = screen.getByRole('img');
-    expect(img).toHaveAttribute('src', images[0]);
+    expect(img.getAttribute('src')).toContain('sample.jpg');
   });
 
   it('advances to next image when Next button clicked', () => {
@@ -34,7 +34,7 @@ describe('ImageLightbox', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /next image/i }));
-    expect(screen.getByRole('img')).toHaveAttribute('src', images[1]);
+    expect(screen.getByRole('img').getAttribute('src')).toContain('sample2.jpg');
   });
 
   it('goes back to previous image when Prev button clicked', () => {
@@ -47,7 +47,7 @@ describe('ImageLightbox', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /previous image/i }));
-    expect(screen.getByRole('img')).toHaveAttribute('src', images[0]);
+    expect(screen.getByRole('img').getAttribute('src')).toContain('sample.jpg');
   });
 
   it('calls onClose when backdrop clicked', () => {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { format } from 'date-fns';
 import type { CheckInRecord } from '@/lib/check-in-stats';
 import { CompareModal } from './compare-modal';
@@ -65,11 +66,11 @@ export function CompareCard({ checkInsWithPhotos }: Props) {
                 className="aspect-[3/4] rounded-lg overflow-hidden border border-foreground/[0.07] relative cursor-pointer"
                 onClick={() => setIdx((idx + 1) % checkIn.photos.length)}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={checkIn.photos[idx]}
                   alt=""
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
                 <div className="absolute bottom-0 inset-x-0 py-1 px-1.5 bg-background/80 text-[9px] text-foreground/55 text-center">
                   {format(new Date(checkIn.submittedAt), 'd MMM')}

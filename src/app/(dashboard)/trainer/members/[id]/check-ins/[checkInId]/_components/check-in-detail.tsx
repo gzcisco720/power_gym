@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import type { ICheckIn } from '@/lib/db/models/check-in.model';
 
 interface Props {
@@ -158,8 +159,9 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
                   </p>
                   <div className="space-y-2">
                     {checkIn.photos.map((url, i) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img key={`${checkInId}-${i}`} src={url} alt={`Photo ${i + 1}`} className="w-full rounded object-cover" />
+                      <div key={`${checkInId}-${i}`} className="relative w-full aspect-square rounded overflow-hidden">
+                        <Image src={url} alt={`Photo ${i + 1}`} fill className="object-cover" />
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -169,16 +171,16 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
                   </p>
                   <div className="space-y-2">
                     {compareCheckIn.photos.map((url, i) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img key={`compare-${i}`} src={url} alt={`Comparison photo ${i + 1}`} className="w-full rounded object-cover" />
+                      <div key={`compare-${i}`} className="relative w-full aspect-square rounded overflow-hidden">
+                        <Image src={url} alt={`Comparison photo ${i + 1}`} fill className="object-cover" />
+                      </div>
                     ))}
                   </div>
                 </div>
               </>
             ) : (
               checkIn.photos.map((url, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={i} src={url} alt={`Photo ${i + 1}`} className="h-40 w-40 rounded object-cover" />
+                <Image key={i} src={url} alt={`Photo ${i + 1}`} width={160} height={160} className="rounded object-cover" />
               ))
             )}
           </div>

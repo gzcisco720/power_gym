@@ -5,6 +5,7 @@ import { connectDB } from '@/lib/db/connect';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { ROLE_DEFAULT_PATH } from '@/lib/auth/middleware-helpers';
 import { getGymBranding } from '@/lib/db/queries/gym-branding';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { LoginButton } from './_components/login-button';
@@ -32,12 +33,15 @@ export default async function LoginPage({
           {branding.loginLogoUrl || branding.name ? (
             <>
               {branding.loginLogoUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={branding.loginLogoUrl}
-                  alt={gymName}
-                  className="max-w-[200px] max-h-[120px] object-contain mb-5"
-                />
+                <div className="relative max-w-[200px] max-h-[120px] mb-5">
+                  <Image
+                    src={branding.loginLogoUrl}
+                    alt={gymName}
+                    width={200}
+                    height={120}
+                    className="object-contain"
+                  />
+                </div>
               )}
               {branding.name && (
                 <div className="text-[11px] font-bold tracking-[5px] text-white uppercase">

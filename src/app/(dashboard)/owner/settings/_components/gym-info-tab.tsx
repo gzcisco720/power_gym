@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -169,8 +170,7 @@ export function GymInfoTab({ gymInfo }: Props) {
                 className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-foreground/10 overflow-hidden bg-muted hover:opacity-80 transition-opacity cursor-pointer disabled:cursor-not-allowed"
               >
                 {logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={logoUrl} alt="Gym logo" className="h-full w-full object-cover" />
+                  <Image src={logoUrl} alt="Gym logo" fill className="object-cover" />
                 ) : (
                   <span className="text-[16px] font-semibold text-foreground/60">{fallbackInitial}</span>
                 )}
@@ -192,8 +192,7 @@ export function GymInfoTab({ gymInfo }: Props) {
                 className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-foreground/10 overflow-hidden bg-muted hover:opacity-80 transition-opacity cursor-pointer disabled:cursor-not-allowed"
               >
                 {loginLogoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={loginLogoUrl} alt="Login logo" className="h-full w-full object-contain p-1" />
+                  <Image src={loginLogoUrl} alt="Login logo" fill className="object-contain p-1" />
                 ) : (
                   <span className="text-[11px] text-foreground/40">None</span>
                 )}

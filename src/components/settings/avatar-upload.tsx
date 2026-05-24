@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import Image from 'next/image';
 import { toast } from 'sonner';
 import { uploadFile } from '@/lib/storage/upload-file';
 import { getAvatarSignatureAction } from '@/lib/actions/get-avatar-signature';
@@ -69,8 +70,7 @@ export function AvatarUpload({ avatarUrl, initials, onUpload }: Props) {
           aria-label="Change profile photo"
         >
           {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
+            <Image src={avatarUrl} alt="Avatar" fill className="object-cover" />
           ) : (
             <span className="text-[16px] font-semibold text-foreground/60">{initials}</span>
           )}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
 import {
@@ -206,8 +207,7 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
               <div className="flex flex-wrap gap-2 mb-2">
                 {images.map((url) => (
                   <div key={url} className="relative group">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt="equipment" className="w-14 h-14 object-cover rounded-md border border-[#222]" />
+                    <Image src={url} alt="equipment" width={56} height={56} className="object-cover rounded-md border border-[#222]" />
                     <button type="button" onClick={() => setImages((p) => p.filter((u) => u !== url))}
                       className="absolute -top-1.5 -right-1.5 bg-[#333] rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <X className="w-3 h-3 text-white" />

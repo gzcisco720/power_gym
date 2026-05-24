@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
+import Image from 'next/image';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
 import {
@@ -348,8 +349,7 @@ export function EditEquipmentDialog({ equipment, onClose, onUpdated }: Props) {
                   <div className="flex flex-wrap gap-2 mb-2">
                     {images.map((url) => (
                       <div key={url} className="relative group">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={url} alt="equipment" className="w-14 h-14 object-cover rounded-md border border-[#222]" />
+                        <Image src={url} alt="equipment" width={56} height={56} className="object-cover rounded-md border border-[#222]" />
                         <button
                           type="button"
                           aria-label="Remove image"

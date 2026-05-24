@@ -1,5 +1,6 @@
 'use client';
 import { useState, useCallback, useEffect } from 'react';
+import Image from 'next/image';
 import { Loader2Icon } from 'lucide-react';
 import {
   Dialog,
@@ -198,11 +199,12 @@ function DetailView({ entry, onBack, onAdd }: DetailViewProps) {
           <h2 className="font-semibold text-base leading-snug">{entry.name}</h2>
         </div>
         {imageUrl && !imgFailed && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={imageUrl}
             alt={entry.name}
-            className="size-20 rounded-xl object-cover shrink-0 ring-1 ring-foreground/10"
+            width={80}
+            height={80}
+            className="rounded-xl object-cover shrink-0 ring-1 ring-foreground/10"
             onError={() => setImgFailed(true)}
           />
         )}

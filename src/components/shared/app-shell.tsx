@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, Settings } from 'lucide-react';
@@ -144,11 +145,12 @@ function SidebarContent({ userRole, userName, userInitials, userEmail, avatarUrl
       <div className="border-b border-foreground/[.06] px-5 pb-6 pt-6">
         <div className="flex items-center gap-3">
           {gymBranding?.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={gymBranding.logoUrl}
               alt="Gym logo"
-              className="h-12 w-12 shrink-0 rounded-full object-cover border border-foreground/10"
+              width={48}
+              height={48}
+              className="shrink-0 rounded-full object-cover border border-foreground/10"
             />
           ) : (
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-[17px] font-bold text-white">
@@ -198,11 +200,12 @@ function SidebarContent({ userRole, userName, userInitials, userEmail, avatarUrl
             aria-label="User menu"
           >
             {avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={avatarUrl}
                 alt={userName}
-                className="h-8 w-8 shrink-0 rounded-full object-cover border border-[#222]"
+                width={32}
+                height={32}
+                className="shrink-0 rounded-full object-cover border border-[#222]"
               />
             ) : (
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#222] bg-[#1a1a1a] text-[11px] font-semibold text-[#666]">
@@ -220,11 +223,12 @@ function SidebarContent({ userRole, userName, userInitials, userEmail, avatarUrl
               {/* User info header */}
               <div className="flex items-center gap-3 px-4 py-3 border-b border-[#222]">
                 {avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={avatarUrl}
                     alt={userName}
-                    className="h-9 w-9 shrink-0 rounded-full object-cover border border-[#333]"
+                    width={36}
+                    height={36}
+                    className="shrink-0 rounded-full object-cover border border-[#333]"
                   />
                 ) : (
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#333] bg-[#2a2a2a] text-[12px] font-semibold text-[#777]">
