@@ -9,9 +9,8 @@ import { TrainerMemberNutritionClient, type SerializedRecentLog, type DayTypeTar
 type RouteContext = { params: Promise<{ id: string }> };
 
 export default async function Page({ params }: RouteContext) {
-  const session = await auth();
+  const [session, { id }] = await Promise.all([auth(), params]);
   if (!session?.user || session.user.role !== 'owner') redirect('/login');
-  const { id } = await params;
 
   await connectDB();
   const [templates, activePlan, recentRaw] = await Promise.all([

@@ -12,9 +12,8 @@ export default async function TrainerMemberCheckInsPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id: memberId } = await params;
+  const [{ id: memberId }] = await Promise.all([params, connectDB()]);
 
-  await connectDB();
   const [rawConfig, rawCheckIns] = await Promise.all([
     new MongoCheckInConfigRepository().findByMember(memberId),
     new MongoCheckInRepository().findByMember(memberId),

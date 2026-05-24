@@ -42,8 +42,7 @@ export async function DELETE(_req: Request, { params }: RouteContext): Promise<R
   if (!session?.user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   if (session.user.role !== 'owner') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
-  const { id } = await params;
-  await connectDB();
+  const [{ id }] = await Promise.all([params, connectDB()]);
   await new MongoEquipmentRepository().deleteById(id);
   return new Response(null, { status: 204 });
 }

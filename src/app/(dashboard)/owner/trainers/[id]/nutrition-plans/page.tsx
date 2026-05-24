@@ -18,11 +18,8 @@ export default async function TrainerHubNutritionPlansPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ page?: string }>;
 }) {
-  const session = await auth();
+  const [session, { id: trainerId }, { page: pageParam }] = await Promise.all([auth(), params, searchParams]);
   if (!session?.user || session.user.role !== 'owner') redirect('/');
-
-  const { id: trainerId } = await params;
-  const { page: pageParam } = await searchParams;
   const parsed = parseInt(pageParam ?? '1', 10);
   const page = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 

@@ -10,8 +10,7 @@ function formatSinceDate(date: Date): string {
 }
 
 export async function HealthPanelSection({ memberId }: { memberId: string }) {
-  const session = await auth();
-  await connectDB();
+  const [session] = await Promise.all([auth(), connectDB()]);
   const [injuries, allMeds] = await Promise.all([
     new MongoMemberInjuryRepository().findActiveByMember(memberId),
     new MongoMemberMedicationRepository().findByMember(memberId),

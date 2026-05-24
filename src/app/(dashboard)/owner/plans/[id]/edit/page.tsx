@@ -6,9 +6,8 @@ import { notFound } from 'next/navigation';
 import { EditPlanClient } from '@/app/(dashboard)/trainer/plans/[id]/edit/_client';
 
 export default async function OwnerEditPlanPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
+  const [session, { id }] = await Promise.all([auth(), params]);
   if (!session?.user) return null;
-  const { id } = await params;
   await connectDB();
 
   const [template, exercises] = await Promise.all([

@@ -9,10 +9,8 @@ export default async function TrainerMemberBodyTestsPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
+  const [session, { id: memberId }] = await Promise.all([auth(), params]);
   if (!session?.user) return null;
-
-  const { id: memberId } = await params;
 
   await connectDB();
   const [tests, memberProfile] = await Promise.all([

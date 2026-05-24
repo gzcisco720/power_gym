@@ -55,8 +55,7 @@ export async function POST(req: Request, { params }: RouteContext): Promise<Resp
   const role = session.user.role as UserRole;
   if (role === 'member') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
-  const { memberId } = await params;
-  const raw = await req.json();
+  const [{ memberId }, raw] = await Promise.all([params, req.json()]);
 
   if (!isValidBody(raw)) {
     return Response.json({ error: 'Body must be {name, dayTypes, schedule}' }, { status: 400 });

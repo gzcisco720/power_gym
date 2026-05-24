@@ -15,8 +15,7 @@ function formatSessionDate(date: Date): string {
 }
 
 export async function PlanCardSection({ memberId }: { memberId: string }) {
-  const session = await auth();
-  await connectDB();
+  const [session] = await Promise.all([auth(), connectDB()]);
   const [plan, recentSessions] = await Promise.all([
     new MongoMemberPlanRepository().findActive(memberId),
     new MongoWorkoutSessionRepository().findRecentCompletedByMemberIds([memberId], 4),

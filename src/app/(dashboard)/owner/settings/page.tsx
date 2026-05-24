@@ -20,8 +20,7 @@ export default async function OwnerSettingsPage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
-  const { tab = 'profile' } = await searchParams;
-  const session = await auth();
+  const [{ tab = 'profile' }, session] = await Promise.all([searchParams, auth()]);
   if (!session?.user) return null;
 
   await connectDB();

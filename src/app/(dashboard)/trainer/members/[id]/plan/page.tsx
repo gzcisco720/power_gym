@@ -14,11 +14,8 @@ export default async function TrainerMemberPlanPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ activeSession?: string; activeDayName?: string }>;
 }) {
-  const session = await auth();
+  const [session, { id: memberId }, sp] = await Promise.all([auth(), params, searchParams]);
   if (!session?.user) return null;
-
-  const { id: memberId } = await params;
-  const sp = await searchParams;
 
   await connectDB();
   const sessionRepo = new MongoWorkoutSessionRepository();

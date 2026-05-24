@@ -11,11 +11,8 @@ interface PageProps {
 }
 
 export default async function NewMemberNutritionPlanPage({ params, searchParams }: PageProps) {
-  const session = await auth();
+  const [session, { id: memberId }, { templateId }] = await Promise.all([auth(), params, searchParams]);
   if (!session?.user || session.user.role === 'member') redirect('/login');
-
-  const { id: memberId } = await params;
-  const { templateId } = await searchParams;
 
   let initialData: InitialData | null = null;
 
