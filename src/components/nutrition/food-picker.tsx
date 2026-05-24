@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Loader2Icon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -151,7 +151,7 @@ function AllTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void }) 
   const [q, setQ] = useState('');
   const [results, setResults] = useState<FatSecretFood[]>([]);
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(0);
+  const pageRef = useRef(0);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -175,7 +175,7 @@ function AllTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void }) 
         setResults((prev) => [...prev, ...data.results]);
       }
       setTotal(data.total);
-      setPage(newPage);
+      pageRef.current = newPage;
     } finally {
       setHasSearched(true);
       setLoading(false);
@@ -258,7 +258,7 @@ function AllTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void }) 
               ) : (
                 <button
                   type="button"
-                  onClick={() => void runSearch(page + 1)}
+                  onClick={() => void runSearch(pageRef.current + 1)}
                   className="text-xs text-foreground/65 hover:text-foreground"
                 >
                   Load more · {results.length} of {total}

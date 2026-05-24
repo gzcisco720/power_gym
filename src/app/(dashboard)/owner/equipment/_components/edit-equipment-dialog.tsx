@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
 import {
@@ -70,10 +70,10 @@ export function EditEquipmentDialog({ equipment, onClose, onUpdated }: Props) {
   const [submittingReport, setSubmittingReport] = useState(false);
 
   // ── Reset when equipment changes ───────────────────────────────────────────
-  const [prevId, setPrevId] = useState<string | null>(null);
+  const prevIdRef = useRef<string | null>(null);
   const currentId = equipment?._id ?? null;
-  if (currentId !== prevId) {
-    setPrevId(currentId);
+  if (currentId !== prevIdRef.current) {
+    prevIdRef.current = currentId;
     if (equipment) {
       setName(equipment.name);
       setBrand(equipment.brand ?? '');

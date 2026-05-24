@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useMemberHub } from '../../_components/member-hub-provider';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -254,11 +254,11 @@ export function TrainerMemberPlanClient({
   const [peekSession, setPeekSession] = useState<SessionSummary | null>(null);
 
   const [conflictBanner, setConflictBanner] = useState<ActiveConflict | null>(conflict ?? null);
-  const [prevSessions, setPrevSessions] = useState(sessions);
+  const prevSessionsRef = useRef(sessions);
   const [visibleCount, setVisibleCount] = useState(8);
 
-  if (prevSessions !== sessions) {
-    setPrevSessions(sessions);
+  if (prevSessionsRef.current !== sessions) {
+    prevSessionsRef.current = sessions;
     setVisibleCount(8);
   }
 

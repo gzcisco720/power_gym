@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -86,14 +86,14 @@ function existingToForm(existing: SerializedMedication | undefined): FormState {
 export function MedicationDialog({ open, onOpenChange, memberId, existing, onSaved }: MedicationDialogProps) {
   const [form, setForm] = useState<FormState>(() => existingToForm(existing));
   const [saving, setSaving] = useState(false);
-  const [prevExisting, setPrevExisting] = useState(existing);
-  const [prevOpen, setPrevOpen] = useState(open);
+  const prevExistingRef = useRef(existing);
+  const prevOpenRef = useRef(open);
 
-  const openChanged = open !== prevOpen;
-  const existingChanged = existing !== prevExisting;
+  const openChanged = open !== prevOpenRef.current;
+  const existingChanged = existing !== prevExistingRef.current;
   if (openChanged || existingChanged) {
-    setPrevOpen(open);
-    setPrevExisting(existing);
+    prevOpenRef.current = open;
+    prevExistingRef.current = existing;
     if (open) {
       setForm(existingToForm(existing));
     }
