@@ -45,6 +45,7 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props
       onClick={onClose}
     >
       <button
+        type="button"
         aria-label="Close"
         onClick={onClose}
         className="absolute top-4 right-4 text-white/60 hover:text-white transition-colors"
@@ -55,6 +56,7 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props
       {images.length > 1 && (
         <>
           <button
+            type="button"
             aria-label="Previous image"
             onClick={(e) => { e.stopPropagation(); prev(); }}
             className="absolute left-4 text-white/60 hover:text-white transition-colors"
@@ -62,6 +64,7 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props
             <ChevronLeft className="w-8 h-8" />
           </button>
           <button
+            type="button"
             aria-label="Next image"
             onClick={(e) => { e.stopPropagation(); next(); }}
             className="absolute right-12 text-white/60 hover:text-white transition-colors"
@@ -83,6 +86,7 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props
         <div className="absolute bottom-4 flex gap-1.5">
           {images.map((_, i) => (
             <button
+              type="button"
               key={i}
               onClick={(e) => { e.stopPropagation(); setIndex(i); }}
               className={`w-1.5 h-1.5 rounded-full transition-colors ${i === index ? 'bg-white' : 'bg-white/30'}`}

@@ -184,6 +184,7 @@ export function PlanOverview({
         <div className="flex min-w-max px-4 sm:px-8">
           {plan.days.map((day) => (
             <button
+              type="button"
               key={day.dayNumber}
               onClick={() => setActiveDay(day.dayNumber)}
               className={cn(
@@ -273,6 +274,7 @@ export function PlanOverview({
       {/* Footer */}
       <div className="sticky bottom-0 z-10 border-t border-foreground/10 backdrop-blur-md bg-background/50 px-4 sm:px-8 py-3">
         <button
+          type="button"
           disabled={starting}
           onClick={() => startSession(activeDay)}
           className="flex w-full items-center justify-center rounded-xl bg-primary text-primary-foreground px-4 py-3 text-[13px] font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

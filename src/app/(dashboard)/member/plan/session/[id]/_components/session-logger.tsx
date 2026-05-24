@@ -424,6 +424,7 @@ export function SessionLogger({
       <div className="sticky top-0 z-10 bg-background flex items-center justify-between px-4 sm:px-8 py-5 border-b border-foreground/10">
         <div>
           <button
+            type="button"
             onClick={() => router.push(backPath)}
             className="text-xs text-foreground/65 hover:text-foreground mb-1 block transition-colors cursor-pointer"
           >
@@ -534,6 +535,7 @@ export function SessionLogger({
 
         {!isCompleted && (
           <button
+            type="button"
             onClick={() => !addingExercise && setExerciseSheetOpen(true)}
             disabled={addingExercise}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/15 py-4 text-xs text-foreground/65 hover:border-foreground/40 hover:text-foreground transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"

@@ -55,11 +55,11 @@ export function WorkoutCalendar({ sessions, onSelectSession, selectedSessionId }
   return (
     <div className="bg-[#0c0c0c] border border-[#141414] rounded-xl p-4">
       <div className="flex items-center justify-between mb-4">
-        <button onClick={() => shiftMonth(-1)} className="cursor-pointer text-[#555] hover:text-[#888] transition-colors">
+        <button type="button" onClick={() => shiftMonth(-1)} className="cursor-pointer text-[#555] hover:text-[#888] transition-colors">
           <ChevronLeft className="h-4 w-4" />
         </button>
         <span className="text-[13px] font-semibold text-white">{monthName}</span>
-        <button onClick={() => shiftMonth(1)} className="cursor-pointer text-[#555] hover:text-[#888] transition-colors">
+        <button type="button" onClick={() => shiftMonth(1)} className="cursor-pointer text-[#555] hover:text-[#888] transition-colors">
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
@@ -82,6 +82,7 @@ export function WorkoutCalendar({ sessions, onSelectSession, selectedSessionId }
           return (
             <div key={day} className="flex justify-center">
               <button
+                type="button"
                 onClick={() => session && onSelectSession(session)}
                 disabled={!session}
                 className={cn(

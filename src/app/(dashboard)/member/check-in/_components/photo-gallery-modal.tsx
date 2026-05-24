@@ -54,9 +54,9 @@ function Lightbox({ photos, initialIdx, onClose }: LightboxProps) {
   return (
     <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center gap-3 z-10" role="dialog" aria-modal="true">
       <div className="absolute top-3 left-4 right-4 flex items-center justify-between">
-        <button onClick={onClose} className="text-xs text-foreground/45">← All photos</button>
+        <button type="button" onClick={onClose} className="text-xs text-foreground/45">← All photos</button>
         <span className="text-xs text-foreground/35">{idx + 1} / {photos.length}</span>
-        <button onClick={onClose} aria-label="Close lightbox" className="w-8 h-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 flex items-center justify-center text-foreground/60">✕</button>
+        <button type="button" onClick={onClose} aria-label="Close lightbox" className="w-8 h-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 flex items-center justify-center text-foreground/60">✕</button>
       </div>
 
       <div className="max-h-[60vh] max-w-[300px] rounded-xl overflow-hidden border border-foreground/10 shadow-2xl">
@@ -69,6 +69,7 @@ function Lightbox({ photos, initialIdx, onClose }: LightboxProps) {
 
       <div className="flex gap-2">
         <button
+          type="button"
           onClick={() => setIdx(i => Math.max(0, i - 1))}
           disabled={idx === 0}
           className="bg-foreground/[0.08] border border-foreground/[0.12] text-foreground/70 rounded-lg px-5 py-2 text-xs disabled:opacity-30"
@@ -76,6 +77,7 @@ function Lightbox({ photos, initialIdx, onClose }: LightboxProps) {
           ← Prev
         </button>
         <button
+          type="button"
           onClick={() => setIdx(i => Math.min(photos.length - 1, i + 1))}
           disabled={idx === photos.length - 1}
           className="bg-foreground/[0.08] border border-foreground/[0.12] text-foreground/70 rounded-lg px-5 py-2 text-xs disabled:opacity-30"
@@ -111,13 +113,14 @@ export function PhotoGalleryModal({ open, onClose, photos, totalCount }: Props) 
       {/* Top bar */}
       <div className="flex items-center justify-between px-5 h-12 flex-shrink-0 border-b border-foreground/[0.07] bg-foreground/[0.03]">
         <div className="flex items-center gap-3">
-          <button onClick={onClose} className="text-sm text-foreground/50 hover:text-foreground/80 transition-colors">
+          <button type="button" onClick={onClose} className="text-sm text-foreground/50 hover:text-foreground/80 transition-colors">
             ← Dashboard
           </button>
           <span className="text-sm font-semibold">Progress Photos</span>
           <span className="text-xs text-foreground/35">{totalCount} total</span>
         </div>
         <button
+          type="button"
           onClick={onClose}
           aria-label="Close gallery"
           className="w-8 h-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 text-foreground/60 flex items-center justify-center"
@@ -139,6 +142,7 @@ export function PhotoGalleryModal({ open, onClose, photos, totalCount }: Props) 
                 const globalIdx = sorted.indexOf(photo);
                 return (
                   <button
+                    type="button"
                     key={i}
                     onClick={() => setLightboxIdx(globalIdx >= 0 ? globalIdx : 0)}
                     className="aspect-[3/4] rounded-lg overflow-hidden border-2 border-foreground/[0.06] hover:border-foreground/[0.18] transition-colors relative"

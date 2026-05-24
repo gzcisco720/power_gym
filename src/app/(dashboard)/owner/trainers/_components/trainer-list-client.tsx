@@ -119,6 +119,7 @@ export function TrainerListClient({ trainers, allTrainers, totalSessionsThisMont
                   View Hub →
                 </Link>
                 <button
+                  type="button"
                   disabled={removing === trainer._id}
                   onClick={() => setRemoveTarget(trainer)}
                   className="inline-flex h-8 items-center rounded-lg px-3 text-xs font-medium text-red-400/60 hover:text-red-400 hover:bg-red-400/10 transition-colors disabled:opacity-40"

@@ -28,6 +28,7 @@ export function RecentPhotos({ recentPhotos, allPhotos, totalCount }: Props) {
             Recent Photos
           </span>
           <button
+            type="button"
             onClick={() => setGalleryOpen(true)}
             className="text-[11px] text-primary-light"
           >
@@ -37,6 +38,7 @@ export function RecentPhotos({ recentPhotos, allPhotos, totalCount }: Props) {
         <div className="grid grid-cols-3 gap-[3px] p-[3px]">
           {recentPhotos.slice(0, 6).map((photo, i) => (
             <button
+              type="button"
               key={i}
               onClick={() => setGalleryOpen(true)}
               className="aspect-square rounded-[6px] overflow-hidden relative"

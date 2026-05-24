@@ -95,6 +95,7 @@ export function SelfWorkoutCalendarClient({ basePath, initialDate }: Props) {
           {basePath === '/member/plan' ? '← Back to Plan' : '← Back'}
         </a>
         <button
+          type="button"
           onClick={prevWeek}
           aria-label="Previous week"
           className="inline-flex h-7 w-7 items-center justify-center rounded-md text-foreground/65 hover:text-foreground hover:bg-foreground/10 transition-colors"
@@ -102,6 +103,7 @@ export function SelfWorkoutCalendarClient({ basePath, initialDate }: Props) {
           <ChevronLeft className="h-4 w-4" />
         </button>
         <button
+          type="button"
           onClick={nextWeek}
           aria-label="Next week"
           className="inline-flex h-7 w-7 items-center justify-center rounded-md text-foreground/65 hover:text-foreground hover:bg-foreground/10 transition-colors"
@@ -109,6 +111,7 @@ export function SelfWorkoutCalendarClient({ basePath, initialDate }: Props) {
           <ChevronRight className="h-4 w-4" />
         </button>
         <button
+          type="button"
           onClick={goToday}
           className="text-[12px] px-2.5 py-1 rounded-md border border-foreground/15 text-foreground/65 hover:text-foreground hover:border-foreground/30 transition-colors"
         >

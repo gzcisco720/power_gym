@@ -15,6 +15,7 @@ export function WorkoutCalendarHeaderTrigger({ basePath }: Props) {
       onSelectLog={(logId) => router.push(`${basePath}/session/${logId}`)}
       trigger={
         <button
+          type="button"
           aria-label="Open calendar"
           className="inline-flex h-8 w-8 items-center justify-center rounded-md text-foreground/65 hover:text-foreground hover:bg-foreground/10 transition-colors"
         >

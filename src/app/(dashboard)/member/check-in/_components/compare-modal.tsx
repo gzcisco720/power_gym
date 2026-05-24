@@ -38,6 +38,7 @@ function PhotoColumn({ checkIn, side }: { checkIn: CheckInRecord; side: 'before'
         <div className="flex gap-1.5 p-2 border-t border-foreground/[0.06] flex-shrink-0">
           {photos.map((url, i) => (
             <button
+              type="button"
               key={i}
               onClick={() => setSelectedIdx(i)}
               className={`w-10 h-12 rounded overflow-hidden border-2 flex-shrink-0 ${i === selectedIdx ? 'border-primary' : 'border-foreground/10'}`}
@@ -68,6 +69,7 @@ export function CompareModal({ open, onClose, beforeCheckIn, afterCheckIn }: Pro
       <div className="flex items-center justify-between px-5 h-12 flex-shrink-0 border-b border-foreground/[0.07] bg-foreground/[0.03]">
         <span className="text-sm font-semibold">Before / After Comparison</span>
         <button
+          type="button"
           onClick={onClose}
           aria-label="Close comparison"
           className="w-8 h-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 text-foreground/60 flex items-center justify-center hover:bg-foreground/10 transition-colors"

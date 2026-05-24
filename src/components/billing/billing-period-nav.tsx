@@ -45,11 +45,11 @@ export function BillingPeriodNav({ onChange }: BillingPeriodNavProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <button onClick={prev} className="p-1 rounded hover:bg-muted transition-colors" aria-label="Previous month">
+      <button type="button" onClick={prev} className="p-1 rounded hover:bg-muted transition-colors" aria-label="Previous month">
         <ChevronLeft className="h-4 w-4 text-foreground/65" />
       </button>
       <span className="text-sm font-medium text-foreground min-w-[100px] text-center">{period.label}</span>
-      <button onClick={next} className="p-1 rounded hover:bg-muted transition-colors" aria-label="Next month">
+      <button type="button" onClick={next} className="p-1 rounded hover:bg-muted transition-colors" aria-label="Next month">
         <ChevronRight className="h-4 w-4 text-foreground/65" />
       </button>
     </div>

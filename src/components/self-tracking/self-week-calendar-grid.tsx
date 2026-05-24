@@ -137,6 +137,7 @@ export function SelfWeekCalendarGrid({ logs, weekStart, onEventClick }: Props) {
               const isActive = log.completedAt === null;
               return (
                 <button
+                  type="button"
                   key={log._id}
                   onClick={() => onEventClick(log._id)}
                   style={{ top, height, minHeight: SLOT_HEIGHT }}

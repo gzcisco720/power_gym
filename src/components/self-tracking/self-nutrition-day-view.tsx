@@ -254,6 +254,7 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
               selectedDate={date}
               trigger={
                 <button
+                  type="button"
                   className="inline-flex items-center gap-1 text-sm font-semibold hover:underline"
                   disabled={readOnly}
                   aria-label={`Open calendar (${date})`}

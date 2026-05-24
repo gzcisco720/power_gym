@@ -61,6 +61,7 @@ export function SelfNutritionCalendar({ entries, onSelect, selectedDate, onMonth
     <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4">
       <div className="flex items-center justify-between mb-4">
         <button
+          type="button"
           onClick={() => shift(-1)}
           aria-label="Previous month"
           className="text-foreground/65 hover:text-foreground transition-colors"
@@ -69,6 +70,7 @@ export function SelfNutritionCalendar({ entries, onSelect, selectedDate, onMonth
         </button>
         <span className="text-[13px] font-semibold">{monthName}</span>
         <button
+          type="button"
           onClick={() => shift(1)}
           aria-label="Next month"
           className="text-foreground/65 hover:text-foreground transition-colors"
@@ -100,6 +102,7 @@ export function SelfNutritionCalendar({ entries, onSelect, selectedDate, onMonth
           return (
             <div key={day} className="flex justify-center">
               <button
+                type="button"
                 onClick={() => canSelect && onSelect(entry)}
                 disabled={!canSelect}
                 aria-label={ariaLabel}

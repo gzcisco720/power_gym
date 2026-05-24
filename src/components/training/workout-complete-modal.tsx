@@ -73,6 +73,7 @@ export function WorkoutCompleteModal({ onConfirm, onCancel, isLoading }: Workout
         </Button>
 
         <button
+          type="button"
           onClick={onCancel}
           className="w-full text-[11px] text-[#555] hover:text-[#888] transition-colors text-center"
         >

@@ -52,6 +52,7 @@ export function RecurringScopeDialog({
         <div className="space-y-2 my-2">
           {OPTIONS.map(({ scope, label, description }) => (
             <button
+              type="button"
               key={scope}
               onClick={() => setSelected(scope)}
               className={`w-full text-left rounded-lg border p-3 transition-colors ${

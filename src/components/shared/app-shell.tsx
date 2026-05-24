@@ -291,6 +291,7 @@ export function AppShell({ userRole, userName, userEmail = '', avatarUrl = null,
       <div className="flex flex-1 flex-col overflow-hidden">
         <div className="flex items-center gap-3 border-b border-foreground/[.04] px-4 py-3 lg:hidden">
           <button
+            type="button"
             onClick={() => setDrawerOpen(true)}
             className="cursor-pointer text-[#888] hover:text-[#aaa] transition-colors"
             aria-label="Open navigation"

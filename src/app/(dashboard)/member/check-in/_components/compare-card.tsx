@@ -60,6 +60,7 @@ export function CompareCard({ checkInsWithPhotos }: Props) {
               { checkIn: afterCheckIn,  idx: afterPhotoIdx,  setIdx: setAfterPhotoIdx  },
             ].map(({ checkIn, idx, setIdx }, i) => (
               <button
+                type="button"
                 key={i}
                 className="aspect-[3/4] rounded-lg overflow-hidden border border-foreground/[0.07] relative cursor-pointer"
                 onClick={() => setIdx((idx + 1) % checkIn.photos.length)}
@@ -82,6 +83,7 @@ export function CompareCard({ checkInsWithPhotos }: Props) {
         <p className="text-[10px] text-foreground/25 text-center mb-2.5">Tap a photo to switch angle</p>
 
         <button
+          type="button"
           onClick={() => setModalOpen(true)}
           disabled={!beforeCheckIn || !afterCheckIn}
           className="w-full bg-primary/10 border border-primary/[0.28] text-primary-light rounded-lg py-2 text-xs font-semibold hover:bg-primary/15 transition-colors disabled:opacity-40"

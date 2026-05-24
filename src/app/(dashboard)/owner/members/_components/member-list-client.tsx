@@ -131,6 +131,7 @@ export function MemberListClient({
           />
           {search && (
             <button
+              type="button"
               onClick={() => handleSearch('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/30 hover:text-foreground/60 transition-colors"
             >
@@ -223,6 +224,7 @@ export function MemberListClient({
       {totalPages > 1 && (
         <div className="mt-4 flex justify-center items-center gap-1.5">
           <button
+            type="button"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={safePage <= 1}
             className="h-8 px-3 rounded-lg text-sm text-foreground/40 bg-white/[.03] ring-1 ring-white/[.07] disabled:opacity-30 hover:ring-white/20 transition-all"
@@ -231,6 +233,7 @@ export function MemberListClient({
           </button>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
             <button
+              type="button"
               key={n}
               onClick={() => setPage(n)}
               className={`h-8 w-8 rounded-lg text-sm font-medium transition-all ${
@@ -243,6 +246,7 @@ export function MemberListClient({
             </button>
           ))}
           <button
+            type="button"
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={safePage >= totalPages}
             className="h-8 px-3 rounded-lg text-sm text-foreground/40 bg-white/[.03] ring-1 ring-white/[.07] disabled:opacity-30 hover:ring-white/20 transition-all"

@@ -99,6 +99,7 @@ export function ExerciseNotePanel({ memberId, exerciseId, exerciseName, sessionI
               />
               <div className="flex gap-2">
                 <button
+                  type="button"
                   onClick={() => saveEdit(entry._id)}
                   disabled={saving}
                   className="text-[9px] text-white hover:text-white/80"
@@ -106,6 +107,7 @@ export function ExerciseNotePanel({ memberId, exerciseId, exerciseName, sessionI
                   Save
                 </button>
                 <button
+                  type="button"
                   onClick={() => setEditingId(null)}
                   className="text-[9px] text-[#555] hover:text-[#888]"
                 >
@@ -117,6 +119,7 @@ export function ExerciseNotePanel({ memberId, exerciseId, exerciseName, sessionI
             <div className="flex justify-between gap-2">
               <div className="text-[10px] text-[#888]">{entry.content}</div>
               <button
+                type="button"
                 onClick={() => { setEditingId(entry._id); setEditContent(entry.content); }}
                 className="text-[8px] text-[#444] hover:text-[#666] shrink-0"
               >
@@ -137,6 +140,7 @@ export function ExerciseNotePanel({ memberId, exerciseId, exerciseName, sessionI
           className="flex-1 bg-[#0a0a0a] border border-dashed border-[#1e1e1e] rounded-md text-[10px] text-white placeholder:text-[#333] px-2 py-1.5 focus:outline-none focus:border-[#333]"
         />
         <button
+          type="button"
           onClick={() => void addNote()}
           disabled={saving || !newNote.trim()}
           className="text-[9px] text-[#555] hover:text-[#888] disabled:opacity-30 shrink-0"
