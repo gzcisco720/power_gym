@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { m, useReducedMotion } from 'framer-motion';
 
 interface ProgressBarProps {
   value: number;
@@ -21,7 +21,7 @@ export function ProgressBar({ value, max, label }: ProgressBarProps) {
       aria-label={label}
       className="h-[3px] w-full overflow-hidden rounded-full bg-white/[.06]"
     >
-      <motion.div
+      <m.div
         className="h-full rounded-full bg-emerald-500"
         initial={{ width: 0 }}
         animate={{ width: `${pct}%` }}

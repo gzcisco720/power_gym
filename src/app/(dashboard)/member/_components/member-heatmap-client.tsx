@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { variants } from '@/lib/animations/variants';
 
 interface MemberHeatmapClientProps {
@@ -85,14 +85,14 @@ export function MemberHeatmapClient({ heatmapData }: MemberHeatmapClientProps) {
               </div>
             ))}
           </div>
-          <motion.div
+          <m.div
             className="contents"
             variants={variants.staggerContainer}
             initial="hidden"
             animate="visible"
           >
             {weeks.map((week) => (
-              <motion.div key={week.weekKey} variants={variants.staggerItem} className="flex flex-col gap-1">
+              <m.div key={week.weekKey} variants={variants.staggerItem} className="flex flex-col gap-1">
                 <div className="h-3 text-[9px] text-foreground/65 whitespace-nowrap">
                   {week.monthLabel ?? ''}
                 </div>
@@ -108,9 +108,9 @@ export function MemberHeatmapClient({ heatmapData }: MemberHeatmapClientProps) {
                     }`}
                   />
                 ))}
-              </motion.div>
+              </m.div>
             ))}
-          </motion.div>
+          </m.div>
         </div>
       </div>
     </div>

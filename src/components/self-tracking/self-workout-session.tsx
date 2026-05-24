@@ -17,7 +17,7 @@ import {
 } from '@/components/training/exercise-search-sheet';
 import { labelExercises } from '@/lib/training/label-exercises';
 import { useDirtyInputGuard } from '@/lib/training/dirty-input-guard';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { variants } from '@/lib/animations/variants';
 import type { ISelfWorkoutLog, ISelfWorkoutSet } from '@/lib/db/models/self-workout-log.model';
 import { CompleteWorkoutDialog } from './complete-workout-dialog';
@@ -435,7 +435,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
         </div>
       </div>
 
-      <motion.div
+      <m.div
         className="flex-1 px-4 sm:px-8 py-5 pb-32 max-w-2xl mx-auto w-full space-y-3"
         variants={variants.staggerContainer}
         initial="hidden"
@@ -450,7 +450,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
         {groups.map((group, gi) => {
           if (group.type === 'standalone') {
             return (
-              <motion.div
+              <m.div
                 key={`${group.exerciseId}-${gi}`}
                 variants={variants.staggerItem}
                 className="rounded-xl bg-card ring-1 ring-foreground/10"
@@ -471,11 +471,11 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
                   readOnly={isCompleted}
                   inputErrors={inputErrors}
                 />
-              </motion.div>
+              </m.div>
             );
           }
           return (
-            <motion.div key={group.groupId} variants={variants.staggerItem}>
+            <m.div key={group.groupId} variants={variants.staggerItem}>
               <SupersetBlock
                 mode="logging"
                 groupId={group.groupId}
@@ -495,7 +495,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
                 }
                 readOnly={isCompleted}
               />
-            </motion.div>
+            </m.div>
           );
         })}
 
@@ -508,7 +508,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
             + Add Exercise
           </button>
         )}
-      </motion.div>
+      </m.div>
 
       <div className="sticky bottom-0 z-10 border-t border-foreground/10 backdrop-blur-md bg-background/50 px-4 sm:px-8 py-3">
         <div className="max-w-2xl mx-auto w-full flex items-center justify-between gap-3">

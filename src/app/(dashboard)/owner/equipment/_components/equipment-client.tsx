@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ImageIcon, Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { variants } from '@/lib/animations/variants';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -81,13 +81,13 @@ export function EquipmentClient({ initialItems }: Props) {
               <div></div>
             </div>
 
-            <motion.div
+            <m.div
               variants={variants.staggerContainer}
               initial="hidden"
               animate="visible"
             >
             {items.map((item) => (
-              <motion.div
+              <m.div
                 key={item._id}
                 variants={variants.staggerItem}
                 className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_140px_60px_110px_120px_60px] items-center px-5 py-3.5 border-b border-[#0f0f0f] last:border-0 gap-2"
@@ -158,9 +158,9 @@ export function EquipmentClient({ initialItems }: Props) {
                       : 'Delete'}
                   </Button>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
-            </motion.div>
+            </m.div>
           </Card>
         )}
       </div>

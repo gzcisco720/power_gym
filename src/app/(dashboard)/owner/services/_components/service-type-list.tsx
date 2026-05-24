@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Clock, DollarSign, Layers, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { variants } from '@/lib/animations/variants';
@@ -127,14 +127,14 @@ export function ServiceTypeList() {
               <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-2">
                 Active ({active.length})
               </div>
-              <motion.div
+              <m.div
                 variants={variants.staggerContainer}
                 initial="hidden"
                 animate="visible"
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
               >
                 {active.map((st) => (
-                  <motion.div
+                  <m.div
                     key={st._id}
                     variants={variants.staggerItem}
                     onClick={() => openEdit(st)}
@@ -160,9 +160,9 @@ export function ServiceTypeList() {
                     <div className="text-[11px] text-foreground/40 group-hover:text-foreground/65 transition-colors line-clamp-2 leading-relaxed">
                       {st.note ?? 'Click to edit'}
                     </div>
-                  </motion.div>
+                  </m.div>
                 ))}
-              </motion.div>
+              </m.div>
             </div>
           )}
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { m, useReducedMotion } from 'framer-motion';
 import { PageHeader } from '@/components/shared/page-header';
 import { StatCard } from '@/components/shared/stat-card';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -102,7 +102,7 @@ export function BodyTestViewer({ tests }: Props) {
           <SectionHeader title="All Records" />
           <div className="mt-3 space-y-2">
             {sorted.map((t, i) => (
-              <motion.div
+              <m.div
                 key={t._id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -155,7 +155,7 @@ export function BodyTestViewer({ tests }: Props) {
                     </div>
                   </div>
                 )}
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>

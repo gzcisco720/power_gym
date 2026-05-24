@@ -4,11 +4,13 @@ import { BodyTestClient } from '@/app/(dashboard)/trainer/members/[id]/body-test
 jest.mock('sonner', () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
 jest.mock('next/navigation', () => ({ useRouter: () => ({ refresh: jest.fn() }) }));
 jest.mock('framer-motion', () => ({
-  motion: {
+  m: {
     div: ({ children, className }: React.HTMLAttributes<HTMLDivElement>) => (
       <div className={className}>{children}</div>
     ),
   },
+  LazyMotion: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  domAnimation: {},
   useReducedMotion: () => false,
 }));
 jest.mock(

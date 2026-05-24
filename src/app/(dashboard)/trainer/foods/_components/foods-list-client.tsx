@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { variants } from '@/lib/animations/variants';
 import { Plus, Trash2, Search, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -163,14 +163,14 @@ export function FoodsListClient({ basePath }: Props) {
             }
           />
         ) : (
-          <motion.ul
+          <m.ul
             className="space-y-1.5"
             variants={variants.staggerContainer}
             initial="hidden"
             animate="visible"
           >
             {items.map((f) => (
-              <motion.li
+              <m.li
                 key={f._id}
                 variants={variants.staggerItem}
                 className="relative group"
@@ -226,9 +226,9 @@ export function FoodsListClient({ basePath }: Props) {
                 >
                   <Trash2 className="size-3.5" />
                 </button>
-              </motion.li>
+              </m.li>
             ))}
-          </motion.ul>
+          </m.ul>
         )}
       </div>
 

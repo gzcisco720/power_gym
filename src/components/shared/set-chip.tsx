@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { m, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface SetChipProps {
@@ -13,7 +13,7 @@ export function SetChip({ setNumber, done, onClick }: SetChipProps) {
   const shouldReduce = useReducedMotion();
 
   return (
-    <motion.button
+    <m.button
       type="button"
       onClick={onClick}
       animate={done && !shouldReduce ? { scale: [0.8, 1.15, 1] } : { scale: 1 }}
@@ -27,6 +27,6 @@ export function SetChip({ setNumber, done, onClick }: SetChipProps) {
       aria-label={done ? `Set ${setNumber} complete` : `Set ${setNumber}`}
     >
       {done ? '✓' : setNumber}
-    </motion.button>
+    </m.button>
   );
 }

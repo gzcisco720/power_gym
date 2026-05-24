@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { SessionEventCard } from './session-event-card';
 import { timeToMinutes } from '@/lib/time';
 import { variants } from '@/lib/animations/variants';
@@ -128,7 +128,7 @@ export function WeekCalendarGrid({
               );
             })}
 
-            <motion.div
+            <m.div
               variants={variants.staggerContainer}
               initial="hidden"
               animate="visible"
@@ -136,7 +136,7 @@ export function WeekCalendarGrid({
               {sessionsByDay[di].map((s) => {
                 const heightPx = getHeightPx(s.startTime, s.endTime);
                 return (
-                  <motion.div
+                  <m.div
                     key={s._id}
                     variants={variants.staggerItem}
                     className="absolute inset-x-0"
@@ -152,10 +152,10 @@ export function WeekCalendarGrid({
                       heightPx={heightPx}
                       onClick={() => onSessionClick(s)}
                     />
-                  </motion.div>
+                  </m.div>
                 );
               })}
-            </motion.div>
+            </m.div>
           </div>
         ))}
       </div>

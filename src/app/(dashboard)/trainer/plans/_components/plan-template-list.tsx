@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { motion, useReducedMotion } from 'framer-motion';
+import { m, useReducedMotion } from 'framer-motion';
 import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared/page-header';
@@ -96,7 +96,7 @@ export function PlanTemplateList({ templates, onDelete, basePath = '/trainer/pla
               const accent = ACCENT_BORDERS[hashIndex(template._id, ACCENT_BORDERS.length)];
               const totalExercises = template.days.reduce((sum, d) => sum + d.exercises.length, 0);
               return (
-                <motion.div
+                <m.div
                   key={template._id}
                   initial={{ opacity: 0, y: shouldReduce ? 0 : 6 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -153,7 +153,7 @@ export function PlanTemplateList({ templates, onDelete, basePath = '/trainer/pla
                       <span className="sr-only">Delete</span>
                     </Button>
                   )}
-                </motion.div>
+                </m.div>
               );
             })}
           </div>

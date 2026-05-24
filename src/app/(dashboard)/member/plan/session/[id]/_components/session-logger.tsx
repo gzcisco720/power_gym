@@ -11,7 +11,7 @@ import { WorkoutCompleteModal } from '@/components/training/workout-complete-mod
 import { ExerciseNotePanel } from '@/components/training/exercise-note-panel';
 import { labelExercises } from '@/lib/training/label-exercises';
 import { useDirtyInputGuard } from '@/lib/training/dirty-input-guard';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { variants } from '@/lib/animations/variants';
 import type { LastWeightHintDTO } from '@/lib/training/progressive-overload';
 
@@ -442,7 +442,7 @@ export function SessionLogger({
         </div>
       </div>
 
-      <motion.div
+      <m.div
         className="flex-1 px-4 sm:px-8 py-5 pb-32 space-y-3"
         variants={variants.staggerContainer}
         initial="hidden"
@@ -464,7 +464,7 @@ export function SessionLogger({
               restSeconds: ex.restSeconds,
             };
             return (
-              <motion.div key={ex.exerciseId} variants={variants.staggerItem} className="rounded-xl bg-card ring-1 ring-foreground/10">
+              <m.div key={ex.exerciseId} variants={variants.staggerItem} className="rounded-xl bg-card ring-1 ring-foreground/10">
                 <ExerciseRow
                   mode="logging"
                   row={exRow}
@@ -493,11 +493,11 @@ export function SessionLogger({
                     />
                   </div>
                 )}
-              </motion.div>
+              </m.div>
             );
           }
           return (
-            <motion.div key={group.groupId} variants={variants.staggerItem}>
+            <m.div key={group.groupId} variants={variants.staggerItem}>
               <SupersetBlock
                 mode="logging"
                 groupId={group.groupId}
@@ -529,7 +529,7 @@ export function SessionLogger({
                 }
                 readOnly={isCompleted}
               />
-            </motion.div>
+            </m.div>
           );
         })}
 
@@ -544,7 +544,7 @@ export function SessionLogger({
             + Add Exercise
           </button>
         )}
-      </motion.div>
+      </m.div>
 
       <div className="sticky bottom-0 z-10 border-t border-foreground/10 backdrop-blur-md bg-background/50 px-4 sm:px-8 py-3">
         {isCompleted ? (

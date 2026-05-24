@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { m, useReducedMotion } from 'framer-motion';
 
 interface NutritionDayCompleteAnimationProps {
   proteinG: number;
@@ -46,7 +46,7 @@ export function NutritionDayCompleteAnimation({
           {RADIUS.map((r, i) => {
             const circ = 2 * Math.PI * r;
             return (
-              <motion.circle
+              <m.circle
                 key={r}
                 cx="32" cy="32" r={r}
                 fill="none" stroke={COLORS[i]} strokeWidth={i === 0 ? 5 : i === 1 ? 4 : 3.5}
@@ -61,15 +61,15 @@ export function NutritionDayCompleteAnimation({
         </svg>
         <div className="absolute inset-0 flex items-center justify-center text-base">✓</div>
       </div>
-      <motion.div
+      <m.div
         className="text-sm font-bold text-foreground"
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8, type: 'spring', stiffness: 300, damping: 25 }}
       >
         Day Complete
-      </motion.div>
-      <motion.div
+      </m.div>
+      <m.div
         className="flex gap-2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -84,7 +84,7 @@ export function NutritionDayCompleteAnimation({
             {lbl} {values[i]}g
           </span>
         ))}
-      </motion.div>
+      </m.div>
     </div>
   );
 }

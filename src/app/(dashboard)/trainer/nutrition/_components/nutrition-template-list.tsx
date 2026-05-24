@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { variants } from '@/lib/animations/variants';
 import { Plus, Trash2, Apple } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -107,7 +107,7 @@ export function NutritionTemplateList({ templates, onDelete, basePath = '/traine
             }
           />
         ) : (
-          <motion.div
+          <m.div
             className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             variants={variants.staggerContainer}
             initial="hidden"
@@ -116,7 +116,7 @@ export function NutritionTemplateList({ templates, onDelete, basePath = '/traine
             {templates.map((template) => {
               const accent = ACCENT_BORDERS[hashIndex(template._id, ACCENT_BORDERS.length)];
               return (
-                <motion.div
+                <m.div
                   key={template._id}
                   variants={variants.staggerItem}
                   className="relative"
@@ -175,10 +175,10 @@ export function NutritionTemplateList({ templates, onDelete, basePath = '/traine
                       <span className="sr-only">Delete</span>
                     </Button>
                   )}
-                </motion.div>
+                </m.div>
               );
             })}
-          </motion.div>
+          </m.div>
         )}
       </div>
     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { variants } from '@/lib/animations/variants';
 
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
 export function SettingsTabPanel({ activeTab, children }: Props) {
   return (
     <AnimatePresence mode="wait">
-      <motion.div
+      <m.div
         key={activeTab}
         variants={variants.fadeSlideUp}
         initial="hidden"
@@ -19,7 +19,7 @@ export function SettingsTabPanel({ activeTab, children }: Props) {
         exit="exit"
       >
         {children}
-      </motion.div>
+      </m.div>
     </AnimatePresence>
   );
 }

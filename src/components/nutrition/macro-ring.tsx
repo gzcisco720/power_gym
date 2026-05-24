@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { m, useReducedMotion } from 'framer-motion';
 
 interface MacroRingProps {
   protein: number; // grams
@@ -58,7 +58,7 @@ export function MacroRing({ protein, carbs, fat, size = 120 }: MacroRingProps) {
               strokeWidth={stroke}
               pathLength={100}
             />
-            <motion.circle
+            <m.circle
               cx={cx}
               cy={cy}
               r={r}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { m, useReducedMotion } from 'framer-motion';
 
 interface WorkoutCompleteAnimationProps {
   onComplete?: () => void;
@@ -28,7 +28,7 @@ export function WorkoutCompleteAnimation({ onComplete }: WorkoutCompleteAnimatio
   return (
     <div className="flex flex-col items-center gap-3 py-4">
       <div className="relative">
-        <motion.div
+        <m.div
           className="absolute inset-[-12px] rounded-full bg-emerald-500/20"
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: [0.8, 1.4, 1.2], opacity: [0, 0.6, 0] }}
@@ -36,7 +36,7 @@ export function WorkoutCompleteAnimation({ onComplete }: WorkoutCompleteAnimatio
         />
         <svg width="72" height="72" viewBox="0 0 72 72" className="-rotate-90">
           <circle cx="36" cy="36" r="30" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5" />
-          <motion.circle
+          <m.circle
             cx="36" cy="36" r="30"
             fill="none" stroke="#10b981" strokeWidth="5"
             strokeLinecap="round"
@@ -48,22 +48,22 @@ export function WorkoutCompleteAnimation({ onComplete }: WorkoutCompleteAnimatio
         </svg>
         <div className="absolute inset-0 flex items-center justify-center text-2xl">💪</div>
       </div>
-      <motion.div
+      <m.div
         className="text-lg font-bold text-foreground"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.9, type: 'spring', stiffness: 300, damping: 25 }}
       >
         Workout Complete!
-      </motion.div>
-      <motion.div
+      </m.div>
+      <m.div
         className="text-xs text-foreground/50"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.05 }}
       >
         Great work, keep it up
-      </motion.div>
+      </m.div>
     </div>
   );
 }

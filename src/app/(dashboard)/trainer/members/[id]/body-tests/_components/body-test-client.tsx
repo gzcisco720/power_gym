@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trash2 } from 'lucide-react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { m, useReducedMotion } from 'framer-motion';
 import { variants } from '@/lib/animations/variants';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -149,14 +149,14 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
             </div>
 
             {/* Test cards */}
-            <motion.div
+            <m.div
               className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
               variants={variants.staggerContainer}
               initial="hidden"
               animate="visible"
             >
               {tests.map((test) => (
-                <motion.div
+                <m.div
                   key={test._id}
                   variants={shouldReduce ? undefined : variants.staggerItem}
                   initial={shouldReduce ? { opacity: 1 } : undefined}
@@ -187,9 +187,9 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
                   >
                     <Trash2 className="size-4" />
                   </Button>
-                </motion.div>
+                </m.div>
               ))}
-            </motion.div>
+            </m.div>
           </>
         )}
       </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { toast } from 'sonner';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 import { variants } from '@/lib/animations/variants';
@@ -56,7 +56,7 @@ export function MemberStrengthSelectorClient({ exercises, memberId }: Props) {
   }
 
   return (
-    <motion.div
+    <m.div
       className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 space-y-3"
       variants={variants.fadeSlideUp}
       initial="hidden"
@@ -123,6 +123,6 @@ export function MemberStrengthSelectorClient({ exercises, memberId }: Props) {
           </div>
         )}
       </div>
-    </motion.div>
+    </m.div>
   );
 }

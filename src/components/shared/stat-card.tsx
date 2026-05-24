@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { variants } from '@/lib/animations/variants';
 
 interface StatCardProps {
@@ -36,7 +36,7 @@ export function StatCard({ label, value, unit, delta, deltaVariant, accentColor 
       <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold">
         {label}
       </div>
-      <motion.div
+      <m.div
         className="mt-2 text-2xl font-semibold leading-none tracking-tight text-foreground tabular-nums"
         variants={variants.scaleIn}
         initial="hidden"
@@ -46,7 +46,7 @@ export function StatCard({ label, value, unit, delta, deltaVariant, accentColor 
         {unit && (
           <span className="ml-1 text-sm font-medium text-foreground/65">{unit}</span>
         )}
-      </motion.div>
+      </m.div>
       {delta && (
         <div className={`mt-1.5 text-xs ${deltaColorClass}`}>{delta}</div>
       )}
