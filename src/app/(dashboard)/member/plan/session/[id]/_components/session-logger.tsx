@@ -132,7 +132,7 @@ export function SessionLogger({
   mode?: 'member' | 'trainer';
   loggedForMember?: { id: string; name: string };
 }) {
-  const router = useRouter();
+  const { push } = useRouter();
   const elapsed = useElapsedTimer(initialSession.startedAt);
   const isCompleted = initialSession.completedAt !== null;
   const staticDuration = formatStaticDuration(initialSession.startedAt, initialSession.completedAt);
@@ -292,7 +292,7 @@ export function SessionLogger({
       });
       if (res.status === 404) {
         toast.error('This session was ended on another device.');
-        router.push(backPath);
+        push(backPath);
         return;
       }
       if (!res.ok) {
@@ -324,7 +324,7 @@ export function SessionLogger({
       });
       if (res.status === 404) {
         toast.error('This session was ended on another device.');
-        router.push(backPath);
+        push(backPath);
         return;
       }
       if (!res.ok) {
@@ -394,7 +394,7 @@ export function SessionLogger({
         return;
       }
       toast.success('Workout complete!');
-      router.push(backPath);
+      push(backPath);
     } catch {
       toast.error('Something went wrong');
       setCompleting(false);
@@ -425,7 +425,7 @@ export function SessionLogger({
         <div>
           <button
             type="button"
-            onClick={() => router.push(backPath)}
+            onClick={() => push(backPath)}
             className="text-xs text-foreground/65 hover:text-foreground mb-1 block transition-colors cursor-pointer"
           >
             ← Back

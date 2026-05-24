@@ -38,7 +38,7 @@ const GYM_FIELDS: { id: string; label: string; placeholder?: string }[] = [
 ];
 
 export function GymInfoTab({ gymInfo }: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const [saving, setSaving] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(gymInfo?.logoUrl ?? null);
   const [loginLogoUrl, setLoginLogoUrl] = useState<string | null>(gymInfo?.loginLogoUrl ?? null);
@@ -130,7 +130,7 @@ export function GymInfoTab({ gymInfo }: Props) {
     const result = await updateGymInfoAction({ error: '' }, formData);
     setSaving(false);
     if (result.error) toast.error(result.error);
-    else { toast.success('Gym info saved'); router.refresh(); }
+    else { toast.success('Gym info saved'); refresh(); }
   }
 
   return (

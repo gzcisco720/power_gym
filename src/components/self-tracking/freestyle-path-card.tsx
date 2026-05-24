@@ -39,7 +39,7 @@ interface EmptyProps {
 type Props = FullProps | LightProps | EmptyProps;
 
 export function FreestylePathCard(props: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
   const [starting, setStarting] = useState(false);
   const [conflict, setConflict] = useState<{
     _id: string;
@@ -64,7 +64,7 @@ export function FreestylePathCard(props: Props) {
       });
       if (res.ok) {
         const log = (await res.json()) as { _id: string };
-        router.push(`${props.basePath}/session/${log._id}`);
+        push(`${props.basePath}/session/${log._id}`);
         return;
       }
       if (res.status === 409) {

@@ -246,7 +246,7 @@ export function TrainerMemberPlanClient({
   conflict,
   activePrompt,
 }: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const { basePath } = useMemberHub();
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [assigning, setAssigning] = useState(false);
@@ -278,7 +278,7 @@ export function TrainerMemberPlanClient({
       }
       toast.success('Plan assigned');
       setSelectedTemplate('');
-      router.refresh();
+      refresh();
       return true;
     } catch {
       toast.error('Something went wrong');

@@ -35,7 +35,7 @@ interface Props {
 }
 
 export function TrainerListClient({ trainers, allTrainers, totalSessionsThisMonth, avgMembersPerTrainer }: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const [removing, setRemoving] = useState<string | null>(null);
   const [removeTarget, setRemoveTarget] = useState<TrainerRow | null>(null);
 
@@ -57,7 +57,7 @@ export function TrainerListClient({ trainers, allTrainers, totalSessionsThisMont
         return;
       }
       toast.success('Trainer removed');
-      router.refresh();
+      refresh();
     } catch {
       toast.error('Something went wrong');
     } finally {

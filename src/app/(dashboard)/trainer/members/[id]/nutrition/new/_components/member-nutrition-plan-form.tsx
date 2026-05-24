@@ -83,7 +83,7 @@ function emptyMeal(order: number): IMeal {
 // ── Component ──────────────────────────────────────────────────────────────
 
 export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
   const { basePath } = useMemberHub();
   const [name, setName] = useState(initialData?.name ?? '');
   const [dayTypes, setDayTypes] = useState<IDayType[]>(initialData?.dayTypes ?? []);
@@ -250,7 +250,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
       }
 
       toast.success('Plan saved');
-      router.push(`${basePath}/nutrition`);
+      push(`${basePath}/nutrition`);
     } finally {
       setSaving(false);
     }
@@ -442,7 +442,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
         <div className="flex items-center justify-end gap-3">
           <button
             type="button"
-            onClick={() => router.push(`${basePath}/nutrition`)}
+            onClick={() => push(`${basePath}/nutrition`)}
             className="text-sm text-foreground/65 hover:text-foreground/80"
           >
             Cancel

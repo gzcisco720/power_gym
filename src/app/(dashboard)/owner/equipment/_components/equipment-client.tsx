@@ -21,7 +21,7 @@ interface Props {
 }
 
 export function EquipmentClient({ initialItems }: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const [items, setItems] = useState<EquipmentItem[]>(initialItems);
   const [showAdd, setShowAdd] = useState(false);
   const [editTarget, setEditTarget] = useState<EquipmentItem | null>(null);
@@ -30,7 +30,7 @@ export function EquipmentClient({ initialItems }: Props) {
 
   function handleCreated(item: NewEquipmentItem) {
     setItems((prev) => [...prev, item]);
-    router.refresh();
+    refresh();
   }
 
   function handleUpdated(updated: EquipmentItem) {
@@ -46,7 +46,7 @@ export function EquipmentClient({ initialItems }: Props) {
       if (!res.ok) { toast.error('Failed to delete'); return; }
       setItems((prev) => prev.filter((i) => i._id !== id));
       toast.success('Equipment deleted');
-      router.refresh();
+      refresh();
     } finally {
       setDeletingId(null);
     }

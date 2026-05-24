@@ -47,7 +47,7 @@ interface PendingLog {
 }
 
 export function TemplatePathCard({ templates, basePath }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
   const [expandedId, setExpandedId] = useState<string | null>(
     templates.length === 1 ? templates[0]._id : null,
   );
@@ -77,7 +77,7 @@ export function TemplatePathCard({ templates, basePath }: Props) {
       });
       if (res.ok) {
         const log = (await res.json()) as { _id: string };
-        router.push(`${basePath}/session/${log._id}`);
+        push(`${basePath}/session/${log._id}`);
         return;
       }
       if (res.status === 409) {
@@ -115,7 +115,7 @@ export function TemplatePathCard({ templates, basePath }: Props) {
         </div>
         <Button
           variant="outline"
-          onClick={() => router.push(basePath.replace('/my-training', '/plans/new'))}
+          onClick={() => push(basePath.replace('/my-training', '/plans/new'))}
         >
           + Create Template
         </Button>

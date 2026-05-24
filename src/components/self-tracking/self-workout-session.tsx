@@ -117,7 +117,7 @@ function formatStaticDuration(startIso: string | null, endIso: string | null): s
 }
 
 export function SelfWorkoutSession({ logId, basePath }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
   const [log, setLog] = useState<ISelfWorkoutLog | null>(null);
   const [loading, setLoading] = useState(true);
   const [completeOpen, setCompleteOpen] = useState(false);
@@ -303,7 +303,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
           if (!res.ok) {
             if (res.status === 404) {
               toast.error('This session was ended on another device.');
-              router.push(basePath);
+              push(basePath);
               return;
             }
             toast.error('Failed to save sets');
@@ -340,7 +340,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     });
     if (res.status === 404) {
       toast.error('This session was ended on another device.');
-      router.push(basePath);
+      push(basePath);
       return;
     }
     if (res.ok) syncLog((await res.json()) as ISelfWorkoutLog);
@@ -371,7 +371,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     });
     if (res.status === 404) {
       toast.error('This session was ended on another device.');
-      router.push(basePath);
+      push(basePath);
       return;
     }
     if (!res.ok) {
@@ -542,7 +542,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
         open={completeOpen}
         onOpenChange={setCompleteOpen}
         logId={logId}
-        onCompleted={() => router.push(basePath)}
+        onCompleted={() => push(basePath)}
       />
     </div>
   );

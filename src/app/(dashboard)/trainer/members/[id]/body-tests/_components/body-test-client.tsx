@@ -50,7 +50,7 @@ function sortByDateDesc(tests: BodyTestRecord[]): BodyTestRecord[] {
 }
 
 export function BodyTestClient({ memberId, memberName, initialTests, defaultSex, defaultAge }: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const shouldReduce = useReducedMotion();
   const [tests, setTests] = useState<BodyTestRecord[]>(sortByDateDesc(initialTests));
   const [deleteTarget, setDeleteTarget] = useState<BodyTestRecord | null>(null);
@@ -78,7 +78,7 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
 
   function handleSaved(test: BodyTestRecord) {
     setTests((current) => sortByDateDesc([test, ...current]));
-    router.refresh();
+    refresh();
   }
 
   async function handleDeleteConfirm() {
@@ -93,7 +93,7 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
       }
       setTests((current) => current.filter((t) => t._id !== deleteTarget._id));
       toast.success('Body test deleted');
-      router.refresh();
+      refresh();
     } finally {
       setDeleting(false);
       setDeleteTarget(null);

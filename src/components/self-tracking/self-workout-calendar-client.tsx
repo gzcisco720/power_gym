@@ -22,7 +22,7 @@ function getMonday(d: Date): Date {
 }
 
 export function SelfWorkoutCalendarClient({ basePath, initialDate }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
   const [weekStart, setWeekStart] = useState(() => {
     if (initialDate) {
       const d = new Date(`${initialDate}T00:00:00`);
@@ -127,7 +127,7 @@ export function SelfWorkoutCalendarClient({ basePath, initialDate }: Props) {
           <SelfWeekCalendarGrid
             logs={logs}
             weekStart={weekStart}
-            onEventClick={(id) => router.push(`${basePath}/session/${id}`)}
+            onEventClick={(id) => push(`${basePath}/session/${id}`)}
           />
         )}
       </div>

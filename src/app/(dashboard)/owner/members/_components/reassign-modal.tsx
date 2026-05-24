@@ -20,7 +20,7 @@ interface Props {
 }
 
 export function ReassignModal({ memberId, memberName, currentTrainerId, trainers, onClose }: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const initialTrainerId =
     trainers.find((t) => t._id !== currentTrainerId)?._id ?? trainers[0]?._id ?? '';
   const [selectedTrainerId, setSelectedTrainerId] = useState(initialTrainerId);
@@ -41,7 +41,7 @@ export function ReassignModal({ memberId, memberName, currentTrainerId, trainers
       }
       toast.success('Member reassigned');
       onClose();
-      router.refresh();
+      refresh();
     } catch {
       toast.error('Something went wrong');
     } finally {

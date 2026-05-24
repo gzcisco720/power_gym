@@ -35,7 +35,7 @@ const FITNESS_LEVELS = [
 ] as const;
 
 export function MemberProfileTab(props: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const [avatarUrl, setAvatarUrl] = useState(props.avatarUrl);
   const [saving, setSaving] = useState(false);
   const [editingEmail, setEditingEmail] = useState(false);
@@ -74,7 +74,7 @@ export function MemberProfileTab(props: Props) {
     const result = await updateMemberProfileAction({ error: '' }, formData);
     setSaving(false);
     if (result.error) toast.error(result.error);
-    else { toast.success('Profile saved'); router.refresh(); }
+    else { toast.success('Profile saved'); refresh(); }
   }
 
   return (

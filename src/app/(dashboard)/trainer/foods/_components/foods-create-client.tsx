@@ -11,7 +11,7 @@ interface Props {
 }
 
 export function FoodsCreateClient({ basePath }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
 
   return (
     <div>
@@ -31,8 +31,8 @@ export function FoodsCreateClient({ basePath }: Props) {
         <FoodForm
           mode="create"
           stickyFooter
-          onSaved={() => router.push(basePath)}
-          onCancel={() => router.push(basePath)}
+          onSaved={() => push(basePath)}
+          onCancel={() => push(basePath)}
         />
       </div>
     </div>

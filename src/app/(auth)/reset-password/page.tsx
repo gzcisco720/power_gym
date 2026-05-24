@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const { push } = useRouter();
   const token = searchParams.get('token') ?? '';
   const userId = searchParams.get('id') ?? '';
 
@@ -34,7 +34,7 @@ function ResetPasswordForm() {
     if (!res.ok) {
       setError(data.error ?? 'Reset failed. The link may have expired.');
     } else {
-      router.push('/login?message=password-reset');
+      push('/login?message=password-reset');
     }
   }
 

@@ -9,10 +9,10 @@ interface Props {
 }
 
 export function WorkoutCalendarHeaderTrigger({ basePath }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
   return (
     <WorkoutCalendarPopover
-      onSelectLog={(logId) => router.push(`${basePath}/session/${logId}`)}
+      onSelectLog={(logId) => push(`${basePath}/session/${logId}`)}
       trigger={
         <button
           type="button"

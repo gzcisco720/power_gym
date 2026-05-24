@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function EditNutritionTemplateClient({ id, initialData, backPath = '/trainer/nutrition' }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
 
   async function handleSubmit(data: {
     name: string;
@@ -31,7 +31,7 @@ export function EditNutritionTemplateClient({ id, initialData, backPath = '/trai
       return;
     }
     toast.success('Nutrition plan saved');
-    router.push(backPath);
+    push(backPath);
   }
 
   return (
@@ -41,7 +41,7 @@ export function EditNutritionTemplateClient({ id, initialData, backPath = '/trai
         <NutritionTemplateForm
           initialData={initialData}
           onSubmit={handleSubmit}
-          onCancel={() => router.push(backPath)}
+          onCancel={() => push(backPath)}
         />
       </div>
     </div>

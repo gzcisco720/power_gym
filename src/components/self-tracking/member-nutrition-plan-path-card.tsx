@@ -28,7 +28,7 @@ function todayISO(): string {
 }
 
 export function MemberNutritionPlanPathCard({ plan, todayDayTypeName, basePath = '/member/nutrition' }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
 
   if (!plan) {
     return (
@@ -71,7 +71,7 @@ export function MemberNutritionPlanPathCard({ plan, todayDayTypeName, basePath =
           </div>
           <Button
             type="button"
-            onClick={() => router.push(`${basePath}/day?date=${todayISO()}&mode=plan`)}
+            onClick={() => push(`${basePath}/day?date=${todayISO()}&mode=plan`)}
             className="w-full"
           >
             Log Today
@@ -96,7 +96,7 @@ export function MemberNutritionPlanPathCard({ plan, todayDayTypeName, basePath =
                 variant="ghost"
                 type="button"
                 onClick={() =>
-                  router.push(
+                  push(
                     `${basePath}/day?date=${todayISO()}&mode=plan&dayTypeName=${encodeURIComponent(dt.name)}`,
                   )
                 }

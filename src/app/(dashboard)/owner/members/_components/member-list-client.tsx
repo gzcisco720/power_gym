@@ -40,7 +40,7 @@ export function MemberListClient({
   unassignedCount,
   newThisMonth,
 }: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const [reassigning, setReassigning] = useState<MemberRow | null>(null);
   const [unassigning, setUnassigning] = useState<MemberRow | null>(null);
   const [unassignSaving, setUnassignSaving] = useState(false);
@@ -64,7 +64,7 @@ export function MemberListClient({
       }
       toast.success(`${unassigning.name} unassigned`);
       setUnassigning(null);
-      router.refresh();
+      refresh();
     } catch {
       toast.error('Something went wrong');
     } finally {

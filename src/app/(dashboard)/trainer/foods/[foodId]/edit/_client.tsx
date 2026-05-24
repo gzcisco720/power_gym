@@ -21,7 +21,7 @@ interface Props {
 }
 
 export function FoodsEditClient({ basePath, initialFood }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
 
   return (
     <div>
@@ -43,8 +43,8 @@ export function FoodsEditClient({ basePath, initialFood }: Props) {
           mode="edit"
           stickyFooter
           initialFood={initialFood}
-          onSaved={() => router.push(basePath)}
-          onCancel={() => router.push(basePath)}
+          onSaved={() => push(basePath)}
+          onCancel={() => push(basePath)}
         />
       </div>
     </div>

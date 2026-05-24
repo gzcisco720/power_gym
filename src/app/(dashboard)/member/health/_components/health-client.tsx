@@ -69,7 +69,7 @@ function InjurySection({
   injuries: SerializedInjury[];
   onInjuriesChange: (injuries: SerializedInjury[]) => void;
 }) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingInjury, setEditingInjury] = useState<SerializedInjury | undefined>();
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -100,7 +100,7 @@ function InjurySection({
         ? injuries.map((i) => (i._id === saved._id ? saved : i))
         : [saved, ...injuries],
     );
-    router.refresh();
+    refresh();
   }
 
   async function executeConfirm() {
@@ -117,7 +117,7 @@ function InjurySection({
         const updated = (await res.json()) as SerializedInjury;
         onInjuriesChange(injuries.map((i) => (i._id === confirm.id ? updated : i)));
         toast.success('Marked as resolved');
-        router.refresh();
+        refresh();
       } else if (confirm.type === 'reopen') {
         const res = await fetch(`/api/members/${memberId}/injuries/${confirm.id}`, {
           method: 'PATCH',
@@ -128,13 +128,13 @@ function InjurySection({
         const updated = (await res.json()) as SerializedInjury;
         onInjuriesChange(injuries.map((i) => (i._id === confirm.id ? updated : i)));
         toast.success('Injury reopened');
-        router.refresh();
+        refresh();
       } else if (confirm.type === 'delete-injury') {
         const res = await fetch(`/api/members/${memberId}/injuries/${confirm.id}`, { method: 'DELETE' });
         if (!res.ok) { toast.error('Failed to delete'); return; }
         onInjuriesChange(injuries.filter((i) => i._id !== confirm.id));
         toast.success('Record deleted');
-        router.refresh();
+        refresh();
       }
     } finally {
       setActioning(false);
@@ -373,7 +373,7 @@ function MedicationSection({
   medications: SerializedMedication[];
   onMedicationsChange: (medications: SerializedMedication[]) => void;
 }) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMed, setEditingMed] = useState<SerializedMedication | undefined>();
   const [endedOpen, setEndedOpen] = useState(false);
@@ -404,7 +404,7 @@ function MedicationSection({
         ? medications.map((m) => (m._id === saved._id ? saved : m))
         : [saved, ...medications],
     );
-    router.refresh();
+    refresh();
   }
 
   async function executeConfirm() {
@@ -421,13 +421,13 @@ function MedicationSection({
         const updated = (await res.json()) as SerializedMedication;
         onMedicationsChange(medications.map((m) => (m._id === confirm.id ? updated : m)));
         toast.success('Medication marked as ended');
-        router.refresh();
+        refresh();
       } else if (confirm.type === 'delete-medication') {
         const res = await fetch(`/api/members/${memberId}/medications/${confirm.id}`, { method: 'DELETE' });
         if (!res.ok) { toast.error('Failed to delete'); return; }
         onMedicationsChange(medications.filter((m) => m._id !== confirm.id));
         toast.success('Medication record deleted');
-        router.refresh();
+        refresh();
       }
     } finally {
       setActioning(false);

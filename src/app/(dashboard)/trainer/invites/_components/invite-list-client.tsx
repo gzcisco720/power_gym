@@ -30,7 +30,7 @@ interface Props {
 }
 
 export function TrainerInviteListClient({ invites }: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const [revokeTarget, setRevokeTarget] = useState<InviteRow | null>(null);
 
   const now = new Date();
@@ -56,7 +56,7 @@ export function TrainerInviteListClient({ invites }: Props) {
         await navigator.clipboard.writeText(data.inviteUrl).catch(() => undefined);
       }
       toast.success(context === 'resend' ? 'Invite email resent · link copied' : 'New invite link generated · copied');
-      router.refresh();
+      refresh();
     } catch {
       toast.error('Something went wrong');
     }
@@ -74,7 +74,7 @@ export function TrainerInviteListClient({ invites }: Props) {
       }
       setRevokeTarget(null);
       toast.success('Invite revoked');
-      router.refresh();
+      refresh();
     } catch {
       toast.error('Something went wrong');
     }

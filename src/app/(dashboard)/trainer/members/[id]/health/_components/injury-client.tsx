@@ -53,7 +53,7 @@ const REHAB_LABELS: Record<string, string> = {
 };
 
 export function InjuryClient({ memberId, initialInjuries, userRole }: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const [injuries, setInjuries] = useState(initialInjuries);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingInjury, setEditingInjury] = useState<SerializedInjury | null>(null);
@@ -138,7 +138,7 @@ export function InjuryClient({ memberId, initialInjuries, userRole }: Props) {
       }
 
       setSheetOpen(false);
-      router.refresh();
+      refresh();
     } finally {
       setSaving(false);
     }
@@ -156,7 +156,7 @@ export function InjuryClient({ memberId, initialInjuries, userRole }: Props) {
       const updated = (await res.json()) as SerializedInjury;
       setInjuries((prev) => prev.map((i) => (i._id === id ? updated : i)));
       toast.success(status === 'resolved' ? 'Marked as resolved' : 'Reactivated');
-      router.refresh();
+      refresh();
     } finally {
       setChangingStatusId(null);
     }
@@ -171,7 +171,7 @@ export function InjuryClient({ memberId, initialInjuries, userRole }: Props) {
       setInjuries((prev) => prev.filter((i) => i._id !== deleteId));
       setDeleteId(null);
       toast.success('Record deleted');
-      router.refresh();
+      refresh();
     } finally {
       setDeleting(false);
     }

@@ -34,7 +34,7 @@ function initialPeriod(): BillingPeriod {
 }
 
 export function BillingSummaryClient({ userRole, memberHubBase }: BillingSummaryClientProps) {
-  const router = useRouter();
+  const { push } = useRouter();
   const [period, setPeriod] = useState<BillingPeriod>(initialPeriod);
   const [data, setData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -90,7 +90,7 @@ export function BillingSummaryClient({ userRole, memberHubBase }: BillingSummary
                 type="button"
                 key={m.memberId}
                 className={`grid gap-3 items-center px-3 py-2.5 rounded-xl bg-card ring-1 ring-foreground/10 hover:ring-foreground/25 transition-all cursor-pointer text-left w-full ${userRole === 'owner' ? 'grid-cols-[1fr_80px_90px_80px]' : 'grid-cols-[1fr_90px_80px]'}`}
-                onClick={() => router.push(`${memberHubBase}/${m.memberId}/billing`)}
+                onClick={() => push(`${memberHubBase}/${m.memberId}/billing`)}
               >
                 <span className="text-sm font-medium text-foreground">{m.name}</span>
                 {userRole === 'owner' && <span className="text-xs text-foreground/65">{m.trainerName}</span>}

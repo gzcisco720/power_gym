@@ -13,12 +13,12 @@ interface Props {
 }
 
 export function SelfNutritionDayViewWithRouter({ initialDate, basePath, initialTemplateId, initialDayTypeName, noDateNav = false }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
   const onDateChange = useCallback(
     (d: string) => {
-      router.push(`${basePath}/day?date=${d}`, { scroll: false });
+      push(`${basePath}/day?date=${d}`, { scroll: false });
     },
-    [router, basePath],
+    [push, basePath],
   );
   return (
     <SelfNutritionDayView

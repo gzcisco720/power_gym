@@ -15,7 +15,7 @@ interface Props {
 }
 
 export function NewPlanClient({ exercises, backPath, presetPlan }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
 
   async function handleSubmit(data: { name: string; description: string | null; days: IPlanDay[] }) {
     const res = await fetch('/api/plan-templates', {
@@ -29,7 +29,7 @@ export function NewPlanClient({ exercises, backPath, presetPlan }: Props) {
       return;
     }
     toast.success('Plan saved');
-    router.push(backPath);
+    push(backPath);
   }
 
   const initialData = presetPlan
@@ -52,7 +52,7 @@ export function NewPlanClient({ exercises, backPath, presetPlan }: Props) {
           initialData={initialData}
           exercises={exercises}
           onSubmit={handleSubmit}
-          onCancel={() => router.push(backPath)}
+          onCancel={() => push(backPath)}
         />
       </div>
     </div>

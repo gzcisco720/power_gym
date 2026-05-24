@@ -7,7 +7,7 @@ import { NutritionCalendarPopover } from './nutrition-calendar-popover';
 type BasePath = '/owner/my-nutrition' | '/trainer/my-nutrition' | '/member/nutrition';
 
 export function NutritionCalendarHeaderTrigger({ basePath }: { basePath: BasePath }) {
-  const router = useRouter();
+  const { push } = useRouter();
 
   function dayPath(date: string): string {
     if (basePath === '/member/nutrition') return `/member/nutrition/day?date=${date}`;
@@ -16,7 +16,7 @@ export function NutritionCalendarHeaderTrigger({ basePath }: { basePath: BasePat
 
   return (
     <NutritionCalendarPopover
-      onSelect={(date) => router.push(dayPath(date))}
+      onSelect={(date) => push(dayPath(date))}
       trigger={
         <button
           aria-label="Open calendar"

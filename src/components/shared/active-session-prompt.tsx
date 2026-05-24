@@ -57,7 +57,7 @@ export function ActiveSessionPrompt({
   sealEndpoint,
   deleteEndpoint,
 }: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const [busy, setBusy] = useState<'seal' | 'discard' | null>(null);
   const [open, setOpen] = useState(true);
 
@@ -76,7 +76,7 @@ export function ActiveSessionPrompt({
       }
       setOpen(false);
       toast.success('Session saved to history');
-      router.refresh();
+      refresh();
     } finally {
       setBusy(null);
     }
@@ -92,7 +92,7 @@ export function ActiveSessionPrompt({
       }
       setOpen(false);
       toast.success('Session discarded');
-      router.refresh();
+      refresh();
     } finally {
       setBusy(null);
     }

@@ -19,7 +19,7 @@ interface Props {
 }
 
 export function MiniWorkoutCalendar({ basePath }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -55,7 +55,7 @@ export function MiniWorkoutCalendar({ basePath }: Props) {
         logs={logs}
         onSelect={(log) => {
           const date = log.completedAt.split('T')[0];
-          router.push(`${basePath}/calendar?date=${date}`);
+          push(`${basePath}/calendar?date=${date}`);
         }}
         onMonthChange={(y, m) => {
           setYear(y);

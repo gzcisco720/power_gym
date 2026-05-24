@@ -74,7 +74,7 @@ function MetaLine({
 }
 
 export function InviteListClient({ invites, invitedByMap }: Props) {
-  const router = useRouter();
+  const { refresh } = useRouter();
   const [revoking, setRevoking] = useState<InviteRow | null>(null);
   const pending  = useMemo(() => invites.filter((inv) => !inv.usedAt && new Date(inv.expiresAt) > new Date()), [invites]);
   const accepted = useMemo(() => invites.filter((inv) => !!inv.usedAt), [invites]);
@@ -95,7 +95,7 @@ export function InviteListClient({ invites, invitedByMap }: Props) {
         return;
       }
       toast.success('Invite email resent');
-      router.refresh();
+      refresh();
     } catch {
       toast.error('Something went wrong');
     }
@@ -113,7 +113,7 @@ export function InviteListClient({ invites, invitedByMap }: Props) {
         await navigator.clipboard.writeText(data.inviteUrl).catch(() => undefined);
       }
       toast.success('New link copied to clipboard');
-      router.refresh();
+      refresh();
     } catch {
       toast.error('Something went wrong');
     }
@@ -129,7 +129,7 @@ export function InviteListClient({ invites, invitedByMap }: Props) {
         return;
       }
       toast.success('Invite revoked');
-      router.refresh();
+      refresh();
     } catch {
       toast.error('Something went wrong');
     } finally {

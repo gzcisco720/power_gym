@@ -56,7 +56,7 @@ export function PlanOverview({
   activePrompt,
 }: Props) {
   const [activeDay, setActiveDay] = useState<number>(plan?.days[0]?.dayNumber ?? 1);
-  const router = useRouter();
+  const { push } = useRouter();
   const [starting, setStarting] = useState(false);
   const [conflict, setConflict] = useState<{
     _id: string;
@@ -81,7 +81,7 @@ export function PlanOverview({
       });
       if (res.ok) {
         const data = (await res.json()) as { _id: string };
-        router.push(`${sessionBasePath}/session/${data._id}`);
+        push(`${sessionBasePath}/session/${data._id}`);
         return;
       }
       if (res.status === 409) {

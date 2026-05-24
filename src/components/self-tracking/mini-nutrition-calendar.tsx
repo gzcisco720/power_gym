@@ -52,7 +52,7 @@ function mergeEntries(self: NutritionDayEntry[], plan: NutritionDayEntry[]): Nut
 }
 
 export function MiniNutritionCalendar({ basePath, memberId }: Props) {
-  const router = useRouter();
+  const { push } = useRouter();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -94,7 +94,7 @@ export function MiniNutritionCalendar({ basePath, memberId }: Props) {
       </div>
       <SelfNutritionCalendar
         entries={entries}
-        onSelect={(entry) => router.push(dayPath(entry.date))}
+        onSelect={(entry) => push(dayPath(entry.date))}
         onMonthChange={(y, m) => { setYear(y); setMonth(m); }}
       />
     </div>

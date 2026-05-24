@@ -369,7 +369,7 @@ function ChangePlanDialog({
   templates: TemplateOption[];
   triggerLabel: string;
 }) {
-  const router = useRouter();
+  const { push } = useRouter();
   const { basePath } = useMemberHub();
   const [open, setOpen] = useState(false);
   const [comboOpen, setComboOpen] = useState(false);
@@ -379,7 +379,7 @@ function ChangePlanDialog({
     const url = selectedId
       ? `${basePath}/nutrition/new?templateId=${selectedId}`
       : `${basePath}/nutrition/new`;
-    router.push(url);
+    push(url);
     setOpen(false);
   }
 
