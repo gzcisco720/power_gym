@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useReducer } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -20,35 +20,71 @@ interface Props {
   initialItems: EquipmentItem[];
 }
 
+interface EquipmentClientState {
+  items: EquipmentItem[];
+  showAdd: boolean;
+  editTarget: EquipmentItem | null;
+  deletingId: string | null;
+  lightbox: { images: string[]; index: number } | null;
+}
+
+type EquipmentClientAction =
+  | { type: 'ADD_ITEM'; item: EquipmentItem }
+  | { type: 'UPDATE_ITEM'; updated: EquipmentItem }
+  | { type: 'DELETE_ITEM'; id: string }
+  | { type: 'SET_SHOW_ADD'; value: boolean }
+  | { type: 'SET_EDIT_TARGET'; item: EquipmentItem | null }
+  | { type: 'SET_DELETING_ID'; id: string | null }
+  | { type: 'SET_LIGHTBOX'; value: { images: string[]; index: number } | null };
+
+function equipmentClientReducer(state: EquipmentClientState, action: EquipmentClientAction): EquipmentClientState {
+  switch (action.type) {
+    case 'ADD_ITEM': return { ...state, items: [...state.items, action.item] };
+    case 'UPDATE_ITEM': return {
+      ...state,
+      items: state.items.map((i) => i._id === action.updated._id ? action.updated : i),
+      editTarget: state.editTarget?._id === action.updated._id ? action.updated : state.editTarget,
+    };
+    case 'DELETE_ITEM': return { ...state, items: state.items.filter((i) => i._id !== action.id), deletingId: null };
+    case 'SET_SHOW_ADD': return { ...state, showAdd: action.value };
+    case 'SET_EDIT_TARGET': return { ...state, editTarget: action.item };
+    case 'SET_DELETING_ID': return { ...state, deletingId: action.id };
+    case 'SET_LIGHTBOX': return { ...state, lightbox: action.value };
+    default: return state;
+  }
+}
+
 export function EquipmentClient({ initialItems }: Props) {
   const { refresh } = useRouter();
-  const [items, setItems] = useState<EquipmentItem[]>(initialItems);
-  const [showAdd, setShowAdd] = useState(false);
-  const [editTarget, setEditTarget] = useState<EquipmentItem | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
+  const [state, dispatch] = useReducer(equipmentClientReducer, {
+    items: initialItems,
+    showAdd: false,
+    editTarget: null,
+    deletingId: null,
+    lightbox: null,
+  });
+  const { items, showAdd, editTarget, deletingId, lightbox } = state;
 
   function handleCreated(item: NewEquipmentItem) {
-    setItems((prev) => [...prev, item]);
+    dispatch({ type: 'ADD_ITEM', item });
     refresh();
   }
 
   function handleUpdated(updated: EquipmentItem) {
-    setItems((prev) => prev.map((i) => i._id === updated._id ? updated : i));
-    setEditTarget((prev) => prev?._id === updated._id ? updated : prev);
+    dispatch({ type: 'UPDATE_ITEM', updated });
   }
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this equipment? This cannot be undone.')) return;
-    setDeletingId(id);
+    dispatch({ type: 'SET_DELETING_ID', id });
     try {
       const res = await fetch(`/api/owner/equipment/${id}`, { method: 'DELETE' });
       if (!res.ok) { toast.error('Failed to delete'); return; }
-      setItems((prev) => prev.filter((i) => i._id !== id));
+      dispatch({ type: 'DELETE_ITEM', id });
       toast.success('Equipment deleted');
       refresh();
     } finally {
-      setDeletingId(null);
+      dispatch({ type: 'SET_DELETING_ID', id: null });
     }
   }
 
@@ -57,7 +93,7 @@ export function EquipmentClient({ initialItems }: Props) {
       <div className="space-y-4">
         <div className="flex justify-end">
           <Button
-            onClick={() => setShowAdd(true)}
+            onClick={() => dispatch({ type: 'SET_SHOW_ADD', value: true })}
             className="bg-white text-black hover:bg-white/90 font-semibold text-sm"
           >
             + Add Equipment
@@ -96,8 +132,8 @@ export function EquipmentClient({ initialItems }: Props) {
                   {item.images?.[0] ? (
                     <button
                       type="button"
-                      onClick={() => setLightbox({ images: item.images, index: 0 })}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setLightbox({ images: item.images, index: 0 }); }}
+                      onClick={() => dispatch({ type: 'SET_LIGHTBOX', value: { images: item.images, index: 0 } })}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') dispatch({ type: 'SET_LIGHTBOX', value: { images: item.images, index: 0 } }); }}
                       className="size-8 rounded-md border border-[#222] shrink-0 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden relative"
                       aria-label={`View ${item.name} image`}
                     >
@@ -139,7 +175,7 @@ export function EquipmentClient({ initialItems }: Props) {
                 <div className="hidden sm:flex justify-center">
                   <Button
                     variant="ghost"
-                    onClick={() => setEditTarget(item)}
+                    onClick={() => dispatch({ type: 'SET_EDIT_TARGET', item })}
                     className="text-[#555] hover:text-[#aaa] hover:bg-[#141414] text-xs h-7 px-3"
                   >
                     Edit
@@ -167,13 +203,13 @@ export function EquipmentClient({ initialItems }: Props) {
 
       <AddEquipmentDialog
         open={showAdd}
-        onClose={() => setShowAdd(false)}
+        onClose={() => dispatch({ type: 'SET_SHOW_ADD', value: false })}
         onCreated={handleCreated}
       />
 
       <EditEquipmentDialog
         equipment={editTarget}
-        onClose={() => setEditTarget(null)}
+        onClose={() => dispatch({ type: 'SET_EDIT_TARGET', item: null })}
         onUpdated={handleUpdated}
       />
 
@@ -181,7 +217,7 @@ export function EquipmentClient({ initialItems }: Props) {
         images={lightbox?.images ?? []}
         initialIndex={lightbox?.index ?? 0}
         open={lightbox !== null}
-        onClose={() => setLightbox(null)}
+        onClose={() => dispatch({ type: 'SET_LIGHTBOX', value: null })}
       />
     </>
   );

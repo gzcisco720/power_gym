@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useReducer } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -24,19 +24,47 @@ interface Props {
   trainers: TrainerOption[];
 }
 
+interface InviteDialogState {
+  role: 'trainer' | 'member';
+  email: string;
+  trainerId: string;
+  saving: boolean;
+  generatedUrl: string | null;
+}
+
+type InviteDialogAction =
+  | { type: 'SET_ROLE'; value: 'trainer' | 'member' }
+  | { type: 'SET_EMAIL'; value: string }
+  | { type: 'SET_TRAINER_ID'; value: string }
+  | { type: 'SET_SAVING'; value: boolean }
+  | { type: 'SET_GENERATED_URL'; value: string | null }
+  | { type: 'RESET'; defaultTrainerId: string };
+
+function inviteDialogReducer(state: InviteDialogState, action: InviteDialogAction): InviteDialogState {
+  switch (action.type) {
+    case 'SET_ROLE': return { ...state, role: action.value };
+    case 'SET_EMAIL': return { ...state, email: action.value };
+    case 'SET_TRAINER_ID': return { ...state, trainerId: action.value };
+    case 'SET_SAVING': return { ...state, saving: action.value };
+    case 'SET_GENERATED_URL': return { ...state, generatedUrl: action.value };
+    case 'RESET': return { role: 'member', email: '', trainerId: action.defaultTrainerId, saving: false, generatedUrl: null };
+    default: return state;
+  }
+}
+
 export function InviteDialog({ open, onOpenChange, trainers }: Props) {
   const { refresh } = useRouter();
-  const [role, setRole] = useState<'trainer' | 'member'>('member');
-  const [email, setEmail] = useState('');
-  const [trainerId, setTrainerId] = useState(trainers[0]?._id ?? '');
-  const [saving, setSaving] = useState(false);
-  const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
+  const [state, dispatch] = useReducer(inviteDialogReducer, {
+    role: 'member',
+    email: '',
+    trainerId: trainers[0]?._id ?? '',
+    saving: false,
+    generatedUrl: null,
+  });
+  const { role, email, trainerId, saving, generatedUrl } = state;
 
   function reset() {
-    setRole('member');
-    setEmail('');
-    setTrainerId(trainers[0]?._id ?? '');
-    setGeneratedUrl(null);
+    dispatch({ type: 'RESET', defaultTrainerId: trainers[0]?._id ?? '' });
   }
 
   function handleOpenChange(value: boolean) {
@@ -46,7 +74,7 @@ export function InviteDialog({ open, onOpenChange, trainers }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSaving(true);
+    dispatch({ type: 'SET_SAVING', value: true });
     const body: Record<string, string> = { role, recipientEmail: email };
     if (role === 'member' && trainerId) body.trainerId = trainerId;
 
@@ -61,13 +89,13 @@ export function InviteDialog({ open, onOpenChange, trainers }: Props) {
         toast.error(data.error ?? 'Failed to create invite');
         return;
       }
-      setGeneratedUrl(data.inviteUrl ?? null);
+      dispatch({ type: 'SET_GENERATED_URL', value: data.inviteUrl ?? null });
       toast.success('Invite link generated');
       refresh();
     } catch {
       toast.error('Something went wrong');
     } finally {
-      setSaving(false);
+      dispatch({ type: 'SET_SAVING', value: false });
     }
   }
 
@@ -89,7 +117,7 @@ export function InviteDialog({ open, onOpenChange, trainers }: Props) {
                 <button
                   key={r}
                   type="button"
-                  onClick={() => setRole(r)}
+                  onClick={() => dispatch({ type: 'SET_ROLE', value: r })}
                   className={cn(
                     'flex-1 h-9 rounded-lg text-sm font-semibold capitalize transition-all',
                     role === r
@@ -115,7 +143,7 @@ export function InviteDialog({ open, onOpenChange, trainers }: Props) {
               <select
                 id="invite-trainer"
                 value={trainerId}
-                onChange={(e) => setTrainerId(e.target.value)}
+                onChange={(e) => dispatch({ type: 'SET_TRAINER_ID', value: e.target.value })}
                 className="w-full h-9 rounded-lg bg-white/[.03] ring-1 ring-white/[.08] px-3 text-sm text-foreground/80 focus:outline-none focus:ring-white/20 transition-all"
               >
                 {trainers.map((t) => (
@@ -138,7 +166,7 @@ export function InviteDialog({ open, onOpenChange, trainers }: Props) {
               type="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => dispatch({ type: 'SET_EMAIL', value: e.target.value })}
               placeholder="member@example.com"
             />
           </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef } from 'react';
 import type { JourneyItem, JourneyResponse, JourneySummary } from '@/lib/types/journey';
 import JourneyHeader from './journey-header';
 import TimelineNode from './timeline-node';
@@ -10,12 +10,41 @@ interface Props {
   memberId: string;
 }
 
+interface JourneyState {
+  items: JourneyItem[];
+  summary: JourneySummary | null;
+  nextCursor: string | null;
+  isLoading: boolean;
+  isLoadingMore: boolean;
+}
+
+type JourneyAction =
+  | { type: 'LOADED_FIRST'; items: JourneyItem[]; summary: JourneySummary | null; nextCursor: string | null }
+  | { type: 'APPEND'; items: JourneyItem[]; nextCursor: string | null }
+  | { type: 'SET_LOADING_MORE'; value: boolean };
+
+function journeyReducer(state: JourneyState, action: JourneyAction): JourneyState {
+  switch (action.type) {
+    case 'LOADED_FIRST':
+      return { ...state, items: action.items, summary: action.summary, nextCursor: action.nextCursor, isLoading: false };
+    case 'APPEND':
+      return { ...state, items: [...state.items, ...action.items], nextCursor: action.nextCursor, isLoadingMore: false };
+    case 'SET_LOADING_MORE':
+      return { ...state, isLoadingMore: action.value };
+    default:
+      return state;
+  }
+}
+
 export default function JourneyClient({ memberId }: Props) {
-  const [items, setItems] = useState<JourneyItem[]>([]);
-  const [summary, setSummary] = useState<JourneySummary | null>(null);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [state, dispatch] = useReducer(journeyReducer, {
+    items: [],
+    summary: null,
+    nextCursor: null,
+    isLoading: true,
+    isLoadingMore: false,
+  });
+  const { items, summary, nextCursor, isLoading, isLoadingMore } = state;
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Use refs so the IntersectionObserver closure always sees current values
@@ -40,10 +69,7 @@ export default function JourneyClient({ memberId }: Props) {
 
   useEffect(() => {
     fetchPage().then(data => {
-      setItems(data.items);
-      setSummary(data.summary);
-      setNextCursor(data.nextCursor);
-      setIsLoading(false);
+      dispatch({ type: 'LOADED_FIRST', items: data.items, summary: data.summary, nextCursor: data.nextCursor });
     });
   }, [fetchPage]);
 
@@ -53,11 +79,9 @@ export default function JourneyClient({ memberId }: Props) {
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting && nextCursorRef.current && !isLoadingMoreRef.current) {
-          setIsLoadingMore(true);
+          dispatch({ type: 'SET_LOADING_MORE', value: true });
           fetchPage(nextCursorRef.current).then(data => {
-            setItems(prev => [...prev, ...data.items]);
-            setNextCursor(data.nextCursor);
-            setIsLoadingMore(false);
+            dispatch({ type: 'APPEND', items: data.items, nextCursor: data.nextCursor });
           });
         }
       },

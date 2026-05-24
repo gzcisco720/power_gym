@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useReducer, useEffect } from 'react';
 import { m } from 'framer-motion';
 import { Clock, DollarSign, Layers, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,12 +17,43 @@ interface ServiceType {
   isActive: boolean;
 }
 
+interface ServiceTypeListState {
+  serviceTypes: ServiceType[];
+  loading: boolean;
+  dialogOpen: boolean;
+  editing: ServiceType | undefined;
+  refreshKey: number;
+}
+
+type ServiceTypeListAction =
+  | { type: 'LOADED'; serviceTypes: ServiceType[] }
+  | { type: 'LOAD_ERROR' }
+  | { type: 'RELOAD' }
+  | { type: 'OPEN_CREATE' }
+  | { type: 'OPEN_EDIT'; serviceType: ServiceType }
+  | { type: 'CLOSE_DIALOG' };
+
+function serviceTypeListReducer(state: ServiceTypeListState, action: ServiceTypeListAction): ServiceTypeListState {
+  switch (action.type) {
+    case 'LOADED': return { ...state, serviceTypes: action.serviceTypes, loading: false };
+    case 'LOAD_ERROR': return { ...state, loading: false };
+    case 'RELOAD': return { ...state, loading: true, refreshKey: state.refreshKey + 1 };
+    case 'OPEN_CREATE': return { ...state, editing: undefined, dialogOpen: true };
+    case 'OPEN_EDIT': return { ...state, editing: action.serviceType, dialogOpen: true };
+    case 'CLOSE_DIALOG': return { ...state, dialogOpen: false };
+    default: return state;
+  }
+}
+
 export function ServiceTypeList() {
-  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<ServiceType | undefined>(undefined);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [state, dispatch] = useReducer(serviceTypeListReducer, {
+    serviceTypes: [],
+    loading: true,
+    dialogOpen: false,
+    editing: undefined,
+    refreshKey: 0,
+  });
+  const { serviceTypes, loading, dialogOpen, editing, refreshKey } = state;
 
   // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
@@ -30,20 +61,19 @@ export function ServiceTypeList() {
     fetch('/api/service-types', { signal: controller.signal })
       .then((res) => res.json())
       .then((data: { serviceTypes: ServiceType[] }) => {
-        setServiceTypes(data.serviceTypes ?? []);
-        setLoading(false);
+        dispatch({ type: 'LOADED', serviceTypes: data.serviceTypes ?? [] });
       })
       .catch((err: unknown) => {
         if (err instanceof Error && err.name !== 'AbortError') {
-          setLoading(false);
+          dispatch({ type: 'LOAD_ERROR' });
         }
       });
     return () => controller.abort();
   }, [refreshKey]);
 
-  function reload() { setLoading(true); setRefreshKey((k) => k + 1); }
-  function openCreate() { setEditing(undefined); setDialogOpen(true); }
-  function openEdit(st: ServiceType) { setEditing(st); setDialogOpen(true); }
+  function reload() { dispatch({ type: 'RELOAD' }); }
+  function openCreate() { dispatch({ type: 'OPEN_CREATE' }); }
+  function openEdit(st: ServiceType) { dispatch({ type: 'OPEN_EDIT', serviceType: st }); }
 
   const active = serviceTypes.filter((st) => st.isActive);
   const inactive = serviceTypes.filter((st) => !st.isActive);
@@ -210,7 +240,7 @@ export function ServiceTypeList() {
         open={dialogOpen}
         serviceType={editing}
         onSuccess={reload}
-        onClose={() => setDialogOpen(false)}
+        onClose={() => dispatch({ type: 'CLOSE_DIALOG' })}
       />
     </div>
   );
