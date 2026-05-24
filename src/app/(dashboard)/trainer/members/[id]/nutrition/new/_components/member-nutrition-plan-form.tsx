@@ -281,7 +281,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
             const macros = sumDayMacros(dt);
             const isCollapsed = collapsed[dayIdx] ?? false;
             return (
-              <div key={dayIdx} className="rounded-xl bg-card ring-1 ring-foreground/10">
+              <div key={`day-${dayIdx}`} className="rounded-xl bg-card ring-1 ring-foreground/10">
                 {/* Day type header */}
                 <div className="flex items-center gap-2 px-4 py-3">
                   <button
@@ -329,7 +329,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
                         { kcal: 0, protein: 0, carbs: 0, fat: 0 },
                       );
                       return (
-                        <div key={mealIdx} className="rounded-lg bg-muted/30 border border-foreground/8 p-3">
+                        <div key={`meal-${dayIdx}-${mealIdx}`} className="rounded-lg bg-muted/30 border border-foreground/8 p-3">
                           <div className="flex items-center gap-2 mb-2">
                             <Input
                               value={meal.name}
@@ -356,7 +356,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
 
                           {/* Items */}
                           {meal.items.map((item, itemIdx) => (
-                            <div key={itemIdx} className="flex items-center gap-2 py-1 text-sm">
+                            <div key={`item-${dayIdx}-${mealIdx}-${itemIdx}`} className="flex items-center gap-2 py-1 text-sm">
                               <span className="flex-1 text-foreground/80">{item.foodName}</span>
                               <span className="text-foreground/40 text-xs">{item.quantityG}g</span>
                               <button

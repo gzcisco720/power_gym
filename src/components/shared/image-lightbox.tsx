@@ -84,10 +84,10 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props
 
       {images.length > 1 && (
         <div className="absolute bottom-4 flex gap-1.5">
-          {images.map((_, i) => (
+          {images.map((img, i) => (
             <button
               type="button"
-              key={i}
+              key={img}
               onClick={(e) => { e.stopPropagation(); setIndex(i); }}
               className={`w-1.5 h-1.5 rounded-full transition-colors ${i === index ? 'bg-white' : 'bg-white/30'}`}
             />

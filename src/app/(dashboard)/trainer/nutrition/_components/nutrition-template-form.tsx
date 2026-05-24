@@ -301,7 +301,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
           const macros = sumDayMacros(dayType);
 
           return (
-            <Card key={dayIdx} className="overflow-hidden">
+            <Card key={`day-${dayIdx}`} className="overflow-hidden">
               {/* Day type header — bold, distinct background */}
               <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/30 border-b border-border/50">
                 <button
@@ -347,7 +347,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
                   {dayType.meals.map((meal, mealIdx) => {
                     const mealMacros = sumMealMacros(meal);
                     return (
-                      <div key={mealIdx} className="px-4 py-3 space-y-2">
+                      <div key={`meal-${dayIdx}-${mealIdx}`} className="px-4 py-3 space-y-2">
                         {/* Meal header — small caps section style + per-meal totals */}
                         <div className="flex items-center gap-2">
                           <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
@@ -394,7 +394,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
                           <ul className="space-y-0.5">
                             {meal.items.map((item, itemIdx) => (
                               <li
-                                key={itemIdx}
+                                key={`item-${dayIdx}-${mealIdx}-${itemIdx}`}
                                 className="group flex items-center gap-3 px-2 py-2 -mx-2 rounded-md hover:bg-muted/40 transition-colors"
                               >
                                 <div className="flex-1 min-w-0">

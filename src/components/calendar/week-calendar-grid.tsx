@@ -89,7 +89,7 @@ export function WeekCalendarGrid({
       <div className="flex border-b border-[#1e1e2e] sticky top-0 bg-[#0c0c0c] z-10">
         <div className="w-14 flex-shrink-0" />
         {days.map((day, i) => (
-          <div key={i} className="flex-1 text-center py-2 text-xs text-[#888]">
+          <div key={day.toISOString()} className="flex-1 text-center py-2 text-xs text-[#888]">
             <div>{DAYS[i]}</div>
             <div className="text-white font-semibold">{day.getDate()}</div>
           </div>
@@ -110,7 +110,7 @@ export function WeekCalendarGrid({
         </div>
 
         {days.map((day, di) => (
-          <div key={di} className="flex-1 relative border-l border-[#1a1a2e]">
+          <div key={day.toISOString()} className="flex-1 relative border-l border-[#1a1a2e]">
             {Array.from({ length: (HOUR_END - HOUR_START) * 2 }, (_, si) => {
               const totalMin = HOUR_START * 60 + si * 30;
               const hh = Math.floor(totalMin / 60);

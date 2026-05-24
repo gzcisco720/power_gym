@@ -82,8 +82,8 @@ export async function PlanCardSection({ memberId }: { memberId: string }) {
             Recent Sessions
           </div>
           <div className="space-y-1.5">
-            {recentSessions.map((s, i) => (
-              <div key={i} className="flex items-center justify-between">
+            {recentSessions.map((s) => (
+              <div key={`${s.memberId}-${s.completedAt.getTime()}`} className="flex items-center justify-between">
                 <span className="text-[13px] text-foreground/80">{s.dayName}</span>
                 <span className="text-[12px] text-foreground/40">{formatSessionDate(s.completedAt)}</span>
               </div>

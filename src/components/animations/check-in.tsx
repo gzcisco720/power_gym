@@ -32,7 +32,7 @@ export function CheckInAnimation({ streakDays, weekDots, onComplete }: CheckInAn
       <div className="flex gap-1.5">
         {weekDots.map((done, i) => (
           <motion.div
-            key={i}
+            key={i /* static 7-slot week dot array */}
             className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold ${
               done ? 'bg-emerald-500 text-white' : 'bg-white/[.06] border border-white/10 text-foreground/20'
             }`}

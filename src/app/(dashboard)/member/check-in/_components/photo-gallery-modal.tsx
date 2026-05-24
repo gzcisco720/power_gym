@@ -138,12 +138,12 @@ export function PhotoGalleryModal({ open, onClose, photos, totalCount }: Props) 
               <span className="text-xs text-foreground/30">{group.photos.length} photos</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-1">
-              {group.photos.map((photo, i) => {
+              {group.photos.map((photo) => {
                 const globalIdx = sorted.indexOf(photo);
                 return (
                   <button
                     type="button"
-                    key={i}
+                    key={photo.url}
                     onClick={() => setLightboxIdx(globalIdx >= 0 ? globalIdx : 0)}
                     className="aspect-[3/4] rounded-lg overflow-hidden border-2 border-foreground/[0.06] hover:border-foreground/[0.18] transition-colors relative"
                   >

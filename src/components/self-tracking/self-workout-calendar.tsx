@@ -72,7 +72,7 @@ export function SelfWorkoutCalendar({ logs, onSelect, selectedId, onMonthChange 
 
       <div className="grid grid-cols-7 mb-1">
         {dayLabels.map((l, i) => (
-          <div key={i} className="text-center text-[9px] text-foreground/65 py-1">{l}</div>
+          <div key={i /* static 7-day array */} className="text-center text-[9px] text-foreground/65 py-1">{l}</div>
         ))}
       </div>
 

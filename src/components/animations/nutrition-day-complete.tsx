@@ -47,7 +47,7 @@ export function NutritionDayCompleteAnimation({
             const circ = 2 * Math.PI * r;
             return (
               <motion.circle
-                key={i}
+                key={r}
                 cx="32" cy="32" r={r}
                 fill="none" stroke={COLORS[i]} strokeWidth={i === 0 ? 5 : i === 1 ? 4 : 3.5}
                 strokeLinecap="round"

@@ -58,10 +58,10 @@ export function CompareCard({ checkInsWithPhotos }: Props) {
             {[
               { checkIn: beforeCheckIn, idx: beforePhotoIdx, setIdx: setBeforePhotoIdx },
               { checkIn: afterCheckIn,  idx: afterPhotoIdx,  setIdx: setAfterPhotoIdx  },
-            ].map(({ checkIn, idx, setIdx }, i) => (
+            ].map(({ checkIn, idx, setIdx }) => (
               <button
                 type="button"
-                key={i}
+                key={checkIn._id}
                 className="aspect-[3/4] rounded-lg overflow-hidden border border-foreground/[0.07] relative cursor-pointer"
                 onClick={() => setIdx((idx + 1) % checkIn.photos.length)}
               >

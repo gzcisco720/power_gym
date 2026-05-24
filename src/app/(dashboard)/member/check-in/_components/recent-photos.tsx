@@ -36,10 +36,10 @@ export function RecentPhotos({ recentPhotos, allPhotos, totalCount }: Props) {
           </button>
         </div>
         <div className="grid grid-cols-3 gap-[3px] p-[3px]">
-          {recentPhotos.slice(0, 6).map((photo, i) => (
+          {recentPhotos.slice(0, 6).map((photo) => (
             <button
               type="button"
-              key={i}
+              key={photo.url}
               onClick={() => setGalleryOpen(true)}
               className="aspect-square rounded-[6px] overflow-hidden relative"
             >

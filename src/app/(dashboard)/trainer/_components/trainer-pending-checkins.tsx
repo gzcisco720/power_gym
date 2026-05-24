@@ -51,12 +51,12 @@ export async function TrainerPendingCheckIns() {
         Pending Check-ins
       </div>
       <div className="space-y-0">
-        {shown.map((ci, i) => {
+        {shown.map((ci) => {
           const memberId = ci.memberId.toString();
           const memberName = memberMap[memberId] ?? 'Member';
           return (
             <div
-              key={i}
+              key={ci._id}
               className="flex items-center gap-2 py-2 border-b border-white/[.04] last:border-0"
             >
               <div className="flex-1 min-w-0">

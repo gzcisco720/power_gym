@@ -123,8 +123,8 @@ export function FreestylePathCard(props: Props) {
             </span>
           </div>
           <div className="space-y-1.5">
-            {props.lastFreestyle.topSets.map((s, i) => (
-              <div key={i} className="flex items-center justify-between text-[12px] tabular-nums">
+            {props.lastFreestyle.topSets.map((s) => (
+              <div key={s.exerciseName} className="flex items-center justify-between text-[12px] tabular-nums">
                 <span>{s.exerciseName}</span>
                 <span className="text-foreground/65">
                   {s.weight != null && s.reps != null ? `${s.weight} kg × ${s.reps}` : '—'}

@@ -36,10 +36,10 @@ function PhotoColumn({ checkIn, side }: { checkIn: CheckInRecord; side: 'before'
       </div>
       {photos.length > 1 && (
         <div className="flex gap-1.5 p-2 border-t border-foreground/[0.06] flex-shrink-0">
-          {photos.map((url, i) => (
+          {photos.map((url) => (
             <button
               type="button"
-              key={i}
+              key={url}
               onClick={() => setSelectedIdx(i)}
               className={`w-10 h-12 rounded overflow-hidden border-2 flex-shrink-0 ${i === selectedIdx ? 'border-primary' : 'border-foreground/10'}`}
             >

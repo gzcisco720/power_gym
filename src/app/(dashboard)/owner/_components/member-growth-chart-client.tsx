@@ -37,9 +37,9 @@ export function MemberGrowthChartClient({ data }: Props) {
           formatter={(v) => [`${v} new`, 'Members']}
         />
         <Bar dataKey="newCount" radius={[4, 4, 0, 0]}>
-          {data.map((_, i) => (
+          {data.map((entry) => (
             <Cell
-              key={i}
+              key={entry.label}
               fill={i === data.length - 1 ? '#6366f1' : 'rgba(99,102,241,0.35)'}
             />
           ))}

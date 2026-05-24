@@ -66,7 +66,7 @@ export function WorkoutCalendar({ sessions, onSelectSession, selectedSessionId }
 
       <div className="grid grid-cols-7 mb-1">
         {dayLabels.map((l, i) => (
-          <div key={i} className="text-center text-[9px] text-[#444] py-1">{l}</div>
+          <div key={i /* static 7-day array */} className="text-center text-[9px] text-[#444] py-1">{l}</div>
         ))}
       </div>
 

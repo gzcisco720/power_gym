@@ -282,7 +282,7 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
         <div className="space-y-3">
           {log.meals.map((m, i) => (
             <MealSection
-              key={i}
+              key={m.name}
               meal={m as unknown as IDailyLogMeal}
               locked={isLocked}
               onAddFood={() => setPickerForMeal(i)}

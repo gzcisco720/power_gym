@@ -42,9 +42,9 @@ export default function MilestoneCard({ item, isLast }: Props) {
 
           {/* Tags */}
           <div className="flex flex-wrap gap-1 mb-3">
-            {milestone.tags.map((tag, i) => (
+            {milestone.tags.map((tag) => (
               <span
-                key={i}
+                key={tag.label}
                 className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${TAG_CLASSES[tag.color]}`}
               >
                 {tag.label}

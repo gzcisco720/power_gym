@@ -65,7 +65,7 @@ export async function TrainerWeekSchedule() {
         <div className="flex gap-1.5">
           {DAY_LABELS.map((label, i) => (
             <div
-              key={i}
+              key={label}
               className={`flex-1 text-center text-[8px] ${
                 i === todayIdx ? 'text-primary-light font-bold' : 'text-foreground/30'
               }`}
