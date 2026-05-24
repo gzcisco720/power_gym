@@ -56,7 +56,7 @@ export async function TrainerPendingCheckIns() {
           const memberName = memberMap[memberId] ?? 'Member';
           return (
             <div
-              key={ci._id}
+              key={`${ci.memberId}-${ci.submittedAt.getTime()}`}
               className="flex items-center gap-2 py-2 border-b border-white/[.04] last:border-0"
             >
               <div className="flex-1 min-w-0">

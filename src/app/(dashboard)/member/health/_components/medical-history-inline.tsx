@@ -225,7 +225,7 @@ export function MedicalHistoryInline({ memberId, initialHistory, onUpdated }: Me
             />
           </FieldRow>
           <FieldRow label="Pregnancy Status">
-            <Select value={form.pregnancyStatus} onValueChange={(v) => set('pregnancyStatus', v)}>
+            <Select value={form.pregnancyStatus} onValueChange={(v) => set('pregnancyStatus', v ?? '')}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select status… (optional)" />
               </SelectTrigger>

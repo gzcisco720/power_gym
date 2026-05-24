@@ -75,7 +75,7 @@ export function SelfWeekCalendarGrid({ logs, weekStart, onEventClick }: Props) {
     <div className="overflow-auto">
       {/* Day headers */}
       <div className="flex ml-14 border-b border-foreground/10">
-        {weekDates.map((date) => {
+        {weekDates.map((date, i) => {
           const isToday = date.getTime() === today.getTime();
           return (
             <div

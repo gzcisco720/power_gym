@@ -37,7 +37,7 @@ function PhotoColumn({ checkIn, side }: { checkIn: CheckInRecord; side: 'before'
       </div>
       {photos.length > 1 && (
         <div className="flex gap-1.5 p-2 border-t border-foreground/[0.06] flex-shrink-0">
-          {photos.map((url) => (
+          {photos.map((url, i) => (
             <button
               type="button"
               key={url}

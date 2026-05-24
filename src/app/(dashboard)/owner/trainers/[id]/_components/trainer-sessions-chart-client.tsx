@@ -37,7 +37,7 @@ export function TrainerSessionsChartClient({ data }: Props) {
           formatter={(v) => [`${v} sessions`, '']}
         />
         <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-          {data.map((entry) => (
+          {data.map((entry, i) => (
             <Cell
               key={entry.label}
               fill={i === data.length - 1 ? '#6366f1' : 'rgba(99,102,241,0.35)'}

@@ -165,7 +165,7 @@ export function MedicationDialog({ open, onOpenChange, memberId, existing, onSav
           </FieldRow>
 
           <FieldRow label="Duration" required>
-            <Select value={form.duration} onValueChange={(v) => set('duration', v)}>
+            <Select value={form.duration} onValueChange={(v) => set('duration', v ?? '')}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select duration…" />
               </SelectTrigger>

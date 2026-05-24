@@ -78,7 +78,7 @@ export function InjurySheet({ open, onOpenChange, editing, form, onFormChange, o
           </FieldRow>
 
           <FieldRow label="Injury Type">
-            <Select value={form.injuryType} onValueChange={(v) => onFormChange('injuryType', v)}>
+            <Select value={form.injuryType} onValueChange={(v) => onFormChange('injuryType', v ?? '')}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
@@ -92,7 +92,7 @@ export function InjurySheet({ open, onOpenChange, editing, form, onFormChange, o
 
           <div className="grid grid-cols-2 gap-3">
             <FieldRow label="Body Part">
-              <Select value={form.bodyPart} onValueChange={(v) => onFormChange('bodyPart', v)}>
+              <Select value={form.bodyPart} onValueChange={(v) => onFormChange('bodyPart', v ?? '')}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select part" />
                 </SelectTrigger>
@@ -110,7 +110,7 @@ export function InjurySheet({ open, onOpenChange, editing, form, onFormChange, o
             </FieldRow>
 
             <FieldRow label="Side">
-              <Select value={form.bodySide} onValueChange={(v) => onFormChange('bodySide', v)}>
+              <Select value={form.bodySide} onValueChange={(v) => onFormChange('bodySide', v ?? '')}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select side" />
                 </SelectTrigger>
@@ -143,7 +143,7 @@ export function InjurySheet({ open, onOpenChange, editing, form, onFormChange, o
           <FieldRow label="Rehabilitation Status">
             <Select
               value={form.rehabilitationStatus}
-              onValueChange={(v) => onFormChange('rehabilitationStatus', v)}
+              onValueChange={(v) => onFormChange('rehabilitationStatus', v ?? '')}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select status" />

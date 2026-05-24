@@ -179,7 +179,7 @@ export function InjurySheet({ open, onOpenChange, memberId, existing, onSaved }:
           </FieldRow>
 
           <FieldRow label="Injury Type">
-            <Select value={form.injuryType} onValueChange={(v) => set('injuryType', v)}>
+            <Select value={form.injuryType} onValueChange={(v) => set('injuryType', v ?? '')}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select type…" />
               </SelectTrigger>
@@ -192,7 +192,7 @@ export function InjurySheet({ open, onOpenChange, memberId, existing, onSaved }:
           </FieldRow>
 
           <FieldRow label="Body Part">
-            <Select value={form.bodyPart} onValueChange={(v) => { set('bodyPart', v); set('bodySide', ''); }}>
+            <Select value={form.bodyPart} onValueChange={(v) => { set('bodyPart', v ?? ''); set('bodySide', ''); }}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select body part…" />
               </SelectTrigger>
@@ -211,7 +211,7 @@ export function InjurySheet({ open, onOpenChange, memberId, existing, onSaved }:
 
           {form.bodyPart && (
             <FieldRow label="Side">
-              <Select value={form.bodySide} onValueChange={(v) => set('bodySide', v)}>
+              <Select value={form.bodySide} onValueChange={(v) => set('bodySide', v ?? '')}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select side…" />
                 </SelectTrigger>

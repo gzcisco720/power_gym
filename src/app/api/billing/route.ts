@@ -93,7 +93,7 @@ export async function GET(req: Request): Promise<Response> {
         startTime: s.startTime,
         endTime: s.endTime,
         status: s.status,
-        serviceType: s.serviceTypeId ? (stMap.get(s.serviceTypeId.toString()) ?? null) : null,
+        serviceType: s.serviceTypeId ? (() => { const st = stMap.get(s.serviceTypeId!.toString()); return st ? { _id: st._id.toString(), name: st.name, pricePerSession: st.pricePerSession, currency: st.currency } : null; })() : null,
       }));
 
       const billing = calculateMemberBilling(billingSessions, now);
