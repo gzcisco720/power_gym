@@ -15,7 +15,7 @@ import { FoodPickerDialog } from '@/components/nutrition/food-picker-dialog';
 import type { IDailyLogMeal } from '@/lib/db/models/nutrition-daily-log.model';
 import type { ISelfMeal, ISelfMealItem } from '@/lib/db/models/self-nutrition-log.model';
 import type { MacroSnapshot } from '@/lib/nutrition/macros';
-import type { PickedFood } from '@/components/nutrition/food-picker';
+import type { PickedFood } from '@/components/nutrition/food-picker.types';
 import { NutritionPlanCompareDialog } from '@/components/nutrition/nutrition-plan-compare-dialog';
 import type { PlanDayType } from '@/components/nutrition/nutrition-plan-compare-dialog';
 

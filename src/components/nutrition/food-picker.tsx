@@ -7,9 +7,6 @@ import { Button } from '@/components/ui/button';
 import { calculateMacros } from '@/lib/nutrition/macros';
 import type { FatSecretFood, FatSecretServing } from '@/lib/nutrition/fatsecret-client';
 import type { FoodEntry } from './food-picker.types';
-export type { PickedFood, FoodServing, FoodEntry } from './food-picker.types';
-export { computePickedFood } from './food-picker.utils';
-export { useMacroPreview } from './use-macro-preview';
 
 // ---------------------------------------------------------------------------
 // Types

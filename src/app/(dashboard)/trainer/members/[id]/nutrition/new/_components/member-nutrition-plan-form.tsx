@@ -17,7 +17,7 @@ import { ChevronDown, ChevronRight, X, Trash2 } from 'lucide-react';
 import type { IDayType, IMeal, IMealItem } from '@/lib/db/models/nutrition-template.model';
 import type { ISchedule } from '@/lib/db/models/member-nutrition-plan.model';
 import type { MacroSnapshot } from '@/lib/nutrition/macros';
-import type { PickedFood } from '@/components/nutrition/food-picker';
+import type { PickedFood } from '@/components/nutrition/food-picker.types';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 

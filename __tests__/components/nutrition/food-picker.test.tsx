@@ -1,6 +1,6 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { FoodPicker } from '@/components/nutrition/food-picker';
-import type { FoodEntry } from '@/components/nutrition/food-picker';
+import type { FoodEntry } from '@/components/nutrition/food-picker.types';
 
 // ---------------------------------------------------------------------------
 // Helpers

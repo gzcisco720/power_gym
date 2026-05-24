@@ -9,11 +9,12 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FoodPicker, computePickedFood } from '@/components/nutrition/food-picker';
+import { FoodPicker } from '@/components/nutrition/food-picker';
+import { computePickedFood } from '@/components/nutrition/food-picker.utils';
 import { FoodForm } from '@/components/nutrition/food-form';
 import { calculateMacros } from '@/lib/nutrition/macros';
 import { cn } from '@/lib/utils';
-import type { FoodEntry, FoodServing, PickedFood } from '@/components/nutrition/food-picker';
+import type { FoodEntry, FoodServing, PickedFood } from '@/components/nutrition/food-picker.types';
 import type { IFood } from '@/lib/db/models/food.model';
 import type { FatSecretFood } from '@/lib/nutrition/fatsecret-client';
 

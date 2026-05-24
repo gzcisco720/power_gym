@@ -13,7 +13,7 @@ import { MacroPill } from '@/components/nutrition/macro-pill';
 import { ChevronDown, ChevronRight, X, Trash2 } from 'lucide-react';
 import type { IDayType, IMeal, IMealItem } from '@/lib/db/models/nutrition-template.model';
 import type { MacroSnapshot } from '@/lib/nutrition/macros';
-import type { PickedFood } from '@/components/nutrition/food-picker';
+import type { PickedFood } from '@/components/nutrition/food-picker.types';
 
 // ---------------------------------------------------------------------------
 // Types
