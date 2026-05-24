@@ -38,9 +38,9 @@ export function CheckInPhotosSection({ photos, uploading, onFileChange }: Props)
         {uploading && (
           <div
             aria-label="Uploading..."
-            className="w-16 h-16 rounded-lg border border-dashed border-foreground/20 flex items-center justify-center"
+            className="size-16 rounded-lg border border-dashed border-foreground/20 flex items-center justify-center"
           >
-            <Loader2 className="w-4 h-4 text-foreground/40 animate-spin" />
+            <Loader2 className="size-4 text-foreground/40 animate-spin" />
           </div>
         )}
 
@@ -49,9 +49,9 @@ export function CheckInPhotosSection({ photos, uploading, onFileChange }: Props)
             type="button"
             aria-label="Add photo"
             onClick={() => inputRef.current?.click()}
-            className="w-16 h-16 rounded-lg border border-dashed border-foreground/20 flex items-center justify-center hover:border-foreground/40 transition-colors cursor-pointer"
+            className="size-16 rounded-lg border border-dashed border-foreground/20 flex items-center justify-center hover:border-foreground/40 transition-colors cursor-pointer"
           >
-            <Plus className="w-4 h-4 text-foreground/30" />
+            <Plus className="size-4 text-foreground/30" />
           </button>
         )}
       </div>

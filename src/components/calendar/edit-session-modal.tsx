@@ -133,7 +133,7 @@ export function EditSessionModal({
             </div>
             {isRecurring && (
               <p className="flex items-center gap-1 text-xs text-blue-400">
-                <RefreshCw className="h-3 w-3" />
+                <RefreshCw className="size-3" />
                 This is a recurring session
               </p>
             )}
@@ -166,7 +166,7 @@ export function EditSessionModal({
                   value={serviceTypeId}
                   onChange={(e) => setServiceTypeId(e.target.value)}
                 >
-                  <option value="">— Select —</option>
+                  <option value="">Select</option>
                   {serviceTypes.map((st) => (
                     <option key={st._id} value={st._id}>
                       {st.name} ({st.durationMin} min)

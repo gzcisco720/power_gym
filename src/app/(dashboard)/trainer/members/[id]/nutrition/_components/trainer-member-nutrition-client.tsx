@@ -113,8 +113,8 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
 
         {loading ? (
           <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4">
-            <div className="h-4 w-48 animate-pulse rounded bg-muted/60 mb-2" />
-            <div className="h-3 w-32 animate-pulse rounded bg-muted/40" />
+            <div className="size-48 animate-pulse rounded bg-muted/60 mb-2" />
+            <div className="size-32 animate-pulse rounded bg-muted/40" />
           </div>
         ) : active ? (
           <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 space-y-4">
@@ -190,7 +190,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
                 <SheetHeader className="mb-6">
                   <SheetTitle>Edit Schedule</SheetTitle>
                   <p className="text-[12px] text-foreground/45 mt-1">
-                    Changes to the weekly pattern take effect immediately. Date overrides can only be added from tomorrow onwards — today&apos;s schedule is locked.
+                    Changes to the weekly pattern take effect immediately. Date overrides can only be added from tomorrow onwards: today&apos;s schedule is locked.
                   </p>
                 </SheetHeader>
                 <ScheduleEditor
@@ -413,7 +413,7 @@ function ChangePlanDialog({
                 className="w-full justify-between text-sm font-normal text-foreground/70"
               >
                 {selectedName ?? 'Search templates...'}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
               </Button>
             } />
             {comboOpen && (
@@ -435,7 +435,7 @@ function ChangePlanDialog({
                               }}
                             >
                               <Check
-                                className={cn('mr-2 h-4 w-4', selectedId === t._id ? 'opacity-100' : 'opacity-0')}
+                                className={cn('mr-2 size-4', selectedId === t._id ? 'opacity-100' : 'opacity-0')}
                               />
                               {t.name}
                             </CommandItem>

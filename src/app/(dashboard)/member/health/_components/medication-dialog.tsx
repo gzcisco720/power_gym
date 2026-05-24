@@ -219,7 +219,7 @@ export function MedicationDialog({ open, onOpenChange, memberId, existing, onSav
               disabled={saving || !isValid}
               className="font-semibold"
             >
-              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : existing ? 'Save Changes' : 'Add Medication'}
+              {saving ? <Loader2 className="size-3.5 animate-spin" /> : existing ? 'Save Changes' : 'Add Medication'}
             </Button>
           </div>
         </form>

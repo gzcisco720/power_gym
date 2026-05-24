@@ -57,7 +57,7 @@ function Lightbox({ photos, initialIdx, onClose }: LightboxProps) {
       <div className="absolute top-3 left-4 right-4 flex items-center justify-between">
         <button type="button" onClick={onClose} className="text-xs text-foreground/45">← All photos</button>
         <span className="text-xs text-foreground/35">{idx + 1} / {photos.length}</span>
-        <button type="button" onClick={onClose} aria-label="Close lightbox" className="w-8 h-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 flex items-center justify-center text-foreground/60">✕</button>
+        <button type="button" onClick={onClose} aria-label="Close lightbox" className="size-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 flex items-center justify-center text-foreground/60">✕</button>
       </div>
 
       <div className="max-h-[60vh] max-w-[300px] rounded-xl overflow-hidden border border-foreground/10 shadow-2xl relative">
@@ -123,14 +123,14 @@ export function PhotoGalleryModal({ open, onClose, photos, totalCount }: Props) 
           type="button"
           onClick={onClose}
           aria-label="Close gallery"
-          className="w-8 h-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 text-foreground/60 flex items-center justify-center"
+          className="size-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 text-foreground/60 flex items-center justify-center"
         >
           ✕
         </button>
       </div>
 
       {/* Scrollable grid */}
-      <div className="flex-1 overflow-y-auto px-5 py-5 pb-8 relative">
+      <div className="flex-1 overflow-y-auto p-5 pb-8 relative">
         {groups.map(group => (
           <div key={group.label} className="mb-6">
             <div className="flex items-baseline gap-2 mb-2.5">

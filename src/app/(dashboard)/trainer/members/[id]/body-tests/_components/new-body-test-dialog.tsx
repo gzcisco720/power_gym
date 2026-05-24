@@ -120,7 +120,7 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, previousTe
         onClick={resetAndOpen}
         className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-transparent bg-white px-2.5 text-sm font-semibold text-black hover:bg-white/90 transition-all"
       >
-        <Plus className="h-4 w-4" />
+        <Plus className="size-4" />
         New Test
       </Button>
 
@@ -469,7 +469,7 @@ function ComparisonBlock({ comparison }: { comparison: Comparison }) {
                 {dateStr} <span className="text-foreground/40">· {daysText}</span>
               </>
             ) : (
-              <span className="text-[#2a2a2a]">—</span>
+              <span className="text-[#2a2a2a]">–</span>
             )}
           </p>
         </div>
@@ -517,7 +517,7 @@ function DeltaCell({
   if (value === null) {
     return (
       <div>
-        <div className="text-sm font-bold leading-none text-[#2a2a2a]">—</div>
+        <div className="text-sm font-bold leading-none text-[#2a2a2a]">–</div>
         <div className="mt-1 text-[9px] uppercase tracking-wider text-foreground/30">{label}</div>
       </div>
     );

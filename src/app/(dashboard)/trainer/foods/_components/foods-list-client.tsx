@@ -103,7 +103,7 @@ export function FoodsListClient({ basePath }: Props) {
             href={`${basePath}/new`}
             className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-transparent bg-white px-2.5 text-sm font-semibold text-black hover:bg-white/90 transition-all"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="size-4" />
             Create Food
           </Link>
         }
@@ -112,7 +112,7 @@ export function FoodsListClient({ basePath }: Props) {
       <div className="px-4 sm:px-8 py-7 space-y-3">
         {/* Search box with icon + clear + spinner */}
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/65" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-foreground/65" />
           <Input
             placeholder="Filter by name..."
             value={q}
@@ -127,11 +127,11 @@ export function FoodsListClient({ basePath }: Props) {
               className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-foreground/65 hover:bg-muted hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
               aria-label="Clear filter"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="size-3.5" />
             </button>
           )}
           {searching && (
-            <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-foreground/65" />
+            <Loader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-foreground/65" />
           )}
         </div>
 
@@ -224,7 +224,7 @@ export function FoodsListClient({ basePath }: Props) {
                   className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-foreground/65 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
                   aria-label={`Delete ${f.name}`}
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="size-3.5" />
                 </button>
               </motion.li>
             ))}
@@ -275,7 +275,7 @@ function FoodCardSkeleton() {
     <Card className="px-3 py-2">
       <div className="flex items-center gap-3">
         <Skeleton className="h-4 w-1/3" />
-        <Skeleton className="ml-auto h-4 w-40" />
+        <Skeleton className="ml-auto size-40" />
       </div>
     </Card>
   );

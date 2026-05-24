@@ -174,7 +174,7 @@ export function PlanOverview({
           href={`${sessionBasePath}/calendar`}
           className="flex items-center gap-1.5 text-[11px] text-foreground/65 hover:text-foreground/80 bg-white/[.03] ring-1 ring-foreground/[.08] hover:ring-foreground/[.15] rounded-lg px-3 py-1.5 transition-colors"
         >
-          <CalendarDays className="h-3.5 w-3.5" />
+          <CalendarDays className="size-3.5" />
           <span>Calendar</span>
         </a>
       </div>

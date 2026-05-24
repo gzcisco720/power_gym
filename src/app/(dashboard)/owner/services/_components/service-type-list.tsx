@@ -61,7 +61,7 @@ export function ServiceTypeList() {
           <p className="text-xs text-foreground/65 mt-0.5">Manage session types and pricing for your gym</p>
         </div>
         <Button onClick={openCreate} className="gap-1.5">
-          <Plus className="h-3.5 w-3.5" />
+          <Plus className="size-3.5" />
           Add Service
         </Button>
       </div>
@@ -70,8 +70,8 @@ export function ServiceTypeList() {
       {!loading && serviceTypes.length > 0 && (
         <div className="grid grid-cols-3 gap-3 mb-6">
           <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-3 flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-              <Layers className="h-4 w-4 text-primary-light" />
+            <div className="size-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+              <Layers className="size-4 text-primary-light" />
             </div>
             <div>
               <div className="text-lg font-bold text-foreground leading-none">{active.length}</div>
@@ -79,8 +79,8 @@ export function ServiceTypeList() {
             </div>
           </div>
           <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-3 flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-              <DollarSign className="h-4 w-4 text-primary-light" />
+            <div className="size-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+              <DollarSign className="size-4 text-primary-light" />
             </div>
             <div>
               <div className="text-lg font-bold text-foreground leading-none">
@@ -90,8 +90,8 @@ export function ServiceTypeList() {
             </div>
           </div>
           <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-3 flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-              <Clock className="h-4 w-4 text-primary-light" />
+            <div className="size-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+              <Clock className="size-4 text-primary-light" />
             </div>
             <div>
               <div className="text-lg font-bold text-foreground leading-none">{currency} {avgPrice}</div>
@@ -109,13 +109,13 @@ export function ServiceTypeList() {
         </div>
       ) : serviceTypes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-            <Layers className="h-6 w-6 text-primary-light" />
+          <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+            <Layers className="size-6 text-primary-light" />
           </div>
           <p className="text-sm font-medium text-foreground">No service types yet</p>
           <p className="text-xs text-foreground/65 mt-1 mb-4">Create your first service to start tracking session billing.</p>
           <Button onClick={openCreate} variant="outline" size="sm" className="gap-1.5">
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="size-3.5" />
             Add Service
           </Button>
         </div>
@@ -125,7 +125,7 @@ export function ServiceTypeList() {
           {active.length > 0 && (
             <div>
               <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-2">
-                Active — {active.length}
+                Active ({active.length})
               </div>
               <motion.div
                 variants={variants.staggerContainer}
@@ -170,7 +170,7 @@ export function ServiceTypeList() {
           {inactive.length > 0 && (
             <div>
               <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-2">
-                Inactive — {inactive.length}
+                Inactive ({inactive.length})
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {inactive.map((st) => (

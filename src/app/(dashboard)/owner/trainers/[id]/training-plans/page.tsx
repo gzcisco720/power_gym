@@ -50,7 +50,7 @@ export default async function TrainerHubTrainingPlansPage({
               href={`/owner/plans/${t._id.toString()}`}
               className="flex items-center gap-3 px-4 py-3 bg-white/[.02] ring-1 ring-white/[.06] rounded-xl hover:ring-white/[.12] transition-all"
             >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-base">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-base">
                 🏋️
               </div>
               <div className="flex-1 min-w-0">

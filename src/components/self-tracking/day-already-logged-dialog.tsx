@@ -36,7 +36,7 @@ export function DayAlreadyLoggedDialog({ open, dayName, sessionId, basePath, onC
       <DialogContent className="max-w-sm p-0 overflow-hidden gap-0">
         {/* Header */}
         <div className="flex flex-col items-center text-center px-6 pt-7 pb-5 gap-3">
-          <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+          <div className="size-12 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none" className="text-primary" aria-hidden>
               <path d="M4 11.5l5 5 9-9" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -48,7 +48,7 @@ export function DayAlreadyLoggedDialog({ open, dayName, sessionId, basePath, onC
             <p className="text-sm text-foreground/65 leading-snug">
               You completed your &ldquo;{dayName}&rdquo; session today.
               <br />
-              Rest up — see you tomorrow!
+              Rest up. See you tomorrow!
             </p>
           </div>
         </div>

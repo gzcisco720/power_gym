@@ -66,7 +66,7 @@ export function AvatarUpload({ avatarUrl, initials, onUpload }: Props) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-foreground/10 overflow-hidden bg-muted hover:opacity-80 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+          className="relative flex size-16 shrink-0 items-center justify-center rounded-full border border-foreground/10 overflow-hidden bg-muted hover:opacity-80 transition-opacity cursor-pointer disabled:cursor-not-allowed"
           aria-label="Change profile photo"
         >
           {avatarUrl ? (

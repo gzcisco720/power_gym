@@ -106,8 +106,8 @@ export function CalendarClient({
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-3 px-4 sm:px-8 py-4 border-b border-[#141414]">
-        <Button variant="ghost" size="icon" onClick={goToPrevWeek}><ChevronLeft className="h-4 w-4" /></Button>
-        <Button variant="ghost" size="icon" onClick={goToNextWeek}><ChevronRight className="h-4 w-4" /></Button>
+        <Button variant="ghost" size="icon" onClick={goToPrevWeek}><ChevronLeft className="size-4" /></Button>
+        <Button variant="ghost" size="icon" onClick={goToNextWeek}><ChevronRight className="size-4" /></Button>
         <Button variant="ghost" size="sm" onClick={goToToday}>Today</Button>
         <span className="text-sm text-[#888] ml-2">
           {weekStart.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} –{' '}

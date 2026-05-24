@@ -44,7 +44,7 @@ export function ActivityStrip(props: Props) {
           {props.last14Days.map((on, i) => (
             <div
               key={i}
-              className={`w-3 h-3 rounded-[3px] ${on ? 'bg-emerald-500/65' : 'bg-foreground/5'}`}
+              className={`size-3 rounded-[3px] ${on ? 'bg-emerald-500/65' : 'bg-foreground/5'}`}
             />
           ))}
         </div>
@@ -68,7 +68,7 @@ export function ActivityStrip(props: Props) {
         <div className="text-[11px] tabular-nums text-foreground/65">
           <span className="text-foreground font-semibold">{props.sessionCount}</span> sessions
           <span className="text-foreground/30"> · </span>
-          <span>Build a streak — log today.</span>
+          <span>Build a streak. Log today.</span>
         </div>
       )}
     </div>
@@ -78,7 +78,7 @@ export function ActivityStrip(props: Props) {
 function Step({ n, label }: { n: number; label: string }) {
   return (
     <div className="flex items-center gap-1.5 text-foreground/65">
-      <span className="w-4 h-4 rounded-full ring-1 ring-foreground/10 text-[9px] tabular-nums font-bold flex items-center justify-center">
+      <span className="size-4 rounded-full ring-1 ring-foreground/10 text-[9px] tabular-nums font-bold flex items-center justify-center">
         {n}
       </span>
       {label}

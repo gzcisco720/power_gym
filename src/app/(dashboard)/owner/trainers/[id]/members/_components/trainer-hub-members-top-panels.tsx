@@ -85,7 +85,7 @@ export async function TrainerHubMembersTopPanels({ trainerId }: Props) {
         <div className="space-y-2.5">
           {activity.map((item) => (
             <div key={`${item.text}-${item.time.getTime()}`} className="flex gap-2.5 items-start">
-              <div className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+              <div className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
               <div>
                 <p className="text-[11px] text-foreground/60 leading-snug">{item.text}</p>
                 <p className="text-[10px] text-foreground/25 mt-0.5">{timeAgo(item.time)}</p>

@@ -155,7 +155,7 @@ function InjurySection({
       </div>
 
       {active.length === 0 ? (
-        <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-4">
+        <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4">
           <p className="text-sm text-foreground/65">No active injuries</p>
         </div>
       ) : (
@@ -323,7 +323,7 @@ function InjurySection({
           <div className="flex justify-end gap-2 mt-3">
             <Button variant="ghost" size="sm" onClick={() => setConfirm(null)} className="text-xs">Cancel</Button>
             <Button size="sm" onClick={executeConfirm} disabled={actioning} className="text-xs font-semibold">
-              {actioning ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Mark Resolved'}
+              {actioning ? <Loader2 className="size-3 animate-spin" /> : 'Mark Resolved'}
             </Button>
           </div>
         </DialogContent>
@@ -339,7 +339,7 @@ function InjurySection({
           <div className="flex justify-end gap-2 mt-3">
             <Button variant="ghost" size="sm" onClick={() => setConfirm(null)} className="text-xs">Cancel</Button>
             <Button size="sm" onClick={executeConfirm} disabled={actioning} className="text-xs font-semibold">
-              {actioning ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Reopen'}
+              {actioning ? <Loader2 className="size-3 animate-spin" /> : 'Reopen'}
             </Button>
           </div>
         </DialogContent>
@@ -353,7 +353,7 @@ function InjurySection({
           <div className="flex justify-end gap-2 mt-3">
             <Button variant="ghost" size="sm" onClick={() => setConfirm(null)} className="text-xs">Cancel</Button>
             <Button variant="destructive" size="sm" onClick={executeConfirm} disabled={actioning} className="text-xs font-semibold">
-              {actioning ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Delete'}
+              {actioning ? <Loader2 className="size-3 animate-spin" /> : 'Delete'}
             </Button>
           </div>
         </DialogContent>
@@ -448,7 +448,7 @@ function MedicationSection({
       </div>
 
       {active.length === 0 ? (
-        <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-4">
+        <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4">
           <p className="text-sm text-foreground/65">No active medications</p>
         </div>
       ) : (
@@ -562,7 +562,7 @@ function MedicationSection({
           <div className="flex justify-end gap-2 mt-3">
             <Button variant="ghost" size="sm" onClick={() => setConfirm(null)} className="text-xs">Cancel</Button>
             <Button size="sm" onClick={executeConfirm} disabled={actioning} className="text-xs font-semibold">
-              {actioning ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Mark Ended'}
+              {actioning ? <Loader2 className="size-3 animate-spin" /> : 'Mark Ended'}
             </Button>
           </div>
         </DialogContent>
@@ -576,7 +576,7 @@ function MedicationSection({
           <div className="flex justify-end gap-2 mt-3">
             <Button variant="ghost" size="sm" onClick={() => setConfirm(null)} className="text-xs">Cancel</Button>
             <Button variant="destructive" size="sm" onClick={executeConfirm} disabled={actioning} className="text-xs font-semibold">
-              {actioning ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Delete'}
+              {actioning ? <Loader2 className="size-3 animate-spin" /> : 'Delete'}
             </Button>
           </div>
         </DialogContent>

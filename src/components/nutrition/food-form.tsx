@@ -308,7 +308,7 @@ export function FoodForm({
             <span className="text-xs text-foreground/65">per 100 g</span>
           </div>
           <p className="text-xs text-foreground/65 -mt-2">
-            Always entered per 100 g — servings below let members log by portion.
+            Always entered per 100 g; servings below let members log by portion.
           </p>
 
           <div className="grid grid-cols-2 gap-3">
@@ -351,7 +351,7 @@ export function FoodForm({
               onClick={addServing}
               className="h-7 text-xs text-foreground/65 hover:text-foreground"
             >
-              <Plus className="h-3.5 w-3.5 mr-1" />
+              <Plus className="size-3.5 mr-1" />
               Add Serving
             </Button>
           </div>
@@ -388,7 +388,7 @@ export function FoodForm({
                   className="shrink-0 text-foreground/65 hover:text-destructive hover:bg-destructive/10 disabled:opacity-30"
                   aria-label={`Remove serving ${idx + 1}`}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="size-4" />
                 </Button>
               </div>
             ))}
@@ -405,9 +405,9 @@ export function FoodForm({
           >
             <div className="flex items-center gap-2">
               {showMicros ? (
-                <ChevronDown className="h-4 w-4 text-foreground/65" />
+                <ChevronDown className="size-4 text-foreground/65" />
               ) : (
-                <ChevronRight className="h-4 w-4 text-foreground/65" />
+                <ChevronRight className="size-4 text-foreground/65" />
               )}
               <span className={SECTION_LABEL}>Optional Micros</span>
               {!showMicros && someMicroFilled(micros) && (

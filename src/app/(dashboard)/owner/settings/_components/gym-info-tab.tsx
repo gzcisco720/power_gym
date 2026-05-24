@@ -167,7 +167,7 @@ export function GymInfoTab({ gymInfo }: Props) {
                 onClick={() => logoInputRef.current?.click()}
                 disabled={uploadingLogo}
                 aria-label="Upload logo"
-                className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-foreground/10 overflow-hidden bg-muted hover:opacity-80 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+                className="relative flex size-16 shrink-0 items-center justify-center rounded-full border border-foreground/10 overflow-hidden bg-muted hover:opacity-80 transition-opacity cursor-pointer disabled:cursor-not-allowed"
               >
                 {logoUrl ? (
                   <Image src={logoUrl} alt="Gym logo" fill className="object-cover" />
@@ -189,7 +189,7 @@ export function GymInfoTab({ gymInfo }: Props) {
                 onClick={() => loginLogoInputRef.current?.click()}
                 disabled={uploadingLoginLogo}
                 aria-label="Upload login logo"
-                className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-foreground/10 overflow-hidden bg-muted hover:opacity-80 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+                className="relative flex size-16 shrink-0 items-center justify-center rounded-lg border border-foreground/10 overflow-hidden bg-muted hover:opacity-80 transition-opacity cursor-pointer disabled:cursor-not-allowed"
               >
                 {loginLogoUrl ? (
                   <Image src={loginLogoUrl} alt="Login logo" fill className="object-contain p-1" />

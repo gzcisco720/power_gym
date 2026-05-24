@@ -66,7 +66,7 @@ export function SelfNutritionCalendar({ entries, onSelect, selectedDate, onMonth
           aria-label="Previous month"
           className="text-foreground/65 hover:text-foreground transition-colors"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="size-4" />
         </button>
         <span className="text-[13px] font-semibold">{monthName}</span>
         <button
@@ -75,7 +75,7 @@ export function SelfNutritionCalendar({ entries, onSelect, selectedDate, onMonth
           aria-label="Next month"
           className="text-foreground/65 hover:text-foreground transition-colors"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="size-4" />
         </button>
       </div>
 

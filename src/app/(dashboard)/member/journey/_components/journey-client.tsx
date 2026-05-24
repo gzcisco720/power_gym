@@ -73,7 +73,7 @@ export default function JourneyClient({ memberId }: Props) {
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="flex items-stretch gap-3">
             <div className="flex flex-col items-center w-3.5 shrink-0">
-              <div className="mt-2.5 w-2.5 h-2.5 rounded-full bg-foreground/10 animate-pulse" />
+              <div className="mt-2.5 size-2.5 rounded-full bg-foreground/10 animate-pulse" />
               <div className="flex-1 w-0.5 bg-foreground/[0.06] mt-1 min-h-10" />
             </div>
             <div className="flex-1 pb-2">
@@ -118,7 +118,7 @@ export default function JourneyClient({ memberId }: Props) {
           {[0, 1, 2].map(i => (
             <div
               key={i}
-              className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce"
+              className="size-1.5 rounded-full bg-primary/40 animate-bounce"
               style={{ animationDelay: `${i * 150}ms` }}
             />
           ))}

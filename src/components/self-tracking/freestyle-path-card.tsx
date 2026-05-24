@@ -194,7 +194,7 @@ export function FreestylePathCard(props: Props) {
 function Bullet({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2 text-[12px]">
-      <span className="w-1 h-1 rounded-full bg-sky-400/70" />
+      <span className="size-1 rounded-full bg-sky-400/70" />
       <span>{children}</span>
     </div>
   );

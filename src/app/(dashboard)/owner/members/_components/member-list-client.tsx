@@ -117,7 +117,7 @@ export function MemberListClient({
       <div className="flex gap-3 mb-4">
         <div className="relative flex-1">
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-foreground/30"
+            className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-foreground/30"
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
@@ -175,7 +175,7 @@ export function MemberListClient({
               key={member._id}
               className="flex items-center gap-3 px-4 py-3 bg-white/[.02] ring-1 ring-white/[.06] rounded-xl hover:ring-white/[.12] transition-all"
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary-light">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary-light">
                 {initials(member.name)}
               </div>
               <div className="flex-1 min-w-0">
@@ -238,7 +238,7 @@ export function MemberListClient({
               type="button"
               key={n}
               onClick={() => setPage(n)}
-              className={`h-8 w-8 rounded-lg text-sm font-medium transition-all ${
+              className={`size-8 rounded-lg text-sm font-medium transition-all ${
                 n === safePage
                   ? 'bg-primary/20 ring-1 ring-primary/40 text-primary-light'
                   : 'text-foreground/40 bg-white/[.03] ring-1 ring-white/[.07] hover:ring-white/20'

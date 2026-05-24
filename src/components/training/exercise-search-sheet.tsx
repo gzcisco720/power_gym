@@ -113,7 +113,7 @@ export function ExerciseSearchSheet({
 
         <div className="px-4 pb-3">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-foreground/50 pointer-events-none" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-foreground/50 pointer-events-none" />
             <Input
               ref={searchRef}
               placeholder="Search exercises…"
@@ -126,9 +126,9 @@ export function ExerciseSearchSheet({
                 type="button"
                 aria-label="Clear search"
                 onClick={() => setQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-5 w-5 rounded text-foreground/50 hover:text-foreground cursor-pointer"
+                className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center size-5 rounded text-foreground/50 hover:text-foreground cursor-pointer"
               >
-                <XIcon className="h-3.5 w-3.5" />
+                <XIcon className="size-3.5" />
               </button>
             )}
           </div>
@@ -186,7 +186,7 @@ export function ExerciseSearchSheet({
               onClick={() => setCreating(true)}
               className="w-full text-xs"
             >
-              <Plus className="h-3.5 w-3.5" /> Create new exercise
+              <Plus className="size-3.5" /> Create new exercise
             </Button>
           ) : (
             <div className="space-y-2">

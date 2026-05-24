@@ -62,11 +62,11 @@ export function SelfWorkoutCalendar({ logs, onSelect, selectedId, onMonthChange 
     <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4">
       <div className="flex items-center justify-between mb-4">
         <button type="button" onClick={() => shiftMonth(-1)} className="cursor-pointer text-foreground/65 hover:text-foreground transition-colors" aria-label="Previous month">
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="size-4" />
         </button>
         <span className="text-[13px] font-semibold">{monthName}</span>
         <button type="button" onClick={() => shiftMonth(1)} className="cursor-pointer text-foreground/65 hover:text-foreground transition-colors" aria-label="Next month">
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="size-4" />
         </button>
       </div>
 

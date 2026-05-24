@@ -16,7 +16,7 @@ export function ThisWeekCard({ hasThisWeek, heatmap, submittedDate, avgWellness,
       {hasThisWeek ? (
         <>
           <div className="flex items-center gap-2 mb-3">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_5px_rgba(52,211,153,0.5)]" />
+            <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_5px_rgba(52,211,153,0.5)]" />
             <span className="text-xs text-foreground/45">
               Submitted this week{submittedDate ? ` · ${submittedDate}` : ''}
             </span>
@@ -39,7 +39,7 @@ export function ThisWeekCard({ hasThisWeek, heatmap, submittedDate, avgWellness,
       ) : (
         <>
           <div className="flex items-center gap-2 mb-3">
-            <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_5px_rgba(251,191,36,0.5)]" />
+            <span className="size-2 rounded-full bg-amber-400 shadow-[0_0_5px_rgba(251,191,36,0.5)]" />
             <span className="text-xs text-foreground/45">This week not submitted yet</span>
           </div>
           <Link

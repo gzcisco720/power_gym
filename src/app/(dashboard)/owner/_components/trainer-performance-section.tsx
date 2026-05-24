@@ -61,13 +61,13 @@ export async function TrainerPerformanceSection() {
   return (
     <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4 flex flex-col min-h-[180px]">
       <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-3">
-        Trainer Performance — This Month
+        Trainer Performance: This Month
       </div>
       <div className="space-y-3 flex-1">
         {shown.map(({ trainer, memberCount, sessions, color }) => (
           <div key={trainer._id.toString()} className="flex items-center gap-3">
             <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
+              className="size-8 rounded-lg flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
               style={{ background: `linear-gradient(135deg, ${color}, ${color}cc)` }}
             >
               {initials(trainer.name)}

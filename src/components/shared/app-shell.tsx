@@ -153,7 +153,7 @@ function SidebarContent({ userRole, userName, userInitials, userEmail, avatarUrl
               className="shrink-0 rounded-full object-cover border border-foreground/10"
             />
           ) : (
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-[17px] font-bold text-white">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-[17px] font-bold text-white">
               {(gymBranding?.name ?? 'P').trim().charAt(0).toUpperCase()}
             </div>
           )}
@@ -193,10 +193,10 @@ function SidebarContent({ userRole, userName, userInitials, userEmail, avatarUrl
         ))}
       </nav>
 
-      <div className="border-t border-foreground/[.06] px-3 py-3">
+      <div className="border-t border-foreground/[.06] p-3">
         <Popover>
           <PopoverTrigger
-            className="flex w-full items-center gap-3 rounded-md px-2 py-2 cursor-pointer hover:bg-white/[.04] transition-colors"
+            className="flex w-full items-center gap-3 rounded-md p-2 cursor-pointer hover:bg-white/[.04] transition-colors"
             aria-label="User menu"
           >
             {avatarUrl ? (
@@ -208,7 +208,7 @@ function SidebarContent({ userRole, userName, userInitials, userEmail, avatarUrl
                 className="shrink-0 rounded-full object-cover border border-[#222]"
               />
             ) : (
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#222] bg-[#1a1a1a] text-[11px] font-semibold text-[#666]">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[#222] bg-[#1a1a1a] text-[11px] font-semibold text-[#666]">
                 {userInitials}
               </div>
             )}
@@ -231,7 +231,7 @@ function SidebarContent({ userRole, userName, userInitials, userEmail, avatarUrl
                     className="shrink-0 rounded-full object-cover border border-[#333]"
                   />
                 ) : (
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#333] bg-[#2a2a2a] text-[12px] font-semibold text-[#777]">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[#333] bg-[#2a2a2a] text-[12px] font-semibold text-[#777]">
                     {userInitials}
                   </div>
                 )}
@@ -246,7 +246,7 @@ function SidebarContent({ userRole, userName, userInitials, userEmail, avatarUrl
                   href={`/${userRole}/settings`}
                   className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-[#ccc] hover:bg-[#1e1e1e] hover:text-white transition-colors cursor-pointer"
                 >
-                  <Settings className="h-4 w-4 shrink-0 text-[#666]" />
+                  <Settings className="size-4 shrink-0 text-[#666]" />
                   Profile &amp; Settings
                 </a>
                 <div className="my-1 border-t border-[#222]" />
@@ -300,7 +300,7 @@ export function AppShell({ userRole, userName, userEmail = '', avatarUrl = null,
             className="cursor-pointer text-[#888] hover:text-[#aaa] transition-colors"
             aria-label="Open navigation"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="size-5" />
           </button>
           <span className="text-[11px] font-bold tracking-[3px] text-white">{gymDisplayName}</span>
         </div>

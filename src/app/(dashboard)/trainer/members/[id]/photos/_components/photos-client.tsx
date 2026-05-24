@@ -128,13 +128,13 @@ export function PhotosClient({ photos }: Props) {
               </div>
               {/* Selection badge */}
               {isSelected && (
-                <div className="absolute top-1.5 left-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg">
+                <div className="absolute top-1.5 left-1.5 size-5 bg-primary rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg">
                   {badge}
                 </div>
               )}
               {/* Empty circle in select mode (unselected, not dimmed) */}
               {selectMode && !isSelected && !isDimmed && (
-                <div className="absolute top-1.5 left-1.5 w-5 h-5 border-2 border-white/50 rounded-full" />
+                <div className="absolute top-1.5 left-1.5 size-5 border-2 border-white/50 rounded-full" />
               )}
             </button>
           );
@@ -173,7 +173,7 @@ export function PhotosClient({ photos }: Props) {
               <button
                 type="button"
                 onClick={() => setCompareOpen(false)}
-                className="w-7 h-7 rounded-md bg-muted flex items-center justify-center text-foreground/50 hover:text-foreground transition-colors"
+                className="size-7 rounded-md bg-muted flex items-center justify-center text-foreground/50 hover:text-foreground transition-colors"
                 aria-label="Close comparison"
               >
                 ×

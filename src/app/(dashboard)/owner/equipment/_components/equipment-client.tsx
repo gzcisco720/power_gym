@@ -98,7 +98,7 @@ export function EquipmentClient({ initialItems }: Props) {
                       type="button"
                       onClick={() => setLightbox({ images: item.images, index: 0 })}
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setLightbox({ images: item.images, index: 0 }); }}
-                      className="w-8 h-8 rounded-md border border-[#222] shrink-0 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden relative"
+                      className="size-8 rounded-md border border-[#222] shrink-0 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden relative"
                       aria-label={`View ${item.name} image`}
                     >
                       <Image
@@ -111,9 +111,9 @@ export function EquipmentClient({ initialItems }: Props) {
                   ) : (
                     <div
                       aria-label="No image"
-                      className="w-8 h-8 rounded-md border border-[#1e1e1e] bg-[#111] flex items-center justify-center shrink-0"
+                      className="size-8 rounded-md border border-[#1e1e1e] bg-[#111] flex items-center justify-center shrink-0"
                     >
-                      <ImageIcon className="w-3.5 h-3.5 text-[#333]" />
+                      <ImageIcon className="size-3.5 text-[#333]" />
                     </div>
                   )}
                   <div>
@@ -132,7 +132,7 @@ export function EquipmentClient({ initialItems }: Props) {
                       {item.status}
                     </span>
                   ) : (
-                    <span className="text-[11px] text-[#3a3a3a]">—</span>
+                    <span className="text-[11px] text-[#3a3a3a]">N/A</span>
                   )}
                 </div>
 
@@ -154,7 +154,7 @@ export function EquipmentClient({ initialItems }: Props) {
                     className="text-[#555] hover:text-red-400 hover:bg-[#141414] text-xs h-7 px-2 disabled:opacity-50"
                   >
                     {deletingId === item._id
-                      ? <Loader2 className="h-3 w-3 animate-spin" />
+                      ? <Loader2 className="size-3 animate-spin" />
                       : 'Delete'}
                   </Button>
                 </div>

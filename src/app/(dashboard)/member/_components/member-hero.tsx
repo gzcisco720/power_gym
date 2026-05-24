@@ -51,8 +51,8 @@ export async function MemberHero() {
   return (
     <div className="relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/[.18] via-primary/[.07] to-transparent pointer-events-none" />
-      <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-primary/[.12] blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-amber-500/[.06] blur-2xl pointer-events-none" />
+      <div className="absolute -top-16 -right-16 size-56 rounded-full bg-primary/[.12] blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-10 -left-10 size-36 rounded-full bg-amber-500/[.06] blur-2xl pointer-events-none" />
 
       <div className="relative px-4 sm:px-8 py-6 border-b border-primary/[.12]">
         <div className="flex items-start justify-between mb-5">

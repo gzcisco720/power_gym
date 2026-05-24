@@ -311,9 +311,9 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
                   aria-label={isCollapsed ? 'Expand day type' : 'Collapse day type'}
                 >
                   {isCollapsed ? (
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="size-4" />
                   ) : (
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className="size-4" />
                   )}
                 </button>
                 <Input
@@ -331,7 +331,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
                   className="p-1.5 rounded-md cursor-pointer text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
                   aria-label="Remove day type"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="size-4" />
                 </button>
               </div>
 
@@ -350,7 +350,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
                       <div key={`meal-${dayIdx}-${mealIdx}`} className="px-4 py-3 space-y-2">
                         {/* Meal header — small caps section style + per-meal totals */}
                         <div className="flex items-center gap-2">
-                          <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                          <span className="size-1.5 rounded-full bg-primary shrink-0" />
                           <Input
                             value={meal.name}
                             onChange={(e) => updateMealName(dayIdx, mealIdx, e.target.value)}
@@ -385,7 +385,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
                             className="p-1.5 rounded-md cursor-pointer text-muted-foreground/70 hover:bg-destructive/10 hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
                             aria-label="Remove meal"
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="size-3.5" />
                           </button>
                         </div>
 
@@ -395,7 +395,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
                             {meal.items.map((item, itemIdx) => (
                               <li
                                 key={`item-${dayIdx}-${mealIdx}-${itemIdx}`}
-                                className="group flex items-center gap-3 px-2 py-2 -mx-2 rounded-md hover:bg-muted/40 transition-colors"
+                                className="group flex items-center gap-3 p-2 -mx-2 rounded-md hover:bg-muted/40 transition-colors"
                               >
                                 <div className="flex-1 min-w-0">
                                   <div className="text-sm font-medium truncate">{item.foodName}</div>
@@ -428,7 +428,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
                                   className="p-1.5 rounded-md cursor-pointer text-muted-foreground/40 group-hover:text-muted-foreground hover:!bg-destructive/10 hover:!text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
                                   aria-label={`Remove ${item.foodName}`}
                                 >
-                                  <X className="h-3.5 w-3.5" />
+                                  <X className="size-3.5" />
                                 </button>
                               </li>
                             ))}

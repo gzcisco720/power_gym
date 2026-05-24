@@ -134,7 +134,7 @@ export function MedicalHistoryInline({ memberId, initialHistory, onUpdated }: Me
   }
 
   return (
-    <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-4">
+    <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4">
       <div className="flex items-center justify-between mb-4">
         <p className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold">
           Medical History
@@ -255,7 +255,7 @@ export function MedicalHistoryInline({ memberId, initialHistory, onUpdated }: Me
               onClick={handleSave}
               className="font-semibold"
             >
-              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Save'}
+              {saving ? <Loader2 className="size-3.5 animate-spin" /> : 'Save'}
             </Button>
           </div>
         </div>

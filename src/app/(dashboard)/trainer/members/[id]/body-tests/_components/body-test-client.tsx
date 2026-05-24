@@ -185,7 +185,7 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
                     className="absolute right-2 top-2 size-8 text-foreground/30 hover:bg-muted hover:text-destructive"
                     aria-label="Delete"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="size-4" />
                   </Button>
                 </motion.div>
               ))}
@@ -199,7 +199,7 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
           <DialogHeader>
             <DialogTitle>Delete Body Test</DialogTitle>
             <DialogDescription className="text-foreground/65">
-              {deleteTarget ? formatTestDate(deleteTarget.date) : ''} — are you sure? This cannot be undone.
+              {deleteTarget ? formatTestDate(deleteTarget.date) : ''}: are you sure? This cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

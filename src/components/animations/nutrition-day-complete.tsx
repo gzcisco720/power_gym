@@ -41,7 +41,7 @@ export function NutritionDayCompleteAnimation({
 
   return (
     <div className="flex flex-col items-center gap-3 py-4">
-      <div className="relative w-16 h-16">
+      <div className="relative size-16">
         <svg width="64" height="64" viewBox="0 0 64 64" className="-rotate-90">
           {RADIUS.map((r, i) => {
             const circ = 2 * Math.PI * r;

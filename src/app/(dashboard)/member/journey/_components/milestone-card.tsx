@@ -24,7 +24,7 @@ export default function MilestoneCard({ item, isLast }: Props) {
     <div className="flex items-stretch gap-3">
       {/* Track: large glowing dot + line */}
       <div className="flex flex-col items-center w-3.5 shrink-0">
-        <div className="mt-4 w-3.5 h-3.5 rounded-full bg-primary border-2 border-primary/40 shrink-0 z-10 shadow-[0_0_0_4px_rgba(99,102,241,0.15),0_0_12px_rgba(99,102,241,0.3)]" />
+        <div className="mt-4 size-3.5 rounded-full bg-primary border-2 border-primary/40 shrink-0 z-10 shadow-[0_0_0_4px_rgba(99,102,241,0.15),0_0_12px_rgba(99,102,241,0.3)]" />
         {!isLast && <div className="flex-1 w-0.5 bg-primary/20 rounded-full mt-1 min-h-2" />}
       </div>
 

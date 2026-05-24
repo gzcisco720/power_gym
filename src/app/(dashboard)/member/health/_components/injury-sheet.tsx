@@ -169,7 +169,7 @@ export function InjurySheet({ open, onOpenChange, memberId, existing, onSaved }:
           <SheetTitle>{existing ? 'Edit Injury' : 'Report Injury'}</SheetTitle>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="px-5 py-5 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <FieldRow label="Title" required>
             <Input
               value={form.title}
@@ -278,7 +278,7 @@ export function InjurySheet({ open, onOpenChange, memberId, existing, onSaved }:
               checked={form.seenDoctor}
               onChange={(e) => set('seenDoctor', e.target.checked)}
               aria-label="I have seen a doctor for this"
-              className="h-4 w-4 rounded border border-input accent-primary cursor-pointer"
+              className="size-4 rounded border border-input accent-primary cursor-pointer"
             />
             <label htmlFor="seen-doctor" className="text-sm text-foreground/80 cursor-pointer select-none">
               I have seen a doctor for this
@@ -332,7 +332,7 @@ export function InjurySheet({ open, onOpenChange, memberId, existing, onSaved }:
               disabled={saving || !form.title.trim()}
               className="font-semibold"
             >
-              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : existing ? 'Save Changes' : 'Report Injury'}
+              {saving ? <Loader2 className="size-3.5 animate-spin" /> : existing ? 'Save Changes' : 'Report Injury'}
             </Button>
           </div>
         </form>

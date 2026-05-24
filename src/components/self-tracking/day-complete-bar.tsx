@@ -18,7 +18,7 @@ export function DayCompleteBar({ dayCompleted, kcal, totalItems, onRequestComple
         <span className="text-xs text-foreground/65">
           {dayCompleted ? (
             <>
-              <Check className="h-3.5 w-3.5 text-emerald-500 inline mr-1" />
+              <Check className="size-3.5 text-emerald-500 inline mr-1" />
               Day completed · {kcal} kcal
             </>
           ) : (

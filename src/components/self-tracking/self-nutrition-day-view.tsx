@@ -260,7 +260,7 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
                   aria-label={`Open calendar (${date})`}
                 >
                   {date}
-                  <ChevronDown className="h-3 w-3 text-foreground/65" />
+                  <ChevronDown className="size-3 text-foreground/65" />
                 </button>
               }
             />

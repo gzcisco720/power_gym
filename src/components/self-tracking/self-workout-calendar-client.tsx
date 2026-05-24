@@ -98,17 +98,17 @@ export function SelfWorkoutCalendarClient({ basePath, initialDate }: Props) {
           type="button"
           onClick={prevWeek}
           aria-label="Previous week"
-          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-foreground/65 hover:text-foreground hover:bg-foreground/10 transition-colors"
+          className="inline-flex size-7 items-center justify-center rounded-md text-foreground/65 hover:text-foreground hover:bg-foreground/10 transition-colors"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="size-4" />
         </button>
         <button
           type="button"
           onClick={nextWeek}
           aria-label="Next week"
-          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-foreground/65 hover:text-foreground hover:bg-foreground/10 transition-colors"
+          className="inline-flex size-7 items-center justify-center rounded-md text-foreground/65 hover:text-foreground hover:bg-foreground/10 transition-colors"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="size-4" />
         </button>
         <button
           type="button"

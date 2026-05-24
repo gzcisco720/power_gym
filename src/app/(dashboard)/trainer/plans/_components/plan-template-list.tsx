@@ -70,7 +70,7 @@ export function PlanTemplateList({ templates, onDelete, basePath = '/trainer/pla
             href={`${basePath}/new`}
             className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary px-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="size-4" />
             New Template
           </Link>
         }
@@ -149,7 +149,7 @@ export function PlanTemplateList({ templates, onDelete, basePath = '/trainer/pla
                       className="absolute right-2 top-2 size-8 text-foreground/25 hover:bg-white/[.05] hover:text-red-400"
                       aria-label="Delete"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="size-4" />
                       <span className="sr-only">Delete</span>
                     </Button>
                   )}

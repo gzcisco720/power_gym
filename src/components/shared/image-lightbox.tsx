@@ -52,7 +52,7 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props
         onClick={onClose}
         className="absolute top-4 right-4 text-white/60 hover:text-white transition-colors"
       >
-        <X className="w-6 h-6" />
+        <X className="size-6" />
       </button>
 
       {images.length > 1 && (
@@ -63,7 +63,7 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props
             onClick={(e) => { e.stopPropagation(); prev(); }}
             className="absolute left-4 text-white/60 hover:text-white transition-colors"
           >
-            <ChevronLeft className="w-8 h-8" />
+            <ChevronLeft className="size-8" />
           </button>
           <button
             type="button"
@@ -71,7 +71,7 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props
             onClick={(e) => { e.stopPropagation(); next(); }}
             className="absolute right-12 text-white/60 hover:text-white transition-colors"
           >
-            <ChevronRight className="w-8 h-8" />
+            <ChevronRight className="size-8" />
           </button>
         </>
       )}

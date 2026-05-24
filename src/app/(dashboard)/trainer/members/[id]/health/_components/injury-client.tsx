@@ -319,7 +319,7 @@ export function InjuryClient({ memberId, initialInjuries, userRole }: Props) {
                   size="sm"
                   className="text-xs"
                 >
-                  {savingNotes ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
+                  {savingNotes ? <Loader2 className="size-3 animate-spin" /> : 'Save'}
                 </Button>
                 <Button
                   variant="ghost"
@@ -367,7 +367,7 @@ export function InjuryClient({ memberId, initialInjuries, userRole }: Props) {
         </div>
 
         {active.length === 0 ? (
-          <div className="mt-3 rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-4">
+          <div className="mt-3 rounded-xl bg-card ring-1 ring-foreground/10 p-4">
             <p className="text-sm text-foreground/65">No active injuries</p>
           </div>
         ) : (
@@ -414,7 +414,7 @@ export function InjuryClient({ memberId, initialInjuries, userRole }: Props) {
               disabled={deleting}
               className="text-xs font-semibold"
             >
-              {deleting ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Delete'}
+              {deleting ? <Loader2 className="size-3 animate-spin" /> : 'Delete'}
             </Button>
           </div>
         </DialogContent>

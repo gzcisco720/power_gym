@@ -17,9 +17,9 @@ export function WorkoutCalendarHeaderTrigger({ basePath }: Props) {
         <button
           type="button"
           aria-label="Open calendar"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-foreground/65 hover:text-foreground hover:bg-foreground/10 transition-colors"
+          className="inline-flex size-8 items-center justify-center rounded-md text-foreground/65 hover:text-foreground hover:bg-foreground/10 transition-colors"
         >
-          <Calendar className="h-4 w-4" />
+          <Calendar className="size-4" />
         </button>
       }
     />

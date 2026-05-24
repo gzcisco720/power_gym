@@ -72,7 +72,7 @@ export function CompareModal({ open, onClose, beforeCheckIn, afterCheckIn }: Pro
           type="button"
           onClick={onClose}
           aria-label="Close comparison"
-          className="w-8 h-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 text-foreground/60 flex items-center justify-center hover:bg-foreground/10 transition-colors"
+          className="size-8 rounded-lg bg-foreground/[0.07] border border-foreground/10 text-foreground/60 flex items-center justify-center hover:bg-foreground/10 transition-colors"
         >
           ✕
         </button>

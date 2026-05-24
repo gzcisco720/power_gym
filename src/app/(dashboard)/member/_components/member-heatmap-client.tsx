@@ -79,7 +79,7 @@ export function MemberHeatmapClient({ heatmapData }: MemberHeatmapClientProps) {
             {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((label, i) => (
               <div
                 key={`${label}-${i}`}
-                className="h-3 w-3 flex items-center justify-center text-[9px] text-foreground/65"
+                className="size-3 flex items-center justify-center text-[9px] text-foreground/65"
               >
                 {label}
               </div>
@@ -99,7 +99,7 @@ export function MemberHeatmapClient({ heatmapData }: MemberHeatmapClientProps) {
                 {week.days.map((day, di) => (
                   <div
                     key={`${week.weekKey}-${di}`}
-                    className={`w-3 h-3 rounded-[2px] ${
+                    className={`size-3 rounded-[2px] ${
                       day.hasSession
                         ? 'bg-emerald-500'
                         : day.inRange

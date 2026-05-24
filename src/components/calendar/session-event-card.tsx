@@ -48,7 +48,7 @@ export function SessionEventCard({
       {!isCompact && (
         <div className="opacity-80">
           {startTime}–{endTime}
-          {isRecurring && <RefreshCw className="inline h-2.5 w-2.5 ml-0.5 opacity-80" />}
+          {isRecurring && <RefreshCw className="inline size-2.5 ml-0.5 opacity-80" />}
         </div>
       )}
     </button>

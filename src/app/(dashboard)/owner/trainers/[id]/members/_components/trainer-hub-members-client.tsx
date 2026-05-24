@@ -56,7 +56,7 @@ export function TrainerHubMembersClient({ members, trainers, currentTrainerId }:
               key={member._id}
               className="flex items-center gap-3 px-4 py-3 bg-white/[.02] ring-1 ring-white/[.06] rounded-xl hover:ring-white/[.12] transition-all"
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary-light">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary-light">
                 {initials}
               </div>
               <div className="flex-1 min-w-0">
