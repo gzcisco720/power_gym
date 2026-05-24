@@ -247,8 +247,9 @@ export function SessionLogger({
       })
       .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
     return () => controller.abort();
+    // Runs once on mount; isCompleted and initialSession.sets are stable initial values guarded by hintsFetchedRef
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // oxlint-disable-line react-hooks/exhaustive-deps
 
   function syncInputsToSession(updatedSession: Session) {
     const nextInputs = updatedSession.sets.length <= inputs.length

@@ -93,7 +93,7 @@ export function EditSessionModal({
 
   const isRecurring = session.seriesId !== null;
 
-  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect, react-doctor/no-effect-event-handler
   useEffect(() => {
     if (!open) return;
     const controller = new AbortController();

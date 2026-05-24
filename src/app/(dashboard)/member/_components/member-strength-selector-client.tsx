@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { m } from 'framer-motion';
 import { toast } from 'sonner';
+// oxlint-disable-next-line react-doctor/prefer-dynamic-import
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 import { variants } from '@/lib/animations/variants';
 

@@ -44,6 +44,8 @@ interface Props {
   onCancel?: () => void;
 }
 
+const EMPTY_EXERCISES: ExerciseOption[] = [];
+
 type SheetTarget =
   | { kind: 'day'; dayIdx: number }
   | { kind: 'superset'; dayIdx: number; groupId: string }
@@ -121,7 +123,7 @@ function planTemplateFormReducer(state: PlanTemplateFormState, action: PlanTempl
 
 export function PlanTemplateForm({
   initialData,
-  exercises: initialExercises = [],
+  exercises: initialExercises = EMPTY_EXERCISES,
   onSubmit,
   onCancel,
 }: Props) {

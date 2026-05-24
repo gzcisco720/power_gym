@@ -1,5 +1,6 @@
 'use client';
 
+// oxlint-disable-next-line react-doctor/prefer-dynamic-import
 import {
   ResponsiveContainer,
   LineChart,

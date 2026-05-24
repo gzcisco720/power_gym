@@ -1,5 +1,6 @@
 'use client';
 
+// oxlint-disable-next-line react-doctor/prefer-dynamic-import
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface Props {

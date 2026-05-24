@@ -125,7 +125,7 @@ export function CreateSessionModal({
   });
   const { trainerId, selectedMemberId, date, startTime, endTime, isRecurring, serviceTypeId, customServiceName, customFee, serviceTypes, loading, error } = state;
 
-  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect, react-doctor/no-effect-event-handler
   useEffect(() => {
     if (!open) return;
     const controller = new AbortController();

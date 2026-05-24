@@ -18,7 +18,7 @@ export function AvatarUpload({ avatarUrl, initials, onUpload }: Props) {
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     const objectUrl = URL.createObjectURL(file);
@@ -89,7 +89,7 @@ export function AvatarUpload({ avatarUrl, initials, onUpload }: Props) {
           type="file"
           accept="image/jpeg,image/png,image/webp"
           className="hidden"
-          onChange={handleChange}
+          onChange={handleFileSelect}
           aria-hidden="true"
         />
       </div>

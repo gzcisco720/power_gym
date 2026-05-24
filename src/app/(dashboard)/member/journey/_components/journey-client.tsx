@@ -142,7 +142,7 @@ export default function JourneyClient({ memberId }: Props) {
           {[0, 1, 2].map(i => (
             <div
               key={i}
-              className="size-1.5 rounded-full bg-primary/40 animate-bounce"
+              className="size-1.5 rounded-full bg-primary/40 animate-pulse"
               style={{ animationDelay: `${i * 150}ms` }}
             />
           ))}

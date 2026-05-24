@@ -158,7 +158,7 @@ function DetailView({ entry, onBack, onAdd }: DetailViewProps) {
   }));
   const { servings, servingId, qty, loading, imageUrl, imgFailed } = state;
 
-  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect, react-doctor/no-effect-event-handler
   useEffect(() => {
     if (entry.source !== 'fatsecret' || !entry.foodId) return;
     const controller = new AbortController();

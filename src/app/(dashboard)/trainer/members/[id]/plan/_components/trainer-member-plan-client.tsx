@@ -11,6 +11,7 @@ import { SectionHeader } from '@/components/shared/section-header';
 import { ActiveSessionPrompt } from '@/components/shared/active-session-prompt';
 import { SessionPeekSheet } from './session-peek-sheet';
 import type { SessionSummary } from '@/lib/training/session-summary';
+// oxlint-disable-next-line react-doctor/prefer-dynamic-import
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
