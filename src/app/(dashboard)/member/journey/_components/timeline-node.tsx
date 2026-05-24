@@ -5,9 +5,10 @@ import type { JourneyItem } from '@/lib/types/journey';
 interface Props {
   item: JourneyItem;
   isLast: boolean;
+  priority?: boolean;
 }
 
-export default function TimelineNode({ item, isLast }: Props) {
+export default function TimelineNode({ item, isLast, priority = false }: Props) {
   const { bodyTest } = item;
 
   const bfDelta = bodyTest.deltaBodyFatPct;
@@ -41,14 +42,15 @@ export default function TimelineNode({ item, isLast }: Props) {
           </div>
 
           {/* Photo thumbnail */}
-          <div className="size-9 rounded-md overflow-hidden shrink-0">
+          <div className="relative size-9 rounded-md overflow-hidden shrink-0">
             {item.checkInPhoto ? (
               <Image
                 src={item.checkInPhoto}
                 alt="Check-in photo"
-                width={36}
-                height={36}
-                className="w-full h-full object-cover"
+                fill
+                sizes="36px"
+                className="object-cover"
+                priority={priority}
               />
             ) : (
               <div className="w-full h-full bg-foreground/[0.04] flex items-center justify-center border border-dashed border-foreground/10">

@@ -5,6 +5,7 @@ import type { JourneyItem, MilestoneTagColor } from '@/lib/types/journey';
 interface Props {
   item: JourneyItem;
   isLast: boolean;
+  priority?: boolean;
 }
 
 const TAG_CLASSES: Record<MilestoneTagColor, string> = {
@@ -13,7 +14,7 @@ const TAG_CLASSES: Record<MilestoneTagColor, string> = {
   indigo: 'bg-primary/[0.18] text-primary-light',
 };
 
-export default function MilestoneCard({ item, isLast }: Props) {
+export default function MilestoneCard({ item, isLast, priority = false }: Props) {
   const { bodyTest, milestone } = item;
   if (!milestone) return null;
 
@@ -85,14 +86,15 @@ export default function MilestoneCard({ item, isLast }: Props) {
           {milestone.photos.length > 0 && (
             <div className="flex gap-1.5">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex-1 h-14 rounded-lg overflow-hidden">
+                <div key={i} className="relative flex-1 h-14 rounded-lg overflow-hidden">
                   {milestone.photos[i] ? (
                     <Image
                       src={milestone.photos[i]}
                       alt={`Milestone photo ${i + 1}`}
-                      width={100}
-                      height={56}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="(max-width: 768px) 30vw, 120px"
+                      className="object-cover"
+                      priority={priority && i === 0}
                     />
                   ) : (
                     <div className="w-full h-full bg-primary/[0.04] border border-dashed border-primary/20 flex items-center justify-center">

@@ -127,9 +127,9 @@ export default function JourneyClient({ memberId }: Props) {
         {items.map((item, index) => {
           const isLast = index === items.length - 1 && !nextCursor;
           return item.milestone ? (
-            <MilestoneCard key={item.bodyTest.id} item={item} isLast={isLast} />
+            <MilestoneCard key={item.bodyTest.id} item={item} isLast={isLast} priority={index === 0} />
           ) : (
-            <TimelineNode key={item.bodyTest.id} item={item} isLast={isLast} />
+            <TimelineNode key={item.bodyTest.id} item={item} isLast={isLast} priority={index === 0} />
           );
         })}
       </div>
