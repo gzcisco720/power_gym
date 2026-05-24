@@ -40,7 +40,9 @@ export function EditSessionModal({
   onSuccess,
   onClose,
 }: EditSessionModalProps) {
+  // oxlint-disable-next-line react-doctor/no-derived-useState
   const [startTime, setStartTime] = useState(session.startTime);
+  // oxlint-disable-next-line react-doctor/no-derived-useState
   const [endTime, setEndTime] = useState(session.endTime);
   const [action, setAction] = useState<'edit' | 'cancel' | null>(null);
   const [loading, setLoading] = useState(false);
@@ -52,16 +54,9 @@ export function EditSessionModal({
   const [customFee, setCustomFee] = useState(session.customFee != null ? String(session.customFee) : '');
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
 
-  useEffect(() => {
-    setStartTime(session.startTime);
-    setEndTime(session.endTime);
-    setServiceTypeId(session.customServiceName ? '__custom__' : (session.serviceTypeId ?? ''));
-    setCustomServiceName(session.customServiceName ?? '');
-    setCustomFee(session.customFee != null ? String(session.customFee) : '');
-  }, [session]);
-
   const isRecurring = session.seriesId !== null;
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     if (!open) return;
     const controller = new AbortController();

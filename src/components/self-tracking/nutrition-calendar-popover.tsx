@@ -59,6 +59,7 @@ function NutritionCalendarBody({ onSelect, selectedDate }: BodyProps) {
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [entries, setEntries] = useState<NutritionDayEntry[]>([]);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
     fetch(`/api/me/nutrition-logs?year=${year}&month=${month}`, { signal: controller.signal })

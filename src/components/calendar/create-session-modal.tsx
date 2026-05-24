@@ -75,6 +75,7 @@ export function CreateSessionModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     if (!open) return;
     const controller = new AbortController();

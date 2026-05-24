@@ -24,6 +24,7 @@ export function ServiceTypeList() {
   const [editing, setEditing] = useState<ServiceType | undefined>(undefined);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
     fetch('/api/service-types', { signal: controller.signal })

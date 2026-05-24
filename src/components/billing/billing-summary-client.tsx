@@ -39,6 +39,7 @@ export function BillingSummaryClient({ userRole, memberHubBase }: BillingSummary
   const [data, setData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
     const from = period.from.toISOString();

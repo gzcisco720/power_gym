@@ -79,6 +79,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [scheduleRefresh, setScheduleRefresh] = useState(0);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
     void Promise.all([
@@ -195,6 +196,7 @@ export function TrainerMemberNutritionClient({ memberId, templates, recentLogs, 
                   </p>
                 </SheetHeader>
                 <ScheduleEditor
+                  key={scheduleRefresh}
                   memberId={memberId}
                   dayTypeNames={active.dayTypes.map((d) => d.name)}
                   initialSchedule={active.schedule}

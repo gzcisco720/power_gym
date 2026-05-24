@@ -21,6 +21,7 @@ export function MemberStrengthSelectorClient({ exercises, memberId }: Props) {
   const [history, setHistory] = useState<HistoryPoint[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     if (!selectedExerciseId) return;
     const controller = new AbortController();

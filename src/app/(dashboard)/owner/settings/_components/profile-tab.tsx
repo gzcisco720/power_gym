@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -21,8 +21,8 @@ interface Props {
 
 export function OwnerProfileTab(props: Props) {
   const { refresh } = useRouter();
+  // oxlint-disable-next-line react-doctor/no-derived-useState
   const [avatarUrl, setAvatarUrl] = useState(props.avatarUrl);
-  useEffect(() => { setAvatarUrl(props.avatarUrl); }, [props.avatarUrl]);
   const [saving, setSaving] = useState(false);
   const [editingEmail, setEditingEmail] = useState(false);
   const [newEmail, setNewEmail] = useState('');

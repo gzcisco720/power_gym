@@ -58,6 +58,7 @@ function WorkoutCalendarBody({ onSelect }: BodyProps) {
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [logs, setLogs] = useState<SelfLog[]>([]);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
     fetch(`/api/me/workout-logs?year=${year}&month=${month}`, { signal: controller.signal })

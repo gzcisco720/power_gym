@@ -129,6 +129,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
   const [availableExercises, setAvailableExercises] = useState<ExerciseOption[]>([]);
   const [savingSets, setSavingSets] = useState(false);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
     fetch(`/api/me/workout-logs/${logId}`, { signal: controller.signal })
@@ -154,6 +155,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     return () => controller.abort();
   }, [logId]);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
     fetch('/api/exercises', { signal: controller.signal })

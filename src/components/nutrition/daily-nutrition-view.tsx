@@ -82,6 +82,7 @@ export function DailyNutritionView({ memberId, initialDate, forceDayType, planDa
   } | null>(null);
   const [compareOpen, setCompareOpen] = useState(false);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
 

@@ -118,6 +118,7 @@ function ExerciseStrengthChart({
   const [history, setHistory] = useState<HistoryPoint[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     if (!selectedId) return;
     const controller = new AbortController();

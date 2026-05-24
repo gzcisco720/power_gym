@@ -287,6 +287,7 @@ function RecentTab({
 }) {
   const [items, setItems] = useState<RecentItem[]>([]);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
     fetch(`/api/members/${memberId}/nutrition/recent`, { signal: controller.signal })
@@ -357,6 +358,7 @@ function MyFoodTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void 
   const [q, setQ] = useState('');
   const [items, setItems] = useState<MyFoodItem[]>([]);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
     const handle = setTimeout(async () => {

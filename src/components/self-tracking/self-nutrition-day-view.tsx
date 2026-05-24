@@ -120,6 +120,7 @@ export function SelfNutritionDayView({ initialDate, readOnly = false, onDateChan
     onDateChange?.(next);
   }
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
 

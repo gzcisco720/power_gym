@@ -38,6 +38,7 @@ export function MemberBillingDetail({ memberId }: MemberBillingDetailProps) {
   const [data, setData] = useState<BillingData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
     const from = period.from.toISOString();

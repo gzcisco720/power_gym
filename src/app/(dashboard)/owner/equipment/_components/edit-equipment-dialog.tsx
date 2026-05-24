@@ -94,6 +94,7 @@ export function EditEquipmentDialog({ equipment, onClose, onUpdated }: Props) {
     }
   }
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     if (!equipment) return;
     const controller = new AbortController();

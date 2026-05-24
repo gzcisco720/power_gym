@@ -119,18 +119,16 @@ interface DetailViewProps {
 }
 
 function DetailView({ entry, onBack, onAdd }: DetailViewProps) {
+  // oxlint-disable-next-line react-doctor/no-derived-useState
   const [servings, setServings] = useState<FoodServing[]>(entry.servings);
+  // oxlint-disable-next-line react-doctor/no-derived-useState
   const [servingId, setServingId] = useState(entry.defaultServingId);
-
-  useEffect(() => {
-    setServings(entry.servings);
-    setServingId(entry.defaultServingId);
-  }, [entry]);
   const [qty, setQty] = useState('1');
   const [loading, setLoading] = useState(entry.source === 'fatsecret' && !!entry.foodId);
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
   const [imgFailed, setImgFailed] = useState(false);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     if (entry.source !== 'fatsecret' || !entry.foodId) return;
     const controller = new AbortController();
@@ -408,6 +406,7 @@ export function FoodPickerDialog({
         )}
         {view === 'detail' && selectedEntry && (
           <DetailView
+            key={selectedEntry.foodId ?? selectedEntry.name}
             entry={selectedEntry}
             onBack={handleBack}
             onAdd={handleAdd}

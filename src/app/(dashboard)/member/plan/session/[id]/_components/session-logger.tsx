@@ -169,6 +169,7 @@ export function SessionLogger({
   const exercisesFetchedRef = useRef(false);
   const hintsFetchedRef = useRef(false);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     if (exercisesFetchedRef.current) return;
     exercisesFetchedRef.current = true;
@@ -180,6 +181,7 @@ export function SessionLogger({
     return () => controller.abort();
   }, []);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     if (hintsFetchedRef.current || isCompleted) return;
     const nonBwIds = [

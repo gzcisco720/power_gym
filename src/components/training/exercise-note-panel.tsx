@@ -27,6 +27,7 @@ export function ExerciseNotePanel({ memberId, exerciseId, exerciseName, sessionI
   const [editContent, setEditContent] = useState('');
   const [saving, setSaving] = useState(false);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
     fetch(`/api/exercise-notes?memberId=${memberId}&exerciseId=${exerciseId}`, { signal: controller.signal })

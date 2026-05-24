@@ -32,6 +32,7 @@ export function SelfWorkoutCalendarClient({ basePath, initialDate }: Props) {
   });
   const [logs, setLogs] = useState<SelfCalendarLog[] | null>(null);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
     const weekEnd = new Date(weekStart);

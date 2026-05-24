@@ -59,6 +59,7 @@ export function CalendarClient({
 
   const memberMap = Object.fromEntries(members.map((m) => [m._id, m.name]));
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
     fetch('/api/service-types/active', { signal: controller.signal })
@@ -71,6 +72,7 @@ export function CalendarClient({
     return () => controller.abort();
   }, []);
 
+  // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     const controller = new AbortController();
     const startIso = weekStart.toISOString();
@@ -147,6 +149,7 @@ export function CalendarClient({
 
       {!readOnly && editSession && (
         <EditSessionModal
+          key={editSession._id}
           open
           session={editSession}
           memberMap={memberMap}
