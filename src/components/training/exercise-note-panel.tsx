@@ -94,6 +94,7 @@ export function ExerciseNotePanel({ memberId, exerciseId, exerciseName, sessionI
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
+                aria-label="Edit note"
                 className="w-full bg-[#111] border border-[#2a2a2a] rounded text-[10px] text-white p-1.5 resize-none"
                 rows={2}
               />
@@ -137,6 +138,7 @@ export function ExerciseNotePanel({ memberId, exerciseId, exerciseName, sessionI
           onChange={(e) => setNewNote(e.target.value)}
           placeholder="Add a note..."
           onKeyDown={(e) => { if (e.key === 'Enter') void addNote(); }}
+          aria-label="New exercise note"
           className="flex-1 bg-[#0a0a0a] border border-dashed border-[#1e1e1e] rounded-md text-[10px] text-white placeholder:text-[#333] px-2 py-1.5 focus:outline-none focus:border-[#333]"
         />
         <button

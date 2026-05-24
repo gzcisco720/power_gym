@@ -127,10 +127,11 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
 
           {otherCheckIns.length > 0 && (
             <div className="mb-4">
-              <label className="mb-1 block text-[12px] text-[#666]">
+              <label htmlFor="compare-checkin" className="mb-1 block text-[12px] text-[#666]">
                 Compare with another check-in
               </label>
               <select
+                id="compare-checkin"
                 value={compareId}
                 onChange={(e) => setCompareId(e.target.value)}
                 className="rounded-md border border-[#1a1a1a] bg-[#0d0d0d] px-3 py-2 text-[13px] text-white"

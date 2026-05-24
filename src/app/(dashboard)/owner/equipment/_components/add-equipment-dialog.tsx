@@ -132,8 +132,9 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
 
         <div className="space-y-4 mt-1">
           <div className="space-y-1.5 relative">
-            <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Name</label>
+            <label htmlFor="add-eq-name" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Name</label>
             <Input
+              id="add-eq-name"
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
               onBlur={() => setTimeout(() => setSuggestions([]), 150)}
@@ -155,13 +156,13 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Brand (optional)</label>
-              <Input value={brand} onChange={(e) => setBrand(e.target.value)}
+              <label htmlFor="add-eq-brand" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Brand (optional)</label>
+              <Input id="add-eq-brand" value={brand} onChange={(e) => setBrand(e.target.value)}
                 className="bg-[#0a0a0a] border-[#1e1e1e] text-white" placeholder="e.g. Life Fitness" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Quantity</label>
-              <Input type="number" min={1} value={quantity} onChange={(e) => setQuantity(e.target.value)}
+              <label htmlFor="add-eq-quantity" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Quantity</label>
+              <Input id="add-eq-quantity" type="number" min={1} value={quantity} onChange={(e) => setQuantity(e.target.value)}
                 className="bg-[#0a0a0a] border-[#1e1e1e] text-white" />
             </div>
           </div>
@@ -173,6 +174,7 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
             </div>
             <button
               type="button"
+              aria-label="Track condition status"
               onClick={() => setTrackCondition((v) => !v)}
               className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${trackCondition ? 'bg-white' : 'bg-[#333]'}`}
             >
@@ -182,8 +184,8 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
 
           {trackCondition && (
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Initial Status</label>
-              <select value={status} onChange={(e) => setStatus(e.target.value as EquipmentStatus)}
+              <label htmlFor="add-eq-status" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Initial Status</label>
+              <select id="add-eq-status" value={status} onChange={(e) => setStatus(e.target.value as EquipmentStatus)}
                 className="w-full rounded-md border border-[#1e1e1e] bg-[#0a0a0a] px-3 py-2 text-sm text-white">
                 <option value="active">Active</option>
                 <option value="maintenance">Maintenance</option>
@@ -193,13 +195,13 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
           )}
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Note (optional)</label>
-            <Input value={note} onChange={(e) => setNote(e.target.value)}
+            <label htmlFor="add-eq-note" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Note (optional)</label>
+            <Input id="add-eq-note" value={note} onChange={(e) => setNote(e.target.value)}
               className="bg-[#0a0a0a] border-[#1e1e1e] text-white" placeholder="Location, condition, etc." />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Images (optional)</label>
+            <p className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Images (optional)</p>
             {images.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
                 {images.map((url) => (
@@ -216,6 +218,7 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
             )}
             <label className={`flex items-center gap-2 cursor-pointer text-[12px] text-[#555] hover:text-[#888] transition-colors ${uploadingImages ? 'opacity-50 pointer-events-none' : ''}`}>
               <input type="file" accept="image/*" multiple onChange={handleImageChange} className="hidden"
+                aria-label="Upload equipment images"
                 disabled={uploadingImages || images.length >= 5} />
               {uploadingImages ? 'Uploading…' : '+ Add images'}
             </label>

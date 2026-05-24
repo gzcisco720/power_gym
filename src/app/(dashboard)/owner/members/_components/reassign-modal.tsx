@@ -63,10 +63,11 @@ export function ReassignModal({ memberId, memberName, currentTrainerId, trainers
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#555]">
+          <label htmlFor="reassign-trainer" className="text-[9px] font-semibold uppercase tracking-[1.5px] text-[#555]">
             Assign to Trainer
           </label>
           <select
+            id="reassign-trainer"
             value={selectedTrainerId}
             onChange={(e) => setSelectedTrainerId(e.target.value)}
             className="w-full rounded-md border border-[#1e1e1e] bg-[#0c0c0c] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white"

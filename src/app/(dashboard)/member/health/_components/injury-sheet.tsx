@@ -277,6 +277,7 @@ export function InjurySheet({ open, onOpenChange, memberId, existing, onSaved }:
               type="checkbox"
               checked={form.seenDoctor}
               onChange={(e) => set('seenDoctor', e.target.checked)}
+              aria-label="I have seen a doctor for this"
               className="h-4 w-4 rounded border border-input accent-primary cursor-pointer"
             />
             <label htmlFor="seen-doctor" className="text-sm text-foreground/80 cursor-pointer select-none">

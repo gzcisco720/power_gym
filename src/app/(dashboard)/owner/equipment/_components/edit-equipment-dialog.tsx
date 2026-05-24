@@ -316,6 +316,7 @@ export function EditEquipmentDialog({ equipment, onClose, onUpdated }: Props) {
                   type="button"
                   role="switch"
                   aria-checked={trackCondition}
+                  aria-label="Track condition status"
                   onClick={() => setTrackCondition((v) => !v)}
                   className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${trackCondition ? 'bg-white' : 'bg-[#333]'}`}
                 >
@@ -342,7 +343,7 @@ export function EditEquipmentDialog({ equipment, onClose, onUpdated }: Props) {
 
               {/* Images */}
               <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Images (optional)</label>
+                <p className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Images (optional)</p>
                 {images.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-2">
                     {images.map((url) => (
@@ -367,6 +368,7 @@ export function EditEquipmentDialog({ equipment, onClose, onUpdated }: Props) {
                     accept="image/*"
                     multiple
                     onChange={handleImageChange}
+                    aria-label="Upload equipment images"
                     className="hidden"
                     disabled={uploadingImages || images.length >= 5}
                   />

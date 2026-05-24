@@ -61,6 +61,7 @@ export function CheckInPhotosSection({ photos, uploading, onFileChange }: Props)
         multiple
         disabled={!canAdd}
         onChange={onFileChange}
+        aria-label="Upload check-in photos"
         className="hidden"
       />
     </div>

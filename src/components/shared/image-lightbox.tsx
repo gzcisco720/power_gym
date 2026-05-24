@@ -88,6 +88,7 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props
             <button
               type="button"
               key={img}
+              aria-label={`View image ${i + 1}`}
               onClick={(e) => { e.stopPropagation(); setIndex(i); }}
               className={`w-1.5 h-1.5 rounded-full transition-colors ${i === index ? 'bg-white' : 'bg-white/30'}`}
             />

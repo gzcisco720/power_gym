@@ -39,6 +39,7 @@ export function CheckInFeelingsSection({ ratings, onChange }: Props) {
               max={10}
               value={ratings[key]}
               onChange={(e) => onChange(key, Number(e.target.value))}
+              aria-label={label}
               className="flex-1 accent-primary"
             />
             <span className="text-[13px] font-semibold text-primary-light w-5 text-right tabular-nums">

@@ -103,6 +103,7 @@ function NumberField({
           type="text"
           inputMode="decimal"
           pattern="[0-9]*\.?[0-9]*"
+          aria-label={label}
           value={value ?? ''}
           onChange={(e) => {
             const v = e.target.value;

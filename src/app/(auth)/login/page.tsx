@@ -120,6 +120,7 @@ export default async function LoginPage({
               id="remember"
               name="remember"
               type="checkbox"
+              aria-label="Remember me"
               className="h-3.5 w-3.5 rounded border-[#333] bg-[#0c0c0c] accent-white cursor-pointer"
             />
             <label htmlFor="remember" className="text-[13px] text-[#666] cursor-pointer select-none">

@@ -238,8 +238,9 @@ function DetailView({ entry, onBack, onAdd }: DetailViewProps) {
 
           {/* Quantity */}
           <div className="space-y-1">
-            <label className="text-xs font-medium text-foreground/65">Quantity</label>
+            <label htmlFor="food-picker-qty" className="text-xs font-medium text-foreground/65">Quantity</label>
             <Input
+              id="food-picker-qty"
               type="text"
               inputMode="decimal"
               pattern="[0-9]*\.?[0-9]*"

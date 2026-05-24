@@ -256,6 +256,7 @@ export function CreateSessionModal({
                 <input
                   type="text"
                   placeholder="Service name"
+                  aria-label="Custom service name"
                   className="flex-1 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white placeholder:text-foreground/40"
                   value={customServiceName}
                   onChange={(e) => setCustomServiceName(e.target.value)}
@@ -264,6 +265,7 @@ export function CreateSessionModal({
                   type="text"
                   inputMode="decimal"
                   placeholder="Fee (AUD)"
+                  aria-label="Custom service fee (AUD)"
                   className="w-28 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white placeholder:text-foreground/40"
                   value={customFee}
                   onChange={(e) => setCustomFee(e.target.value)}

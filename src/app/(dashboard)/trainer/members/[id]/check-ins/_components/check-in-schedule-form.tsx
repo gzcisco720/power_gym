@@ -75,6 +75,7 @@ export function CheckInScheduleForm({ memberId, initialConfig }: Props) {
             type="checkbox"
             checked={active}
             onChange={(e) => setActive(e.target.checked)}
+            aria-label="Active"
             className="accent-emerald-500 size-3.5"
           />
           Active

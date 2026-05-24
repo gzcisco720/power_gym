@@ -225,6 +225,7 @@ export function ExerciseSearchSheet({
                   type="checkbox"
                   checked={newBW}
                   onChange={(e) => setNewBW(e.target.checked)}
+                  aria-label="Bodyweight exercise"
                   className="accent-foreground"
                 />
                 Bodyweight exercise

@@ -127,11 +127,13 @@ export function MemberListClient({
             placeholder="Search members..."
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
+            aria-label="Search members"
             className="w-full h-9 rounded-lg bg-white/[.03] ring-1 ring-white/[.08] pl-9 pr-4 text-sm text-foreground placeholder:text-foreground/25 focus:outline-none focus:ring-white/20 transition-all"
           />
           {search && (
             <button
               type="button"
+              aria-label="Clear search"
               onClick={() => handleSearch('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/30 hover:text-foreground/60 transition-colors"
             >

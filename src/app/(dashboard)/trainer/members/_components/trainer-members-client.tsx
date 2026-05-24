@@ -48,6 +48,7 @@ export function TrainerMembersClient({ members, sessionsThisMonth, newThisMonth 
           placeholder="Search members..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); }}
+          aria-label="Search members"
           className="w-full h-9 rounded-lg bg-white/[.03] ring-1 ring-white/[.08] pl-9 pr-9 text-sm text-foreground placeholder:text-foreground/25 focus:outline-none focus:ring-white/20 transition-all"
         />
         {search && (

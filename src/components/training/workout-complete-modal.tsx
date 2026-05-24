@@ -44,6 +44,7 @@ export function WorkoutCompleteModal({ onConfirm, onCancel, isLoading }: Workout
             step={1}
             value={rpe}
             onChange={(e) => setRpe(Number(e.target.value))}
+            aria-label="Workout intensity (RPE)"
             className="w-full accent-white cursor-pointer"
           />
           <div className="flex justify-between text-[9px] text-[#444]">
