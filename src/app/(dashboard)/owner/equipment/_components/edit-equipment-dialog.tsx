@@ -14,8 +14,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getEquipmentImageSignatureAction } from '../actions';
 import { uploadFile } from '@/lib/storage/upload-file';
-import { STATUS_COLOURS } from './equipment-client';
-import type { EquipmentItem } from './equipment-client';
+import { STATUS_COLOURS } from './equipment.types';
+import type { EquipmentItem } from './equipment.types';
 import type { EquipmentStatus } from '@/lib/db/models/equipment.model';
 import gymEquipmentCatalog from '@/../context/data/gym_equipment.json';
 

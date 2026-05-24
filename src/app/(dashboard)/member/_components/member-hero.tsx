@@ -5,10 +5,7 @@ import { MongoWorkoutSessionRepository } from '@/lib/repositories/workout-sessio
 import { MongoScheduledSessionRepository } from '@/lib/repositories/scheduled-session.repository';
 import { MongoMemberPlanRepository } from '@/lib/repositories/member-plan.repository';
 import { MemberHeroClient } from './member-hero-client';
-
-export function estimatedDuration(totalSets: number): number {
-  return Math.max(15, Math.ceil((totalSets * 2.5) / 5) * 5);
-}
+import { estimatedDuration } from './member-hero.utils';
 
 function greetingText(firstName: string): string {
   const h = new Date().getHours();

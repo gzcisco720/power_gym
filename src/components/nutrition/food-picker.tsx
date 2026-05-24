@@ -1,11 +1,15 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Loader2Icon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { calculateMacros, type MacroSnapshot } from '@/lib/nutrition/macros';
+import { calculateMacros } from '@/lib/nutrition/macros';
 import type { FatSecretFood, FatSecretServing } from '@/lib/nutrition/fatsecret-client';
+import type { FoodEntry } from './food-picker.types';
+export type { PickedFood, FoodServing, FoodEntry } from './food-picker.types';
+export { computePickedFood } from './food-picker.utils';
+export { useMacroPreview } from './use-macro-preview';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -26,43 +30,6 @@ interface MyFoodItem {
   brand: string | null;
   macrosPer100g: { kcal: number; protein: number; carbs: number; fat: number };
   servings: { label: string; grams: number }[];
-}
-
-export interface PickedFood {
-  foodName: string;
-  quantityG: number;
-  macros: MacroSnapshot;
-}
-
-/** Serving option within a unified FoodEntry */
-export interface FoodServing {
-  id: string;
-  label: string;
-  grams: number;
-  macros: Pick<MacroSnapshot, 'kcal' | 'protein' | 'carbs' | 'fat'> & {
-    fiber?: number;
-    sugar?: number;
-    saturated?: number;
-    polyunsaturated?: number;
-    monounsaturated?: number;
-    cholesterol?: number;
-    sodium?: number;
-    potassium?: number;
-    transFat?: number;
-    salt?: number;
-    polyols?: number;
-  };
-}
-
-/** Unified food shape emitted by FoodPicker to callers (e.g. FoodPickerDialog). */
-export interface FoodEntry {
-  source: 'fatsecret' | 'recent' | 'myfood';
-  /** FatSecret food ID — present when source === 'fatsecret', used to fetch full serving list */
-  foodId?: string;
-  name: string;
-  brand: string | null;
-  servings: FoodServing[];
-  defaultServingId: string;
 }
 
 interface FoodPickerProps {
@@ -477,49 +444,3 @@ function MyFoodTab({ onSelectFood }: { onSelectFood: (entry: FoodEntry) => void 
   );
 }
 
-// ---------------------------------------------------------------------------
-// Macro preview — used by FoodPickerDialog detail view (exported for reuse)
-// ---------------------------------------------------------------------------
-
-export function computePickedFood(entry: FoodEntry, servingId: string, qty: number): PickedFood {
-  const serving = entry.servings.find((s) => s.id === servingId) ?? entry.servings[0];
-  const ratio = qty;
-  const macros: MacroSnapshot = {
-    kcal: serving.macros.kcal * ratio,
-    protein: serving.macros.protein * ratio,
-    carbs: serving.macros.carbs * ratio,
-    fat: serving.macros.fat * ratio,
-  };
-  if (serving.macros.fiber !== undefined) macros.fiber = serving.macros.fiber * ratio;
-  if (serving.macros.sugar !== undefined) macros.sugar = serving.macros.sugar * ratio;
-  if (serving.macros.saturated !== undefined) macros.saturated = serving.macros.saturated * ratio;
-  if (serving.macros.polyunsaturated !== undefined) macros.polyunsaturated = serving.macros.polyunsaturated * ratio;
-  if (serving.macros.monounsaturated !== undefined) macros.monounsaturated = serving.macros.monounsaturated * ratio;
-  if (serving.macros.cholesterol !== undefined) macros.cholesterol = serving.macros.cholesterol * ratio;
-  if (serving.macros.sodium !== undefined) macros.sodium = serving.macros.sodium * ratio;
-  if (serving.macros.potassium !== undefined) macros.potassium = serving.macros.potassium * ratio;
-  if (serving.macros.transFat !== undefined) macros.transFat = serving.macros.transFat * ratio;
-
-  const foodName = entry.brand ? `${entry.brand} ${entry.name}` : entry.name;
-  return { foodName, quantityG: serving.grams * ratio, macros };
-}
-
-/** Inline macro preview string (used in detail view) */
-export function useMacroPreview(
-  entry: FoodEntry | null,
-  servingId: string,
-  qty: number,
-): MacroSnapshot | null {
-  return useMemo(() => {
-    if (!entry) return null;
-    const serving = entry.servings.find((s) => s.id === servingId) ?? entry.servings[0];
-    if (!serving) return null;
-    const ratio = qty;
-    return {
-      kcal: serving.macros.kcal * ratio,
-      protein: serving.macros.protein * ratio,
-      carbs: serving.macros.carbs * ratio,
-      fat: serving.macros.fat * ratio,
-    };
-  }, [entry, servingId, qty]);
-}

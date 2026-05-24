@@ -11,29 +11,13 @@ import { Button } from '@/components/ui/button';
 import { ImageLightbox } from '@/components/shared/image-lightbox';
 import { AddEquipmentDialog } from './add-equipment-dialog';
 import { EditEquipmentDialog } from './edit-equipment-dialog';
-import type { EquipmentStatus } from '@/lib/db/models/equipment.model';
 import type { NewEquipmentItem } from './add-equipment-dialog';
-
-export interface EquipmentItem {
-  _id: string;
-  name: string;
-  status: EquipmentStatus;
-  brand: string | null;
-  quantity: number;
-  images: string[];
-  note: string | null;
-  trackCondition: boolean;
-}
+import type { EquipmentItem } from './equipment.types';
+import { STATUS_COLOURS } from './equipment.types';
 
 interface Props {
   initialItems: EquipmentItem[];
 }
-
-export const STATUS_COLOURS: Record<EquipmentStatus, string> = {
-  active: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  maintenance: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-  retired: 'bg-[#333] text-[#666] border-[#222]',
-};
 
 export function EquipmentClient({ initialItems }: Props) {
   const router = useRouter();

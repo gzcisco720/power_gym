@@ -12,8 +12,9 @@ import {
 } from '@/components/ui/dialog';
 import { SectionHeader } from '@/components/shared/section-header';
 import { Trash2, Check, RotateCcw, Pencil, Loader2 } from 'lucide-react';
-import { InjurySheet, EMPTY_INJURY_FORM, injuryToForm } from './injury-sheet';
-import type { InjuryFormData } from './injury-sheet';
+import { InjurySheet } from './injury-sheet';
+import { EMPTY_INJURY_FORM, injuryToForm } from './injury-sheet.types';
+import type { InjuryFormData } from './injury-sheet.types';
 import type { SerializedInjury } from '../page';
 
 interface Props {

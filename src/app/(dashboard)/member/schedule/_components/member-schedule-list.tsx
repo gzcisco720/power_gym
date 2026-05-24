@@ -1,7 +1,8 @@
 'use client';
 
 import type { SessionDto } from './types';
-import { MemberScheduleHero, daysUntil } from './member-schedule-hero';
+import { MemberScheduleHero } from './member-schedule-hero';
+import { daysUntil } from './member-schedule-hero.utils';
 import { MemberScheduleTimeline } from './member-schedule-timeline';
 import { MemberScheduleHistory } from './member-schedule-history';
 

@@ -1,4 +1,4 @@
-import { computeMacros } from '@/app/(dashboard)/member/_components/member-nutrition-today';
+import { computeMacros } from '@/app/(dashboard)/member/_components/member-nutrition-today.utils';
 
 describe('computeMacros', () => {
   const items = [
