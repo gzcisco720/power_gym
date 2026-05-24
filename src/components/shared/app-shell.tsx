@@ -109,7 +109,7 @@ const NAV: Record<UserRole, { group: string; items: { href: string; label: strin
 };
 
 interface SidebarContentProps {
-  role: UserRole;
+  userRole: UserRole;
   userName: string;
   userInitials: string;
   userEmail: string;
@@ -118,10 +118,10 @@ interface SidebarContentProps {
   logoutSlot?: React.ReactNode;
 }
 
-function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, gymBranding, logoutSlot }: SidebarContentProps) {
+function SidebarContent({ userRole, userName, userInitials, userEmail, avatarUrl, gymBranding, logoutSlot }: SidebarContentProps) {
   const pathname = usePathname();
   const [pendingHref, setPendingHref] = useState<string | null>(null);
-  const groups = NAV[role] ?? [];
+  const groups = NAV[userRole] ?? [];
 
   const handleNavClick = useCallback((href: string) => {
     setPendingHref(href);
@@ -160,7 +160,7 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, gy
               {gymBranding?.name ?? 'POWER GYM'}
             </div>
             <div className="text-[9px] uppercase tracking-[1px] text-foreground/40">
-              {role} portal
+              {userRole} portal
             </div>
           </div>
         </div>
@@ -211,7 +211,7 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, gy
             )}
             <div className="min-w-0 flex-1 text-left">
               <div className="text-[12px] font-medium text-[#888] truncate">{userName}</div>
-              <div className="text-[10px] capitalize text-[#555]">{role}</div>
+              <div className="text-[10px] capitalize text-[#555]">{userRole}</div>
             </div>
           </PopoverTrigger>
           <PopoverPortal>
@@ -239,7 +239,7 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, gy
               {/* Menu items */}
               <div className="py-1">
                 <a
-                  href={`/${role}/settings`}
+                  href={`/${userRole}/settings`}
                   className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-[#ccc] hover:bg-[#1e1e1e] hover:text-white transition-colors cursor-pointer"
                 >
                   <Settings className="h-4 w-4 shrink-0 text-[#666]" />
@@ -258,7 +258,7 @@ function SidebarContent({ role, userName, userInitials, userEmail, avatarUrl, gy
 }
 
 interface AppShellProps {
-  role: UserRole;
+  userRole: UserRole;
   userName: string;
   userEmail?: string;
   avatarUrl?: string | null;
@@ -267,7 +267,7 @@ interface AppShellProps {
   logoutSlot?: React.ReactNode;
 }
 
-export function AppShell({ role, userName, userEmail = '', avatarUrl = null, gymBranding, children, logoutSlot }: AppShellProps) {
+export function AppShell({ userRole, userName, userEmail = '', avatarUrl = null, gymBranding, children, logoutSlot }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const userInitials = initials(userName);
   const gymDisplayName = gymBranding?.name ?? 'POWER GYM';
@@ -275,7 +275,7 @@ export function AppShell({ role, userName, userEmail = '', avatarUrl = null, gym
   return (
     <div className="flex h-screen bg-[#030303]">
       <aside className="hidden w-[220px] shrink-0 flex-col border-r border-foreground/[.06] bg-[#0a0a0a] lg:flex">
-        <SidebarContent role={role} userName={userName} userInitials={userInitials} userEmail={userEmail} avatarUrl={avatarUrl} gymBranding={gymBranding} logoutSlot={logoutSlot} />
+        <SidebarContent userRole={userRole} userName={userName} userInitials={userInitials} userEmail={userEmail} avatarUrl={avatarUrl} gymBranding={gymBranding} logoutSlot={logoutSlot} />
       </aside>
 
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
@@ -284,7 +284,7 @@ export function AppShell({ role, userName, userEmail = '', avatarUrl = null, gym
           className="w-[220px] border-r border-foreground/[.06] bg-[#0a0a0a] p-0"
         >
           <SheetTitle className="sr-only">Navigation</SheetTitle>
-          <SidebarContent role={role} userName={userName} userInitials={userInitials} userEmail={userEmail} avatarUrl={avatarUrl} gymBranding={gymBranding} logoutSlot={logoutSlot} />
+          <SidebarContent userRole={userRole} userName={userName} userInitials={userInitials} userEmail={userEmail} avatarUrl={avatarUrl} gymBranding={gymBranding} logoutSlot={logoutSlot} />
         </SheetContent>
       </Sheet>
 

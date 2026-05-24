@@ -4,7 +4,7 @@ import { AppShell } from '@/components/shared/app-shell';
 jest.mock('next/navigation', () => ({ usePathname: () => '/owner', useRouter: () => ({}) }));
 
 const baseProps = {
-  role: 'owner' as const,
+  userRole: 'owner' as const,
   userName: 'Jane Smith',
   children: <div />,
 };

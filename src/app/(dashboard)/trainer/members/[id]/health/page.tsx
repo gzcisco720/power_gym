@@ -136,7 +136,7 @@ export default async function MemberHealthPage({
 
   return (
     <div className="space-y-10">
-      <InjuryClient memberId={memberId} initialInjuries={plainInjuries} role={role} />
+      <InjuryClient memberId={memberId} initialInjuries={plainInjuries} userRole={role} />
       <MedicationsSection medications={plainMedications} />
       <MedicalHistorySection history={plainHistory} />
     </div>

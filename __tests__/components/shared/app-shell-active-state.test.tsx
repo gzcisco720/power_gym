@@ -11,7 +11,7 @@ describe('AppShell active state — owner Dashboard exact match', () => {
   it('marks Dashboard active when on /owner', () => {
     mockPathname = '/owner';
     render(
-      <AppShell role="owner" userName="Owner User">
+      <AppShell userRole="owner" userName="Owner User">
         <div />
       </AppShell>
     );
@@ -24,7 +24,7 @@ describe('AppShell active state — owner Dashboard exact match', () => {
   it('does NOT mark Dashboard active when on /owner/members', () => {
     mockPathname = '/owner/members';
     render(
-      <AppShell role="owner" userName="Owner User">
+      <AppShell userRole="owner" userName="Owner User">
         <div />
       </AppShell>
     );
@@ -41,7 +41,7 @@ describe('AppShell active state — owner Dashboard exact match', () => {
   it('does NOT mark Dashboard active when on /owner/trainers', () => {
     mockPathname = '/owner/trainers';
     render(
-      <AppShell role="owner" userName="Owner User">
+      <AppShell userRole="owner" userName="Owner User">
         <div />
       </AppShell>
     );

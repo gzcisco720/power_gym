@@ -19,7 +19,7 @@ import type { SerializedInjury } from '../page';
 interface Props {
   memberId: string;
   initialInjuries: SerializedInjury[];
-  role: 'owner' | 'trainer' | 'member';
+  userRole: 'owner' | 'trainer' | 'member';
 }
 
 const INJURY_TYPE_LABELS: Record<string, string> = {
@@ -51,7 +51,7 @@ const REHAB_LABELS: Record<string, string> = {
   cleared: 'Cleared',
 };
 
-export function InjuryClient({ memberId, initialInjuries, role }: Props) {
+export function InjuryClient({ memberId, initialInjuries, userRole }: Props) {
   const router = useRouter();
   const [injuries, setInjuries] = useState(initialInjuries);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -65,7 +65,7 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
   const [memberNoteDraft, setMemberNoteDraft] = useState('');
 
-  const canEdit = role === 'trainer' || role === 'owner';
+  const canEdit = userRole === 'trainer' || userRole === 'owner';
   const { active, resolved } = useMemo(
     () => ({
       active: injuries.filter((i) => i.status === 'active'),
@@ -258,7 +258,7 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
               </p>
             )}
 
-            {role !== 'member' && injury.memberNotes && (
+            {userRole !== 'member' && injury.memberNotes && (
               <p className="mt-1 text-xs text-foreground/65">
                 <span className="font-medium text-foreground/80">Member notes: </span>
                 {injury.memberNotes}
@@ -302,7 +302,7 @@ export function InjuryClient({ memberId, initialInjuries, role }: Props) {
           )}
         </div>
 
-        {role === 'member' && (
+        {userRole === 'member' && (
           <div className="mt-2">
             {isEditingNotes ? (
               <div className="flex gap-2">

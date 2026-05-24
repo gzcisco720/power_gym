@@ -37,7 +37,7 @@ describe('InjuryClient loading states', () => {
       pending.then(() => ({ ok: true, json: async () => ({ ...mockInjury, status: 'resolved' }) })),
     );
 
-    render(<InjuryClient memberId="m1" initialInjuries={[mockInjury]} role="trainer" />);
+    render(<InjuryClient memberId="m1" initialInjuries={[mockInjury]} userRole="trainer" />);
 
     const resolveBtn = screen.getByRole('button', { name: /mark resolved/i });
     fireEvent.click(resolveBtn);
@@ -54,7 +54,7 @@ describe('InjuryClient loading states', () => {
       pending.then(() => ({ ok: true, json: async () => ({}) })),
     );
 
-    render(<InjuryClient memberId="m1" initialInjuries={[mockInjury]} role="trainer" />);
+    render(<InjuryClient memberId="m1" initialInjuries={[mockInjury]} userRole="trainer" />);
 
     fireEvent.click(screen.getByRole('button', { name: /delete/i }));
     const confirmBtn = await screen.findByRole('button', { name: /^delete$/i });
@@ -72,7 +72,7 @@ describe('InjuryClient loading states', () => {
       pending.then(() => ({ ok: true, json: async () => ({ ...mockInjury, memberNotes: 'aching' }) })),
     );
 
-    render(<InjuryClient memberId="m1" initialInjuries={[mockInjury]} role="member" />);
+    render(<InjuryClient memberId="m1" initialInjuries={[mockInjury]} userRole="member" />);
 
     fireEvent.click(screen.getByRole('button', { name: /add my notes/i }));
     const saveBtn = screen.getByRole('button', { name: /^save$/i });

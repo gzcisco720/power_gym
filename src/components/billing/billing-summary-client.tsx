@@ -20,7 +20,7 @@ interface SummaryData {
 }
 
 interface BillingSummaryClientProps {
-  role: 'owner' | 'trainer';
+  userRole: 'owner' | 'trainer';
   memberHubBase: string;
 }
 
@@ -33,7 +33,7 @@ function initialPeriod(): BillingPeriod {
   };
 }
 
-export function BillingSummaryClient({ role, memberHubBase }: BillingSummaryClientProps) {
+export function BillingSummaryClient({ userRole, memberHubBase }: BillingSummaryClientProps) {
   const router = useRouter();
   const [period, setPeriod] = useState<BillingPeriod>(initialPeriod);
   const [data, setData] = useState<SummaryData | null>(null);
@@ -78,9 +78,9 @@ export function BillingSummaryClient({ role, memberHubBase }: BillingSummaryClie
         </div>
       ) : data && data.members.length > 0 ? (
         <div>
-          <div className={`grid gap-3 px-3 pb-1.5 text-[11px] uppercase tracking-wider text-foreground/65 font-semibold ${role === 'owner' ? 'grid-cols-[1fr_80px_90px_80px]' : 'grid-cols-[1fr_90px_80px]'}`}>
+          <div className={`grid gap-3 px-3 pb-1.5 text-[11px] uppercase tracking-wider text-foreground/65 font-semibold ${userRole === 'owner' ? 'grid-cols-[1fr_80px_90px_80px]' : 'grid-cols-[1fr_90px_80px]'}`}>
             <span>Member</span>
-            {role === 'owner' && <span>Trainer</span>}
+            {userRole === 'owner' && <span>Trainer</span>}
             <span>Sessions</span>
             <span className="text-right">Amount</span>
           </div>
@@ -88,11 +88,11 @@ export function BillingSummaryClient({ role, memberHubBase }: BillingSummaryClie
             {data.members.map((m) => (
               <div
                 key={m.memberId}
-                className={`grid gap-3 items-center px-3 py-2.5 rounded-xl bg-card ring-1 ring-foreground/10 hover:ring-foreground/25 transition-all cursor-pointer ${role === 'owner' ? 'grid-cols-[1fr_80px_90px_80px]' : 'grid-cols-[1fr_90px_80px]'}`}
+                className={`grid gap-3 items-center px-3 py-2.5 rounded-xl bg-card ring-1 ring-foreground/10 hover:ring-foreground/25 transition-all cursor-pointer ${userRole === 'owner' ? 'grid-cols-[1fr_80px_90px_80px]' : 'grid-cols-[1fr_90px_80px]'}`}
                 onClick={() => router.push(`${memberHubBase}/${m.memberId}/billing`)}
               >
                 <span className="text-sm font-medium text-foreground">{m.name}</span>
-                {role === 'owner' && <span className="text-xs text-foreground/65">{m.trainerName}</span>}
+                {userRole === 'owner' && <span className="text-xs text-foreground/65">{m.trainerName}</span>}
                 <span className="text-xs text-foreground/65">{m.sessionsCount} sessions</span>
                 <span className="text-sm font-semibold text-primary-light text-right">{m.currency} {(m.totalAmount ?? 0).toLocaleString()}</span>
               </div>
