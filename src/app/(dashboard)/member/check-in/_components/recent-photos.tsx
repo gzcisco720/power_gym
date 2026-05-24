@@ -44,7 +44,7 @@ export function RecentPhotos({ recentPhotos, allPhotos, totalCount }: Props) {
               onClick={() => setGalleryOpen(true)}
               className="aspect-square rounded-[6px] overflow-hidden relative"
             >
-              <Image src={photo.url} alt="" fill className="object-cover" />
+              <Image src={photo.url} alt="" fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover" />
               <div className="absolute bottom-0 inset-x-0 py-[3px] bg-gradient-to-t from-background/70 to-transparent text-[8px] text-foreground/55 text-center">
                 {format(new Date(photo.submittedAt), 'd MMM')}
               </div>

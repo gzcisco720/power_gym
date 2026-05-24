@@ -32,6 +32,7 @@ function PhotoColumn({ checkIn, side }: { checkIn: CheckInRecord; side: 'before'
           src={photos[selectedIdx]}
           alt={`${side} photo`}
           fill
+          sizes="50vw"
           className="object-cover"
         />
       </div>
@@ -44,7 +45,7 @@ function PhotoColumn({ checkIn, side }: { checkIn: CheckInRecord; side: 'before'
               onClick={() => setSelectedIdx(i)}
               className={`w-10 h-12 rounded overflow-hidden border-2 flex-shrink-0 relative ${i === selectedIdx ? 'border-primary' : 'border-foreground/10'}`}
             >
-              <Image src={url} alt="" fill className="object-cover" />
+              <Image src={url} alt="" fill sizes="128px" className="object-cover" />
             </button>
           ))}
         </div>

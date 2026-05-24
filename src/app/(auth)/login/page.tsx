@@ -79,14 +79,17 @@ export default async function LoginPage({
               // fall through
             }
 
+            let loginErrorType: string | null = null;
             try {
               await signIn('credentials', { email, password, remember, redirectTo });
             } catch (error) {
               if (error instanceof AuthError) {
-                redirect(`/login?error=${error.type}`);
+                loginErrorType = error.type;
+              } else {
+                throw error;
               }
-              throw error;
             }
+            if (loginErrorType) redirect(`/login?error=${loginErrorType}`);
           }}
           className="space-y-4"
         >

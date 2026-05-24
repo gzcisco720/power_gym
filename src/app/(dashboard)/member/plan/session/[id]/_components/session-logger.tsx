@@ -417,13 +417,12 @@ export function SessionLogger({
         ),
       );
 
-      for (const res of patchResults) {
-        if (!res.ok) {
-          const data = (await res.json()) as { error?: string };
-          toast.error(data.error ?? 'Failed to save sets');
-          dispatch({ type: 'SET_COMPLETING', value: false });
-          return;
-        }
+      const failedRes = patchResults.find((res) => !res.ok);
+      if (failedRes) {
+        const data = (await failedRes.json()) as { error?: string };
+        toast.error(data.error ?? 'Failed to save sets');
+        dispatch({ type: 'SET_COMPLETING', value: false });
+        return;
       }
 
       const res = await fetch(`/api/sessions/${session._id}/complete`, {

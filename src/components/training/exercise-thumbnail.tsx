@@ -63,6 +63,7 @@ export function ExerciseThumbnail({ imageUrl, name, size = 40, className }: Prop
           src={imageUrl}
           alt={name}
           fill
+          sizes="64px"
           className="rounded-md object-cover"
         />
         {popupStyle !== null && (
@@ -73,6 +74,7 @@ export function ExerciseThumbnail({ imageUrl, name, size = 40, className }: Prop
                   src={imageUrl}
                   alt={name}
                   fill
+                  sizes="240px"
                   className="object-cover"
                 />
               </div>

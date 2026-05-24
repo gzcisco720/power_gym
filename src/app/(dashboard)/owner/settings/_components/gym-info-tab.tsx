@@ -205,7 +205,7 @@ export function GymInfoTab({ gymInfo }: Props) {
                 className="relative flex size-16 shrink-0 items-center justify-center rounded-full border border-foreground/10 overflow-hidden bg-muted hover:opacity-80 transition-opacity cursor-pointer disabled:cursor-not-allowed"
               >
                 {logoUrl ? (
-                  <Image src={logoUrl} alt="Gym logo" fill className="object-cover" />
+                  <Image src={logoUrl} alt="Gym logo" fill sizes="64px" className="object-cover" />
                 ) : (
                   <span className="text-[16px] font-semibold text-foreground/60">{fallbackInitial}</span>
                 )}
@@ -227,7 +227,7 @@ export function GymInfoTab({ gymInfo }: Props) {
                 className="relative flex size-16 shrink-0 items-center justify-center rounded-lg border border-foreground/10 overflow-hidden bg-muted hover:opacity-80 transition-opacity cursor-pointer disabled:cursor-not-allowed"
               >
                 {loginLogoUrl ? (
-                  <Image src={loginLogoUrl} alt="Login logo" fill className="object-contain p-1" />
+                  <Image src={loginLogoUrl} alt="Login logo" fill sizes="64px" className="object-contain p-1" />
                 ) : (
                   <span className="text-[11px] text-foreground/40">None</span>
                 )}

@@ -99,6 +99,7 @@ export function CompareCard({ checkInsWithPhotos }: Props) {
                   src={checkIn.photos[idx]}
                   alt=""
                   fill
+                  sizes="(max-width: 768px) 50vw, 33vw"
                   className="object-cover"
                 />
                 <div className="absolute bottom-0 inset-x-0 py-1 px-1.5 bg-background/80 text-[9px] text-foreground/55 text-center">

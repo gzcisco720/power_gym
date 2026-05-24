@@ -70,7 +70,7 @@ export function AvatarUpload({ avatarUrl, initials, onUpload }: Props) {
           aria-label="Change profile photo"
         >
           {avatarUrl ? (
-            <Image src={avatarUrl} alt="Avatar" fill className="object-cover" />
+            <Image src={avatarUrl} alt="Avatar" fill sizes="96px" className="object-cover" />
           ) : (
             <span className="text-[16px] font-semibold text-foreground/60">{initials}</span>
           )}

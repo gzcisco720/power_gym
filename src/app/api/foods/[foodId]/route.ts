@@ -41,11 +41,11 @@ type AuthorizeResult =
   | { ok: false; status: 401 | 403 | 404 };
 
 async function authorizeOwner(foodId: string): Promise<AuthorizeResult> {
+  if (!mongoose.isValidObjectId(foodId)) return { ok: false, status: 404 };
   const session = await auth();
   if (!session?.user) return { ok: false, status: 401 };
   if (session.user.role === 'member') return { ok: false, status: 403 };
   await connectDB();
-  if (!mongoose.isValidObjectId(foodId)) return { ok: false, status: 404 };
   const food = await foods.findById(new mongoose.Types.ObjectId(foodId));
   if (!food) return { ok: false, status: 404 };
   const userId = new mongoose.Types.ObjectId(session.user.id);

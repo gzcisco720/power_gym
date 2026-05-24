@@ -120,6 +120,7 @@ export function PhotosClient({ photos }: Props) {
                 src={photo.photoUrl}
                 alt={`Check-in photo ${formatDate(photo.submittedAt)}`}
                 fill
+                sizes="(max-width: 768px) 50vw, 33vw"
                 className="object-cover"
               />
               {/* Date label */}
@@ -188,6 +189,7 @@ export function PhotosClient({ photos }: Props) {
                       src={photo.photoUrl}
                       alt={`Check-in ${formatDate(photo.submittedAt)}`}
                       fill
+                      sizes="50vw"
                       className="object-cover"
                     />
                   </div>

@@ -147,7 +147,7 @@ export function PhotoGalleryModal({ open, onClose, photos, totalCount }: Props) 
                     onClick={() => setLightboxIdx(globalIdx >= 0 ? globalIdx : 0)}
                     className="aspect-[3/4] rounded-lg overflow-hidden border-2 border-foreground/[0.06] hover:border-foreground/[0.18] transition-colors relative"
                   >
-                    <Image src={photo.url} alt="" fill className="object-cover" />
+                    <Image src={photo.url} alt="" fill sizes="100vw" className="object-cover" />
                     <div className="absolute bottom-0 inset-x-0 py-1 px-1.5 bg-gradient-to-t from-background/75 to-transparent text-[9px] text-foreground/55">
                       {format(new Date(photo.submittedAt), 'd MMM')}
                     </div>

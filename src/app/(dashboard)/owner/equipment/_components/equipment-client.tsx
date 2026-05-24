@@ -141,6 +141,7 @@ export function EquipmentClient({ initialItems }: Props) {
                         src={item.images[0]}
                         alt={item.name}
                         fill
+                        sizes="32px"
                         className="object-cover"
                       />
                     </button>
