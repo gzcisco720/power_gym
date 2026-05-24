@@ -62,7 +62,7 @@ export function WorkoutCompleteAnimation({ onComplete }: WorkoutCompleteAnimatio
         animate={{ opacity: 1 }}
         transition={{ delay: 1.05 }}
       >
-        Great work — keep it up
+        Great work, keep it up
       </motion.div>
     </div>
   );

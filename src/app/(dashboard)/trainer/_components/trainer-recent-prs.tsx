@@ -27,7 +27,7 @@ export async function TrainerRecentPrs() {
   return (
     <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4 flex flex-col min-h-[180px]">
       <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-3">
-        Recent PRs — This Week
+        Recent PRs: This Week
       </div>
       {prs.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-1">

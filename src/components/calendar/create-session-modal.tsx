@@ -164,7 +164,7 @@ export function CreateSessionModal({
               value={selectedMemberId}
               onChange={(e) => setSelectedMemberId(e.target.value)}
             >
-              <option value="">— Select member —</option>
+              <option value="">Select member</option>
               {filteredMembers.map((m) => (
                 <option key={m._id} value={m._id}>{m.name}</option>
               ))}
@@ -237,7 +237,7 @@ export function CreateSessionModal({
                 value={serviceTypeId}
                 onChange={(e) => setServiceTypeId(e.target.value)}
               >
-                <option value="">— Select —</option>
+                <option value="">Select</option>
                 {serviceTypes.map((st) => (
                   <option key={st._id} value={st._id}>
                     {st.name} ({st.durationMin} min)

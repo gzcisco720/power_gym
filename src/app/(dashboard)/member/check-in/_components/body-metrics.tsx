@@ -10,7 +10,7 @@ function Delta({ value, unit }: { value: number | null; unit: string }) {
   const formatted = Number.isInteger(abs) ? abs.toLocaleString() : abs.toFixed(1);
   if (value < 0) return <div className="text-[11px] mt-0.5 text-red-400">▼ {formatted} {unit}</div>;
   if (value > 0) return <div className="text-[11px] mt-0.5 text-emerald-400">▲ {formatted} {unit}</div>;
-  return <div className="text-[11px] mt-0.5 text-foreground/30">— same</div>;
+  return <div className="text-[11px] mt-0.5 text-foreground/30">no change</div>;
 }
 
 function Sparkline({ history }: { history: number[] }) {
@@ -107,7 +107,7 @@ export function BodyMetrics({ metrics }: Props) {
                 <Sparkline history={history} />
               </>
             ) : (
-              <div className="text-[18px] font-bold text-foreground/25">—</div>
+              <div className="text-[18px] font-bold text-foreground/25">–</div>
             )}
           </div>
         ))}
@@ -127,7 +127,7 @@ export function BodyMetrics({ metrics }: Props) {
               </div>
             </>
           ) : (
-            <div className="text-[18px] font-bold text-foreground/25">—</div>
+            <div className="text-[18px] font-bold text-foreground/25">–</div>
           )}
         </div>
       </div>

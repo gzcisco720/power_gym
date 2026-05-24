@@ -137,7 +137,7 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
                 onChange={(e) => setCompareId(e.target.value)}
                 className="rounded-md border border-[#1a1a1a] bg-[#0d0d0d] px-3 py-2 text-[13px] text-white"
               >
-                <option value="">— No comparison —</option>
+                <option value="">No comparison</option>
                 {otherCheckIns.map((c) => {
                   const cid = String((c as ICheckIn & { _id: unknown })._id);
                   return (

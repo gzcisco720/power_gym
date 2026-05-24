@@ -98,13 +98,13 @@ export async function TrainerStatsSection({ trainerId }: { trainerId: string }) 
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4">
           <div className="text-[9px] uppercase tracking-[2px] text-foreground/65 font-semibold mb-3">
-            This Week — Scheduled Sessions
+            This Week: Scheduled Sessions
           </div>
           <TrainerWeeklyScheduleClient days={weekBuckets} total={weekTotal} />
         </div>
         <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4">
           <div className="text-[9px] uppercase tracking-[2px] text-foreground/65 font-semibold mb-3">
-            Sessions — Last 6 Months
+            Sessions: Last 6 Months
           </div>
           <TrainerSessionsChartClient data={chartData} />
         </div>

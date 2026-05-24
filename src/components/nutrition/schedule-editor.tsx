@@ -89,7 +89,7 @@ export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule, onSave
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={NONE}>— Not set —</SelectItem>
+                <SelectItem value={NONE}>Not set</SelectItem>
                 {dayTypeNames.map((n) => (
                   <SelectItem key={n} value={n}>{n}</SelectItem>
                 ))}

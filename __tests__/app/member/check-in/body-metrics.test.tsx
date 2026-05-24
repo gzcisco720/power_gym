@@ -24,9 +24,9 @@ describe('BodyMetrics', () => {
     expect(screen.getByText(/▲ 1,500/)).toBeInTheDocument();
   });
 
-  it('shows em-dash when no current value', () => {
+  it('shows en-dash when no current value', () => {
     render(<BodyMetrics metrics={{ ...metrics, steps: { current: null, delta: null, history: [] } }} />);
-    expect(screen.getAllByText('—').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('–').length).toBeGreaterThan(0);
   });
 
   it('renders On track for yes diet', () => {

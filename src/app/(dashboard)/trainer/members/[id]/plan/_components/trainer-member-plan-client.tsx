@@ -357,7 +357,7 @@ export function TrainerMemberPlanClient({
                 >
                   {activePlan.days.map((d) => (
                     <option key={d.dayNumber} value={d.dayNumber}>
-                      Day {d.dayNumber} — {d.name}
+                      Day {d.dayNumber}: {d.name}
                     </option>
                   ))}
                 </select>
