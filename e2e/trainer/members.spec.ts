@@ -118,10 +118,11 @@ test.describe('Trainer: Members', () => {
     await goToMemberHub(page);
     await page.getByRole('link', { name: 'Plan', exact: true }).click();
     await page.waitForURL(/\/trainer\/members\/.+\/plan/);
-    await expect(page.getByText('Personal Bests')).toBeVisible();
-    await expect(page.getByText('Bench Press').first()).toBeVisible();
+    const pbSection = page.locator('section').filter({ hasText: 'Personal Bests' });
+    await expect(pbSection).toBeVisible();
+    await expect(pbSection.locator('p').filter({ hasText: /^Bench Press$/ })).toBeVisible();
     // PB value may change across test runs (other specs complete Bench Press sessions)
-    await expect(page.getByText(/est\. 1RM \d+\.\d+ kg/)).toBeVisible();
+    await expect(pbSection.getByText(/est\. 1RM \d+\.\d+ kg/).first()).toBeVisible();
   });
 
   // ── Plan tab: Session History ─────────────────────────────────────────────

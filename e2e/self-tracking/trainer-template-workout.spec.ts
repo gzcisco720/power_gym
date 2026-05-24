@@ -82,9 +82,15 @@ test.describe('trainer template workout + saveAsTemplate', () => {
     // Session page renders <h1>{log.dayName}</h1> which is the day name "Push".
     await expect(page.getByRole('heading', { name: /^push$/i })).toBeVisible();
 
+    // --- Step 4: fill in at least one set so Finish is not blocked ---
+    await page.getByLabel('Set 1 weight').fill('100');
+    await page.getByLabel('Set 1 reps').fill('5');
+
     // --- Step 5: open the Finish dialog ---
     await page.getByRole('button', { name: /^finish$/i }).click();
-    await expect(page.getByRole('heading', { name: /finish workout/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /finish workout/i })).toBeVisible({
+      timeout: 5000,
+    });
 
     // --- Step 6: toggle "Save as template" checkbox ---
     const saveCheckbox = page.getByRole('checkbox');

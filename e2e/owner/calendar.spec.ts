@@ -48,14 +48,17 @@ test.describe('Owner: Calendar', () => {
 
   test('can create a one-off session via slot click', async ({ page }) => {
     await page.goto('/owner/calendar');
-    await page.locator('div.cursor-pointer').first().click();
+    await page.getByRole('button', { name: /add session at/i }).first().click();
     await expect(page.getByRole('dialog').getByText('New Training Session')).toBeVisible();
-    await page.getByRole('dialog').locator('select').selectOption({ label: 'Test Trainer' });
-    await page.getByRole('dialog').getByRole('button', { name: 'Test Member' }).click();
+    // Trainer select is the first <select> in the dialog (no htmlFor/id association)
+    await page.getByRole('dialog').locator('select').first().selectOption({ label: 'Test Trainer' });
+    // Member select is the second <select>
+    await page.getByRole('dialog').locator('select').nth(1).selectOption({ label: 'Test Member' });
     const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
     await page.locator('#sessionDate').fill(tomorrow);
-    await page.locator('#startTime').fill('11:00');
-    await page.locator('#endTime').fill('12:00');
+    await page.locator('#startTime').fill('12:00');
+    await page.locator('#endTime').fill('13:00');
+    await page.locator('#serviceType').selectOption({ index: 1 });
     await page.getByRole('dialog').getByRole('button', { name: 'Create' }).click();
     await expect(page.getByRole('dialog')).not.toBeVisible();
     // Verify booking email
@@ -64,6 +67,6 @@ test.describe('Owner: Calendar', () => {
     });
     expect(email.Subject).toBe('Session Booked — POWER GYM');
     expect(email.HTML).toContain('Test Trainer');
-    expect(email.HTML).toContain('11:00');
+    expect(email.HTML).toContain('12:00');
   });
 });

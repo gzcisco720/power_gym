@@ -10,14 +10,15 @@ test.describe('Trainer: Invites', () => {
   });
 
   test('full invite flow: create invite, register as member, login succeeds', async ({ page, browser }) => {
+    const uniqueEmail = `e2etrainerinvite-${Date.now()}@test.com`;
     const response = await page.request.post('/api/trainer/invites', {
-      data: { recipientEmail: 'e2etrainerinvite@test.com' },
+      data: { recipientEmail: uniqueEmail },
     });
     expect(response.ok()).toBeTruthy();
     const { inviteUrl } = (await response.json()) as { inviteUrl: string };
 
     // Verify invite email
-    const email = await waitForEmailTo('e2etrainerinvite@test.com');
+    const email = await waitForEmailTo(uniqueEmail);
     expect(email.Subject).toContain('Member');
     expect(email.HTML).toContain(inviteUrl);
 
@@ -29,11 +30,11 @@ test.describe('Trainer: Invites', () => {
 
     await freshPage.fill('#firstName', 'E2E');
     await freshPage.fill('#lastName', 'TrainerInviteUser');
-    await freshPage.fill('#email', 'e2etrainerinvite@test.com');
+    await freshPage.fill('#email', uniqueEmail);
     await freshPage.fill('#password', 'TestPass123!');
     await freshPage.getByRole('button', { name: /create account/i }).click();
-    await freshPage.waitForURL('/member/plan');
-    await expect(freshPage).toHaveURL('/member/plan');
+    await freshPage.waitForURL('/member');
+    await expect(freshPage).toHaveURL('/member');
 
     await freshCtx.close();
   });

@@ -163,7 +163,7 @@ export function PhotosClient({ photos }: Props) {
         <button
           type="button"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 w-full"
-          aria-label="Close comparison"
+          aria-label="Dismiss comparison overlay"
           onClick={(e) => { if (e.target === e.currentTarget) setCompareOpen(false); }}
         >
           <div className="bg-card border border-foreground/10 rounded-2xl p-6 w-full max-w-xl">

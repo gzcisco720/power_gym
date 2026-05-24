@@ -6,21 +6,19 @@ test.describe('Owner: Dashboard', () => {
   test('shows stat cards and trainer breakdown', async ({ page }) => {
     await page.goto('/owner');
 
-    await expect(page.getByText('Sessions / mo').first()).toBeVisible();
+    await expect(page.getByText('Sessions / Month').first()).toBeVisible();
     await expect(page.getByText('Pending Invites').first()).toBeVisible();
-    await expect(page.getByText('trainer@test.com', { exact: true })).toBeVisible();
+    await expect(page.getByText('Trainer Performance: This Month').first()).toBeVisible();
   });
 
   test('breakdown table lists both trainers', async ({ page }) => {
     await page.goto('/owner');
-    await expect(page.getByText('trainer@test.com', { exact: true })).toBeVisible();
-    await expect(page.getByText('trainer2@test.com', { exact: true })).toBeVisible();
+    await expect(page.getByText('Test Trainer', { exact: true })).toBeVisible();
+    await expect(page.getByText('Test Trainer2', { exact: true })).toBeVisible();
   });
 
-  test('Manage link navigates to trainers page', async ({ page }) => {
-    await page.goto('/owner');
-    await page.getByRole('link', { name: 'Manage →' }).first().click();
-    await page.waitForURL('/owner/trainers');
+  test('trainers page shows trainer email', async ({ page }) => {
+    await page.goto('/owner/trainers');
     await expect(page.getByText('trainer@test.com', { exact: true })).toBeVisible();
   });
 });

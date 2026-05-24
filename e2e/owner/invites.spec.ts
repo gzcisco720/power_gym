@@ -10,14 +10,15 @@ test.describe('Owner: Invites', () => {
   });
 
   test('full invite flow: create invite, register, login succeeds', async ({ page, browser }) => {
+    const uniqueEmail = `e2einvite-${Date.now()}@test.com`;
     const response = await page.request.post('/api/owner/invites', {
-      data: { recipientEmail: 'e2einvite@test.com', role: 'trainer' },
+      data: { recipientEmail: uniqueEmail, role: 'trainer' },
     });
     expect(response.ok()).toBeTruthy();
     const { inviteUrl } = (await response.json()) as { inviteUrl: string };
 
     // Verify invite email
-    const email = await waitForEmailTo('e2einvite@test.com');
+    const email = await waitForEmailTo(uniqueEmail);
     expect(email.Subject).toContain('Trainer');
     expect(email.HTML).toContain(inviteUrl);
 
@@ -29,7 +30,7 @@ test.describe('Owner: Invites', () => {
 
     await freshPage.fill('#firstName', 'E2E');
     await freshPage.fill('#lastName', 'InviteUser');
-    await freshPage.fill('#email', 'e2einvite@test.com');
+    await freshPage.fill('#email', uniqueEmail);
     await freshPage.fill('#password', 'TestPass123!');
     await freshPage.getByRole('button', { name: /create account/i }).click();
     await freshPage.waitForURL('/trainer/members');

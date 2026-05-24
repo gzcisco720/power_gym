@@ -1,7 +1,7 @@
 'use server';
 
 import bcrypt from 'bcryptjs';
-import { auth, signIn } from '@/lib/auth/auth';
+import { signIn } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { MongoInviteRepository } from '@/lib/repositories/invite.repository';
@@ -27,9 +27,6 @@ export async function registerAction(
   _prev: RegisterState,
   formData: FormData,
 ): Promise<RegisterState> {
-  const session = await auth();
-  if (session?.user) return { error: 'Already signed in' };
-
   const firstName = (formData.get('firstName') ?? '') as string;
   const lastName = (formData.get('lastName') ?? '') as string;
   const email = ((formData.get('email') ?? '') as string).toLowerCase().trim();

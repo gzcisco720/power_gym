@@ -94,14 +94,38 @@ test.describe('Member: Nutrition plan-mode lifecycle — log appears in calendar
   // This guards against the regression where NutritionDailyLog entries were invisible
   // to the landing page because it only read SelfNutritionLog.
 
+  async function getMemberId(request: import('@playwright/test').APIRequestContext): Promise<string> {
+    const res = await request.get('/api/auth/session');
+    const data = (await res.json()) as { user?: { id?: string } };
+    const id = data.user?.id;
+    if (!id) throw new Error('Could not resolve member ID from session');
+    return id;
+  }
+
   test.afterEach(async ({ request }) => {
-    // Clean up: delete the seeded log so it doesn't pollute other tests
-    await request.delete(`/api/members/me/nutrition/log/${TODAY}`);
+    // Restore the seed log so trainer nutrition adherence tests can still read it
+    const memberId = await getMemberId(request);
+    await request.put(`/api/members/${memberId}/nutrition/log/${TODAY}`, {
+      data: {
+        dayTypeName: 'Training Day',
+        meals: [
+          {
+            name: 'Lunch', order: 1, completed: true,
+            items: [
+              { foodName: 'Rice', quantityG: 100, kcal: 365, protein: 7.1, carbs: 79.0, fat: 0.7 },
+              { foodName: 'Chicken Breast', quantityG: 150, kcal: 247.5, protein: 46.5, carbs: 0.0, fat: 5.4 },
+            ],
+          },
+        ],
+        dayCompleted: false,
+      },
+    });
   });
 
   test('plan-mode logged day appears as a dot in the landing calendar', async ({ page, request }) => {
     // 1. Seed a completed plan-based log via API
-    const seedRes = await request.put(`/api/members/me/nutrition/log/${TODAY}`, {
+    const memberId = await getMemberId(request);
+    const seedRes = await request.put(`/api/members/${memberId}/nutrition/log/${TODAY}`, {
       data: {
         dayTypeName: 'Training Day',
         meals: [
@@ -121,10 +145,10 @@ test.describe('Member: Nutrition plan-mode lifecycle — log appears in calendar
     await page.goto('/member/nutrition');
 
     // 3. The calendar cell for today should show a logged indicator (kcal dot or highlighted cell)
-    // SelfNutritionCalendar highlights logged days — find today's cell
+    // SelfNutritionCalendar is a rounded-xl card containing a grid-cols-7 day grid
     const todayDay = String(new Date().getDate());
-    const todayCell = page.locator('.rounded-xl').filter({ hasText: 'Nutrition History' })
-      .locator(`text=${todayDay}`).first();
+    const calendar = page.locator('div.rounded-xl').filter({ has: page.locator('div.grid-cols-7') });
+    const todayCell = calendar.locator('button').filter({ hasText: new RegExp(`^${todayDay}$`) }).first();
     await expect(todayCell).toBeVisible({ timeout: 6000 });
 
     // The activity strip should reflect at least 1 day logged (not show "Get started")

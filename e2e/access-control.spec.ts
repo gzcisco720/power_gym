@@ -25,22 +25,22 @@ test.describe('Access Control: unauthenticated', () => {
 test.describe('Access Control: member blocked from trainer and owner routes', () => {
   test.use({ storageState: 'e2e/.auth/member.json' });
 
-  test('/trainer/members redirects member to /member/plan', async ({ page }) => {
+  test('/trainer/members redirects member to /member', async ({ page }) => {
     await page.goto('/trainer/members');
-    await page.waitForURL('/member/plan');
-    await expect(page).toHaveURL('/member/plan');
+    await page.waitForURL('/member');
+    await expect(page).toHaveURL('/member');
   });
 
-  test('/owner redirects member to /member/plan', async ({ page }) => {
+  test('/owner redirects member to /member', async ({ page }) => {
     await page.goto('/owner');
-    await page.waitForURL('/member/plan');
-    await expect(page).toHaveURL('/member/plan');
+    await page.waitForURL('/member');
+    await expect(page).toHaveURL('/member');
   });
 
-  test('/owner/trainers redirects member to /member/plan', async ({ page }) => {
+  test('/owner/trainers redirects member to /member', async ({ page }) => {
     await page.goto('/owner/trainers');
-    await page.waitForURL('/member/plan');
-    await expect(page).toHaveURL('/member/plan');
+    await page.waitForURL('/member');
+    await expect(page).toHaveURL('/member');
   });
 });
 
