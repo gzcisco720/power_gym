@@ -109,6 +109,7 @@ interface FoodRowProps {
 function FoodRow({ name, brand, servingLabel, kcal, protein, carbs, fat, onClick }: FoodRowProps) {
   const displayName = brand ? `${name} · ${brand}` : name;
   return (
+    // oxlint-disable-next-line react-doctor/prefer-tag-over-role
     <div
       role="row"
       tabIndex={0}

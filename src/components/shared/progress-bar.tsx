@@ -13,6 +13,7 @@ export function ProgressBar({ value, max, label }: ProgressBarProps) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
 
   return (
+    // oxlint-disable-next-line react-doctor/prefer-tag-over-role
     <div
       role="progressbar"
       aria-valuenow={value}

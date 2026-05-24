@@ -76,7 +76,7 @@ export function AvatarUpload({ avatarUrl, initials, onUpload }: Props) {
           )}
           {uploading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-xs text-white">
-              uploading...
+              uploading…
             </div>
           )}
         </button>
@@ -91,6 +91,7 @@ export function AvatarUpload({ avatarUrl, initials, onUpload }: Props) {
           className="hidden"
           onChange={handleFileSelect}
           aria-hidden="true"
+          tabIndex={-1}
         />
       </div>
     </>

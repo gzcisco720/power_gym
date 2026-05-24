@@ -210,7 +210,7 @@ export function GymInfoTab({ gymInfo }: Props) {
                   <span className="text-[16px] font-semibold text-foreground/60">{fallbackInitial}</span>
                 )}
                 {uploadingLogo && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-[10px] text-white">uploading...</div>
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-[10px] text-white">uploading…</div>
                 )}
               </button>
               <p className="text-[10px] text-foreground/40">200×200px</p>
@@ -232,14 +232,14 @@ export function GymInfoTab({ gymInfo }: Props) {
                   <span className="text-[11px] text-foreground/40">None</span>
                 )}
                 {uploadingLoginLogo && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-[10px] text-white">uploading...</div>
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-[10px] text-white">uploading…</div>
                 )}
               </button>
               <p className="text-[10px] text-foreground/40">PNG recommended</p>
             </div>
           </div>
-          <input ref={logoInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleLogoChange} aria-hidden="true" />
-          <input ref={loginLogoInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml" className="hidden" onChange={handleLoginLogoChange} aria-hidden="true" />
+          <input ref={logoInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleLogoChange} aria-hidden="true" tabIndex={-1} />
+          <input ref={loginLogoInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml" className="hidden" onChange={handleLoginLogoChange} aria-hidden="true" tabIndex={-1} />
         </div>
 
         {GYM_FIELDS.map(({ id, label, placeholder }) => (

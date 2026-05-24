@@ -72,7 +72,7 @@ export function LogoCropDialog({
         <DialogHeader className="px-4 pt-4 pb-3 border-b border-foreground/[.06]">
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <div className="relative h-64 bg-black">
+        <div className="relative h-64 bg-background">
           <Cropper
             image={imageSrc}
             crop={crop}

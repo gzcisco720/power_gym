@@ -64,6 +64,7 @@ export async function TrainerMyTrainingCard() {
       <div className="bg-white/[.03] ring-1 ring-white/[.07] rounded-xl p-4 hover:ring-white/[.14] transition-all min-h-[180px] flex flex-col">
         <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-3">My Training</div>
         <div className="flex items-baseline gap-2 mb-1">
+          {/* oxlint-disable-next-line react-doctor/no-gradient-text */}
           <span
             className="text-4xl font-extrabold tracking-tighter bg-gradient-to-br from-amber-400 to-red-500 bg-clip-text text-transparent"
           >

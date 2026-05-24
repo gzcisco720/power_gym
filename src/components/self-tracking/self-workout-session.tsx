@@ -453,7 +453,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
           >
             ← Back
           </Link>
-          <h1 className="text-base font-bold text-foreground">{log.dayName}</h1>
+          <h1 className="text-base font-semibold text-foreground">{log.dayName}</h1>
           {isFreestyle && (
             <div className="text-[10px] uppercase tracking-[1.6px] font-bold text-sky-300 mt-0.5">
               Freestyle

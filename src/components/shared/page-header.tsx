@@ -18,7 +18,7 @@ export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
         initial="hidden"
         animate="visible"
       >
-        <h1 className="text-[18px] font-bold tracking-[-0.3px] text-foreground">{title}</h1>
+        <h1 className="text-[18px] font-semibold tracking-[-0.3px] text-foreground">{title}</h1>
         {subtitle && (
           <p className="mt-0.5 text-[12px] text-foreground/65">{subtitle}</p>
         )}

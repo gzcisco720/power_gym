@@ -97,7 +97,7 @@ export function FreestylePathCard(props: Props) {
         <div className="text-[11px] text-foreground/65">
           {props.state === 'empty' ? ' ' : 'No template, no plan'}
         </div>
-        <h2 className="text-xl font-bold leading-tight mt-0.5">Blank session</h2>
+        <h2 className="text-xl font-semibold leading-tight mt-0.5">Blank session</h2>
       </div>
       <div className="text-xs text-foreground/65 mb-3">
         {props.state === 'empty'

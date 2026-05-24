@@ -91,7 +91,7 @@ export function ServiceTypeList() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Services</h1>
+          <h1 className="text-xl font-semibold text-foreground">Services</h1>
           <p className="text-xs text-foreground/65 mt-0.5">Manage session types and pricing for your gym</p>
         </div>
         <Button onClick={openCreate} className="gap-1.5">

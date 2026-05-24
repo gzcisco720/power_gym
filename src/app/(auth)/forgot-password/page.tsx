@@ -27,7 +27,7 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-sm space-y-8">
         <div>
           <div className="text-[11px] font-bold tracking-[3px] text-white mb-1">POWER GYM</div>
-          <h1 className="text-[24px] font-bold tracking-[-0.5px] text-white">Forgot password</h1>
+          <h1 className="text-[24px] font-semibold tracking-[-0.5px] text-white">Forgot password</h1>
           <p className="mt-1 text-[13px] text-[#888]">
             Enter your email and we&apos;ll send you a reset link.
           </p>

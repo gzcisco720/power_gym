@@ -65,6 +65,7 @@ export function CompareModal({ open, onClose, beforeCheckIn, afterCheckIn }: Pro
   if (!open || !beforeCheckIn || !afterCheckIn) return null;
 
   return (
+    // oxlint-disable-next-line react-doctor/prefer-tag-over-role
     <div className="fixed inset-0 z-50 bg-background flex flex-col" role="dialog" aria-modal="true">
       {/* Top bar */}
       <div className="flex items-center justify-between px-5 h-12 flex-shrink-0 border-b border-foreground/[0.07] bg-foreground/[0.03]">

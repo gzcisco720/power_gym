@@ -14,7 +14,7 @@ describe('DayCompleteConfirmDialog', () => {
     baseProps.onConfirm = jest.fn();
   });
 
-  it('state A — all meals completed: shows Submit + Cancel', () => {
+  it('state A — all meals completed: shows Complete Day + Cancel', () => {
     render(
       <DayCompleteConfirmDialog
         {...baseProps}
@@ -24,12 +24,12 @@ describe('DayCompleteConfirmDialog', () => {
         totalKcal={2000}
       />,
     );
-    expect(screen.getByRole('button', { name: /^submit$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^complete day$/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /submit completed only/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /mark all/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^cancel$/i })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /^submit$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^complete day$/i }));
     expect(baseProps.onConfirm).toHaveBeenCalledWith({ markAll: false });
   });
 
@@ -68,7 +68,7 @@ describe('DayCompleteConfirmDialog', () => {
     );
     expect(screen.getByRole('button', { name: /mark all & submit/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /submit completed only/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^submit$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^complete day$/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^cancel$/i })).toBeInTheDocument();
   });
 

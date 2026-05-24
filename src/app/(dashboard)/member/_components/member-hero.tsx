@@ -62,6 +62,7 @@ export async function MemberHero() {
           />
           {streak > 0 && (
             <div className="flex-shrink-0 ml-4 flex flex-col items-center bg-amber-500/[.1] ring-1 ring-amber-500/[.2] rounded-2xl px-4 py-2.5 min-w-[72px]">
+              {/* oxlint-disable-next-line react-doctor/no-gradient-text */}
               <div
                 className="text-[38px] font-black leading-none"
                 style={{

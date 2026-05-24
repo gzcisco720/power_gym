@@ -37,9 +37,10 @@ it('shows non-destructive styling for under-target diff', () => {
   expect(diffEl).not.toHaveClass('text-destructive');
 });
 
-it('calls onOpenChange(false) when Done is clicked', () => {
+it('calls onOpenChange(false) when the bottom Close button is clicked', () => {
   const onOpenChange = jest.fn();
   render(<NutritionPlanCompareDialog {...baseProps} onOpenChange={onOpenChange} />);
-  fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+  const closeButtons = screen.getAllByRole('button', { name: 'Close' });
+  fireEvent.click(closeButtons[0]);
   expect(onOpenChange).toHaveBeenCalledWith(false);
 });

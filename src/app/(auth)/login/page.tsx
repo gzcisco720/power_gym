@@ -50,7 +50,7 @@ export default async function LoginPage({
               )}
             </>
           ) : (
-            <h1 className="text-[28px] font-bold tracking-[-0.5px] text-white">Sign in</h1>
+            <h1 className="text-[28px] font-semibold tracking-[-0.5px] text-white">Sign in</h1>
           )}
         </div>
 

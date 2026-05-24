@@ -208,10 +208,10 @@ function ExerciseStrengthChart({
                           border: '1px solid var(--border)',
                           borderRadius: 8,
                           padding: '8px 10px',
-                          fontSize: 11,
+                          fontSize: 12,
                         }}
                       >
-                        <p style={{ color: 'var(--muted-foreground)', fontSize: 10, marginBottom: 4 }}>
+                        <p style={{ color: 'var(--muted-foreground)', fontSize: 12, marginBottom: 4 }}>
                           {label}
                         </p>
                         <p style={{ color: 'var(--foreground)' }}>

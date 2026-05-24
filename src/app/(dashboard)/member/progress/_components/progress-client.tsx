@@ -20,7 +20,7 @@ export function ProgressClient({
     <div>
       {title && (
         <div className="px-4 sm:px-8 pt-6 pb-2">
-          <h1 className="text-[20px] font-bold text-foreground">{title}</h1>
+          <h1 className="text-[20px] font-semibold text-foreground">{title}</h1>
         </div>
       )}
       <div className="space-y-8 py-6">

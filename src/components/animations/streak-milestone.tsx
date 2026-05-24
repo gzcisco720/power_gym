@@ -38,6 +38,7 @@ export function StreakMilestoneAnimation({ days, onComplete }: StreakMilestoneAn
       >
         🔥
       </m.div>
+      {/* oxlint-disable-next-line react-doctor/no-gradient-text */}
       <m.div
         className="text-5xl font-extrabold tracking-tighter bg-gradient-to-br from-amber-400 to-red-500 bg-clip-text text-transparent"
         initial={{ scale: 0.4, opacity: 0 }}

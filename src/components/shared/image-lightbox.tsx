@@ -39,6 +39,7 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props
   if (!open || images.length === 0) return null;
 
   return (
+    // oxlint-disable-next-line react-doctor/prefer-tag-over-role
     <div
       role="dialog"
       aria-modal="true"

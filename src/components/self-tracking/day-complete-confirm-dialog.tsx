@@ -60,7 +60,7 @@ export function DayCompleteConfirmDialog({
         <div className="flex flex-col gap-2 mt-4">
           {allCompleted ? (
             <Button onClick={() => void onConfirm({ markAll: false })} disabled={submitting}>
-              Submit
+              Complete Day
             </Button>
           ) : (
             <>

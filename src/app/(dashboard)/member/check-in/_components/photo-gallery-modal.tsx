@@ -53,6 +53,7 @@ function Lightbox({ photos, initialIdx, onClose }: LightboxProps) {
   }, [photos.length, onClose]);
 
   return (
+    // oxlint-disable-next-line react-doctor/prefer-tag-over-role
     <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center gap-3 z-10" role="dialog" aria-modal="true">
       <div className="absolute top-3 left-4 right-4 flex items-center justify-between">
         <button type="button" onClick={onClose} className="text-xs text-foreground/45">← All photos</button>
@@ -109,6 +110,7 @@ export function PhotoGalleryModal({ open, onClose, photos, totalCount }: Props) 
   const groups = groupByMonth(sorted);
 
   return (
+    // oxlint-disable-next-line react-doctor/prefer-tag-over-role
     <div className="fixed inset-0 z-50 bg-background flex flex-col" role="dialog" aria-modal="true">
       {/* Top bar */}
       <div className="flex items-center justify-between px-5 h-12 flex-shrink-0 border-b border-foreground/[0.07] bg-foreground/[0.03]">

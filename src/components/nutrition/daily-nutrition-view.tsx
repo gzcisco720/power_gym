@@ -199,7 +199,7 @@ export function DailyNutritionView({ memberId, initialDate, forceDayType, planDa
     } });
   }
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Loading…</div>;
   if (!log) {
     return (
       <Card className="p-6 space-y-3 text-center text-muted-foreground">

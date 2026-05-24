@@ -76,7 +76,7 @@ export function BillingSummaryClient({ userRole, memberHubBase }: BillingSummary
     <div className="px-4 sm:px-8 py-7">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Billing</h1>
+          <h1 className="text-xl font-semibold text-foreground">Billing</h1>
           <p className="text-xs text-foreground/65 mt-0.5">Completed sessions with a service type</p>
         </div>
         <BillingPeriodNav onChange={handlePeriodChange} />
