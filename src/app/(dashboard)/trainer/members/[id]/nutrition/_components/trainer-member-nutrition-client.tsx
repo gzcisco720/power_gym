@@ -409,6 +409,7 @@ function ChangePlanDialog({
                 variant="outline"
                 role="combobox"
                 aria-expanded={comboOpen}
+                aria-controls="nutrition-search-listbox"
                 className="w-full justify-between text-sm font-normal text-foreground/70"
               >
                 {selectedName ?? 'Search templates...'}
@@ -421,7 +422,7 @@ function ChangePlanDialog({
                   <PopoverPopup className="w-full p-0">
                     <Command>
                       <CommandInput placeholder="Search templates..." />
-                      <CommandList>
+                      <CommandList id="nutrition-search-listbox">
                         <CommandEmpty>No templates found.</CommandEmpty>
                         <CommandGroup>
                           {templates.map((t) => (
