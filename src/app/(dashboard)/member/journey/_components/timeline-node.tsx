@@ -42,7 +42,7 @@ export default function TimelineNode({ item, isLast, priority = false }: Props) 
           </div>
 
           {/* Photo thumbnail */}
-          <div className="relative size-9 rounded-md overflow-hidden shrink-0">
+          <div className="size-9 rounded-md overflow-hidden shrink-0" style={{ position: 'relative' }}>
             {item.checkInPhoto ? (
               <Image
                 src={item.checkInPhoto}

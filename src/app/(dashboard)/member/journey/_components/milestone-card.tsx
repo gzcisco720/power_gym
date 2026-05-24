@@ -86,7 +86,7 @@ export default function MilestoneCard({ item, isLast, priority = false }: Props)
           {milestone.photos.length > 0 && (
             <div className="flex gap-1.5">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="relative flex-1 h-14 rounded-lg overflow-hidden">
+                <div key={i} className="flex-1 h-14 rounded-lg overflow-hidden" style={{ position: 'relative' }}>
                   {milestone.photos[i] ? (
                     <Image
                       src={milestone.photos[i]}
