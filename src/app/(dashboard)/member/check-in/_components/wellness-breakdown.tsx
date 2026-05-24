@@ -55,7 +55,7 @@ export function WellnessBreakdown({ checkIn }: Props) {
 
       <div className="flex">
         {/* Radar — hidden on mobile */}
-        <div className="hidden md:flex flex-col items-center justify-center gap-1.5 px-4 py-4 w-40 flex-shrink-0">
+        <div className="hidden md:flex flex-col items-center justify-center gap-1.5 p-4 w-40 flex-shrink-0">
           <svg width="100" height="100" viewBox="-50 -50 100 100" aria-hidden="true">
             {[40, 27, 14].map((r, i) => (
               <polygon

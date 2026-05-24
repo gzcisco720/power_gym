@@ -22,9 +22,9 @@ export function MedicationsSection({ medications }: Props) {
       </div>
 
       {medications.length === 0 ? (
-        <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-4">
+        <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4">
           <p className="text-sm text-foreground/65">
-            No medications recorded — the member can add these from their health profile.
+            No medications recorded. The member can add these from their health profile.
           </p>
         </div>
       ) : (

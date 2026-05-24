@@ -83,7 +83,7 @@ export function MemberNutritionPlanPathCard({ plan, todayDayTypeName, basePath =
           {plan.dayTypes.map((dt) => (
             <div
               key={dt.name}
-              className="flex items-center justify-between px-2 py-2 rounded-lg hover:bg-foreground/5 transition-colors"
+              className="flex items-center justify-between p-2 rounded-lg hover:bg-foreground/5 transition-colors"
             >
               <div className="min-w-0 flex-1">
                 <div className="text-[12px] font-medium">{dt.name}</div>

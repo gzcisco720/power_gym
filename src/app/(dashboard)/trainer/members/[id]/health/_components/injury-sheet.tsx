@@ -166,7 +166,7 @@ export function InjurySheet({ open, onOpenChange, editing, form, onFormChange, o
           </FieldRow>
 
           {hasMemberData && (
-            <div className="rounded-lg bg-muted/50 ring-1 ring-foreground/8 px-3 py-3 space-y-2">
+            <div className="rounded-lg bg-muted/50 ring-1 ring-foreground/8 p-3 space-y-2">
               <p className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold">
                 Member-reported
               </p>

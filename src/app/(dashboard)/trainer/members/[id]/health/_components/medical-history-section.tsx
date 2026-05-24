@@ -22,7 +22,7 @@ function GridField({ label, value }: { label: string; value: string | null | und
       {value ? (
         <p className="text-sm text-foreground">{value}</p>
       ) : (
-        <p className="text-sm text-foreground/40">—</p>
+        <p className="text-sm text-foreground/40">–</p>
       )}
     </div>
   );
@@ -39,11 +39,11 @@ export function MedicalHistorySection({ history }: Props) {
       </div>
 
       {!history ? (
-        <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-4">
+        <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4">
           <p className="text-sm text-foreground/65">No medical history recorded.</p>
         </div>
       ) : (
-        <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-4 space-y-4">
+        <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 space-y-4">
           <GridField
             label="Chronic Conditions"
             value={
