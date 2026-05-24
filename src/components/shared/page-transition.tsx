@@ -8,7 +8,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="h-full overflow-x-hidden">
+    <div className="h-full overflow-x-clip">
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={pathname.split('/')[2] ?? pathname}
