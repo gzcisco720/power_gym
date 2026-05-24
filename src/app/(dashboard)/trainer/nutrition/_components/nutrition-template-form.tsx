@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useReducer } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -119,14 +119,49 @@ function sumMealMacros(meal: IMeal): CoreMacros {
 // NutritionTemplateForm
 // ---------------------------------------------------------------------------
 
+interface NutritionTemplateFormState {
+  name: string;
+  description: string;
+  dayTypes: IDayType[];
+  collapsed: Record<number, boolean>;
+  addingFor: AddingFor | null;
+  pendingDelete: PendingDelete | null;
+  saving: boolean;
+}
+
+type NutritionTemplateFormAction =
+  | { type: 'SET_NAME'; value: string }
+  | { type: 'SET_DESCRIPTION'; value: string }
+  | { type: 'SET_DAY_TYPES'; value: IDayType[] }
+  | { type: 'SET_COLLAPSED'; value: Record<number, boolean> }
+  | { type: 'SET_ADDING_FOR'; value: AddingFor | null }
+  | { type: 'SET_PENDING_DELETE'; value: PendingDelete | null }
+  | { type: 'SET_SAVING'; value: boolean };
+
+function nutritionTemplateFormReducer(state: NutritionTemplateFormState, action: NutritionTemplateFormAction): NutritionTemplateFormState {
+  switch (action.type) {
+    case 'SET_NAME': return { ...state, name: action.value };
+    case 'SET_DESCRIPTION': return { ...state, description: action.value };
+    case 'SET_DAY_TYPES': return { ...state, dayTypes: action.value };
+    case 'SET_COLLAPSED': return { ...state, collapsed: action.value };
+    case 'SET_ADDING_FOR': return { ...state, addingFor: action.value };
+    case 'SET_PENDING_DELETE': return { ...state, pendingDelete: action.value };
+    case 'SET_SAVING': return { ...state, saving: action.value };
+    default: return state;
+  }
+}
+
 export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props) {
-  const [name, setName] = useState(initialData?.name ?? '');
-  const [description, setDescription] = useState(initialData?.description ?? '');
-  const [dayTypes, setDayTypes] = useState<IDayType[]>(initialData?.dayTypes ?? []);
-  const [collapsed, setCollapsed] = useState<Record<number, boolean>>({});
-  const [addingFor, setAddingFor] = useState<AddingFor | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [state, dispatch] = useReducer(nutritionTemplateFormReducer, {
+    name: initialData?.name ?? '',
+    description: initialData?.description ?? '',
+    dayTypes: initialData?.dayTypes ?? [],
+    collapsed: {},
+    addingFor: null,
+    pendingDelete: null,
+    saving: false,
+  });
+  const { name, description, dayTypes, collapsed, addingFor, pendingDelete, saving } = state;
 
   // Dirty tracking — disable Save when nothing has changed
   const initialSnapshot = useMemo(
@@ -152,106 +187,93 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
     } else {
       removeItem(pendingDelete.dayIdx, pendingDelete.mealIdx, pendingDelete.itemIdx);
     }
-    setPendingDelete(null);
+    dispatch({ type: 'SET_PENDING_DELETE', value: null });
   }
 
   // ---- Day type operations ------------------------------------------------
 
   function addDayType(): void {
     const idx = dayTypes.length;
-    setDayTypes((d) => [...d, { name: 'Training Day', meals: [] }]);
-    setCollapsed((c) => ({ ...c, [idx]: false }));
+    dispatch({ type: 'SET_DAY_TYPES', value: [...dayTypes, { name: 'Training Day', meals: [] }] });
+    dispatch({ type: 'SET_COLLAPSED', value: { ...collapsed, [idx]: false } });
   }
 
   function removeDayType(idx: number): void {
-    setDayTypes((d) => d.filter((_, i) => i !== idx));
+    dispatch({ type: 'SET_DAY_TYPES', value: dayTypes.filter((_, i) => i !== idx) });
   }
 
   function updateDayName(idx: number, newName: string): void {
-    setDayTypes((d) => d.map((day, i) => (i === idx ? { ...day, name: newName } : day)));
+    dispatch({ type: 'SET_DAY_TYPES', value: dayTypes.map((day, i) => (i === idx ? { ...day, name: newName } : day)) });
   }
 
   function toggleCollapsed(idx: number): void {
-    setCollapsed((c) => ({ ...c, [idx]: !c[idx] }));
+    dispatch({ type: 'SET_COLLAPSED', value: { ...collapsed, [idx]: !collapsed[idx] } });
   }
 
   // ---- Meal operations ----------------------------------------------------
 
   function addMeal(dayIdx: number): void {
-    setDayTypes((d) =>
-      d.map((day, i) => {
-        if (i !== dayIdx) return day;
-        return { ...day, meals: [...day.meals, emptyMeal(day.meals.length + 1)] };
-      }),
-    );
+    dispatch({ type: 'SET_DAY_TYPES', value: dayTypes.map((day, i) => {
+      if (i !== dayIdx) return day;
+      return { ...day, meals: [...day.meals, emptyMeal(day.meals.length + 1)] };
+    }) });
   }
 
   function removeMeal(dayIdx: number, mealIdx: number): void {
-    setDayTypes((d) =>
-      d.map((day, i) => {
-        if (i !== dayIdx) return day;
-        return { ...day, meals: day.meals.filter((_, j) => j !== mealIdx) };
-      }),
-    );
+    dispatch({ type: 'SET_DAY_TYPES', value: dayTypes.map((day, i) => {
+      if (i !== dayIdx) return day;
+      return { ...day, meals: day.meals.filter((_, j) => j !== mealIdx) };
+    }) });
   }
 
   function updateMealName(dayIdx: number, mealIdx: number, newName: string): void {
-    setDayTypes((d) =>
-      d.map((day, i) => {
-        if (i !== dayIdx) return day;
-        return {
-          ...day,
-          meals: day.meals.map((m, j) => (j === mealIdx ? { ...m, name: newName } : m)),
-        };
-      }),
-    );
+    dispatch({ type: 'SET_DAY_TYPES', value: dayTypes.map((day, i) => {
+      if (i !== dayIdx) return day;
+      return { ...day, meals: day.meals.map((m, j) => (j === mealIdx ? { ...m, name: newName } : m)) };
+    }) });
   }
 
   // ---- Food operations ----------------------------------------------------
 
   function removeItem(dayIdx: number, mealIdx: number, itemIdx: number): void {
-    setDayTypes((d) =>
-      d.map((day, i) => {
-        if (i !== dayIdx) return day;
-        return {
-          ...day,
-          meals: day.meals.map((m, j) => {
-            if (j !== mealIdx) return m;
-            return { ...m, items: m.items.filter((_, k) => k !== itemIdx) };
-          }),
-        };
-      }),
-    );
+    dispatch({ type: 'SET_DAY_TYPES', value: dayTypes.map((day, i) => {
+      if (i !== dayIdx) return day;
+      return {
+        ...day,
+        meals: day.meals.map((m, j) => {
+          if (j !== mealIdx) return m;
+          return { ...m, items: m.items.filter((_, k) => k !== itemIdx) };
+        }),
+      };
+    }) });
   }
 
   function handleFoodPicked(picked: PickedFood): void {
     if (addingFor === null) return;
     const { dayIdx, mealIdx } = addingFor;
     const newItem = pickedToMealItem(picked);
-    setDayTypes((d) =>
-      d.map((day, i) => {
-        if (i !== dayIdx) return day;
-        return {
-          ...day,
-          meals: day.meals.map((m, j) => {
-            if (j !== mealIdx) return m;
-            return { ...m, items: [...m.items, newItem] };
-          }),
-        };
-      }),
-    );
-    setAddingFor(null);
+    dispatch({ type: 'SET_DAY_TYPES', value: dayTypes.map((day, i) => {
+      if (i !== dayIdx) return day;
+      return {
+        ...day,
+        meals: day.meals.map((m, j) => {
+          if (j !== mealIdx) return m;
+          return { ...m, items: [...m.items, newItem] };
+        }),
+      };
+    }) });
+    dispatch({ type: 'SET_ADDING_FOR', value: null });
   }
 
   // ---- Submit -------------------------------------------------------------
 
   async function handleSubmit(e: React.FormEvent): Promise<void> {
     e.preventDefault();
-    setSaving(true);
+    dispatch({ type: 'SET_SAVING', value: true });
     try {
       await onSubmit({ name, description: description || null, dayTypes });
     } finally {
-      setSaving(false);
+      dispatch({ type: 'SET_SAVING', value: false });
     }
   }
 
@@ -272,7 +294,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
             <Input
               id="tpl-name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => dispatch({ type: 'SET_NAME', value: e.target.value })}
               required
               placeholder="e.g. Off Season Bulk"
               className="text-base font-semibold"
@@ -288,7 +310,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
             <Textarea
               id="tpl-desc"
               value={description ?? ''}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => dispatch({ type: 'SET_DESCRIPTION', value: e.target.value })}
               rows={2}
               placeholder="Optional notes about this plan…"
             />
@@ -326,7 +348,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
                 <button
                   type="button"
                   onClick={() =>
-                    setPendingDelete({ kind: 'day', dayIdx, name: dayType.name || 'this day type' })
+                    dispatch({ type: 'SET_PENDING_DELETE', value: { kind: 'day', dayIdx, name: dayType.name || 'this day type' } })
                   }
                   className="p-1.5 rounded-md cursor-pointer text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
                   aria-label="Remove day type"
@@ -375,12 +397,12 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
                           <button
                             type="button"
                             onClick={() =>
-                              setPendingDelete({
+                              dispatch({ type: 'SET_PENDING_DELETE', value: {
                                 kind: 'meal',
                                 dayIdx,
                                 mealIdx,
                                 name: meal.name || 'this meal',
-                              })
+                              } })
                             }
                             className="p-1.5 rounded-md cursor-pointer text-muted-foreground/70 hover:bg-destructive/10 hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
                             aria-label="Remove meal"
@@ -417,13 +439,13 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
                                 <button
                                   type="button"
                                   onClick={() =>
-                                    setPendingDelete({
+                                    dispatch({ type: 'SET_PENDING_DELETE', value: {
                                       kind: 'item',
                                       dayIdx,
                                       mealIdx,
                                       itemIdx,
                                       name: item.foodName,
-                                    })
+                                    } })
                                   }
                                   className="p-1.5 rounded-md cursor-pointer text-muted-foreground/40 group-hover:text-muted-foreground hover:!bg-destructive/10 hover:!text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
                                   aria-label={`Remove ${item.foodName}`}
@@ -438,7 +460,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
                         {/* Add food button — dashed ghost */}
                         <button
                           type="button"
-                          onClick={() => setAddingFor({ dayIdx, mealIdx })}
+                          onClick={() => dispatch({ type: 'SET_ADDING_FOR', value: { dayIdx, mealIdx } })}
                           className="w-full py-1.5 text-xs font-medium cursor-pointer text-muted-foreground border border-dashed border-muted-foreground/30 rounded-md hover:border-primary/50 hover:text-primary hover:bg-primary/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                         >
                           + Add Food
@@ -494,7 +516,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
       <FoodPickerDialog
         open={addingFor !== null}
         onOpenChange={(o) => {
-          if (!o) setAddingFor(null);
+          if (!o) dispatch({ type: 'SET_ADDING_FOR', value: null });
         }}
         memberId={null}
         onSelect={handleFoodPicked}
@@ -504,7 +526,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
       <Dialog
         open={pendingDelete !== null}
         onOpenChange={(o) => {
-          if (!o) setPendingDelete(null);
+          if (!o) dispatch({ type: 'SET_PENDING_DELETE', value: null });
         }}
       >
         <DialogContent className="sm:max-w-md" showCloseButton={false}>
@@ -515,7 +537,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
             {deleteDialogMessage(pendingDelete)}
           </p>
           <div className="flex gap-2 justify-end pt-2">
-            <Button type="button" variant="outline" onClick={() => setPendingDelete(null)}>
+            <Button type="button" variant="outline" onClick={() => dispatch({ type: 'SET_PENDING_DELETE', value: null })}>
               Cancel
             </Button>
             <Button type="button" variant="destructive" onClick={confirmDelete}>

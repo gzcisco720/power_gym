@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useReducer, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
@@ -37,15 +37,50 @@ const GYM_FIELDS: { id: string; label: string; placeholder?: string }[] = [
   { id: 'gymHours', label: 'Hours', placeholder: 'Mon–Fri 6am–10pm' },
 ];
 
+interface GymInfoTabState {
+  saving: boolean;
+  logoUrl: string | null;
+  loginLogoUrl: string | null;
+  uploadingLogo: boolean;
+  uploadingLoginLogo: boolean;
+  cropSrc: string | null;
+  loginLogoCropSrc: string | null;
+}
+
+type GymInfoTabAction =
+  | { type: 'SET_SAVING'; value: boolean }
+  | { type: 'SET_LOGO_URL'; value: string | null }
+  | { type: 'SET_LOGIN_LOGO_URL'; value: string | null }
+  | { type: 'SET_UPLOADING_LOGO'; value: boolean }
+  | { type: 'SET_UPLOADING_LOGIN_LOGO'; value: boolean }
+  | { type: 'SET_CROP_SRC'; value: string | null }
+  | { type: 'SET_LOGIN_LOGO_CROP_SRC'; value: string | null };
+
+function gymInfoTabReducer(state: GymInfoTabState, action: GymInfoTabAction): GymInfoTabState {
+  switch (action.type) {
+    case 'SET_SAVING': return { ...state, saving: action.value };
+    case 'SET_LOGO_URL': return { ...state, logoUrl: action.value };
+    case 'SET_LOGIN_LOGO_URL': return { ...state, loginLogoUrl: action.value };
+    case 'SET_UPLOADING_LOGO': return { ...state, uploadingLogo: action.value };
+    case 'SET_UPLOADING_LOGIN_LOGO': return { ...state, uploadingLoginLogo: action.value };
+    case 'SET_CROP_SRC': return { ...state, cropSrc: action.value };
+    case 'SET_LOGIN_LOGO_CROP_SRC': return { ...state, loginLogoCropSrc: action.value };
+    default: return state;
+  }
+}
+
 export function GymInfoTab({ gymInfo }: Props) {
   const { refresh } = useRouter();
-  const [saving, setSaving] = useState(false);
-  const [logoUrl, setLogoUrl] = useState<string | null>(gymInfo?.logoUrl ?? null);
-  const [loginLogoUrl, setLoginLogoUrl] = useState<string | null>(gymInfo?.loginLogoUrl ?? null);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [uploadingLoginLogo, setUploadingLoginLogo] = useState(false);
-  const [cropSrc, setCropSrc] = useState<string | null>(null);
-  const [loginLogoCropSrc, setLoginLogoCropSrc] = useState<string | null>(null);
+  const [state, dispatch] = useReducer(gymInfoTabReducer, {
+    saving: false,
+    logoUrl: gymInfo?.logoUrl ?? null,
+    loginLogoUrl: gymInfo?.loginLogoUrl ?? null,
+    uploadingLogo: false,
+    uploadingLoginLogo: false,
+    cropSrc: null,
+    loginLogoCropSrc: null,
+  });
+  const { saving, logoUrl, loginLogoUrl, uploadingLogo, uploadingLoginLogo, cropSrc, loginLogoCropSrc } = state;
   const logoInputRef = useRef<HTMLInputElement>(null);
   const loginLogoInputRef = useRef<HTMLInputElement>(null);
 
@@ -56,60 +91,60 @@ export function GymInfoTab({ gymInfo }: Props) {
     const file = e.target.files?.[0];
     if (!file) return;
     const objectUrl = URL.createObjectURL(file);
-    setCropSrc(objectUrl);
+    dispatch({ type: 'SET_CROP_SRC', value: objectUrl });
     if (logoInputRef.current) logoInputRef.current.value = '';
   }
 
   async function handleCropApply(blob: Blob) {
     if (!cropSrc) return;
     URL.revokeObjectURL(cropSrc);
-    setCropSrc(null);
-    setUploadingLogo(true);
+    dispatch({ type: 'SET_CROP_SRC', value: null });
+    dispatch({ type: 'SET_UPLOADING_LOGO', value: true });
     try {
       const config = await getGymAssetSignatureAction('gym-logos');
       const file = new File([blob], 'logo.webp', { type: 'image/webp' });
       const url = await uploadFile(file, config);
-      setLogoUrl(url);
+      dispatch({ type: 'SET_LOGO_URL', value: url });
     } catch {
       toast.error('Failed to upload logo');
     } finally {
-      setUploadingLogo(false);
+      dispatch({ type: 'SET_UPLOADING_LOGO', value: false });
     }
   }
 
   function handleCropCancel() {
     if (cropSrc) URL.revokeObjectURL(cropSrc);
-    setCropSrc(null);
+    dispatch({ type: 'SET_CROP_SRC', value: null });
   }
 
   function handleLoginLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     const objectUrl = URL.createObjectURL(file);
-    setLoginLogoCropSrc(objectUrl);
+    dispatch({ type: 'SET_LOGIN_LOGO_CROP_SRC', value: objectUrl });
     if (loginLogoInputRef.current) loginLogoInputRef.current.value = '';
   }
 
   async function handleLoginLogoCropApply(blob: Blob) {
     if (!loginLogoCropSrc) return;
     URL.revokeObjectURL(loginLogoCropSrc);
-    setLoginLogoCropSrc(null);
-    setUploadingLoginLogo(true);
+    dispatch({ type: 'SET_LOGIN_LOGO_CROP_SRC', value: null });
+    dispatch({ type: 'SET_UPLOADING_LOGIN_LOGO', value: true });
     try {
       const config = await getGymAssetSignatureAction('gym-login-logos');
       const file = new File([blob], 'login-logo.webp', { type: 'image/webp' });
       const url = await uploadFile(file, config);
-      setLoginLogoUrl(url);
+      dispatch({ type: 'SET_LOGIN_LOGO_URL', value: url });
     } catch {
       toast.error('Failed to upload login logo');
     } finally {
-      setUploadingLoginLogo(false);
+      dispatch({ type: 'SET_UPLOADING_LOGIN_LOGO', value: false });
     }
   }
 
   function handleLoginLogoCropCancel() {
     if (loginLogoCropSrc) URL.revokeObjectURL(loginLogoCropSrc);
-    setLoginLogoCropSrc(null);
+    dispatch({ type: 'SET_LOGIN_LOGO_CROP_SRC', value: null });
   }
 
   const fieldValues: Record<string, string | null | undefined> = {
@@ -123,12 +158,12 @@ export function GymInfoTab({ gymInfo }: Props) {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setSaving(true);
+    dispatch({ type: 'SET_SAVING', value: true });
     const formData = new FormData(e.currentTarget);
     if (logoUrl) formData.set('logoUrl', logoUrl);
     if (loginLogoUrl) formData.set('loginLogoUrl', loginLogoUrl);
     const result = await updateGymInfoAction({ error: '' }, formData);
-    setSaving(false);
+    dispatch({ type: 'SET_SAVING', value: false });
     if (result.error) toast.error(result.error);
     else { toast.success('Gym info saved'); refresh(); }
   }

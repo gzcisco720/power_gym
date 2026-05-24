@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef } from 'react';
 import { Search, X as XIcon, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -30,6 +30,40 @@ interface Props {
   onCreated: (exercise: ExerciseOption) => void;
 }
 
+interface ExerciseSearchSheetState {
+  query: string;
+  creating: boolean;
+  newName: string;
+  newImageUrl: string;
+  newMuscle: string;
+  newBW: boolean;
+  saving: boolean;
+}
+
+type ExerciseSearchSheetAction =
+  | { type: 'SET_QUERY'; value: string }
+  | { type: 'SET_CREATING'; value: boolean }
+  | { type: 'SET_NEW_NAME'; value: string }
+  | { type: 'SET_NEW_IMAGE_URL'; value: string }
+  | { type: 'SET_NEW_MUSCLE'; value: string }
+  | { type: 'SET_NEW_BW'; value: boolean }
+  | { type: 'SET_SAVING'; value: boolean }
+  | { type: 'RESET' };
+
+function exerciseSearchSheetReducer(state: ExerciseSearchSheetState, action: ExerciseSearchSheetAction): ExerciseSearchSheetState {
+  switch (action.type) {
+    case 'SET_QUERY': return { ...state, query: action.value };
+    case 'SET_CREATING': return { ...state, creating: action.value };
+    case 'SET_NEW_NAME': return { ...state, newName: action.value };
+    case 'SET_NEW_IMAGE_URL': return { ...state, newImageUrl: action.value };
+    case 'SET_NEW_MUSCLE': return { ...state, newMuscle: action.value };
+    case 'SET_NEW_BW': return { ...state, newBW: action.value };
+    case 'SET_SAVING': return { ...state, saving: action.value };
+    case 'RESET': return { query: '', creating: false, newName: '', newImageUrl: '', newMuscle: '', newBW: false, saving: false };
+    default: return state;
+  }
+}
+
 export function ExerciseSearchSheet({
   open,
   onOpenChange,
@@ -37,13 +71,10 @@ export function ExerciseSearchSheet({
   onSelect,
   onCreated,
 }: Props) {
-  const [query, setQuery] = useState('');
-  const [creating, setCreating] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [newImageUrl, setNewImageUrl] = useState('');
-  const [newMuscle, setNewMuscle] = useState('');
-  const [newBW, setNewBW] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [state, dispatch] = useReducer(exerciseSearchSheetReducer, {
+    query: '', creating: false, newName: '', newImageUrl: '', newMuscle: '', newBW: false, saving: false,
+  });
+  const { query, creating, newName, newImageUrl, newMuscle, newBW, saving } = state;
   const searchRef = useRef<HTMLInputElement | null>(null);
 
   // Auto-focus search input when dialog opens
@@ -54,14 +85,7 @@ export function ExerciseSearchSheet({
   }, [open]);
 
   function handleOpenChange(next: boolean) {
-    if (!next) {
-      setQuery('');
-      setCreating(false);
-      setNewName('');
-      setNewImageUrl('');
-      setNewMuscle('');
-      setNewBW(false);
-    }
+    if (!next) dispatch({ type: 'RESET' });
     onOpenChange(next);
   }
 
@@ -75,7 +99,7 @@ export function ExerciseSearchSheet({
 
   async function createExercise() {
     if (!newName.trim()) return;
-    setSaving(true);
+    dispatch({ type: 'SET_SAVING', value: true });
     try {
       const res = await fetch('/api/exercises', {
         method: 'POST',
@@ -97,7 +121,7 @@ export function ExerciseSearchSheet({
       onSelect(created);
       handleOpenChange(false);
     } finally {
-      setSaving(false);
+      dispatch({ type: 'SET_SAVING', value: false });
     }
   }
 
@@ -118,14 +142,14 @@ export function ExerciseSearchSheet({
               ref={searchRef}
               placeholder="Search exercises…"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => dispatch({ type: 'SET_QUERY', value: e.target.value })}
               className="h-9 pl-8 pr-8 text-sm"
             />
             {query && (
               <button
                 type="button"
                 aria-label="Clear search"
-                onClick={() => setQuery('')}
+                onClick={() => dispatch({ type: 'SET_QUERY', value: '' })}
                 className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center size-5 rounded text-foreground/50 hover:text-foreground cursor-pointer"
               >
                 <XIcon className="size-3.5" />
@@ -183,7 +207,7 @@ export function ExerciseSearchSheet({
             <Button
               type="button"
               variant="outline"
-              onClick={() => setCreating(true)}
+              onClick={() => dispatch({ type: 'SET_CREATING', value: true })}
               className="w-full text-xs"
             >
               <Plus className="size-3.5" /> Create new exercise
@@ -196,7 +220,7 @@ export function ExerciseSearchSheet({
                 </span>
                 <button
                   type="button"
-                  onClick={() => setCreating(false)}
+                  onClick={() => dispatch({ type: 'SET_CREATING', value: false })}
                   className="text-xs text-foreground/65 hover:text-foreground transition-colors cursor-pointer"
                 >
                   Back
@@ -205,26 +229,26 @@ export function ExerciseSearchSheet({
               <Input
                 placeholder="Name (required)"
                 value={newName}
-                onChange={(e) => setNewName(e.target.value)}
+                onChange={(e) => dispatch({ type: 'SET_NEW_NAME', value: e.target.value })}
                 className="h-8 text-sm"
               />
               <Input
                 placeholder="Image URL (optional)"
                 value={newImageUrl}
-                onChange={(e) => setNewImageUrl(e.target.value)}
+                onChange={(e) => dispatch({ type: 'SET_NEW_IMAGE_URL', value: e.target.value })}
                 className="h-8 text-sm"
               />
               <Input
                 placeholder="Muscle group (optional)"
                 value={newMuscle}
-                onChange={(e) => setNewMuscle(e.target.value)}
+                onChange={(e) => dispatch({ type: 'SET_NEW_MUSCLE', value: e.target.value })}
                 className="h-8 text-sm"
               />
               <label className="inline-flex items-center gap-2 text-xs text-foreground/65 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={newBW}
-                  onChange={(e) => setNewBW(e.target.checked)}
+                  onChange={(e) => dispatch({ type: 'SET_NEW_BW', value: e.target.checked })}
                   aria-label="Bodyweight exercise"
                   className="accent-foreground"
                 />
