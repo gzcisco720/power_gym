@@ -300,7 +300,7 @@ export function AppShell({ role, userName, userEmail = '', avatarUrl = null, gym
           <span className="text-[11px] font-bold tracking-[3px] text-white">{gymDisplayName}</span>
         </div>
 
-        <main className="flex-1 overflow-y-auto bg-[#050505]">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-[#050505] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">{children}</main>
       </div>
     </div>
   );
