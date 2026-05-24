@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMemberHub } from '../../_components/member-hub-provider';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -11,6 +11,7 @@ import { SectionHeader } from '@/components/shared/section-header';
 import { ActiveSessionPrompt } from '@/components/shared/active-session-prompt';
 import { SessionPeekSheet } from './session-peek-sheet';
 import type { SessionSummary } from '@/lib/training/session-summary';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -70,6 +71,7 @@ interface ActivePlan {
   assignedAt: string;
 }
 interface PB {
+  exerciseId: string;
   exerciseName: string;
   bestWeight: number;
   bestReps: number;
@@ -96,6 +98,143 @@ interface Props {
   pbs: PB[];
   conflict?: ActiveConflict | null;
   activePrompt?: ActivePromptInfo | null;
+}
+
+interface HistoryPoint {
+  date: string;
+  estimatedOneRM: number;
+  bestWeight: number;
+  bestReps: number;
+}
+
+function ExerciseStrengthChart({
+  memberId,
+  exercises,
+}: {
+  memberId: string;
+  exercises: { exerciseId: string; exerciseName: string }[];
+}) {
+  const [selectedId, setSelectedId] = useState(exercises[0]?.exerciseId ?? '');
+  const [history, setHistory] = useState<HistoryPoint[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    async function load() {
+      setLoading(true);
+      try {
+        const r = await fetch(`/api/progress/${memberId}?exerciseId=${selectedId}`);
+        if (!r.ok) throw new Error('Failed to fetch');
+        const data = (await r.json()) as { history: HistoryPoint[] };
+        setHistory(data.history ?? []);
+      } catch {
+        toast.error('Failed to load exercise history');
+      } finally {
+        setLoading(false);
+      }
+    }
+    void load();
+  }, [selectedId, memberId]);
+
+  const chartData = history.map((h) => ({
+    date: new Date(h.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    estimatedOneRM: h.estimatedOneRM,
+    bestWeight: h.bestWeight,
+    bestReps: h.bestReps,
+  }));
+
+  return (
+    <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4 space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-[11px] font-semibold uppercase tracking-[.07em] text-foreground/65">
+          Strength Progress
+        </span>
+        <select
+          value={selectedId}
+          onChange={(e) => setSelectedId(e.target.value)}
+          aria-label="Select exercise for strength chart"
+          className="rounded-md bg-muted border border-border/60 px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+        >
+          {exercises.map((ex) => (
+            <option key={ex.exerciseId} value={ex.exerciseId}>
+              {ex.exerciseName}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className={`transition-opacity ${loading ? 'opacity-40' : 'opacity-100'}`}>
+        {chartData.length === 0 ? (
+          <p className="text-sm text-foreground/65 text-center py-8">
+            No history yet for this exercise.
+          </p>
+        ) : (
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height={192}>
+              <LineChart data={chartData}>
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 10, fill: 'currentColor' }}
+                  className="text-foreground/65"
+                  stroke="currentColor"
+                />
+                <YAxis
+                  domain={['auto', 'auto']}
+                  tick={{ fontSize: 10, fill: 'currentColor' }}
+                  className="text-foreground/65"
+                  stroke="currentColor"
+                  unit=" kg"
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'var(--popover)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 8,
+                    fontSize: 11,
+                  }}
+                  labelStyle={{ color: 'var(--muted-foreground)', fontSize: 10 }}
+                  itemStyle={{ color: 'var(--foreground)', fontSize: 11 }}
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null;
+                    const d = payload[0].payload as typeof chartData[number];
+                    return (
+                      <div
+                        style={{
+                          backgroundColor: 'var(--popover)',
+                          border: '1px solid var(--border)',
+                          borderRadius: 8,
+                          padding: '8px 10px',
+                          fontSize: 11,
+                        }}
+                      >
+                        <p style={{ color: 'var(--muted-foreground)', fontSize: 10, marginBottom: 4 }}>
+                          {label}
+                        </p>
+                        <p style={{ color: 'var(--foreground)' }}>
+                          {d.bestWeight} kg × {d.bestReps} reps
+                        </p>
+                        <p style={{ color: 'rgba(165,180,252,1)', marginTop: 2 }}>
+                          Est. 1RM: {d.estimatedOneRM} kg
+                        </p>
+                      </div>
+                    );
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="estimatedOneRM"
+                  stroke="rgb(99 102 241)"
+                  strokeWidth={2}
+                  dot={{ fill: 'rgb(99 102 241)', r: 3 }}
+                  activeDot={{ r: 5 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function TrainerMemberPlanClient({
@@ -252,6 +391,20 @@ export function TrainerMemberPlanClient({
           </div>
         )}
       </section>
+
+      {pbs.filter((pb) => pb.bestWeight > 0).length > 0 && (
+        <section className="px-4 sm:px-8">
+          <SectionHeader title="Strength Progress" />
+          <div className="mt-3">
+            <ExerciseStrengthChart
+              memberId={memberId}
+              exercises={pbs
+                .filter((pb) => pb.bestWeight > 0)
+                .map((pb) => ({ exerciseId: pb.exerciseId, exerciseName: pb.exerciseName }))}
+            />
+          </div>
+        </section>
+      )}
 
       {pbs.length > 0 && (
         <section className="px-4 sm:px-8">

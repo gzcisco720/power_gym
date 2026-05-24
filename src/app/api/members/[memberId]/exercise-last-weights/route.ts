@@ -18,8 +18,11 @@ export async function GET(req: Request, { params }: RouteContext): Promise<Respo
   }
 
   const { searchParams } = new URL(req.url);
-  const exerciseId = searchParams.get('exerciseId');
-  if (!exerciseId) return Response.json({ error: 'exerciseId is required' }, { status: 400 });
+  const exerciseIdsParam = searchParams.get('exerciseIds');
+  if (!exerciseIdsParam) return Response.json({ hints: [] });
+
+  const exerciseIds = exerciseIdsParam.split(',').filter(Boolean);
+  if (exerciseIds.length === 0) return Response.json({ hints: [] });
 
   await connectDB();
 
@@ -31,14 +34,16 @@ export async function GET(req: Request, { params }: RouteContext): Promise<Respo
     }
   }
 
-  const history = await new MongoWorkoutSessionRepository().findExerciseHistory(memberId, exerciseId);
+  const repo = new MongoWorkoutSessionRepository();
+  const hints = await repo.findLastWeightsForExercises(memberId, exerciseIds);
 
   return Response.json({
-    history: history.map((h) => ({
-      date: h.date.toISOString().split('T')[0],
-      estimatedOneRM: h.estimatedOneRM,
-      bestWeight: h.bestWeight,
-      bestReps: h.bestReps,
+    hints: hints.map((h) => ({
+      exerciseId: h.exerciseId,
+      lastWeight: h.lastWeight,
+      lastReps: h.lastReps,
+      lastDate: h.lastDate.toISOString(),
+      consecutiveMaxHits: h.consecutiveMaxHits,
     })),
   });
 }

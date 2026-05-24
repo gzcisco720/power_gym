@@ -110,8 +110,8 @@ describe('MongoWorkoutSessionRepository — progress methods', () => {
       const result = await repo.findExerciseHistory(MEMBER_ID, EXERCISE_ID);
 
       expect(result).toEqual([
-        { date: date1, estimatedOneRM: 81.7 },
-        { date: date2, estimatedOneRM: 88 },
+        { date: date1, estimatedOneRM: 81.7, bestWeight: 70, bestReps: 5 },
+        { date: date2, estimatedOneRM: 88, bestWeight: 80, bestReps: 3 },
       ]);
     });
 

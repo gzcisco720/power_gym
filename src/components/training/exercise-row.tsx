@@ -4,6 +4,12 @@ import { ChevronUp, ChevronDown, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ExerciseBadge } from '@/components/training/exercise-badge';
 import { ExerciseThumbnail } from '@/components/training/exercise-thumbnail';
+import {
+  type LastWeightHintDTO,
+  suggestedWeight,
+  suggestedIncrement,
+  formatHintDate,
+} from '@/lib/training/progressive-overload';
 
 export interface ExerciseRowData {
   exerciseId: string;
@@ -59,6 +65,7 @@ interface LoggingProps extends BaseProps {
   readOnly?: boolean;
   inputErrors?: Record<number, { weight?: boolean; reps?: boolean }>;
   isAddingSet?: boolean;
+  lastWeightHint?: LastWeightHintDTO;
 }
 
 interface ViewProps extends BaseProps {
@@ -219,7 +226,7 @@ export function ExerciseRow(props: Props) {
   }
 
   if (mode === 'logging') {
-    const { loggingSets, inputs, onInputChange, onDeleteSet, onAddSet, onBwToggle, bwOverride, readOnly, inputErrors, isAddingSet } = props;
+    const { loggingSets, inputs, onInputChange, onDeleteSet, onAddSet, onBwToggle, bwOverride, readOnly, inputErrors, isAddingSet, lastWeightHint } = props;
     const isBw = bwOverride ?? row.isBodyweight;
     const completedCount = loggingSets.length;
     const repsLabel =
@@ -270,9 +277,12 @@ export function ExerciseRow(props: Props) {
       );
     }
 
+    const hasUserInput = !isBw && loggingSets.some((s) => (inputs[s.globalIndex]?.weight ?? '').trim() !== '');
+    const showHint = !isBw && !hasUserInput && !!lastWeightHint;
+
     return (
       <div className="px-3 py-3" data-testid="exercise-row">
-        <div className="flex items-center gap-2.5 mb-2.5">
+        <div className="flex items-center gap-2.5 mb-2">
           <ExerciseBadge label={label} />
           <ExerciseThumbnail imageUrl={row.imageUrl} name={row.exerciseName} size={36} />
           <div className="flex-1 min-w-0">
@@ -299,6 +309,33 @@ export function ExerciseRow(props: Props) {
             BW
           </label>
         </div>
+
+        {showHint && (
+          <div data-testid="last-weight-hint" className="flex items-center gap-1.5 mb-2.5">
+            <span className="text-[10px] text-foreground/50">
+              Last: {lastWeightHint.lastWeight} kg × {lastWeightHint.lastReps}
+              <span className="ml-1 text-foreground/35">
+                · {formatHintDate(new Date(lastWeightHint.lastDate))}
+              </span>
+            </span>
+            {lastWeightHint.consecutiveMaxHits >= 2 && (
+              <span
+                data-testid="try-heavier-badge"
+                className="inline-flex items-center gap-1 rounded-full bg-indigo-500/15 px-1.5 py-0.5 text-[10px] font-medium text-indigo-400 ring-1 ring-indigo-500/25"
+              >
+                ↑ Try {suggestedWeight(lastWeightHint.lastWeight).toFixed(1)} kg
+              </span>
+            )}
+            {lastWeightHint.consecutiveMaxHits === 1 && (
+              <span
+                data-testid="almost-badge"
+                className="inline-flex items-center rounded-full bg-foreground/5 px-1.5 py-0.5 text-[10px] text-foreground/38"
+              >
+                1 more session to unlock +{suggestedIncrement(lastWeightHint.lastWeight).toFixed(1)} kg
+              </span>
+            )}
+          </div>
+        )}
 
         <div className="space-y-1.5">
           {loggingSets.map((s) => {

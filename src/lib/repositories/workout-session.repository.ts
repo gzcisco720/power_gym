@@ -25,6 +25,21 @@ export interface UpdateSetData {
   actualReps: number | null;
 }
 
+export interface LastWeightHint {
+  exerciseId: string;
+  lastWeight: number;
+  lastReps: number;
+  lastDate: Date;
+  consecutiveMaxHits: number; // 0 | 1 | 2
+}
+
+export interface ExerciseHistoryPoint {
+  date: Date;
+  estimatedOneRM: number;
+  bestWeight: number;
+  bestReps: number;
+}
+
 export interface IWorkoutSessionRepository {
   create(data: CreateSessionData): Promise<IWorkoutSession>;
   findById(id: string): Promise<IWorkoutSession | null>;
@@ -46,7 +61,8 @@ export interface IWorkoutSessionRepository {
   findConsecutiveStreakDays(memberId: string): Promise<number>;
   countCompletedByMemberSince(memberId: string, since: Date): Promise<number>;
   findTrainedExercises(memberId: string): Promise<{ exerciseId: string; exerciseName: string }[]>;
-  findExerciseHistory(memberId: string, exerciseId: string): Promise<{ date: Date; estimatedOneRM: number }[]>;
+  findExerciseHistory(memberId: string, exerciseId: string): Promise<ExerciseHistoryPoint[]>;
+  findLastWeightsForExercises(memberId: string, exerciseIds: string[]): Promise<LastWeightHint[]>;
   findMemberStats(memberId: string): Promise<{
     completedCount: number;
     lastCompletedAt: Date | null;
@@ -223,10 +239,7 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
     return results.map((r) => ({ exerciseId: r._id.toString(), exerciseName: r.exerciseName }));
   }
 
-  async findExerciseHistory(
-    memberId: string,
-    exerciseId: string,
-  ): Promise<{ date: Date; estimatedOneRM: number }[]> {
+  async findExerciseHistory(memberId: string, exerciseId: string): Promise<ExerciseHistoryPoint[]> {
     const sessions = await WorkoutSessionModel.find(
       {
         memberId: new mongoose.Types.ObjectId(memberId),
@@ -245,12 +258,96 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
             s.actualReps !== null,
         );
         if (matchingSets.length === 0) return null;
-        const maxOneRM = Math.max(
-          ...matchingSets.map((s) => estimatedOneRM(s.actualWeight!, s.actualReps!)),
-        );
-        return { date: session.completedAt!, estimatedOneRM: Math.round(maxOneRM * 10) / 10 };
+
+        let bestSet = matchingSets[0];
+        let bestOneRM = estimatedOneRM(bestSet.actualWeight!, bestSet.actualReps!);
+        for (const s of matchingSets.slice(1)) {
+          const e = estimatedOneRM(s.actualWeight!, s.actualReps!);
+          if (e > bestOneRM) { bestOneRM = e; bestSet = s; }
+        }
+
+        return {
+          date: session.completedAt!,
+          estimatedOneRM: Math.round(bestOneRM * 10) / 10,
+          bestWeight: bestSet.actualWeight!,
+          bestReps: bestSet.actualReps!,
+        };
       })
-      .filter((entry): entry is { date: Date; estimatedOneRM: number } => entry !== null);
+      .filter((entry): entry is ExerciseHistoryPoint => entry !== null);
+  }
+
+  async findLastWeightsForExercises(memberId: string, exerciseIds: string[]): Promise<LastWeightHint[]> {
+    if (exerciseIds.length === 0) return [];
+
+    const objectIds = exerciseIds.map((id) => new mongoose.Types.ObjectId(id));
+
+    type SessionGroup = {
+      sessionDate: Date;
+      sets: { actualWeight: number; actualReps: number; prescribedRepsMax: number }[];
+    };
+    type AggResult = { _id: mongoose.Types.ObjectId; sessions: SessionGroup[] };
+
+    const results = await WorkoutSessionModel.aggregate<AggResult>([
+      {
+        $match: {
+          memberId: new mongoose.Types.ObjectId(memberId),
+          completedAt: { $ne: null },
+          'sets.exerciseId': { $in: objectIds },
+        },
+      },
+      { $sort: { completedAt: -1 } },
+      { $unwind: '$sets' },
+      {
+        $match: {
+          'sets.exerciseId': { $in: objectIds },
+          'sets.actualWeight': { $ne: null, $gt: 0 },
+          'sets.actualReps': { $ne: null },
+        },
+      },
+      {
+        $group: {
+          _id: { exId: '$sets.exerciseId', sessionId: '$_id' },
+          sessionDate: { $first: '$completedAt' },
+          sets: {
+            $push: {
+              actualWeight: '$sets.actualWeight',
+              actualReps: '$sets.actualReps',
+              prescribedRepsMax: '$sets.prescribedRepsMax',
+            },
+          },
+        },
+      },
+      { $sort: { '_id.exId': 1, sessionDate: -1 } },
+      {
+        $group: {
+          _id: '$_id.exId',
+          sessions: { $push: { sessionDate: '$sessionDate', sets: '$sets' } },
+        },
+      },
+      { $project: { sessions: { $slice: ['$sessions', 2] } } },
+    ]);
+
+    return results.map((result) => {
+      const latest = result.sessions[0];
+      const prev = result.sessions[1];
+
+      const maxWeightSet = latest.sets.reduce(
+        (best, s) => (s.actualWeight > best.actualWeight ? s : best),
+        latest.sets[0],
+      );
+
+      const lastAllHitMax = latest.sets.every((s) => s.actualReps >= s.prescribedRepsMax);
+      const prevAllHitMax = prev ? prev.sets.every((s) => s.actualReps >= s.prescribedRepsMax) : false;
+      const consecutiveMaxHits = lastAllHitMax && prevAllHitMax ? 2 : lastAllHitMax ? 1 : 0;
+
+      return {
+        exerciseId: result._id.toString(),
+        lastWeight: maxWeightSet.actualWeight,
+        lastReps: maxWeightSet.actualReps,
+        lastDate: latest.sessionDate,
+        consecutiveMaxHits,
+      };
+    });
   }
 
   async findMemberStats(memberId: string): Promise<{

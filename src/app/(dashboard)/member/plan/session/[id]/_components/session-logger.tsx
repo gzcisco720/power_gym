@@ -13,6 +13,7 @@ import { labelExercises } from '@/lib/training/label-exercises';
 import { useDirtyInputGuard } from '@/lib/training/dirty-input-guard';
 import { motion } from 'framer-motion';
 import { variants } from '@/lib/animations/variants';
+import type { LastWeightHintDTO } from '@/lib/training/progressive-overload';
 
 interface SessionSet {
   exerciseId: string;
@@ -164,7 +165,9 @@ export function SessionLogger({
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [exerciseSheetOpen, setExerciseSheetOpen] = useState(false);
   const [availableExercises, setAvailableExercises] = useState<ExerciseOption[]>([]);
+  const [weightHints, setWeightHints] = useState<Map<string, LastWeightHintDTO>>(new Map());
   const exercisesFetchedRef = useRef(false);
+  const hintsFetchedRef = useRef(false);
 
   useEffect(() => {
     if (exercisesFetchedRef.current) return;
@@ -173,6 +176,26 @@ export function SessionLogger({
       .then((data: ExerciseOption[]) => setAvailableExercises(data))
       .catch(() => {});
     exercisesFetchedRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (hintsFetchedRef.current || isCompleted) return;
+    const nonBwIds = [
+      ...new Set(initialSession.sets.filter((s) => !s.isBodyweight).map((s) => s.exerciseId)),
+    ];
+    if (nonBwIds.length === 0) return;
+    hintsFetchedRef.current = true;
+    fetch(
+      `/api/members/${initialSession.memberId}/exercise-last-weights?exerciseIds=${nonBwIds.join(',')}`,
+    )
+      .then((r) => r.json())
+      .then((data: { hints: LastWeightHintDTO[] }) => {
+        const map = new Map<string, LastWeightHintDTO>();
+        data.hints.forEach((h) => map.set(h.exerciseId, h));
+        setWeightHints(map);
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function syncInputsToSession(updatedSession: Session) {
@@ -457,6 +480,7 @@ export function SessionLogger({
                   readOnly={isCompleted}
                   inputErrors={inputErrors}
                   isAddingSet={addingSetFor === ex.exerciseId}
+                  lastWeightHint={weightHints.get(ex.exerciseId)}
                 />
                 {mode === 'trainer' && loggedForMember && (
                   <div className="px-3 pb-3">
