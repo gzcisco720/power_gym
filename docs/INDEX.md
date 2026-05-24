@@ -56,6 +56,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Member Plan Create Flow | [member-plan-create-flow-design.md](2026-05-21/plans/member-plan-create-flow-design.md) | Approved |
 | Trainer Dashboard Redesign | [trainer-dashboard-redesign.md](2026-05-22/plans/trainer-dashboard-redesign.md) | Approved |
 | Pricing & Billing Management | [pricing-billing-design.md](2026-05-22/plans/pricing-billing-design.md) | Approved |
+| Progressive Overload Tracking | [progressive-overload-design.md](2026-05-24/plans/progressive-overload-design.md) | Approved |
 
 ---
 
