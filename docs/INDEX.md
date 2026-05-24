@@ -21,7 +21,6 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Topic | File | Status |
 | ----- | ---- | ------ |
 | Auth system | [auth-design.md](2026-04-20/plans/auth-design.md) | Approved |
-| Nutrition Plans | [nutrition-design.md](2026-04-22/plans/nutrition-design.md) | Approved |
 | Body Composition Testing | [body-test-design.md](2026-04-23/plans/body-test-design.md) | Approved |
 | Body Test UI Redesign | [body-test-ui-redesign.md](2026-05-07/plans/body-test-ui-redesign.md) | Approved |
 | E2E Test Suite | [e2e-design.md](2026-04-25/plans/e2e-design.md) | Approved |
@@ -52,18 +51,11 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Member My Training (Design) | [member-my-training-design.md](2026-05-18/plans/member-my-training-design.md) | Approved |
 | Nutrition Enhancement (Design) | [nutrition-enhancement-design.md](2026-05-19/plans/nutrition-enhancement-design.md) | Approved |
 | Member Health Profile (Design) | [member-health-profile-design.md](2026-05-19/plans/member-health-profile-design.md) | Approved |
-| Health Profile Module A — Data Layer | [health-module-a-data-layer.md](2026-05-19/plans/health-module-a-data-layer.md) | In Progress |
 | Member Hub Header Redesign | [member-hub-header-redesign.md](2026-05-20/plans/member-hub-header-redesign.md) | Approved |
-| Member Hub Header Redesign (Plan) | [member-hub-header-redesign-plan.md](2026-05-20/plans/member-hub-header-redesign-plan.md) | In Progress |
 | Member Hub Overview Redesign | [member-hub-overview-redesign.md](2026-05-20/plans/member-hub-overview-redesign.md) | Approved |
-| Member Hub Overview Redesign (Plan) | [member-hub-overview-redesign-plan.md](2026-05-20/plans/member-hub-overview-redesign-plan.md) | In Progress |
-| Plan Tab Session History Redesign | [plan-tab-session-history-redesign-plan.md](2026-05-20/plans/plan-tab-session-history-redesign-plan.md) | In Progress |
-| Check-ins & Photos Tab Redesign | [check-ins-photos-redesign-plan.md](2026-05-20/plans/check-ins-photos-redesign-plan.md) | In Progress |
 | Member Plan Create Flow | [member-plan-create-flow-design.md](2026-05-21/plans/member-plan-create-flow-design.md) | Approved |
-| Member Plan Create Flow (Plan) | [member-plan-create-flow-plan.md](2026-05-21/plans/member-plan-create-flow-plan.md) | In Progress |
 | Trainer Dashboard Redesign | [trainer-dashboard-redesign.md](2026-05-22/plans/trainer-dashboard-redesign.md) | Approved |
 | Pricing & Billing Management | [pricing-billing-design.md](2026-05-22/plans/pricing-billing-design.md) | Approved |
-| Pricing & Billing Implementation Plan | [pricing-billing-plan.md](2026-05-22/plans/pricing-billing-plan.md) | In Progress |
 
 ---
 
