@@ -76,13 +76,13 @@ describe('EquipmentClient', () => {
 
   it('shows thumbnail img for equipment with images', () => {
     render(<EquipmentClient initialItems={mockItems} />);
-    const thumbnail = screen.getByRole('img', { name: /smith machine/i });
+    const thumbnail = screen.getByRole('button', { name: /smith machine/i });
     expect(thumbnail).toHaveAttribute('src', IMAGE_URL);
   });
 
   it('opens lightbox when thumbnail clicked', () => {
     render(<EquipmentClient initialItems={mockItems} />);
-    fireEvent.click(screen.getByRole('img', { name: /smith machine/i }));
+    fireEvent.click(screen.getByRole('button', { name: /smith machine/i }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 

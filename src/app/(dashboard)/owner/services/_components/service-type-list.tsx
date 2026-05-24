@@ -174,10 +174,11 @@ export function ServiceTypeList() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {inactive.map((st) => (
-                  <div
+                  <button
+                    type="button"
                     key={st._id}
                     onClick={() => openEdit(st)}
-                    className="rounded-xl bg-card ring-1 ring-foreground/[.06] opacity-45 hover:opacity-70 transition-opacity cursor-pointer p-4 flex flex-col gap-3"
+                    className="rounded-xl bg-card ring-1 ring-foreground/[.06] opacity-45 hover:opacity-70 transition-opacity cursor-pointer p-4 flex flex-col gap-3 text-left w-full"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="text-sm font-semibold text-foreground/65 leading-snug">{st.name}</span>
@@ -192,7 +193,7 @@ export function ServiceTypeList() {
                       <span className="text-xs text-foreground/40">{st.currency} / session</span>
                     </div>
                     <div className="text-[11px] text-foreground/30">Click to reactivate</div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>

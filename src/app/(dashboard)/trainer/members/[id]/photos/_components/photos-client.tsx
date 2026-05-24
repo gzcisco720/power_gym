@@ -160,7 +160,11 @@ export function PhotosClient({ photos }: Props) {
       {compareOpen && compareLeft && compareRight && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          role="button"
+          tabIndex={-1}
+          aria-label="Close comparison"
           onClick={(e) => { if (e.target === e.currentTarget) setCompareOpen(false); }}
+          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget) setCompareOpen(false); }}
         >
           <div className="bg-card border border-foreground/10 rounded-2xl p-6 w-full max-w-xl">
             <div className="flex items-center justify-between mb-5">

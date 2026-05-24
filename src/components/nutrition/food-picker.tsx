@@ -111,8 +111,10 @@ function FoodRow({ name, brand, servingLabel, kcal, protein, carbs, fat, onClick
   return (
     <div
       role="row"
+      tabIndex={0}
       className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 items-start px-2 py-2 cursor-pointer hover:bg-muted border-b last:border-b-0 text-sm"
       onClick={onClick}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); }}
     >
       {/* Title cell: name + serving label */}
       <div className="min-w-0">

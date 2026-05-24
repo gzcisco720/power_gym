@@ -97,7 +97,10 @@ export function EquipmentClient({ initialItems }: Props) {
                     <img
                       src={item.images[0]}
                       alt={item.name}
+                      role="button"
+                      tabIndex={0}
                       onClick={() => setLightbox({ images: item.images, index: 0 })}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setLightbox({ images: item.images, index: 0 }); }}
                       className="w-8 h-8 object-cover rounded-md border border-[#222] shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                     />
                   ) : (

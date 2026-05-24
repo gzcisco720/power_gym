@@ -117,8 +117,10 @@ export function WeekCalendarGrid({
               const mm = totalMin % 60;
               const time = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
               return (
-                <div
+                <button
+                  type="button"
                   key={si}
+                  aria-label={`Add session at ${time}`}
                   className="absolute inset-x-0 border-t border-[#111] cursor-pointer hover:bg-white/5 transition-colors"
                   style={{ top: si * SLOT_HEIGHT, height: SLOT_HEIGHT }}
                   onClick={() => onSlotClick(day, time)}

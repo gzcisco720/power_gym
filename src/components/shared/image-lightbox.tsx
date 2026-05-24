@@ -43,6 +43,7 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
       onClick={onClose}
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
     >
       <button
         type="button"

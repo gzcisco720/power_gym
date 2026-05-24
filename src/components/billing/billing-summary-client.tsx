@@ -86,16 +86,17 @@ export function BillingSummaryClient({ userRole, memberHubBase }: BillingSummary
           </div>
           <div className="space-y-1.5">
             {data.members.map((m) => (
-              <div
+              <button
+                type="button"
                 key={m.memberId}
-                className={`grid gap-3 items-center px-3 py-2.5 rounded-xl bg-card ring-1 ring-foreground/10 hover:ring-foreground/25 transition-all cursor-pointer ${userRole === 'owner' ? 'grid-cols-[1fr_80px_90px_80px]' : 'grid-cols-[1fr_90px_80px]'}`}
+                className={`grid gap-3 items-center px-3 py-2.5 rounded-xl bg-card ring-1 ring-foreground/10 hover:ring-foreground/25 transition-all cursor-pointer text-left w-full ${userRole === 'owner' ? 'grid-cols-[1fr_80px_90px_80px]' : 'grid-cols-[1fr_90px_80px]'}`}
                 onClick={() => router.push(`${memberHubBase}/${m.memberId}/billing`)}
               >
                 <span className="text-sm font-medium text-foreground">{m.name}</span>
                 {userRole === 'owner' && <span className="text-xs text-foreground/65">{m.trainerName}</span>}
                 <span className="text-xs text-foreground/65">{m.sessionsCount} sessions</span>
                 <span className="text-sm font-semibold text-primary-light text-right">{m.currency} {(m.totalAmount ?? 0).toLocaleString()}</span>
-              </div>
+              </button>
             ))}
           </div>
           <div className="flex justify-end mt-4 pt-4 border-t border-foreground/[.06]">
