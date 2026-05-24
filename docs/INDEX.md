@@ -57,7 +57,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Trainer Dashboard Redesign | [trainer-dashboard-redesign.md](2026-05-22/plans/trainer-dashboard-redesign.md) | Approved |
 | Pricing & Billing Management | [pricing-billing-design.md](2026-05-22/plans/pricing-billing-design.md) | Approved |
 | Progressive Overload Tracking | [progressive-overload-design.md](2026-05-24/plans/progressive-overload-design.md) | Approved |
-| React Doctor 689-Issue Fix | [react-doctor-fixes.md](2026-05-24/plans/react-doctor-fixes.md) | In Progress |
+| React Doctor 689-Issue Fix | [react-doctor-fixes.md](2026-05-24/plans/react-doctor-fixes.md) | Complete |
 
 ---
 
