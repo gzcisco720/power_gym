@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useReducer, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -42,6 +42,55 @@ interface CreateSessionModalProps {
   onClose: () => void;
 }
 
+interface CreateSessionState {
+  trainerId: string;
+  selectedMemberId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  isRecurring: boolean;
+  serviceTypeId: string;
+  customServiceName: string;
+  customFee: string;
+  serviceTypes: ServiceType[];
+  loading: boolean;
+  error: string;
+}
+
+type CreateSessionAction =
+  | { type: 'SET_TRAINER_ID'; value: string }
+  | { type: 'SET_SELECTED_MEMBER_ID'; value: string }
+  | { type: 'SET_DATE'; value: string }
+  | { type: 'SET_START_TIME'; value: string }
+  | { type: 'SET_END_TIME'; value: string }
+  | { type: 'SET_IS_RECURRING'; value: boolean }
+  | { type: 'SET_SERVICE_TYPE_ID'; value: string }
+  | { type: 'SET_CUSTOM_SERVICE_NAME'; value: string }
+  | { type: 'SET_CUSTOM_FEE'; value: string }
+  | { type: 'SET_SERVICE_TYPES'; value: ServiceType[] }
+  | { type: 'SET_LOADING'; value: boolean }
+  | { type: 'SET_ERROR'; value: string }
+  | { type: 'SET_TRAINER_AND_MEMBER'; trainerId: string; memberId: string };
+
+function createSessionReducer(state: CreateSessionState, action: CreateSessionAction): CreateSessionState {
+  switch (action.type) {
+    case 'SET_TRAINER_ID': return { ...state, trainerId: action.value };
+    case 'SET_SELECTED_MEMBER_ID': return { ...state, selectedMemberId: action.value };
+    case 'SET_DATE': return { ...state, date: action.value };
+    case 'SET_START_TIME': return { ...state, startTime: action.value };
+    case 'SET_END_TIME': return { ...state, endTime: action.value };
+    case 'SET_IS_RECURRING': return { ...state, isRecurring: action.value };
+    case 'SET_SERVICE_TYPE_ID': return { ...state, serviceTypeId: action.value };
+    case 'SET_CUSTOM_SERVICE_NAME': return { ...state, customServiceName: action.value };
+    case 'SET_CUSTOM_FEE': return { ...state, customFee: action.value };
+    case 'SET_SERVICE_TYPES': return { ...state, serviceTypes: action.value };
+    case 'SET_LOADING': return { ...state, loading: action.value };
+    case 'SET_ERROR': return { ...state, error: action.value };
+    case 'SET_TRAINER_AND_MEMBER': return { ...state, trainerId: action.trainerId, selectedMemberId: action.memberId };
+    default: return state;
+  }
+}
+
 export function CreateSessionModal({
   open,
   defaultDate,
@@ -60,20 +109,21 @@ export function CreateSessionModal({
     (m) => m.trainerId === defaultTrainerId,
   );
 
-  const [trainerId, setTrainerId] = useState(defaultTrainerId);
-  const [selectedMemberId, setSelectedMemberId] = useState<string>(
-    initialFilteredMembers[0]?._id ?? '',
-  );
-  const [date, setDate] = useState(defaultDate);
-  const [startTime, setStartTime] = useState(defaultStartTime);
-  const [endTime, setEndTime] = useState(addOneHour(defaultStartTime));
-  const [isRecurring, setIsRecurring] = useState(false);
-  const [serviceTypeId, setServiceTypeId] = useState<string>('');
-  const [customServiceName, setCustomServiceName] = useState('');
-  const [customFee, setCustomFee] = useState('');
-  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [state, dispatch] = useReducer(createSessionReducer, {
+    trainerId: defaultTrainerId,
+    selectedMemberId: initialFilteredMembers[0]?._id ?? '',
+    date: defaultDate,
+    startTime: defaultStartTime,
+    endTime: addOneHour(defaultStartTime),
+    isRecurring: false,
+    serviceTypeId: '',
+    customServiceName: '',
+    customFee: '',
+    serviceTypes: [],
+    loading: false,
+    error: '',
+  });
+  const { trainerId, selectedMemberId, date, startTime, endTime, isRecurring, serviceTypeId, customServiceName, customFee, serviceTypes, loading, error } = state;
 
   // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
@@ -81,7 +131,7 @@ export function CreateSessionModal({
     const controller = new AbortController();
     fetch('/api/service-types/active', { signal: controller.signal })
       .then((r) => r.json())
-      .then((data: { serviceTypes: ServiceType[] }) => setServiceTypes(data.serviceTypes ?? []))
+      .then((data: { serviceTypes: ServiceType[] }) => dispatch({ type: 'SET_SERVICE_TYPES', value: data.serviceTypes ?? [] }))
       .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
     return () => controller.abort();
   }, [open]);
@@ -92,23 +142,23 @@ export function CreateSessionModal({
 
   async function handleSubmit() {
     if (!selectedMemberId) {
-      setError('Select a member');
+      dispatch({ type: 'SET_ERROR', value: 'Select a member' });
       return;
     }
     if (!endTime) {
-      setError('End time is required');
+      dispatch({ type: 'SET_ERROR', value: 'End time is required' });
       return;
     }
     if (!serviceTypeId) {
-      setError('Select a service type or choose Custom');
+      dispatch({ type: 'SET_ERROR', value: 'Select a service type or choose Custom' });
       return;
     }
     if (isCustomService && (!customServiceName.trim() || !customFee.trim())) {
-      setError('Enter a service name and fee');
+      dispatch({ type: 'SET_ERROR', value: 'Enter a service name and fee' });
       return;
     }
-    setError('');
-    setLoading(true);
+    dispatch({ type: 'SET_ERROR', value: '' });
+    dispatch({ type: 'SET_LOADING', value: true });
     try {
       const body = isCustomService
         ? { trainerId, memberIds: [selectedMemberId], date, startTime, endTime, isRecurring,
@@ -121,13 +171,13 @@ export function CreateSessionModal({
         body: JSON.stringify(body),
       });
       if (!res.ok) {
-        setError('Failed to create session');
+        dispatch({ type: 'SET_ERROR', value: 'Failed to create session' });
         return;
       }
       onSuccess();
       onClose();
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', value: false });
     }
   }
 
@@ -146,9 +196,8 @@ export function CreateSessionModal({
                 value={trainerId}
                 onChange={(e) => {
                   const newTrainerId = e.target.value;
-                  setTrainerId(newTrainerId);
                   const first = members.find((m) => m.trainerId === newTrainerId);
-                  setSelectedMemberId(first?._id ?? '');
+                  dispatch({ type: 'SET_TRAINER_AND_MEMBER', trainerId: newTrainerId, memberId: first?._id ?? '' });
                 }}
               >
                 {trainers.map((t) => (
@@ -165,7 +214,7 @@ export function CreateSessionModal({
             <select
               className="w-full mt-1 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white"
               value={selectedMemberId}
-              onChange={(e) => setSelectedMemberId(e.target.value)}
+              onChange={(e) => dispatch({ type: 'SET_SELECTED_MEMBER_ID', value: e.target.value })}
             >
               <option value="">Select member</option>
               {filteredMembers.map((m) => (
@@ -181,7 +230,7 @@ export function CreateSessionModal({
               type="date"
               className="mt-1"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={(e) => dispatch({ type: 'SET_DATE', value: e.target.value })}
             />
           </div>
 
@@ -193,7 +242,7 @@ export function CreateSessionModal({
                 type="time"
                 className="mt-1"
                 value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
+                onChange={(e) => dispatch({ type: 'SET_START_TIME', value: e.target.value })}
               />
             </div>
             <div className="flex-1">
@@ -203,7 +252,7 @@ export function CreateSessionModal({
                 type="time"
                 className="mt-1"
                 value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
+                onChange={(e) => dispatch({ type: 'SET_END_TIME', value: e.target.value })}
               />
             </div>
           </div>
@@ -211,7 +260,7 @@ export function CreateSessionModal({
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => setIsRecurring(false)}
+              onClick={() => dispatch({ type: 'SET_IS_RECURRING', value: false })}
               className={`flex-1 py-2 rounded text-sm font-medium transition-colors ${
                 !isRecurring ? 'bg-blue-600 text-white' : 'bg-[#1e1e2e] text-[#888]'
               }`}
@@ -220,7 +269,7 @@ export function CreateSessionModal({
             </button>
             <button
               type="button"
-              onClick={() => setIsRecurring(true)}
+              onClick={() => dispatch({ type: 'SET_IS_RECURRING', value: true })}
               className={`flex-1 py-2 rounded text-sm font-medium transition-colors ${
                 isRecurring ? 'bg-blue-600 text-white' : 'bg-[#1e1e2e] text-[#888]'
               }`}
@@ -238,7 +287,7 @@ export function CreateSessionModal({
                 id="serviceType"
                 className="flex-1 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white"
                 value={serviceTypeId}
-                onChange={(e) => setServiceTypeId(e.target.value)}
+                onChange={(e) => dispatch({ type: 'SET_SERVICE_TYPE_ID', value: e.target.value })}
               >
                 <option value="">Select</option>
                 {serviceTypes.map((st) => (
@@ -262,7 +311,7 @@ export function CreateSessionModal({
                   aria-label="Custom service name"
                   className="flex-1 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white placeholder:text-foreground/40"
                   value={customServiceName}
-                  onChange={(e) => setCustomServiceName(e.target.value)}
+                  onChange={(e) => dispatch({ type: 'SET_CUSTOM_SERVICE_NAME', value: e.target.value })}
                 />
                 <input
                   type="text"
@@ -271,7 +320,7 @@ export function CreateSessionModal({
                   aria-label="Custom service fee (AUD)"
                   className="w-28 bg-[#111] border border-[#222] rounded px-3 py-2 text-sm text-white placeholder:text-foreground/40"
                   value={customFee}
-                  onChange={(e) => setCustomFee(e.target.value)}
+                  onChange={(e) => dispatch({ type: 'SET_CUSTOM_FEE', value: e.target.value })}
                 />
               </div>
             )}

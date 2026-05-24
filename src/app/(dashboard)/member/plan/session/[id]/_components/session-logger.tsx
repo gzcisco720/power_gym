@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useReducer, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -121,6 +121,53 @@ function buildExerciseGroups(sets: SessionSet[]) {
   return groups;
 }
 
+interface SessionLoggerState {
+  session: Session;
+  inputs: { weight: string; reps: string }[];
+  bwOverrides: Record<string, boolean>;
+  deletedIndices: Set<number>;
+  inputErrors: Record<number, { weight?: boolean; reps?: boolean }>;
+  addingSetFor: string | null;
+  addingExercise: boolean;
+  completing: boolean;
+  showCompleteModal: boolean;
+  exerciseSheetOpen: boolean;
+  availableExercises: ExerciseOption[];
+  weightHints: Map<string, LastWeightHintDTO>;
+}
+
+type SessionLoggerAction =
+  | { type: 'SET_SESSION'; value: Session }
+  | { type: 'SET_INPUTS'; value: { weight: string; reps: string }[] }
+  | { type: 'SET_BW_OVERRIDES'; value: Record<string, boolean> }
+  | { type: 'SET_DELETED_INDICES'; value: Set<number> }
+  | { type: 'SET_INPUT_ERRORS'; value: Record<number, { weight?: boolean; reps?: boolean }> }
+  | { type: 'SET_ADDING_SET_FOR'; value: string | null }
+  | { type: 'SET_ADDING_EXERCISE'; value: boolean }
+  | { type: 'SET_COMPLETING'; value: boolean }
+  | { type: 'SET_SHOW_COMPLETE_MODAL'; value: boolean }
+  | { type: 'SET_EXERCISE_SHEET_OPEN'; value: boolean }
+  | { type: 'SET_AVAILABLE_EXERCISES'; value: ExerciseOption[] }
+  | { type: 'SET_WEIGHT_HINTS'; value: Map<string, LastWeightHintDTO> };
+
+function sessionLoggerReducer(state: SessionLoggerState, action: SessionLoggerAction): SessionLoggerState {
+  switch (action.type) {
+    case 'SET_SESSION': return { ...state, session: action.value };
+    case 'SET_INPUTS': return { ...state, inputs: action.value };
+    case 'SET_BW_OVERRIDES': return { ...state, bwOverrides: action.value };
+    case 'SET_DELETED_INDICES': return { ...state, deletedIndices: action.value };
+    case 'SET_INPUT_ERRORS': return { ...state, inputErrors: action.value };
+    case 'SET_ADDING_SET_FOR': return { ...state, addingSetFor: action.value };
+    case 'SET_ADDING_EXERCISE': return { ...state, addingExercise: action.value };
+    case 'SET_COMPLETING': return { ...state, completing: action.value };
+    case 'SET_SHOW_COMPLETE_MODAL': return { ...state, showCompleteModal: action.value };
+    case 'SET_EXERCISE_SHEET_OPEN': return { ...state, exerciseSheetOpen: action.value };
+    case 'SET_AVAILABLE_EXERCISES': return { ...state, availableExercises: action.value };
+    case 'SET_WEIGHT_HINTS': return { ...state, weightHints: action.value };
+    default: return state;
+  }
+}
+
 export function SessionLogger({
   session: initialSession,
   backPath = '/member/plan',
@@ -143,29 +190,28 @@ export function SessionLogger({
         day: 'numeric',
       })
     : '';
-  const [session, setSession] = useState(initialSession);
-  const [inputs, setInputs] = useState<{ weight: string; reps: string }[]>(
-    initialSession.sets.map((s) => ({
+  const [state, dispatch] = useReducer(sessionLoggerReducer, {
+    session: initialSession,
+    inputs: initialSession.sets.map((s) => ({
       weight: s.actualWeight !== null ? String(s.actualWeight) : '',
       reps: s.actualReps !== null ? String(s.actualReps) : '',
     })),
-  );
-  const [bwOverrides, setBwOverrides] = useState<Record<string, boolean>>(() => {
-    const map: Record<string, boolean> = {};
-    initialSession.sets.forEach((s) => {
-      map[s.exerciseId] = s.isBodyweight;
-    });
-    return map;
+    bwOverrides: (() => {
+      const map: Record<string, boolean> = {};
+      initialSession.sets.forEach((s) => { map[s.exerciseId] = s.isBodyweight; });
+      return map;
+    })(),
+    deletedIndices: new Set<number>(),
+    inputErrors: {},
+    addingSetFor: null,
+    addingExercise: false,
+    completing: false,
+    showCompleteModal: false,
+    exerciseSheetOpen: false,
+    availableExercises: [],
+    weightHints: new Map<string, LastWeightHintDTO>(),
   });
-  const [deletedIndices, setDeletedIndices] = useState<Set<number>>(new Set());
-  const [inputErrors, setInputErrors] = useState<Record<number, { weight?: boolean; reps?: boolean }>>({});
-  const [addingSetFor, setAddingSetFor] = useState<string | null>(null);
-  const [addingExercise, setAddingExercise] = useState(false);
-  const [completing, setCompleting] = useState(false);
-  const [showCompleteModal, setShowCompleteModal] = useState(false);
-  const [exerciseSheetOpen, setExerciseSheetOpen] = useState(false);
-  const [availableExercises, setAvailableExercises] = useState<ExerciseOption[]>([]);
-  const [weightHints, setWeightHints] = useState<Map<string, LastWeightHintDTO>>(new Map());
+  const { session, inputs, bwOverrides, deletedIndices, inputErrors, addingSetFor, addingExercise, completing, showCompleteModal, exerciseSheetOpen, availableExercises, weightHints } = state;
   const exercisesFetchedRef = useRef(false);
   const hintsFetchedRef = useRef(false);
 
@@ -176,7 +222,7 @@ export function SessionLogger({
     const controller = new AbortController();
     fetch('/api/exercises', { signal: controller.signal })
       .then((r) => r.json())
-      .then((data: ExerciseOption[]) => setAvailableExercises(data))
+      .then((data: ExerciseOption[]) => dispatch({ type: 'SET_AVAILABLE_EXERCISES', value: data }))
       .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
     return () => controller.abort();
   }, []);
@@ -198,7 +244,7 @@ export function SessionLogger({
       .then((data: { hints: LastWeightHintDTO[] }) => {
         const map = new Map<string, LastWeightHintDTO>();
         data.hints.forEach((h) => map.set(h.exerciseId, h));
-        setWeightHints(map);
+        dispatch({ type: 'SET_WEIGHT_HINTS', value: map });
       })
       .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
     return () => controller.abort();
@@ -206,42 +252,34 @@ export function SessionLogger({
   }, []);
 
   function syncInputsToSession(updatedSession: Session) {
-    setSession(updatedSession);
-    setInputs((prev) => {
-      if (updatedSession.sets.length <= prev.length) return prev;
-      const extra = updatedSession.sets.length - prev.length;
-      return [...prev, ...Array.from({ length: extra }, () => ({ weight: '', reps: '' }))];
-    });
+    const nextInputs = updatedSession.sets.length <= inputs.length
+      ? inputs
+      : [...inputs, ...Array.from({ length: updatedSession.sets.length - inputs.length }, () => ({ weight: '', reps: '' }))];
+    dispatch({ type: 'SET_SESSION', value: updatedSession });
+    dispatch({ type: 'SET_INPUTS', value: nextInputs });
   }
 
   function updateInput(index: number, field: 'weight' | 'reps', value: string) {
-    setInputs((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], [field]: value };
-      return next;
-    });
+    const nextInputs = [...inputs];
+    nextInputs[index] = { ...nextInputs[index], [field]: value };
+    dispatch({ type: 'SET_INPUTS', value: nextInputs });
     // Clear error for this field when user starts correcting it
-    setInputErrors((prev) => {
-      if (!prev[index]?.[field]) return prev;
-      const next = { ...prev };
-      next[index] = { ...next[index], [field]: undefined };
-      if (!next[index].weight && !next[index].reps) delete next[index];
-      return next;
-    });
+    if (inputErrors[index]?.[field]) {
+      const nextErrors = { ...inputErrors };
+      nextErrors[index] = { ...nextErrors[index], [field]: undefined };
+      if (!nextErrors[index].weight && !nextErrors[index].reps) delete nextErrors[index];
+      dispatch({ type: 'SET_INPUT_ERRORS', value: nextErrors });
+    }
   }
 
   function deleteSet(globalIndex: number) {
-    setDeletedIndices((prev) => new Set([...prev, globalIndex]));
-    setInputs((prev) => {
-      const next = [...prev];
-      next[globalIndex] = { weight: '', reps: '' };
-      return next;
-    });
-    setInputErrors((prev) => {
-      const next = { ...prev };
-      delete next[globalIndex];
-      return next;
-    });
+    dispatch({ type: 'SET_DELETED_INDICES', value: new Set([...deletedIndices, globalIndex]) });
+    const nextInputs = [...inputs];
+    nextInputs[globalIndex] = { weight: '', reps: '' };
+    dispatch({ type: 'SET_INPUTS', value: nextInputs });
+    const nextErrors = { ...inputErrors };
+    delete nextErrors[globalIndex];
+    dispatch({ type: 'SET_INPUT_ERRORS', value: nextErrors });
   }
 
   function validateInputs(): Record<number, { weight?: boolean; reps?: boolean }> {
@@ -262,7 +300,7 @@ export function SessionLogger({
   function handleCompleteWorkoutClick() {
     const errors = validateInputs();
     if (Object.keys(errors).length > 0) {
-      setInputErrors(errors);
+      dispatch({ type: 'SET_INPUT_ERRORS', value: errors });
       return;
     }
     // Only block if there are non-deleted sets and none have any data filled
@@ -279,12 +317,12 @@ export function SessionLogger({
         return;
       }
     }
-    setInputErrors({});
-    setShowCompleteModal(true);
+    dispatch({ type: 'SET_INPUT_ERRORS', value: {} });
+    dispatch({ type: 'SET_SHOW_COMPLETE_MODAL', value: true });
   }
 
   async function addSet(exerciseId: string) {
-    setAddingSetFor(exerciseId);
+    dispatch({ type: 'SET_ADDING_SET_FOR', value: exerciseId });
     const exercise = session.sets.find((s) => s.exerciseId === exerciseId);
     if (!exercise) return;
     try {
@@ -312,12 +350,12 @@ export function SessionLogger({
     } catch {
       toast.error('Something went wrong');
     } finally {
-      setAddingSetFor(null);
+      dispatch({ type: 'SET_ADDING_SET_FOR', value: null });
     }
   }
 
   async function addExercise(exercise: ExerciseOption) {
-    setAddingExercise(true);
+    dispatch({ type: 'SET_ADDING_EXERCISE', value: true });
     try {
       const res = await fetch(`/api/sessions/${session._id}/sets`, {
         method: 'POST',
@@ -341,17 +379,17 @@ export function SessionLogger({
       }
       const updated = (await res.json()) as Session;
       syncInputsToSession(updated);
-      setBwOverrides((prev) => ({ ...prev, [exercise._id]: exercise.isBodyweight }));
+      dispatch({ type: 'SET_BW_OVERRIDES', value: { ...bwOverrides, [exercise._id]: exercise.isBodyweight } });
     } catch {
       toast.error('Something went wrong');
     } finally {
-      setAddingExercise(false);
+      dispatch({ type: 'SET_ADDING_EXERCISE', value: false });
     }
   }
 
   async function completeSession(rpe: number | null, memberNote: string | null) {
-    setCompleting(true);
-    setShowCompleteModal(false);
+    dispatch({ type: 'SET_COMPLETING', value: true });
+    dispatch({ type: 'SET_SHOW_COMPLETE_MODAL', value: false });
 
     // Collect all sets that have data to save
     const setsToSave: { index: number; weight: number | null; reps: number | null }[] = [];
@@ -384,7 +422,7 @@ export function SessionLogger({
         if (!res.ok) {
           const data = (await res.json()) as { error?: string };
           toast.error(data.error ?? 'Failed to save sets');
-          setCompleting(false);
+          dispatch({ type: 'SET_COMPLETING', value: false });
           return;
         }
       }
@@ -397,14 +435,14 @@ export function SessionLogger({
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
         toast.error(data.error ?? 'Failed to complete session');
-        setCompleting(false);
+        dispatch({ type: 'SET_COMPLETING', value: false });
         return;
       }
       toast.success('Workout complete!');
       push(backPath);
     } catch {
       toast.error('Something went wrong');
-      setCompleting(false);
+      dispatch({ type: 'SET_COMPLETING', value: false });
     }
   }
 
@@ -483,7 +521,7 @@ export function SessionLogger({
                   onDeleteSet={deleteSet}
                   onAddSet={() => void addSet(ex.exerciseId)}
                   onBwToggle={(next) =>
-                    setBwOverrides((prev) => ({ ...prev, [ex.exerciseId]: next }))
+                    dispatch({ type: 'SET_BW_OVERRIDES', value: { ...bwOverrides, [ex.exerciseId]: next } })
                   }
                   readOnly={isCompleted}
                   inputErrors={inputErrors}
@@ -532,7 +570,7 @@ export function SessionLogger({
                 onDeleteSet={(_, idx) => deleteSet(idx)}
                 onAddSet={(exId) => void addSet(exId)}
                 onBwToggle={(exId, next) =>
-                  setBwOverrides((prev) => ({ ...prev, [exId]: next }))
+                  dispatch({ type: 'SET_BW_OVERRIDES', value: { ...bwOverrides, [exId]: next } })
                 }
                 readOnly={isCompleted}
               />
@@ -543,7 +581,7 @@ export function SessionLogger({
         {!isCompleted && (
           <button
             type="button"
-            onClick={() => !addingExercise && setExerciseSheetOpen(true)}
+            onClick={() => !addingExercise && dispatch({ type: 'SET_EXERCISE_SHEET_OPEN', value: true })}
             disabled={addingExercise}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/15 py-4 text-xs text-foreground/65 hover:border-foreground/40 hover:text-foreground transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="+ Add Exercise"
@@ -573,17 +611,17 @@ export function SessionLogger({
       {showCompleteModal && (
         <WorkoutCompleteModal
           onConfirm={(rpe, note) => void completeSession(rpe, note)}
-          onCancel={() => setShowCompleteModal(false)}
+          onCancel={() => dispatch({ type: 'SET_SHOW_COMPLETE_MODAL', value: false })}
           isLoading={completing}
         />
       )}
 
       <ExerciseSearchSheet
         open={exerciseSheetOpen}
-        onOpenChange={setExerciseSheetOpen}
+        onOpenChange={(v) => dispatch({ type: 'SET_EXERCISE_SHEET_OPEN', value: v })}
         exercises={availableExercises}
         onSelect={addExercise}
-        onCreated={(ex) => setAvailableExercises((prev) => [...prev, ex])}
+        onCreated={(ex) => dispatch({ type: 'SET_AVAILABLE_EXERCISES', value: [...availableExercises, ex] })}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useReducer, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { createCheckInAction, getCheckInSignatureAction } from '../actions';
 import { uploadFile } from '@/lib/storage/upload-file';
@@ -37,30 +37,74 @@ const DEFAULT_RATINGS: RatingFields = {
   stress: 5, fatigue: 5, hunger: 5, digestion: 5,
 };
 
+interface CheckInState {
+  ratings: RatingFields;
+  stats: StatValues;
+  dietDetails: string;
+  stuckToDiet: 'yes' | 'no' | 'partial';
+  wellbeing: string;
+  notes: string;
+  photos: string[];
+  uploadingPhotos: boolean;
+  error: string;
+  submitted: boolean;
+  celebration: 'check-in' | 'milestone' | null;
+  celebrationData: { streakDays: number; weekDots: boolean[] } | null;
+}
+
+type CheckInAction =
+  | { type: 'SET_RATINGS'; value: RatingFields }
+  | { type: 'SET_STATS'; value: StatValues }
+  | { type: 'SET_DIET_DETAILS'; value: string }
+  | { type: 'SET_STUCK_TO_DIET'; value: 'yes' | 'no' | 'partial' }
+  | { type: 'SET_WELLBEING'; value: string }
+  | { type: 'SET_NOTES'; value: string }
+  | { type: 'SET_PHOTOS'; value: string[] }
+  | { type: 'SET_UPLOADING_PHOTOS'; value: boolean }
+  | { type: 'SET_ERROR'; value: string }
+  | { type: 'SET_SUBMITTED'; value: boolean }
+  | { type: 'SET_CELEBRATION'; value: 'check-in' | 'milestone' | null }
+  | { type: 'SET_CELEBRATION_DATA'; value: { streakDays: number; weekDots: boolean[] } | null };
+
+function checkInReducer(state: CheckInState, action: CheckInAction): CheckInState {
+  switch (action.type) {
+    case 'SET_RATINGS': return { ...state, ratings: action.value };
+    case 'SET_STATS': return { ...state, stats: action.value };
+    case 'SET_DIET_DETAILS': return { ...state, dietDetails: action.value };
+    case 'SET_STUCK_TO_DIET': return { ...state, stuckToDiet: action.value };
+    case 'SET_WELLBEING': return { ...state, wellbeing: action.value };
+    case 'SET_NOTES': return { ...state, notes: action.value };
+    case 'SET_PHOTOS': return { ...state, photos: action.value };
+    case 'SET_UPLOADING_PHOTOS': return { ...state, uploadingPhotos: action.value };
+    case 'SET_ERROR': return { ...state, error: action.value };
+    case 'SET_SUBMITTED': return { ...state, submitted: action.value };
+    case 'SET_CELEBRATION': return { ...state, celebration: action.value };
+    case 'SET_CELEBRATION_DATA': return { ...state, celebrationData: action.value };
+    default: return state;
+  }
+}
+
 interface Props {
   alreadySubmitted: boolean;
 }
 
 export function CheckInForm({ alreadySubmitted }: Props) {
-  const [ratings, setRatings] = useState<RatingFields>(DEFAULT_RATINGS);
-  const [stats, setStats] = useState<StatValues>({
-    weight: '', waist: '', steps: '',
-    exerciseMinutes: '', walkRunDistance: '', sleepHours: '',
+  const [state, dispatch] = useReducer(checkInReducer, {
+    ratings: DEFAULT_RATINGS,
+    stats: { weight: '', waist: '', steps: '', exerciseMinutes: '', walkRunDistance: '', sleepHours: '' },
+    dietDetails: '',
+    stuckToDiet: 'yes',
+    wellbeing: '',
+    notes: '',
+    photos: [],
+    uploadingPhotos: false,
+    error: '',
+    submitted: false,
+    celebration: null,
+    celebrationData: null,
   });
-  const [dietDetails, setDietDetails] = useState('');
-  const [stuckToDiet, setStuckToDiet] = useState<'yes' | 'no' | 'partial'>('yes');
-  const [wellbeing, setWellbeing] = useState('');
-  const [notes, setNotes] = useState('');
-  const [photos, setPhotos] = useState<string[]>([]);
-  const [uploadingPhotos, setUploadingPhotos] = useState(false);
-  const [error, setError] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const { ratings, stats, dietDetails, stuckToDiet, wellbeing, notes, photos, uploadingPhotos, error, submitted, celebration, celebrationData } = state;
   const [isPending, startTransition] = useTransition();
-  const [celebration, setCelebration] = useState<'check-in' | 'milestone' | null>(null);
-  const [celebrationData, setCelebrationData] = useState<{
-    streakDays: number;
-    weekDots: boolean[];
-  } | null>(null);
 
   if (alreadySubmitted || submitted) {
     return (
@@ -74,26 +118,26 @@ export function CheckInForm({ alreadySubmitted }: Props) {
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (photos.length + files.length > 5) {
-      setError('Maximum 5 photos allowed');
+      dispatch({ type: 'SET_ERROR', value: 'Maximum 5 photos allowed' });
       return;
     }
-    setUploadingPhotos(true);
-    setError('');
+    dispatch({ type: 'SET_UPLOADING_PHOTOS', value: true });
+    dispatch({ type: 'SET_ERROR', value: '' });
     try {
       const result = await getCheckInSignatureAction();
-      if (result.error) { setError(result.error); return; }
+      if (result.error) { dispatch({ type: 'SET_ERROR', value: result.error }); return; }
       const urls = await Promise.all(files.map((file) => uploadFile(file, result.config!)));
-      setPhotos((prev) => [...prev, ...urls]);
+      dispatch({ type: 'SET_PHOTOS', value: [...photos, ...urls] });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Photo upload failed');
+      dispatch({ type: 'SET_ERROR', value: err instanceof Error ? err.message : 'Photo upload failed' });
     } finally {
-      setUploadingPhotos(false);
+      dispatch({ type: 'SET_UPLOADING_PHOTOS', value: false });
     }
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
+    dispatch({ type: 'SET_ERROR', value: '' });
     startTransition(async () => {
       const result = await createCheckInAction({
         ...ratings,
@@ -110,18 +154,14 @@ export function CheckInForm({ alreadySubmitted }: Props) {
         photos,
       });
       if (result.error) {
-        setError(result.error);
+        dispatch({ type: 'SET_ERROR', value: result.error });
       } else {
         const streakDays = 0;
         const todayDow = new Date().getDay();
         const weekDots = Array.from({ length: 7 }, (_, i) => i === todayDow);
-        if (MILESTONES.includes(streakDays)) {
-          setCelebration('milestone');
-        } else {
-          setCelebration('check-in');
-        }
-        setCelebrationData({ streakDays, weekDots });
-        setSubmitted(true);
+        dispatch({ type: 'SET_CELEBRATION', value: MILESTONES.includes(streakDays) ? 'milestone' : 'check-in' });
+        dispatch({ type: 'SET_CELEBRATION_DATA', value: { streakDays, weekDots } });
+        dispatch({ type: 'SET_SUBMITTED', value: true });
       }
     });
   }
@@ -130,23 +170,23 @@ export function CheckInForm({ alreadySubmitted }: Props) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <CheckInFeelingsSection
         ratings={ratings}
-        onChange={(key, value) => setRatings((r) => ({ ...r, [key]: value }))}
+        onChange={(key, value) => dispatch({ type: 'SET_RATINGS', value: { ...ratings, [key]: value } })}
       />
 
       <CheckInStatsSection
         values={stats}
-        onChange={(field, value) => setStats((s) => ({ ...s, [field]: value }))}
+        onChange={(field, value) => dispatch({ type: 'SET_STATS', value: { ...stats, [field]: value } })}
       />
 
       <CheckInDietSection
         stuckToDiet={stuckToDiet}
-        onStuckToDiet={setStuckToDiet}
+        onStuckToDiet={(v) => dispatch({ type: 'SET_STUCK_TO_DIET', value: v })}
         dietDetails={dietDetails}
-        onDietDetails={setDietDetails}
+        onDietDetails={(v) => dispatch({ type: 'SET_DIET_DETAILS', value: v })}
         wellbeing={wellbeing}
-        onWellbeing={setWellbeing}
+        onWellbeing={(v) => dispatch({ type: 'SET_WELLBEING', value: v })}
         notes={notes}
-        onNotes={setNotes}
+        onNotes={(v) => dispatch({ type: 'SET_NOTES', value: v })}
       />
 
       <CheckInPhotosSection
@@ -170,7 +210,7 @@ export function CheckInForm({ alreadySubmitted }: Props) {
           <div className="bg-white/[.04] ring-1 ring-white/10 backdrop-blur-md rounded-2xl p-6 w-full max-w-xs mx-4">
             <StreakMilestoneAnimation
               days={celebrationData.streakDays}
-              onComplete={() => setCelebration(null)}
+              onComplete={() => dispatch({ type: 'SET_CELEBRATION', value: null })}
             />
           </div>
         </div>
@@ -181,7 +221,7 @@ export function CheckInForm({ alreadySubmitted }: Props) {
             <CheckInAnimation
               streakDays={celebrationData.streakDays}
               weekDots={celebrationData.weekDots}
-              onComplete={() => setCelebration(null)}
+              onComplete={() => dispatch({ type: 'SET_CELEBRATION', value: null })}
             />
           </div>
         </div>

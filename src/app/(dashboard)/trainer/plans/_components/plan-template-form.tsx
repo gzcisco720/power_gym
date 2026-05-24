@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useReducer } from 'react';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -75,23 +75,70 @@ function toDayState(day: IPlanDay): DayState {
   };
 }
 
+interface PlanTemplateFormState {
+  name: string;
+  description: string;
+  days: DayState[];
+  activeDay: number;
+  pendingEmptyGroups: Map<number, string[]>;
+  saving: boolean;
+  sheetTarget: SheetTarget;
+  availableExercises: ExerciseOption[];
+  degradeDialog: { count: number } | null;
+  errorRowIds: Set<string>;
+  discardDialog: boolean;
+}
+
+type PlanTemplateFormAction =
+  | { type: 'SET_NAME'; value: string }
+  | { type: 'SET_DESCRIPTION'; value: string }
+  | { type: 'SET_DAYS'; value: DayState[] }
+  | { type: 'SET_ACTIVE_DAY'; value: number }
+  | { type: 'SET_PENDING_EMPTY_GROUPS'; value: Map<number, string[]> }
+  | { type: 'SET_SAVING'; value: boolean }
+  | { type: 'SET_SHEET_TARGET'; value: SheetTarget }
+  | { type: 'SET_AVAILABLE_EXERCISES'; value: ExerciseOption[] }
+  | { type: 'SET_DEGRADE_DIALOG'; value: { count: number } | null }
+  | { type: 'SET_ERROR_ROW_IDS'; value: Set<string> }
+  | { type: 'SET_DISCARD_DIALOG'; value: boolean };
+
+function planTemplateFormReducer(state: PlanTemplateFormState, action: PlanTemplateFormAction): PlanTemplateFormState {
+  switch (action.type) {
+    case 'SET_NAME': return { ...state, name: action.value };
+    case 'SET_DESCRIPTION': return { ...state, description: action.value };
+    case 'SET_DAYS': return { ...state, days: action.value };
+    case 'SET_ACTIVE_DAY': return { ...state, activeDay: action.value };
+    case 'SET_PENDING_EMPTY_GROUPS': return { ...state, pendingEmptyGroups: action.value };
+    case 'SET_SAVING': return { ...state, saving: action.value };
+    case 'SET_SHEET_TARGET': return { ...state, sheetTarget: action.value };
+    case 'SET_AVAILABLE_EXERCISES': return { ...state, availableExercises: action.value };
+    case 'SET_DEGRADE_DIALOG': return { ...state, degradeDialog: action.value };
+    case 'SET_ERROR_ROW_IDS': return { ...state, errorRowIds: action.value };
+    case 'SET_DISCARD_DIALOG': return { ...state, discardDialog: action.value };
+    default: return state;
+  }
+}
+
 export function PlanTemplateForm({
   initialData,
   exercises: initialExercises = [],
   onSubmit,
   onCancel,
 }: Props) {
-  const [name, setName] = useState(initialData?.name ?? '');
-  const [description, setDescription] = useState(initialData?.description ?? '');
-  const [days, setDays] = useState<DayState[]>(initialData?.days.map(toDayState) ?? []);
-  const [activeDay, setActiveDay] = useState(0);
-  const [pendingEmptyGroups, setPendingEmptyGroups] = useState<Map<number, string[]>>(new Map());
-  const [saving, setSaving] = useState(false);
-  const [sheetTarget, setSheetTarget] = useState<SheetTarget>(null);
-  const [availableExercises, setAvailableExercises] = useState<ExerciseOption[]>(initialExercises);
-  const [degradeDialog, setDegradeDialog] = useState<{ count: number } | null>(null);
-  const [errorRowIds, setErrorRowIds] = useState<Set<string>>(new Set());
-  const [discardDialog, setDiscardDialog] = useState(false);
+  const [state, dispatch] = useReducer(planTemplateFormReducer, {
+    name: initialData?.name ?? '',
+    description: initialData?.description ?? '',
+    days: initialData?.days.map(toDayState) ?? [],
+    activeDay: 0,
+    pendingEmptyGroups: new Map(),
+    saving: false,
+    sheetTarget: null,
+    availableExercises: initialExercises,
+    degradeDialog: null,
+    errorRowIds: new Set<string>(),
+    discardDialog: false,
+  });
+  const { name, description, days, activeDay, pendingEmptyGroups, saving, sheetTarget, availableExercises, degradeDialog, errorRowIds, discardDialog } = state;
 
   const isEditMode = Boolean(initialData);
 
@@ -165,24 +212,20 @@ export function PlanTemplateForm({
 
   function addDay() {
     const num = days.length + 1;
-    setDays((prev) => [...prev, { dayNumber: num, name: `Day ${num}`, exercises: [] }]);
-    setActiveDay(days.length);
+    dispatch({ type: 'SET_DAYS', value: [...days, { dayNumber: num, name: `Day ${num}`, exercises: [] }] });
+    dispatch({ type: 'SET_ACTIVE_DAY', value: days.length });
   }
 
   function removeDay(dayIdx: number) {
-    setDays((prev) =>
-      prev.filter((_, i) => i !== dayIdx).map((d, i) => ({ ...d, dayNumber: i + 1 })),
-    );
-    setPendingEmptyGroups((prev) => {
-      const next = new Map(prev);
-      next.delete(dayIdx);
-      return next;
-    });
-    setActiveDay((prev) => Math.min(prev, Math.max(0, days.length - 2)));
+    dispatch({ type: 'SET_DAYS', value: days.filter((_, i) => i !== dayIdx).map((d, i) => ({ ...d, dayNumber: i + 1 })) });
+    const nextGroups = new Map(pendingEmptyGroups);
+    nextGroups.delete(dayIdx);
+    dispatch({ type: 'SET_PENDING_EMPTY_GROUPS', value: nextGroups });
+    dispatch({ type: 'SET_ACTIVE_DAY', value: Math.min(activeDay, Math.max(0, days.length - 2)) });
   }
 
   function updateDayName(dayIdx: number, value: string) {
-    setDays((prev) => prev.map((d, i) => (i === dayIdx ? { ...d, name: value } : d)));
+    dispatch({ type: 'SET_DAYS', value: days.map((d, i) => (i === dayIdx ? { ...d, name: value } : d)) });
   }
 
   function updateExerciseField(
@@ -191,31 +234,21 @@ export function PlanTemplateForm({
     field: keyof ExerciseRowData,
     value: ExerciseRowData[keyof ExerciseRowData],
   ) {
-    setDays((prev) =>
-      prev.map((d, i) => {
-        if (i !== dayIdx) return d;
-        return {
-          ...d,
-          exercises: d.exercises.map((ex) =>
-            ex.exerciseId === exerciseId ? { ...ex, [field]: value } : ex,
-          ),
-        };
-      }),
-    );
+    dispatch({ type: 'SET_DAYS', value: days.map((d, i) => {
+      if (i !== dayIdx) return d;
+      return { ...d, exercises: d.exercises.map((ex) => ex.exerciseId === exerciseId ? { ...ex, [field]: value } : ex) };
+    }) });
   }
 
   function deleteExercise(dayIdx: number, exerciseId: string) {
-    setDays((prev) =>
-      prev.map((d, i) => {
-        if (i !== dayIdx) return d;
-        return { ...d, exercises: d.exercises.filter((ex) => ex.exerciseId !== exerciseId) };
-      }),
-    );
+    dispatch({ type: 'SET_DAYS', value: days.map((d, i) => {
+      if (i !== dayIdx) return d;
+      return { ...d, exercises: d.exercises.filter((ex) => ex.exerciseId !== exerciseId) };
+    }) });
   }
 
   function moveStandalone(dayIdx: number, exerciseId: string, dir: 'up' | 'down') {
-    setDays((prev) =>
-      prev.map((d, i) => {
+    dispatch({ type: 'SET_DAYS', value: days.map((d, i) => {
         if (i !== dayIdx) return d;
         const exs = [...d.exercises];
         const idx = exs.findIndex((ex) => ex.exerciseId === exerciseId);
@@ -270,13 +303,11 @@ export function PlanTemplateForm({
           ];
           return { ...d, exercises: next };
         }
-      }),
-    );
+      }) });
   }
 
   function moveSupersetMember(dayIdx: number, exerciseId: string, dir: 'up' | 'down') {
-    setDays((prev) =>
-      prev.map((d, i) => {
+    dispatch({ type: 'SET_DAYS', value: days.map((d, i) => {
         if (i !== dayIdx) return d;
         const exs = [...d.exercises];
         const idx = exs.findIndex((ex) => ex.exerciseId === exerciseId);
@@ -287,8 +318,7 @@ export function PlanTemplateForm({
         if (!exs[target].isSuperset || exs[target].groupId !== gid) return d;
         [exs[idx], exs[target]] = [exs[target], exs[idx]];
         return { ...d, exercises: exs };
-      }),
-    );
+      }) });
   }
 
   function addExerciseStandalone(dayIdx: number, exercise: ExerciseOption) {
@@ -304,19 +334,15 @@ export function PlanTemplateForm({
       repsMax: 12,
       restSeconds: null,
     };
-    setDays((prev) =>
-      prev.map((d, i) => (i === dayIdx ? { ...d, exercises: [...d.exercises, newRow] } : d)),
-    );
+    dispatch({ type: 'SET_DAYS', value: days.map((d, i) => (i === dayIdx ? { ...d, exercises: [...d.exercises, newRow] } : d)) });
   }
 
   function startEmptySuperset(dayIdx: number) {
     const groupId = crypto.randomUUID();
-    setPendingEmptyGroups((prev) => {
-      const next = new Map(prev);
-      const arr = [...(next.get(dayIdx) ?? []), groupId];
-      next.set(dayIdx, arr);
-      return next;
-    });
+    const next = new Map(pendingEmptyGroups);
+    const arr = [...(next.get(dayIdx) ?? []), groupId];
+    next.set(dayIdx, arr);
+    dispatch({ type: 'SET_PENDING_EMPTY_GROUPS', value: next });
   }
 
   function addExerciseToSuperset(dayIdx: number, groupId: string, exercise: ExerciseOption) {
@@ -332,71 +358,40 @@ export function PlanTemplateForm({
       repsMax: 12,
       restSeconds: null,
     };
-    setDays((prev) =>
-      prev.map((d, i) => {
-        if (i !== dayIdx) return d;
-        const exs = [...d.exercises];
-        const matches = exs
-          .map((e, k) => (e.isSuperset && e.groupId === groupId ? k : -1))
-          .filter((k) => k >= 0);
-        const lastIdx = matches.length > 0 ? matches[matches.length - 1] : -1;
-        if (lastIdx >= 0) {
-          exs.splice(lastIdx + 1, 0, newRow);
-        } else {
-          exs.push(newRow);
-        }
-        return { ...d, exercises: exs };
-      }),
-    );
-    setPendingEmptyGroups((prev) => {
-      const next = new Map(prev);
-      const arr = (next.get(dayIdx) ?? []).filter((g) => g !== groupId);
-      if (arr.length === 0) next.delete(dayIdx);
-      else next.set(dayIdx, arr);
-      return next;
-    });
+    dispatch({ type: 'SET_DAYS', value: days.map((d, i) => {
+      if (i !== dayIdx) return d;
+      const exs = [...d.exercises];
+      const matches = exs.map((e, k) => (e.isSuperset && e.groupId === groupId ? k : -1)).filter((k) => k >= 0);
+      const lastIdx = matches.length > 0 ? matches[matches.length - 1] : -1;
+      if (lastIdx >= 0) { exs.splice(lastIdx + 1, 0, newRow); } else { exs.push(newRow); }
+      return { ...d, exercises: exs };
+    }) });
+    const nextGroups = new Map(pendingEmptyGroups);
+    const arr = (nextGroups.get(dayIdx) ?? []).filter((g) => g !== groupId);
+    if (arr.length === 0) nextGroups.delete(dayIdx); else nextGroups.set(dayIdx, arr);
+    dispatch({ type: 'SET_PENDING_EMPTY_GROUPS', value: nextGroups });
   }
 
   function ungroupSuperset(dayIdx: number, groupId: string) {
-    setDays((prev) =>
-      prev.map((d, i) => {
-        if (i !== dayIdx) return d;
-        return {
-          ...d,
-          exercises: d.exercises.map((ex) =>
-            ex.isSuperset && ex.groupId === groupId
-              ? { ...ex, isSuperset: false, groupId: ex.exerciseId }
-              : ex,
-          ),
-        };
-      }),
-    );
-    setPendingEmptyGroups((prev) => {
-      const next = new Map(prev);
-      const arr = (next.get(dayIdx) ?? []).filter((g) => g !== groupId);
-      if (arr.length === 0) next.delete(dayIdx);
-      else next.set(dayIdx, arr);
-      return next;
-    });
+    dispatch({ type: 'SET_DAYS', value: days.map((d, i) => {
+      if (i !== dayIdx) return d;
+      return { ...d, exercises: d.exercises.map((ex) => ex.isSuperset && ex.groupId === groupId ? { ...ex, isSuperset: false, groupId: ex.exerciseId } : ex) };
+    }) });
+    const nextGroups = new Map(pendingEmptyGroups);
+    const arr = (nextGroups.get(dayIdx) ?? []).filter((g) => g !== groupId);
+    if (arr.length === 0) nextGroups.delete(dayIdx); else nextGroups.set(dayIdx, arr);
+    dispatch({ type: 'SET_PENDING_EMPTY_GROUPS', value: nextGroups });
   }
 
   function deleteSuperset(dayIdx: number, groupId: string) {
-    setDays((prev) =>
-      prev.map((d, i) => {
-        if (i !== dayIdx) return d;
-        return {
-          ...d,
-          exercises: d.exercises.filter((ex) => !(ex.isSuperset && ex.groupId === groupId)),
-        };
-      }),
-    );
-    setPendingEmptyGroups((prev) => {
-      const next = new Map(prev);
-      const arr = (next.get(dayIdx) ?? []).filter((g) => g !== groupId);
-      if (arr.length === 0) next.delete(dayIdx);
-      else next.set(dayIdx, arr);
-      return next;
-    });
+    dispatch({ type: 'SET_DAYS', value: days.map((d, i) => {
+      if (i !== dayIdx) return d;
+      return { ...d, exercises: d.exercises.filter((ex) => !(ex.isSuperset && ex.groupId === groupId)) };
+    }) });
+    const nextGroups = new Map(pendingEmptyGroups);
+    const arr = (nextGroups.get(dayIdx) ?? []).filter((g) => g !== groupId);
+    if (arr.length === 0) nextGroups.delete(dayIdx); else nextGroups.set(dayIdx, arr);
+    dispatch({ type: 'SET_PENDING_EMPTY_GROUPS', value: nextGroups });
   }
 
   function validate(daysToCheck: DayState[]): { firstError: string | null; rowIds: Set<string> } {
@@ -447,7 +442,7 @@ export function PlanTemplateForm({
   }
 
   async function actuallySubmit(daysFinal: DayState[]) {
-    setSaving(true);
+    dispatch({ type: 'SET_SAVING', value: true });
     try {
       const payload: FormPayload = {
         name: name.trim(),
@@ -460,24 +455,24 @@ export function PlanTemplateForm({
       };
       await onSubmit(payload);
     } finally {
-      setSaving(false);
+      dispatch({ type: 'SET_SAVING', value: false });
     }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setErrorRowIds(new Set());
+    dispatch({ type: 'SET_ERROR_ROW_IDS', value: new Set() });
 
     const v = validate(days);
     if (v.firstError) {
-      setErrorRowIds(v.rowIds);
+      dispatch({ type: 'SET_ERROR_ROW_IDS', value: v.rowIds });
       toast.error(v.firstError);
       return;
     }
 
     const singles = findSingleSupersetGroups(days);
     if (singles.length > 0) {
-      setDegradeDialog({ count: singles.length });
+      dispatch({ type: 'SET_DEGRADE_DIALOG', value: { count: singles.length } });
       return;
     }
 
@@ -496,13 +491,13 @@ export function PlanTemplateForm({
           : ex,
       ),
     }));
-    setDegradeDialog(null);
+    dispatch({ type: 'SET_DEGRADE_DIALOG', value: null });
     await actuallySubmit(daysFinal);
   }
 
   function handleCancel() {
     if (isDirty) {
-      setDiscardDialog(true);
+      dispatch({ type: 'SET_DISCARD_DIALOG', value: true });
       return;
     }
     onCancel?.();
@@ -609,7 +604,7 @@ export function PlanTemplateForm({
                   onMoveRow={(rowExId, dir) => moveSupersetMember(dayIdx, rowExId, dir)}
                   onDeleteRow={(rowExId) => deleteExercise(dayIdx, rowExId)}
                   onAddToSuperset={() =>
-                    setSheetTarget({ kind: 'superset', dayIdx, groupId: slot.groupId })
+                    dispatch({ type: 'SET_SHEET_TARGET', value: { kind: 'superset', dayIdx, groupId: slot.groupId } })
                   }
                   onUngroup={() => ungroupSuperset(dayIdx, slot.groupId)}
                   onDeleteSuperset={() => deleteSuperset(dayIdx, slot.groupId)}
@@ -627,7 +622,7 @@ export function PlanTemplateForm({
                 onMoveRow={() => {}}
                 onDeleteRow={() => {}}
                 onAddToSuperset={() =>
-                  setSheetTarget({ kind: 'superset', dayIdx, groupId: slot.groupId })
+                  dispatch({ type: 'SET_SHEET_TARGET', value: { kind: 'superset', dayIdx, groupId: slot.groupId } })
                 }
                 onUngroup={() => ungroupSuperset(dayIdx, slot.groupId)}
                 onDeleteSuperset={() => deleteSuperset(dayIdx, slot.groupId)}
@@ -639,7 +634,7 @@ export function PlanTemplateForm({
         <div className="flex flex-col sm:flex-row gap-2">
           <button
             type="button"
-            onClick={() => setSheetTarget({ kind: 'day', dayIdx })}
+            onClick={() => dispatch({ type: 'SET_SHEET_TARGET', value: { kind: 'day', dayIdx } })}
             className="flex-1 rounded-lg border border-dashed border-foreground/15 py-2.5 text-xs text-foreground/65 hover:border-foreground/40 hover:text-foreground transition-colors cursor-pointer"
           >
             + Add Exercise
@@ -669,7 +664,7 @@ export function PlanTemplateForm({
           <Input
             id="plan-name"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => dispatch({ type: 'SET_NAME', value: e.target.value })}
             required
           />
         </div>
@@ -683,7 +678,7 @@ export function PlanTemplateForm({
           <Textarea
             id="plan-desc"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => dispatch({ type: 'SET_DESCRIPTION', value: e.target.value })}
             rows={2}
             className="resize-none"
           />
@@ -694,7 +689,7 @@ export function PlanTemplateForm({
         <DayTabs
           days={days.map((d) => ({ dayNumber: d.dayNumber, name: d.name }))}
           activeIndex={activeDay}
-          onChange={setActiveDay}
+          onChange={(v) => dispatch({ type: 'SET_ACTIVE_DAY', value: v })}
           onAddDay={addDay}
         />
       )}
@@ -731,21 +726,21 @@ export function PlanTemplateForm({
         <ExerciseSearchSheet
           open
           onOpenChange={(open) => {
-            if (!open) setSheetTarget(null);
+            if (!open) dispatch({ type: 'SET_SHEET_TARGET', value: null });
           }}
           exercises={availableExercises}
           onSelect={(ex) => {
             if (sheetTarget.kind === 'day') addExerciseStandalone(sheetTarget.dayIdx, ex);
             else addExerciseToSuperset(sheetTarget.dayIdx, sheetTarget.groupId, ex);
-            setSheetTarget(null);
+            dispatch({ type: 'SET_SHEET_TARGET', value: null });
           }}
-          onCreated={(ex) => setAvailableExercises((prev) => [...prev, ex])}
+          onCreated={(ex) => dispatch({ type: 'SET_AVAILABLE_EXERCISES', value: [...availableExercises, ex] })}
         />
       )}
 
       <Dialog
         open={degradeDialog !== null}
-        onOpenChange={(open) => !open && setDegradeDialog(null)}
+        onOpenChange={(open) => !open && dispatch({ type: 'SET_DEGRADE_DIALOG', value: null })}
       >
         <DialogContent>
           <DialogHeader>
@@ -759,7 +754,7 @@ export function PlanTemplateForm({
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setDegradeDialog(null)}
+              onClick={() => dispatch({ type: 'SET_DEGRADE_DIALOG', value: null })}
               disabled={saving}
             >
               Cancel
@@ -771,7 +766,7 @@ export function PlanTemplateForm({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={discardDialog} onOpenChange={setDiscardDialog}>
+      <Dialog open={discardDialog} onOpenChange={(v) => dispatch({ type: 'SET_DISCARD_DIALOG', value: v })}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Discard changes?</DialogTitle>
@@ -780,13 +775,13 @@ export function PlanTemplateForm({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDiscardDialog(false)}>
+            <Button variant="outline" onClick={() => dispatch({ type: 'SET_DISCARD_DIALOG', value: false })}>
               Keep editing
             </Button>
             <Button
               variant="destructive"
               onClick={() => {
-                setDiscardDialog(false);
+                dispatch({ type: 'SET_DISCARD_DIALOG', value: false });
                 onCancel?.();
               }}
             >

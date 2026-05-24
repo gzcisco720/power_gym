@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -116,18 +116,55 @@ function formatStaticDuration(startIso: string | null, endIso: string | null): s
   return min >= 60 ? `${Math.floor(min / 60)}h ${min % 60}m` : `${min}m`;
 }
 
+interface SelfWorkoutSessionState {
+  log: ISelfWorkoutLog | null;
+  loading: boolean;
+  completeOpen: boolean;
+  pickerOpen: boolean;
+  inputs: { weight: string; reps: string }[];
+  bwOverrides: Record<string, boolean>;
+  deletedIndices: Set<number>;
+  inputErrors: Record<number, { weight?: boolean; reps?: boolean }>;
+  availableExercises: ExerciseOption[];
+  savingSets: boolean;
+}
+
+type SelfWorkoutSessionAction =
+  | { type: 'SET_LOG'; value: ISelfWorkoutLog | null }
+  | { type: 'SET_LOADING'; value: boolean }
+  | { type: 'SET_COMPLETE_OPEN'; value: boolean }
+  | { type: 'SET_PICKER_OPEN'; value: boolean }
+  | { type: 'SET_INPUTS'; value: { weight: string; reps: string }[] }
+  | { type: 'SET_BW_OVERRIDES'; value: Record<string, boolean> }
+  | { type: 'SET_DELETED_INDICES'; value: Set<number> }
+  | { type: 'SET_INPUT_ERRORS'; value: Record<number, { weight?: boolean; reps?: boolean }> }
+  | { type: 'SET_AVAILABLE_EXERCISES'; value: ExerciseOption[] }
+  | { type: 'SET_SAVING_SETS'; value: boolean };
+
+function selfWorkoutSessionReducer(state: SelfWorkoutSessionState, action: SelfWorkoutSessionAction): SelfWorkoutSessionState {
+  switch (action.type) {
+    case 'SET_LOG': return { ...state, log: action.value };
+    case 'SET_LOADING': return { ...state, loading: action.value };
+    case 'SET_COMPLETE_OPEN': return { ...state, completeOpen: action.value };
+    case 'SET_PICKER_OPEN': return { ...state, pickerOpen: action.value };
+    case 'SET_INPUTS': return { ...state, inputs: action.value };
+    case 'SET_BW_OVERRIDES': return { ...state, bwOverrides: action.value };
+    case 'SET_DELETED_INDICES': return { ...state, deletedIndices: action.value };
+    case 'SET_INPUT_ERRORS': return { ...state, inputErrors: action.value };
+    case 'SET_AVAILABLE_EXERCISES': return { ...state, availableExercises: action.value };
+    case 'SET_SAVING_SETS': return { ...state, savingSets: action.value };
+    default: return state;
+  }
+}
+
 export function SelfWorkoutSession({ logId, basePath }: Props) {
   const { push } = useRouter();
-  const [log, setLog] = useState<ISelfWorkoutLog | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [completeOpen, setCompleteOpen] = useState(false);
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [inputs, setInputs] = useState<{ weight: string; reps: string }[]>([]);
-  const [bwOverrides, setBwOverrides] = useState<Record<string, boolean>>({});
-  const [deletedIndices, setDeletedIndices] = useState<Set<number>>(new Set());
-  const [inputErrors, setInputErrors] = useState<Record<number, { weight?: boolean; reps?: boolean }>>({});
-  const [availableExercises, setAvailableExercises] = useState<ExerciseOption[]>([]);
-  const [savingSets, setSavingSets] = useState(false);
+  const [state, dispatch] = useReducer(selfWorkoutSessionReducer, {
+    log: null, loading: true, completeOpen: false, pickerOpen: false,
+    inputs: [], bwOverrides: {}, deletedIndices: new Set(), inputErrors: {},
+    availableExercises: [], savingSets: false,
+  });
+  const { log, loading, completeOpen, pickerOpen, inputs, bwOverrides, deletedIndices, inputErrors, availableExercises, savingSets } = state;
 
   // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
@@ -135,22 +172,22 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     fetch(`/api/me/workout-logs/${logId}`, { signal: controller.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((d: ISelfWorkoutLog | null) => {
-        setLog(d);
+        dispatch({ type: 'SET_LOG', value: d });
         if (d) {
-          setInputs(d.sets.map((s) => ({
+          dispatch({ type: 'SET_INPUTS', value: d.sets.map((s) => ({
             weight: s.actualWeight !== null ? String(s.actualWeight) : '',
             reps: s.actualReps !== null ? String(s.actualReps) : '',
-          })));
+          })) });
           const map: Record<string, boolean> = {};
           d.sets.forEach((s) => {
             map[s.exerciseId.toString()] = s.isBodyweight;
           });
-          setBwOverrides(map);
+          dispatch({ type: 'SET_BW_OVERRIDES', value: map });
         }
-        setLoading(false);
+        dispatch({ type: 'SET_LOADING', value: false });
       })
       .catch((err: unknown) => {
-        if (err instanceof Error && err.name !== 'AbortError') setLoading(false);
+        if (err instanceof Error && err.name !== 'AbortError') dispatch({ type: 'SET_LOADING', value: false });
       });
     return () => controller.abort();
   }, [logId]);
@@ -161,7 +198,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     fetch('/api/exercises', { signal: controller.signal })
       .then((r) => (r.ok ? r.json() : []))
       .then((data: ExerciseOption[]) => {
-        setAvailableExercises(data);
+        dispatch({ type: 'SET_AVAILABLE_EXERCISES', value: data });
       })
       .catch((err: unknown) => { if (err instanceof Error && err.name !== 'AbortError') console.error(err); });
     return () => controller.abort();
@@ -191,41 +228,33 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     : '';
 
   function syncLog(next: ISelfWorkoutLog) {
-    setLog(next);
-    setInputs((prev) => {
-      if (next.sets.length <= prev.length) return prev;
-      const extra = next.sets.length - prev.length;
-      return [...prev, ...Array.from({ length: extra }, () => ({ weight: '', reps: '' }))];
-    });
+    dispatch({ type: 'SET_LOG', value: next });
+    if (next.sets.length > inputs.length) {
+      const extra = next.sets.length - inputs.length;
+      dispatch({ type: 'SET_INPUTS', value: [...inputs, ...Array.from({ length: extra }, () => ({ weight: '', reps: '' }))] });
+    }
   }
 
   function updateInput(globalIndex: number, field: 'weight' | 'reps', value: string) {
-    setInputs((prev) => {
-      const next = [...prev];
-      next[globalIndex] = { ...next[globalIndex], [field]: value };
-      return next;
-    });
-    setInputErrors((prev) => {
-      if (!prev[globalIndex]?.[field]) return prev;
-      const next = { ...prev };
-      next[globalIndex] = { ...next[globalIndex], [field]: undefined };
-      if (!next[globalIndex].weight && !next[globalIndex].reps) delete next[globalIndex];
-      return next;
-    });
+    const nextInputs = [...inputs];
+    nextInputs[globalIndex] = { ...nextInputs[globalIndex], [field]: value };
+    dispatch({ type: 'SET_INPUTS', value: nextInputs });
+    if (inputErrors[globalIndex]?.[field]) {
+      const nextErrors = { ...inputErrors };
+      nextErrors[globalIndex] = { ...nextErrors[globalIndex], [field]: undefined };
+      if (!nextErrors[globalIndex].weight && !nextErrors[globalIndex].reps) delete nextErrors[globalIndex];
+      dispatch({ type: 'SET_INPUT_ERRORS', value: nextErrors });
+    }
   }
 
   function deleteSet(globalIndex: number) {
-    setDeletedIndices((prev) => new Set([...prev, globalIndex]));
-    setInputs((prev) => {
-      const next = [...prev];
-      next[globalIndex] = { weight: '', reps: '' };
-      return next;
-    });
-    setInputErrors((prev) => {
-      const next = { ...prev };
-      delete next[globalIndex];
-      return next;
-    });
+    dispatch({ type: 'SET_DELETED_INDICES', value: new Set([...deletedIndices, globalIndex]) });
+    const nextInputs = [...inputs];
+    nextInputs[globalIndex] = { weight: '', reps: '' };
+    dispatch({ type: 'SET_INPUTS', value: nextInputs });
+    const nextErrors = { ...inputErrors };
+    delete nextErrors[globalIndex];
+    dispatch({ type: 'SET_INPUT_ERRORS', value: nextErrors });
   }
 
   function validateInputs(): Record<number, { weight?: boolean; reps?: boolean }> {
@@ -248,7 +277,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     if (!log) return;
     const errors = validateInputs();
     if (Object.keys(errors).length > 0) {
-      setInputErrors(errors);
+      dispatch({ type: 'SET_INPUT_ERRORS', value: errors });
       return;
     }
     // Only block if there are non-deleted sets and none have any data filled
@@ -265,7 +294,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
         return;
       }
     }
-    setInputErrors({});
+    dispatch({ type: 'SET_INPUT_ERRORS', value: {} });
 
     // Batch-PATCH filled sets before opening the dialog
     const setsToSave: { index: number; weight: number | null; reps: number | null }[] = [];
@@ -285,7 +314,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     });
 
     if (setsToSave.length > 0) {
-      setSavingSets(true);
+      dispatch({ type: 'SET_SAVING_SETS', value: true });
       try {
         const results = await Promise.all(
           setsToSave.map(({ index, weight, reps }) =>
@@ -311,11 +340,11 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
         toast.error('Something went wrong');
         return;
       } finally {
-        setSavingSets(false);
+        dispatch({ type: 'SET_SAVING_SETS', value: false });
       }
     }
 
-    setCompleteOpen(true);
+    dispatch({ type: 'SET_COMPLETE_OPEN', value: true });
   }
 
   async function addSet(exerciseId: string) {
@@ -377,7 +406,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
     }
     const next = (await res.json()) as ISelfWorkoutLog;
     syncLog(next);
-    setBwOverrides((prev) => ({ ...prev, [option._id]: option.isBodyweight }));
+    dispatch({ type: 'SET_BW_OVERRIDES', value: { ...bwOverrides, [option._id]: option.isBodyweight } });
   }
 
   const groups = useMemo(() => (log ? buildGroups(log) : []), [log]);
@@ -463,7 +492,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
                   onDeleteSet={deleteSet}
                   onAddSet={() => void addSet(group.exerciseId)}
                   onBwToggle={(next) =>
-                    setBwOverrides((prev) => ({ ...prev, [group.exerciseId]: next }))
+                    dispatch({ type: 'SET_BW_OVERRIDES', value: { ...bwOverrides, [group.exerciseId]: next } })
                   }
                   readOnly={isCompleted}
                   inputErrors={inputErrors}
@@ -488,7 +517,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
                 onDeleteSet={(_, idx) => deleteSet(idx)}
                 onAddSet={(exId) => void addSet(exId)}
                 onBwToggle={(exId, next) =>
-                  setBwOverrides((prev) => ({ ...prev, [exId]: next }))
+                  dispatch({ type: 'SET_BW_OVERRIDES', value: { ...bwOverrides, [exId]: next } })
                 }
                 readOnly={isCompleted}
               />
@@ -499,7 +528,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
         {isFreestyle && !isCompleted && (
           <button
             type="button"
-            onClick={() => setPickerOpen(true)}
+            onClick={() => dispatch({ type: 'SET_PICKER_OPEN', value: true })}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/15 py-4 text-xs text-foreground/65 hover:border-foreground/40 hover:text-foreground transition-colors cursor-pointer"
           >
             + Add Exercise
@@ -529,15 +558,15 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
 
       <ExerciseSearchSheet
         open={pickerOpen}
-        onOpenChange={setPickerOpen}
+        onOpenChange={(v) => dispatch({ type: 'SET_PICKER_OPEN', value: v })}
         exercises={availableExercises}
         onSelect={(ex) => void addExercise(ex)}
-        onCreated={(ex) => setAvailableExercises((prev) => [...prev, ex])}
+        onCreated={(ex) => dispatch({ type: 'SET_AVAILABLE_EXERCISES', value: [...availableExercises, ex] })}
       />
 
       <CompleteWorkoutDialog
         open={completeOpen}
-        onOpenChange={setCompleteOpen}
+        onOpenChange={(v) => dispatch({ type: 'SET_COMPLETE_OPEN', value: v })}
         logId={logId}
         onCompleted={() => push(basePath)}
       />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useReducer } from 'react';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -32,36 +32,65 @@ const PROTOCOL_OPTIONS: { value: Protocol; label: string }[] = [
   { value: 'other', label: 'Other (manual %)' },
 ];
 
+interface NewBodyTestState {
+  open: boolean;
+  date: string;
+  protocol: Protocol;
+  weight: string;
+  targetWeight: string;
+  targetBodyFatPct: string;
+  goalsOpen: boolean;
+  sites: Record<string, string>;
+  bfPctInput: string;
+  saving: boolean;
+}
+
+type NewBodyTestAction =
+  | { type: 'SET_OPEN'; value: boolean }
+  | { type: 'SET_DATE'; value: string }
+  | { type: 'SET_PROTOCOL'; value: Protocol }
+  | { type: 'SET_WEIGHT'; value: string }
+  | { type: 'SET_TARGET_WEIGHT'; value: string }
+  | { type: 'SET_TARGET_BODY_FAT_PCT'; value: string }
+  | { type: 'SET_GOALS_OPEN'; value: boolean }
+  | { type: 'SET_SITES'; value: Record<string, string> }
+  | { type: 'SET_BF_PCT_INPUT'; value: string }
+  | { type: 'SET_SAVING'; value: boolean }
+  | { type: 'OPEN_RESET' };
+
+function newBodyTestReducer(state: NewBodyTestState, action: NewBodyTestAction): NewBodyTestState {
+  switch (action.type) {
+    case 'SET_OPEN': return { ...state, open: action.value };
+    case 'SET_DATE': return { ...state, date: action.value };
+    case 'SET_PROTOCOL': return { ...state, protocol: action.value };
+    case 'SET_WEIGHT': return { ...state, weight: action.value };
+    case 'SET_TARGET_WEIGHT': return { ...state, targetWeight: action.value };
+    case 'SET_TARGET_BODY_FAT_PCT': return { ...state, targetBodyFatPct: action.value };
+    case 'SET_GOALS_OPEN': return { ...state, goalsOpen: action.value };
+    case 'SET_SITES': return { ...state, sites: action.value };
+    case 'SET_BF_PCT_INPUT': return { ...state, bfPctInput: action.value };
+    case 'SET_SAVING': return { ...state, saving: action.value };
+    case 'OPEN_RESET': return { ...state, open: true, date: new Date().toISOString().split('T')[0], protocol: '3site', weight: '', targetWeight: '', targetBodyFatPct: '', goalsOpen: false, sites: {}, bfPctInput: '' };
+    default: return state;
+  }
+}
+
 export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, previousTest, onSaved }: Props) {
-  const [open, setOpen] = useState(false);
+  const [state, dispatch] = useReducer(newBodyTestReducer, {
+    open: false, date: '', protocol: '3site', weight: '', targetWeight: '',
+    targetBodyFatPct: '', goalsOpen: false, sites: {}, bfPctInput: '', saving: false,
+  });
+  const { open, date, protocol, weight, targetWeight, targetBodyFatPct, goalsOpen, sites, bfPctInput, saving } = state;
 
   const sex: 'male' | 'female' = defaultSex ?? 'male';
   const age = defaultAge ?? 0;
 
-  const [date, setDate] = useState('');
-  const [protocol, setProtocol] = useState<Protocol>('3site');
-  const [weight, setWeight] = useState('');
-  const [targetWeight, setTargetWeight] = useState('');
-  const [targetBodyFatPct, setTargetBodyFatPct] = useState('');
-  const [goalsOpen, setGoalsOpen] = useState(false);
-  const [sites, setSites] = useState<Record<string, string>>({});
-  const [bfPctInput, setBfPctInput] = useState('');
-  const [saving, setSaving] = useState(false);
-
   function resetAndOpen() {
-    setDate(new Date().toISOString().split('T')[0]);
-    setProtocol('3site');
-    setWeight('');
-    setTargetWeight('');
-    setTargetBodyFatPct('');
-    setGoalsOpen(false);
-    setSites({});
-    setBfPctInput('');
-    setOpen(true);
+    dispatch({ type: 'OPEN_RESET' });
   }
 
   function handleClose() {
-    setOpen(false);
+    dispatch({ type: 'SET_OPEN', value: false });
   }
 
   const weightNum = parseFloat(weight);
@@ -79,7 +108,7 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, previousTe
 
   async function handleSave() {
     if (!canSave) return;
-    setSaving(true);
+    dispatch({ type: 'SET_SAVING', value: true });
     try {
       const payload: Record<string, number | string | null> = {
         protocol,
@@ -110,7 +139,7 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, previousTe
       onSaved(created);
       handleClose();
     } finally {
-      setSaving(false);
+      dispatch({ type: 'SET_SAVING', value: false });
     }
   }
 
@@ -146,7 +175,7 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, previousTe
                   id="nbt-date"
                   type="date"
                   value={date}
-                  onChange={(e) => setDate(e.target.value)}
+                  onChange={(e) => dispatch({ type: 'SET_DATE', value: e.target.value })}
                   className="bg-[#0a0a0a] border-[#1e1e1e]"
                 />
               </div>
@@ -157,7 +186,7 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, previousTe
                 <select
                   id="nbt-protocol"
                   value={protocol}
-                  onChange={(e) => setProtocol(e.target.value as Protocol)}
+                  onChange={(e) => dispatch({ type: 'SET_PROTOCOL', value: e.target.value as Protocol })}
                   className="w-full rounded-md border border-[#1e1e1e] bg-[#0a0a0a] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/30"
                 >
                   {PROTOCOL_OPTIONS.map((o) => (
@@ -172,7 +201,7 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, previousTe
                   type="text"
                   inputMode="decimal"
                   value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
+                  onChange={(e) => dispatch({ type: 'SET_WEIGHT', value: e.target.value })}
                   placeholder="kg"
                   className="bg-[#0a0a0a] border-[#1e1e1e]"
                 />
@@ -182,7 +211,7 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, previousTe
             <div className="border-t border-[#141414] pt-3 space-y-3">
               <button
                 type="button"
-                onClick={() => setGoalsOpen(!goalsOpen)}
+                onClick={() => dispatch({ type: 'SET_GOALS_OPEN', value: !goalsOpen })}
                 aria-expanded={goalsOpen}
                 className="flex items-center gap-1.5 text-[11px] text-foreground/40 hover:text-foreground/65 transition-colors outline-none focus-visible:text-foreground/65"
               >
@@ -193,11 +222,11 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, previousTe
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label htmlFor="nbt-tw" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">Target Weight (kg)</label>
-                    <Input id="nbt-tw" type="text" inputMode="decimal" value={targetWeight} onChange={(e) => setTargetWeight(e.target.value)} placeholder="kg" className="bg-[#0a0a0a] border-[#1e1e1e]" />
+                    <Input id="nbt-tw" type="text" inputMode="decimal" value={targetWeight} onChange={(e) => dispatch({ type: 'SET_TARGET_WEIGHT', value: e.target.value })} placeholder="kg" className="bg-[#0a0a0a] border-[#1e1e1e]" />
                   </div>
                   <div className="space-y-1.5">
                     <label htmlFor="nbt-tbf" className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground/65">Target Body Fat (%)</label>
-                    <Input id="nbt-tbf" type="text" inputMode="decimal" value={targetBodyFatPct} onChange={(e) => setTargetBodyFatPct(e.target.value)} placeholder="%" className="bg-[#0a0a0a] border-[#1e1e1e]" />
+                    <Input id="nbt-tbf" type="text" inputMode="decimal" value={targetBodyFatPct} onChange={(e) => dispatch({ type: 'SET_TARGET_BODY_FAT_PCT', value: e.target.value })} placeholder="%" className="bg-[#0a0a0a] border-[#1e1e1e]" />
                   </div>
                 </div>
               )}
@@ -211,7 +240,7 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, previousTe
                   type="text"
                   inputMode="decimal"
                   value={bfPctInput}
-                  onChange={(e) => setBfPctInput(e.target.value)}
+                  onChange={(e) => dispatch({ type: 'SET_BF_PCT_INPUT', value: e.target.value })}
                   placeholder="e.g. 14.5"
                   className="bg-[#0a0a0a] border-[#1e1e1e]"
                   aria-label="Body Fat"
@@ -234,7 +263,7 @@ export function NewBodyTestDialog({ memberId, defaultSex, defaultAge, previousTe
                           type="text"
                           inputMode="decimal"
                           value={sites[s] ?? ''}
-                          onChange={(e) => setSites((prev) => ({ ...prev, [s]: e.target.value }))}
+                          onChange={(e) => dispatch({ type: 'SET_SITES', value: { ...sites, [s]: e.target.value } })}
                           placeholder="mm"
                           className="bg-[#0a0a0a] border-[#1e1e1e] text-sm"
                           aria-label={SITE_LABELS[s]}
