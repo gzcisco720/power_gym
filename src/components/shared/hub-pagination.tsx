@@ -36,7 +36,7 @@ export function HubPagination({ currentPage, totalPages, basePath }: HubPaginati
           </PaginationItem>
           {pages.map((p, i) =>
             p === 'ellipsis' ? (
-              <PaginationItem key={`e-${i}`}>
+              <PaginationItem key={`ellipsis-${i}`}>
                 <PaginationEllipsis />
               </PaginationItem>
             ) : (

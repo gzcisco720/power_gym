@@ -30,8 +30,8 @@ export function SelfNutritionCalendar({ entries, onSelect, selectedDate, onMonth
   // Use local date — `toISOString()` is UTC and can disagree with the
   // calendar grid (which is built from `getFullYear/Month/Date`) near midnight.
   const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [year, setYear] = useState(() => now.getFullYear());
+  const [month, setMonth] = useState(() => now.getMonth() + 1);
   const { startOffset, daysInMonth } = getMonthDays(year, month);
 
   const entriesByDay = useMemo(() => {

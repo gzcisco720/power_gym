@@ -411,7 +411,7 @@ export function FoodForm({
 
           <div className="space-y-2">
             {servings.map((s, idx) => (
-              <div key={`serving-${idx}`} className="flex items-center gap-2">
+              <div key={idx /* serving rows have no stable id — index is intentional */} className="flex items-center gap-2">
                 <Input
                   value={s.label}
                   onChange={(e) => updateServing(idx, 'label', e.target.value)}

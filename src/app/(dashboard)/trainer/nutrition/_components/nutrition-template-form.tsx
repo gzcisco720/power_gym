@@ -323,7 +323,7 @@ export function NutritionTemplateForm({ initialData, onSubmit, onCancel }: Props
           const macros = sumDayMacros(dayType);
 
           return (
-            <Card key={`day-${dayIdx}`} className="overflow-hidden">
+            <Card key={dayIdx /* no stable id on IDayType — index is intentional */} className="overflow-hidden">
               {/* Day type header — bold, distinct background */}
               <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/30 border-b border-border/50">
                 <button

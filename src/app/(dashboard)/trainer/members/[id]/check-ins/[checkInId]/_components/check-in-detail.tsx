@@ -159,7 +159,7 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
                   </p>
                   <div className="space-y-2">
                     {checkIn.photos.map((url, i) => (
-                      <div key={`${checkInId}-${i}`} className="relative w-full aspect-square rounded overflow-hidden">
+                      <div key={url} className="relative w-full aspect-square rounded overflow-hidden">
                         <Image src={url} alt={`Photo ${i + 1}`} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
                       </div>
                     ))}
@@ -171,7 +171,7 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
                   </p>
                   <div className="space-y-2">
                     {compareCheckIn.photos.map((url, i) => (
-                      <div key={`compare-${i}`} className="relative w-full aspect-square rounded overflow-hidden">
+                      <div key={url} className="relative w-full aspect-square rounded overflow-hidden">
                         <Image src={url} alt={`Comparison photo ${i + 1}`} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
                       </div>
                     ))}
@@ -180,7 +180,7 @@ export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
               </>
             ) : (
               checkIn.photos.map((url, i) => (
-                <Image key={i} src={url} alt={`Photo ${i + 1}`} width={160} height={160} className="rounded object-cover" />
+                <Image key={url} src={url} alt={`Photo ${i + 1}`} width={160} height={160} className="rounded object-cover" />
               ))
             )}
           </div>

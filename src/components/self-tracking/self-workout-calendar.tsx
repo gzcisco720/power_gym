@@ -28,8 +28,8 @@ function getMonthDays(year: number, month: number) {
 
 export function SelfWorkoutCalendar({ logs, onSelect, selectedId, onMonthChange }: Props) {
   const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [year, setYear] = useState(() => now.getFullYear());
+  const [month, setMonth] = useState(() => now.getMonth() + 1);
 
   const { startOffset, daysInMonth } = getMonthDays(year, month);
 

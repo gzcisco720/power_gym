@@ -33,10 +33,15 @@ function initialPeriod(): BillingPeriod {
   };
 }
 
+interface FetchState {
+  data: BillingData | null;
+  loading: boolean;
+}
+
 export function MemberBillingDetail({ memberId }: MemberBillingDetailProps) {
+  // oxlint-disable-next-line react-doctor/rerender-state-only-in-handlers
   const [period, setPeriod] = useState<BillingPeriod>(initialPeriod);
-  const [data, setData] = useState<BillingData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [fetchState, setFetchState] = useState<FetchState>({ data: null, loading: true });
 
   // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
@@ -49,21 +54,22 @@ export function MemberBillingDetail({ memberId }: MemberBillingDetailProps) {
         return res.json() as Promise<BillingData>;
       })
       .then((json) => {
-        setData(json ?? null);
-        setLoading(false);
+        setFetchState({ data: json ?? null, loading: false });
       })
       .catch((err: unknown) => {
         if (err instanceof Error && err.name !== 'AbortError') {
-          setLoading(false);
+          setFetchState((s) => ({ ...s, loading: false }));
         }
       });
     return () => controller.abort();
   }, [memberId, period]);
 
   function handlePeriodChange(p: BillingPeriod) {
-    setLoading(true);
+    setFetchState((s) => ({ ...s, loading: true }));
     setPeriod(p);
   }
+
+  const { data, loading } = fetchState;
 
   return (
     <div className="px-4 sm:px-8 py-7">

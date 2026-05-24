@@ -292,7 +292,7 @@ export function MemberNutritionPlanForm({ memberId, initialData }: Props) {
             const macros = sumDayMacros(dt);
             const isCollapsed = collapsed[dayIdx] ?? false;
             return (
-              <div key={`day-${dayIdx}`} className="rounded-xl bg-card ring-1 ring-foreground/10">
+              <div key={dayIdx /* no stable id on day types — index is intentional */} className="rounded-xl bg-card ring-1 ring-foreground/10">
                 {/* Day type header */}
                 <div className="flex items-center gap-2 px-4 py-3">
                   <button

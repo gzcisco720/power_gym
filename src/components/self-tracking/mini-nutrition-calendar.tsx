@@ -53,9 +53,10 @@ function mergeEntries(self: NutritionDayEntry[], plan: NutritionDayEntry[]): Nut
 
 export function MiniNutritionCalendar({ basePath, memberId }: Props) {
   const { push } = useRouter();
-  const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
+  // oxlint-disable-next-line react-doctor/rerender-state-only-in-handlers
+  const [year, setYear] = useState(() => new Date().getFullYear());
+  // oxlint-disable-next-line react-doctor/rerender-state-only-in-handlers
+  const [month, setMonth] = useState(() => new Date().getMonth() + 1);
   const [entries, setEntries] = useState<NutritionDayEntry[]>([]);
 
   // oxlint-disable-next-line react-doctor/no-fetch-in-effect

@@ -145,7 +145,7 @@ export default async function MemberCheckInDetailPage({ params }: { params: Prom
             </div>
             <div className="grid grid-cols-3 gap-[3px] p-[3px]">
               {c.photos.map((url, i) => (
-                <div key={i} className="aspect-square rounded-[5px] overflow-hidden relative">
+                <div key={url} className="aspect-square rounded-[5px] overflow-hidden relative">
                   <Image src={url} alt="" fill sizes="(max-width: 768px) 33vw, 25vw" className="object-cover" />
                 </div>
               ))}

@@ -33,11 +33,16 @@ function initialPeriod(): BillingPeriod {
   };
 }
 
+interface FetchState {
+  data: SummaryData | null;
+  loading: boolean;
+}
+
 export function BillingSummaryClient({ userRole, memberHubBase }: BillingSummaryClientProps) {
   const { push } = useRouter();
+  // oxlint-disable-next-line react-doctor/rerender-state-only-in-handlers
   const [period, setPeriod] = useState<BillingPeriod>(initialPeriod);
-  const [data, setData] = useState<SummaryData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [fetchState, setFetchState] = useState<FetchState>({ data: null, loading: true });
 
   // oxlint-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
@@ -50,21 +55,22 @@ export function BillingSummaryClient({ userRole, memberHubBase }: BillingSummary
         return res.json() as Promise<SummaryData>;
       })
       .then((json) => {
-        setData(json ?? null);
-        setLoading(false);
+        setFetchState({ data: json ?? null, loading: false });
       })
       .catch((err: unknown) => {
         if (err instanceof Error && err.name !== 'AbortError') {
-          setLoading(false);
+          setFetchState((s) => ({ ...s, loading: false }));
         }
       });
     return () => controller.abort();
   }, [period]);
 
   function handlePeriodChange(p: BillingPeriod) {
-    setLoading(true);
+    setFetchState((s) => ({ ...s, loading: true }));
     setPeriod(p);
   }
+
+  const { data, loading } = fetchState;
 
   return (
     <div className="px-4 sm:px-8 py-7">

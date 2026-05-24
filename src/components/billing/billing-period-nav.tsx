@@ -21,9 +21,8 @@ interface BillingPeriodNavProps {
 }
 
 export function BillingPeriodNav({ onChange }: BillingPeriodNavProps) {
-  const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth());
+  const [year, setYear] = useState(() => new Date().getFullYear());
+  const [month, setMonth] = useState(() => new Date().getMonth());
 
   const period = getMonthPeriod(year, month);
 

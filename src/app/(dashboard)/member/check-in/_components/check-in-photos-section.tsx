@@ -26,7 +26,7 @@ export function CheckInPhotosSection({ photos, uploading, onFileChange }: Props)
       <div className="flex flex-wrap gap-2">
         {photos.map((url, i) => (
           <Image
-            key={i}
+            key={url}
             src={url}
             alt={`Photo ${i + 1}`}
             width={64}

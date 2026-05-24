@@ -52,7 +52,7 @@ function sortByDateDesc(tests: BodyTestRecord[]): BodyTestRecord[] {
 export function BodyTestClient({ memberId, memberName, initialTests, defaultSex, defaultAge }: Props) {
   const { refresh } = useRouter();
   const shouldReduce = useReducedMotion();
-  const [tests, setTests] = useState<BodyTestRecord[]>(sortByDateDesc(initialTests));
+  const [tests, setTests] = useState<BodyTestRecord[]>(() => sortByDateDesc(initialTests));
   const [deleteTarget, setDeleteTarget] = useState<BodyTestRecord | null>(null);
   const [deleting, setDeleting] = useState(false);
 
