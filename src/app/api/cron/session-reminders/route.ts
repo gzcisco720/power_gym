@@ -34,9 +34,9 @@ export async function GET(req: Request): Promise<Response> {
       ]);
       if (!trainer) return false;
 
-      const members: ResolvedMember[] = memberDocs
-        .map((m, i) => (m !== null ? { index: i, name: m.name, email: m.email } : null))
-        .filter((m): m is ResolvedMember => m !== null);
+      const members: ResolvedMember[] = memberDocs.flatMap((m, i) =>
+        m !== null ? [{ index: i, name: m.name, email: m.email }] : [],
+      );
 
       const dateLabel = s.date.toLocaleDateString('en-US', {
         weekday: 'long',
@@ -47,9 +47,9 @@ export async function GET(req: Request): Promise<Response> {
 
       await Promise.all(
         members.map(async (member) => {
-          const otherNames = members
-            .filter((m) => m.index !== member.index)
-            .map((m) => m.name);
+          const otherNames = members.flatMap((m) =>
+            m.index !== member.index ? [m.name] : [],
+          );
           try {
             await emailService.sendSessionReminder({
               to: member.email,

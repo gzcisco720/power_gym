@@ -23,7 +23,7 @@ export async function MemberKpiStrip() {
   const latest = tests[0] ?? null;
   const previous = tests[1] ?? null;
   const topPb =
-    pbs.length > 0 ? [...pbs].sort((a, b) => b.estimatedOneRM - a.estimatedOneRM)[0] : null;
+    pbs.length > 0 ? pbs.reduce((best, pb) => pb.estimatedOneRM > best.estimatedOneRM ? pb : best) : null;
 
   const kpi = buildKpiData({ sessionsThisMonth, latest, previous, topPb, now });
 

@@ -80,13 +80,15 @@ function buildGroups(log: ISelfWorkoutLog): Group[] {
       });
     } else if (!seenGroupIds.has(ex.groupId)) {
       seenGroupIds.add(ex.groupId);
-      const groupExercises = labelled
-        .filter((e) => e.isSuperset && e.groupId === ex.groupId)
-        .map((e) => ({
-          exerciseId: e.exerciseId,
-          exercise: e as ExerciseRowData,
-          sets: setsWithIndex.filter((s) => s.exerciseId.toString() === e.exerciseId),
-        }));
+      const groupExercises = labelled.flatMap((e) =>
+        e.isSuperset && e.groupId === ex.groupId
+          ? [{
+              exerciseId: e.exerciseId,
+              exercise: e as ExerciseRowData,
+              sets: setsWithIndex.filter((s) => s.exerciseId.toString() === e.exerciseId),
+            }]
+          : [],
+      );
       groups.push({ type: 'superset', groupId: ex.groupId, exercises: groupExercises });
     }
   }
@@ -414,17 +416,19 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
   useDirtyInputGuard(inputs, log?.sets ?? []);
 
   function toLoggingSets(exSets: SetWithIndex[]): LoggingSetInput[] {
-    return exSets
-      .filter((s) => !deletedIndices.has(s.globalIndex))
-      .map((s) => ({
-        setNumber: s.setNumber,
-        prescribedRepsMin: s.prescribedRepsMin ?? 0,
-        prescribedRepsMax: s.prescribedRepsMax ?? 0,
-        actualWeight: s.actualWeight,
-        actualReps: s.actualReps,
-        completedAt: s.completedAt instanceof Date ? s.completedAt.toISOString() : (s.completedAt ?? null),
-        globalIndex: s.globalIndex,
-      }));
+    return exSets.flatMap((s) =>
+      deletedIndices.has(s.globalIndex)
+        ? []
+        : [{
+            setNumber: s.setNumber,
+            prescribedRepsMin: s.prescribedRepsMin ?? 0,
+            prescribedRepsMax: s.prescribedRepsMax ?? 0,
+            actualWeight: s.actualWeight,
+            actualReps: s.actualReps,
+            completedAt: s.completedAt instanceof Date ? s.completedAt.toISOString() : (s.completedAt ?? null),
+            globalIndex: s.globalIndex,
+          }],
+    );
   }
 
   // Count sets that have at least reps filled (for the progress display)

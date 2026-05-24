@@ -40,9 +40,11 @@ export function TemplatePreview({ days }: Props) {
       slots.push({
         kind: 'superset',
         groupId: ex.groupId,
-        members: labelled
-          .filter((e) => e.isSuperset && e.groupId === ex.groupId)
-          .map((e) => ({ row: e as ExerciseRowData, label: e.label })),
+        members: labelled.flatMap((e) =>
+          e.isSuperset && e.groupId === ex.groupId
+            ? [{ row: e as ExerciseRowData, label: e.label }]
+            : [],
+        ),
       });
     }
   });

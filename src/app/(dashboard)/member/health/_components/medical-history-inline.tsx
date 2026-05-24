@@ -108,7 +108,7 @@ export function MedicalHistoryInline({ memberId, initialHistory, onUpdated }: Me
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chronicConditions: form.chronicConditions
-            ? form.chronicConditions.split(',').map((s) => s.trim()).filter(Boolean)
+            ? form.chronicConditions.split(',').flatMap((s) => { const t = s.trim(); return t ? [t] : []; })
             : [],
           surgeries: form.surgeries.trim() || null,
           allergies: form.allergies.trim() || null,

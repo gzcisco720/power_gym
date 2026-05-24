@@ -53,7 +53,7 @@ export function PhotosClient({ photos }: Props) {
   }
 
   // Sort selected by date: left = older, right = newer
-  const sortedSelected = [...selected].sort(
+  const sortedSelected = selected.toSorted(
     (a, b) => new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime(),
   );
   const compareLeft = sortedSelected[0];

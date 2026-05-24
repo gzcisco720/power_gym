@@ -72,13 +72,11 @@ export function ReassignModal({ memberId, memberName, currentTrainerId, trainers
             onChange={(e) => setSelectedTrainerId(e.target.value)}
             className="w-full rounded-md border border-[#1e1e1e] bg-[#0c0c0c] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white"
           >
-            {trainers
-              .filter((t) => t._id !== currentTrainerId)
-              .map((t) => (
-                <option key={t._id} value={t._id}>
-                  {t.name}
-                </option>
-              ))}
+            {trainers.flatMap((t) =>
+              t._id === currentTrainerId
+                ? []
+                : [<option key={t._id} value={t._id}>{t.name}</option>],
+            )}
           </select>
         </div>
 

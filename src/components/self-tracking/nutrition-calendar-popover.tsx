@@ -71,8 +71,7 @@ function NutritionCalendarBody({ onSelect, selectedDate }: BodyProps) {
             dayLabel: l.dayLabel,
             dayCompleted: l.dayCompleted,
             kcal: l.meals
-              .filter((m) => m.completed)
-              .flatMap((m) => m.items)
+              .flatMap((m) => m.completed ? m.items : [])
               .reduce((s, it) => s + it.kcal, 0),
           })),
         );

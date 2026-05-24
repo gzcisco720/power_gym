@@ -427,15 +427,17 @@ export function TrainerMemberPlanClient({
         )}
       </section>
 
-      {pbs.filter((pb) => pb.bestWeight > 0).length > 0 && (
+      {pbs.some((pb) => pb.bestWeight > 0) && (
         <section className="px-4 sm:px-8">
           <SectionHeader title="Strength Progress" />
           <div className="mt-3">
             <ExerciseStrengthChart
               memberId={memberId}
-              exercises={pbs
-                .filter((pb) => pb.bestWeight > 0)
-                .map((pb) => ({ exerciseId: pb.exerciseId, exerciseName: pb.exerciseName }))}
+              exercises={pbs.flatMap((pb) =>
+                pb.bestWeight > 0
+                  ? [{ exerciseId: pb.exerciseId, exerciseName: pb.exerciseName }]
+                  : [],
+              )}
             />
           </div>
         </section>

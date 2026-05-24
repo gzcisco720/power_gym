@@ -46,7 +46,7 @@ function formatTestDate(iso: string): string {
 }
 
 function sortByDateDesc(tests: BodyTestRecord[]): BodyTestRecord[] {
-  return [...tests].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return tests.toSorted((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 export function BodyTestClient({ memberId, memberName, initialTests, defaultSex, defaultAge }: Props) {
@@ -61,8 +61,8 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
   const bfChange = latest && prev ? latest.bodyFatPct - prev.bodyFatPct : null;
 
   // Compute chart points in chronological order from the sorted-desc list
-  const chartPoints = [...tests]
-    .reverse()
+  const chartPoints = tests
+    .toReversed()
     .map((t) => ({
       date: `${MONTHS[new Date(t.date).getMonth()]} ${new Date(t.date).getDate()}`,
       weight: parseFloat(t.weight.toFixed(1)),

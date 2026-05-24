@@ -108,12 +108,11 @@ function buildExerciseGroups(sets: SessionSet[]) {
       groups.push({ type: 'standalone', exercise: ex, sets: exSets });
     } else if (!seenGroupIds.has(ex.groupId)) {
       seenGroupIds.add(ex.groupId);
-      const groupExercises = labelled
-        .filter((e) => e.groupId === ex.groupId && e.isSuperset)
-        .map((e) => ({
-          exercise: e,
-          sets: setsWithIndex.filter((s) => s.exerciseId === e.exerciseId),
-        }));
+      const groupExercises = labelled.flatMap((e) =>
+        e.isSuperset && e.groupId === ex.groupId
+          ? [{ exercise: e, sets: setsWithIndex.filter((s) => s.exerciseId === e.exerciseId) }]
+          : [],
+      );
       groups.push({ type: 'superset', groupId: ex.groupId, exercises: groupExercises });
     }
   }
@@ -231,7 +230,7 @@ export function SessionLogger({
   useEffect(() => {
     if (hintsFetchedRef.current || isCompleted) return;
     const nonBwIds = [
-      ...new Set(initialSession.sets.filter((s) => !s.isBodyweight).map((s) => s.exerciseId)),
+      ...new Set(initialSession.sets.flatMap((s) => s.isBodyweight ? [] : [s.exerciseId])),
     ];
     if (nonBwIds.length === 0) return;
     hintsFetchedRef.current = true;
@@ -451,17 +450,19 @@ export function SessionLogger({
   useDirtyInputGuard(inputs, session.sets);
 
   function toLoggingSets(exSets: (SessionSet & { globalIndex: number })[]) {
-    return exSets
-      .filter((s) => !deletedIndices.has(s.globalIndex))
-      .map((s) => ({
-        setNumber: s.setNumber,
-        prescribedRepsMin: s.prescribedRepsMin,
-        prescribedRepsMax: s.prescribedRepsMax,
-        actualWeight: s.actualWeight,
-        actualReps: s.actualReps,
-        completedAt: s.completedAt,
-        globalIndex: s.globalIndex,
-      }));
+    return exSets.flatMap((s) =>
+      deletedIndices.has(s.globalIndex)
+        ? []
+        : [{
+            setNumber: s.setNumber,
+            prescribedRepsMin: s.prescribedRepsMin,
+            prescribedRepsMax: s.prescribedRepsMax,
+            actualWeight: s.actualWeight,
+            actualReps: s.actualReps,
+            completedAt: s.completedAt,
+            globalIndex: s.globalIndex,
+          }],
+    );
   }
 
   return (

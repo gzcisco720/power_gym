@@ -90,12 +90,15 @@ export function evaluateMilestone(
 
   // ── Check-in streak ─────────────────────────────────────────
   // Fire when the Nth check-in (index N-1) falls within ±7 days of the test.
-  const streakDates = STREAK_THRESHOLDS
-    .filter(n => checkInDates.length >= n)
-    .map(n => ({ count: n, date: checkInDates[n - 1] }));
-  const matchingStreak = streakDates
-    .filter(({ date }) => Math.abs(date.getTime() - test.date.getTime()) <= SEVEN_DAYS_MS)
-    .sort((a, b) => b.count - a.count)[0];
+  const streakDates = STREAK_THRESHOLDS.flatMap((n) =>
+    checkInDates.length >= n ? [{ count: n, date: checkInDates[n - 1] }] : [],
+  );
+  const nearbyStreaks = streakDates.filter(
+    ({ date }) => Math.abs(date.getTime() - test.date.getTime()) <= SEVEN_DAYS_MS,
+  );
+  const matchingStreak = nearbyStreaks.length > 0
+    ? nearbyStreaks.reduce((best, s) => s.count > best.count ? s : best)
+    : undefined;
   if (matchingStreak) {
     triggers.push({ type: 'checkin_streak', label: `✅ ${matchingStreak.count} check-in streak`, color: 'green' });
   }

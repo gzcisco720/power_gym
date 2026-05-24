@@ -103,7 +103,7 @@ export function PhotoGalleryModal({ open, onClose, photos, totalCount }: Props) 
 
   if (!open) return null;
 
-  const sorted = [...photos].sort(
+  const sorted = photos.toSorted(
     (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime(),
   );
   const groups = groupByMonth(sorted);

@@ -24,7 +24,7 @@ export async function TrainerMyTrainingCard() {
 
   const key = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
   const daySet = new Set(
-    logs90d.filter(l => l.completedAt).map(l => key(new Date(l.completedAt!))),
+    logs90d.flatMap(l => l.completedAt ? [key(new Date(l.completedAt))] : []),
   );
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -46,9 +46,11 @@ export async function TrainerMyTrainingCard() {
     : null;
 
   const heatmapSet = new Set(
-    logs90d
-      .filter(l => l.completedAt && new Date(l.completedAt) >= fourteenDaysAgo)
-      .map(l => key(new Date(l.completedAt!))),
+    logs90d.flatMap(l =>
+      l.completedAt && new Date(l.completedAt) >= fourteenDaysAgo
+        ? [key(new Date(l.completedAt))]
+        : [],
+    ),
   );
 
   const dots = Array.from({ length: 14 }, (_, i) => {

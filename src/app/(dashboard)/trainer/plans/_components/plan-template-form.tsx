@@ -217,7 +217,7 @@ export function PlanTemplateForm({
   }
 
   function removeDay(dayIdx: number) {
-    dispatch({ type: 'SET_DAYS', value: days.filter((_, i) => i !== dayIdx).map((d, i) => ({ ...d, dayNumber: i + 1 })) });
+    dispatch({ type: 'SET_DAYS', value: days.flatMap((d, i) => i === dayIdx ? [] : [{ ...d, dayNumber: i < dayIdx ? i + 1 : i }]) });
     const nextGroups = new Map(pendingEmptyGroups);
     nextGroups.delete(dayIdx);
     dispatch({ type: 'SET_PENDING_EMPTY_GROUPS', value: nextGroups });
@@ -361,7 +361,7 @@ export function PlanTemplateForm({
     dispatch({ type: 'SET_DAYS', value: days.map((d, i) => {
       if (i !== dayIdx) return d;
       const exs = [...d.exercises];
-      const matches = exs.map((e, k) => (e.isSuperset && e.groupId === groupId ? k : -1)).filter((k) => k >= 0);
+      const matches = exs.flatMap((e, k) => e.isSuperset && e.groupId === groupId ? [k] : []);
       const lastIdx = matches.length > 0 ? matches[matches.length - 1] : -1;
       if (lastIdx >= 0) { exs.splice(lastIdx + 1, 0, newRow); } else { exs.push(newRow); }
       return { ...d, exercises: exs };
@@ -429,11 +429,9 @@ export function PlanTemplateForm({
     const out: { dayIdx: number; groupId: string; row: ExerciseRowData }[] = [];
     daysToCheck.forEach((d, dayIdx) => {
       const counts = new Map<string, ExerciseRowData[]>();
-      d.exercises
-        .filter((e) => e.isSuperset)
-        .forEach((e) => {
-          counts.set(e.groupId, [...(counts.get(e.groupId) ?? []), e]);
-        });
+      for (const e of d.exercises) {
+        if (e.isSuperset) counts.set(e.groupId, [...(counts.get(e.groupId) ?? []), e]);
+      }
       counts.forEach((rows, groupId) => {
         if (rows.length === 1) out.push({ dayIdx, groupId, row: rows[0] });
       });
@@ -528,9 +526,11 @@ export function PlanTemplateForm({
         slots.push({ kind: 'standalone', exercise: ex });
       } else if (!seenGroups.has(ex.groupId)) {
         seenGroups.add(ex.groupId);
-        const members = labelled
-          .filter((e) => e.isSuperset && e.groupId === ex.groupId)
-          .map((e) => ({ row: e as ExerciseRowData, label: e.label }));
+        const members = labelled.flatMap((e) =>
+          e.isSuperset && e.groupId === ex.groupId
+            ? [{ row: e as ExerciseRowData, label: e.label }]
+            : [],
+        );
         slots.push({ kind: 'superset', groupId: ex.groupId, members });
       }
     });

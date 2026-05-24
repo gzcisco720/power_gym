@@ -51,9 +51,10 @@ function scheduleEditorReducer(state: ScheduleEditorState, action: ScheduleEdito
 
 export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule, onSave, mode = 'edit' }: Props) {
   const [state, dispatch] = useReducer(scheduleEditorReducer, undefined, () => {
+    const patternMap = new Map(initialSchedule.weeklyPattern.map((w) => [w.dayOfWeek, w.dayTypeName]));
     const map = {} as Record<DayOfWeek, string>;
     for (const d of DAY_VALUES) {
-      map[d] = initialSchedule.weeklyPattern.find((w) => w.dayOfWeek === d)?.dayTypeName ?? NONE;
+      map[d] = patternMap.get(d) ?? NONE;
     }
     return {
       weekly: map,
@@ -85,9 +86,9 @@ export function ScheduleEditor({ memberId, dayTypeNames, initialSchedule, onSave
 
   async function save(): Promise<void> {
     dispatch({ type: 'SET_SAVING', value: true });
-    const weeklyPattern: IWeeklyPatternEntry[] = DAY_VALUES
-      .filter((d) => weekly[d] !== NONE)
-      .map((d) => ({ dayOfWeek: d, dayTypeName: weekly[d] }));
+    const weeklyPattern: IWeeklyPatternEntry[] = DAY_VALUES.flatMap((d) =>
+      weekly[d] !== NONE ? [{ dayOfWeek: d, dayTypeName: weekly[d] }] : [],
+    );
     const builtSchedule: ISchedule = { weeklyPattern, calendarOverrides: overrides, iterate };
 
     if (mode === 'edit') {

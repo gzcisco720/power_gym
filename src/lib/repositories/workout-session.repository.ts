@@ -249,31 +249,29 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
       { completedAt: 1, sets: 1 },
     ).sort({ completedAt: 1 });
 
-    return sessions
-      .map((session) => {
-        const matchingSets = session.sets.filter(
-          (s) =>
-            s.exerciseId.toString() === exerciseId &&
-            s.actualWeight !== null &&
-            s.actualReps !== null,
-        );
-        if (matchingSets.length === 0) return null;
+    return sessions.flatMap((session) => {
+      const matchingSets = session.sets.filter(
+        (s) =>
+          s.exerciseId.toString() === exerciseId &&
+          s.actualWeight !== null &&
+          s.actualReps !== null,
+      );
+      if (matchingSets.length === 0) return [];
 
-        let bestSet = matchingSets[0];
-        let bestOneRM = estimatedOneRM(bestSet.actualWeight!, bestSet.actualReps!);
-        for (const s of matchingSets.slice(1)) {
-          const e = estimatedOneRM(s.actualWeight!, s.actualReps!);
-          if (e > bestOneRM) { bestOneRM = e; bestSet = s; }
-        }
+      let bestSet = matchingSets[0];
+      let bestOneRM = estimatedOneRM(bestSet.actualWeight!, bestSet.actualReps!);
+      for (const s of matchingSets.slice(1)) {
+        const e = estimatedOneRM(s.actualWeight!, s.actualReps!);
+        if (e > bestOneRM) { bestOneRM = e; bestSet = s; }
+      }
 
-        return {
-          date: session.completedAt!,
-          estimatedOneRM: Math.round(bestOneRM * 10) / 10,
-          bestWeight: bestSet.actualWeight!,
-          bestReps: bestSet.actualReps!,
-        };
-      })
-      .filter((entry): entry is ExerciseHistoryPoint => entry !== null);
+      return [{
+        date: session.completedAt!,
+        estimatedOneRM: Math.round(bestOneRM * 10) / 10,
+        bestWeight: bestSet.actualWeight!,
+        bestReps: bestSet.actualReps!,
+      }];
+    });
   }
 
   async findLastWeightsForExercises(memberId: string, exerciseIds: string[]): Promise<LastWeightHint[]> {
@@ -439,6 +437,7 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
       },
     ]);
 
+    const rowMap = new Map(rows.map((r) => [`${r._id.year}-${r._id.month}`, r.count]));
     const result: { label: string; count: number }[] = [];
     for (let i = months - 1; i >= 0; i--) {
       const d = new Date(now);
@@ -446,8 +445,7 @@ export class MongoWorkoutSessionRepository implements IWorkoutSessionRepository 
       d.setMonth(d.getMonth() - i);
       const year = d.getFullYear();
       const month = d.getMonth() + 1;
-      const found = rows.find((r) => r._id.year === year && r._id.month === month);
-      result.push({ label: MONTHS[month - 1], count: found?.count ?? 0 });
+      result.push({ label: MONTHS[month - 1], count: rowMap.get(`${year}-${month}`) ?? 0 });
     }
     return result;
   }
