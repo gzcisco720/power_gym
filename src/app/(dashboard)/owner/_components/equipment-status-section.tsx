@@ -25,11 +25,13 @@ export async function EquipmentStatusSection() {
   await connectDB();
   const equipment = await new MongoEquipmentRepository().findAll();
 
+  const now = new Date();
   const byStatus = {
     active: equipment.filter(e => e.status === 'active').length,
     maintenance: equipment.filter(e => e.status === 'maintenance').length,
     retired: equipment.filter(e => e.status === 'retired').length,
   };
+  const overdueCount = equipment.filter(e => e.nextServiceDate && e.nextServiceDate < now).length;
 
   const nonActive = equipment
     .filter(e => e.status !== 'active')
@@ -41,7 +43,7 @@ export async function EquipmentStatusSection() {
       <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-3">
         Equipment Status
       </div>
-      <div className="grid grid-cols-3 gap-2 mb-4">
+      <div className="grid grid-cols-4 gap-2 mb-4">
         {(['active', 'maintenance', 'retired'] as EquipmentStatus[]).map(s => (
           <div
             key={s}
@@ -60,6 +62,10 @@ export async function EquipmentStatusSection() {
             </div>
           </div>
         ))}
+        <div className="rounded-lg p-2 text-center bg-amber-500/10">
+          <div className="text-[16px] font-bold text-amber-400">{overdueCount}</div>
+          <div className="text-[8px] uppercase tracking-[1px] mt-0.5 opacity-60">Overdue</div>
+        </div>
       </div>
       {nonActive.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">

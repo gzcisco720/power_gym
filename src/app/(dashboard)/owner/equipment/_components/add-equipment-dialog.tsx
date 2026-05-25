@@ -28,6 +28,7 @@ export interface NewEquipmentItem {
   images: string[];
   note: string | null;
   trackCondition: boolean;
+  nextServiceDate: string | null;
 }
 
 interface Props {
@@ -44,6 +45,7 @@ interface AddEquipmentState {
   note: string;
   images: string[];
   trackCondition: boolean;
+  nextServiceDate: string;
   uploadingImages: boolean;
   saving: boolean;
   suggestions: { id: string; name: string }[];
@@ -57,6 +59,7 @@ type AddEquipmentAction =
   | { type: 'SET_NOTE'; value: string }
   | { type: 'SET_IMAGES'; value: string[] }
   | { type: 'SET_TRACK_CONDITION'; value: boolean }
+  | { type: 'SET_NEXT_SERVICE_DATE'; value: string }
   | { type: 'SET_UPLOADING_IMAGES'; value: boolean }
   | { type: 'SET_SAVING'; value: boolean }
   | { type: 'SET_SUGGESTIONS'; value: { id: string; name: string }[] }
@@ -71,10 +74,11 @@ function addEquipmentReducer(state: AddEquipmentState, action: AddEquipmentActio
     case 'SET_NOTE': return { ...state, note: action.value };
     case 'SET_IMAGES': return { ...state, images: action.value };
     case 'SET_TRACK_CONDITION': return { ...state, trackCondition: action.value };
+    case 'SET_NEXT_SERVICE_DATE': return { ...state, nextServiceDate: action.value };
     case 'SET_UPLOADING_IMAGES': return { ...state, uploadingImages: action.value };
     case 'SET_SAVING': return { ...state, saving: action.value };
     case 'SET_SUGGESTIONS': return { ...state, suggestions: action.value };
-    case 'RESET': return { name: '', brand: '', quantity: '1', status: 'active', note: '', images: [], trackCondition: false, uploadingImages: false, saving: false, suggestions: [] };
+    case 'RESET': return { name: '', brand: '', quantity: '1', status: 'active', note: '', images: [], trackCondition: false, nextServiceDate: '', uploadingImages: false, saving: false, suggestions: [] };
     default: return state;
   }
 }
@@ -82,9 +86,9 @@ function addEquipmentReducer(state: AddEquipmentState, action: AddEquipmentActio
 export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
   const [state, dispatch] = useReducer(addEquipmentReducer, {
     name: '', brand: '', quantity: '1', status: 'active', note: '', images: [],
-    trackCondition: false, uploadingImages: false, saving: false, suggestions: [],
+    trackCondition: false, nextServiceDate: '', uploadingImages: false, saving: false, suggestions: [],
   });
-  const { name, brand, quantity, status, note, images, trackCondition, uploadingImages, saving, suggestions } = state;
+  const { name, brand, quantity, status, note, images, trackCondition, nextServiceDate, uploadingImages, saving, suggestions } = state;
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
   function reset() {
@@ -139,6 +143,7 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
           images,
           note: note.trim() || null,
           trackCondition,
+          nextServiceDate: trackCondition && nextServiceDate ? nextServiceDate : null,
         }),
       });
       if (!res.ok) {
@@ -220,14 +225,26 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
           </div>
 
           {trackCondition && (
-            <div className="space-y-1.5">
-              <label htmlFor="add-eq-status" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Initial Status</label>
-              <select id="add-eq-status" value={status} onChange={(e) => dispatch({ type: 'SET_STATUS', value: e.target.value as EquipmentStatus })}
-                className="w-full rounded-md border border-[#1e1e1e] bg-[#0a0a0a] px-3 py-2 text-sm text-white">
-                <option value="active">Active</option>
-                <option value="maintenance">Maintenance</option>
-                <option value="retired">Retired</option>
-              </select>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label htmlFor="add-eq-status" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/40">Initial Status</label>
+                <select id="add-eq-status" value={status} onChange={(e) => dispatch({ type: 'SET_STATUS', value: e.target.value as EquipmentStatus })}
+                  className="w-full rounded-md border border-foreground/10 bg-card px-3 py-2 text-sm text-foreground">
+                  <option value="active">Active</option>
+                  <option value="maintenance">Maintenance</option>
+                  <option value="retired">Retired</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="add-eq-service-date" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/40">Next Service <span className="normal-case text-foreground/40">(optional)</span></label>
+                <Input
+                  id="add-eq-service-date"
+                  type="date"
+                  value={nextServiceDate}
+                  onChange={(e) => dispatch({ type: 'SET_NEXT_SERVICE_DATE', value: e.target.value })}
+                  className="text-sm"
+                />
+              </div>
             </div>
           )}
 

@@ -12,6 +12,7 @@ interface EquipmentPayload {
   images?: string[];
   note?: string | null;
   trackCondition?: boolean;
+  nextServiceDate?: string | null;
 }
 
 export async function GET(): Promise<Response> {
@@ -48,6 +49,7 @@ export async function POST(req: Request): Promise<Response> {
     images: body.images ?? [],
     note: body.note?.trim() ?? null,
     trackCondition: body.trackCondition ?? false,
+    nextServiceDate: body.nextServiceDate ? new Date(body.nextServiceDate) : null,
   });
   return Response.json(item, { status: 201 });
 }

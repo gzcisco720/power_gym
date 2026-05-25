@@ -14,9 +14,9 @@ import { EquipmentClient } from '@/app/(dashboard)/owner/equipment/_components/e
 const IMAGE_URL = 'https://res.cloudinary.com/demo/image/upload/sample.jpg';
 
 const mockItems = [
-  { _id: 'e1', name: 'Smith Machine', status: 'active' as const, brand: 'Matrix', quantity: 2, images: [IMAGE_URL], note: null, trackCondition: true },
-  { _id: 'e2', name: 'Treadmill', status: 'maintenance' as const, brand: null, quantity: 5, images: [], note: 'Needs belt replacement', trackCondition: true },
-  { _id: 'e3', name: 'Weight Plates', status: 'active' as const, brand: null, quantity: 50, images: [], note: null, trackCondition: false },
+  { _id: 'e1', name: 'Smith Machine', status: 'active' as const, brand: 'Matrix', quantity: 2, images: [IMAGE_URL], note: null, trackCondition: true, nextServiceDate: null },
+  { _id: 'e2', name: 'Treadmill', status: 'maintenance' as const, brand: null, quantity: 5, images: [], note: 'Needs belt replacement', trackCondition: true, nextServiceDate: null },
+  { _id: 'e3', name: 'Weight Plates', status: 'active' as const, brand: null, quantity: 50, images: [], note: null, trackCondition: false, nextServiceDate: null },
 ];
 
 describe('EquipmentClient', () => {
@@ -86,6 +86,52 @@ describe('EquipmentClient', () => {
     render(<EquipmentClient initialItems={mockItems} />);
     fireEvent.click(screen.getByRole('button', { name: /smith machine/i }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('renders status filter tabs', () => {
+    render(<EquipmentClient initialItems={mockItems} />);
+    expect(screen.getByRole('button', { name: /^all$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^active$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^maintenance$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^retired$/i })).toBeInTheDocument();
+  });
+
+  it('filters list to maintenance items when Maintenance tab clicked', () => {
+    render(<EquipmentClient initialItems={mockItems} />);
+    fireEvent.click(screen.getByRole('button', { name: /^maintenance$/i }));
+    expect(screen.getByText('Treadmill')).toBeInTheDocument();
+    expect(screen.queryByText('Smith Machine')).not.toBeInTheDocument();
+    expect(screen.queryByText('Weight Plates')).not.toBeInTheDocument();
+  });
+
+  it('restores all items when All tab clicked after filtering', () => {
+    render(<EquipmentClient initialItems={mockItems} />);
+    fireEvent.click(screen.getByRole('button', { name: /^maintenance$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^all$/i }));
+    expect(screen.getByText('Smith Machine')).toBeInTheDocument();
+    expect(screen.getByText('Treadmill')).toBeInTheDocument();
+    expect(screen.getByText('Weight Plates')).toBeInTheDocument();
+  });
+
+  it('shows overdue badge for equipment with a past nextServiceDate', () => {
+    const overdueItems = [
+      { ...mockItems[0], nextServiceDate: '2020-01-01T00:00:00.000Z' },
+    ];
+    render(<EquipmentClient initialItems={overdueItems} />);
+    expect(screen.getByText('Overdue')).toBeInTheDocument();
+  });
+
+  it('does not show overdue badge when nextServiceDate is in the future', () => {
+    const futureItems = [
+      { ...mockItems[0], nextServiceDate: '2099-01-01T00:00:00.000Z' },
+    ];
+    render(<EquipmentClient initialItems={futureItems} />);
+    expect(screen.queryByText('Overdue')).not.toBeInTheDocument();
+  });
+
+  it('does not show overdue badge when nextServiceDate is null', () => {
+    render(<EquipmentClient initialItems={mockItems} />);
+    expect(screen.queryByText('Overdue')).not.toBeInTheDocument();
   });
 
   it('opens EditEquipmentDialog and fetches condition reports when Edit clicked', async () => {

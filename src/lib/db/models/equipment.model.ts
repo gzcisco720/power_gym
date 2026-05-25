@@ -10,6 +10,7 @@ export interface IEquipment extends Document {
   images: string[];
   note: string | null;
   trackCondition: boolean;
+  nextServiceDate: Date | null;
   createdAt: Date;
 }
 
@@ -26,6 +27,7 @@ const EquipmentSchema = new Schema<IEquipment>(
     images: { type: [String], default: [] },
     note: { type: String, default: null, trim: true },
     trackCondition: { type: Boolean, default: false },
+    nextServiceDate: { type: Date, default: null },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 );

@@ -37,6 +37,7 @@ function makeSnap(eq: EquipmentItem): string {
     images: eq.images ?? [],
     trackCondition: eq.trackCondition,
     status: eq.status,
+    nextServiceDate: eq.nextServiceDate ?? '',
   });
 }
 
@@ -48,6 +49,7 @@ interface EditEquipmentState {
   images: string[];
   trackCondition: boolean;
   status: EquipmentStatus;
+  nextServiceDate: string;
   suggestions: { id: string; name: string }[];
   uploadingImages: boolean;
   saving: boolean;
@@ -70,6 +72,7 @@ type EditEquipmentAction =
   | { type: 'SET_IMAGES'; value: string[] }
   | { type: 'SET_TRACK_CONDITION'; value: boolean }
   | { type: 'SET_STATUS'; value: EquipmentStatus }
+  | { type: 'SET_NEXT_SERVICE_DATE'; value: string }
   | { type: 'SET_SUGGESTIONS'; value: { id: string; name: string }[] }
   | { type: 'SET_UPLOADING_IMAGES'; value: boolean }
   | { type: 'SET_SAVING'; value: boolean }
@@ -93,6 +96,7 @@ function editEquipmentReducer(state: EditEquipmentState, action: EditEquipmentAc
     case 'SET_IMAGES': return { ...state, images: action.value };
     case 'SET_TRACK_CONDITION': return { ...state, trackCondition: action.value };
     case 'SET_STATUS': return { ...state, status: action.value };
+    case 'SET_NEXT_SERVICE_DATE': return { ...state, nextServiceDate: action.value };
     case 'SET_SUGGESTIONS': return { ...state, suggestions: action.value };
     case 'SET_UPLOADING_IMAGES': return { ...state, uploadingImages: action.value };
     case 'SET_SAVING': return { ...state, saving: action.value };
@@ -116,6 +120,7 @@ function editEquipmentReducer(state: EditEquipmentState, action: EditEquipmentAc
         images: eq.images ?? [],
         trackCondition: eq.trackCondition,
         status: eq.status,
+        nextServiceDate: eq.nextServiceDate ? eq.nextServiceDate.slice(0, 10) : '',
         suggestions: [],
         snapshot: makeSnap(eq),
         reports: [],
@@ -145,6 +150,7 @@ export function EditEquipmentDialog({ equipment, onClose, onUpdated }: Props) {
     images: [],
     trackCondition: false,
     status: 'active',
+    nextServiceDate: '',
     suggestions: [],
     uploadingImages: false,
     saving: false,
@@ -159,7 +165,7 @@ export function EditEquipmentDialog({ equipment, onClose, onUpdated }: Props) {
     submittingReport: false,
   });
   const {
-    name, brand, quantity, note, images, trackCondition, status,
+    name, brand, quantity, note, images, trackCondition, status, nextServiceDate,
     suggestions, uploadingImages, saving, snapshot, reports, loadingReports,
     editingStatus, draftStatus, savingStatus, showReportForm, reportNote, submittingReport,
   } = state;
@@ -189,7 +195,7 @@ export function EditEquipmentDialog({ equipment, onClose, onUpdated }: Props) {
   }, [equipment]);
 
   const isDirty =
-    JSON.stringify({ name, brand, quantity, note, images, trackCondition, status }) !== snapshot;
+    JSON.stringify({ name, brand, quantity, note, images, trackCondition, status, nextServiceDate }) !== snapshot;
 
   // ── Details tab handlers ───────────────────────────────────────────────────
   function handleNameChange(value: string) {
@@ -230,6 +236,7 @@ export function EditEquipmentDialog({ equipment, onClose, onUpdated }: Props) {
           images,
           trackCondition,
           status: trackCondition ? status : 'active',
+          nextServiceDate: trackCondition && nextServiceDate ? nextServiceDate : null,
         }),
       });
       if (!res.ok) {
@@ -404,20 +411,32 @@ export function EditEquipmentDialog({ equipment, onClose, onUpdated }: Props) {
                 </button>
               </div>
 
-              {/* Status (only when trackCondition) */}
+              {/* Status + Next Service Date (only when trackCondition) */}
               {trackCondition && (
-                <div className="space-y-1.5">
-                  <label htmlFor="edit-eq-status" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#666]">Status</label>
-                  <select
-                    id="edit-eq-status"
-                    value={status}
-                    onChange={(e) => dispatch({ type: 'SET_STATUS', value: e.target.value as EquipmentStatus })}
-                    className="w-full rounded-md border border-[#1e1e1e] bg-[#0a0a0a] px-3 py-2 text-sm text-white"
-                  >
-                    <option value="active">Active</option>
-                    <option value="maintenance">Maintenance</option>
-                    <option value="retired">Retired</option>
-                  </select>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label htmlFor="edit-eq-status" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/40">Status</label>
+                    <select
+                      id="edit-eq-status"
+                      value={status}
+                      onChange={(e) => dispatch({ type: 'SET_STATUS', value: e.target.value as EquipmentStatus })}
+                      className="w-full rounded-md border border-foreground/10 bg-card px-3 py-2 text-sm text-foreground"
+                    >
+                      <option value="active">Active</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="retired">Retired</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label htmlFor="edit-eq-service-date" className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/40">Next Service <span className="normal-case text-foreground/40">(optional)</span></label>
+                    <Input
+                      id="edit-eq-service-date"
+                      type="date"
+                      value={nextServiceDate}
+                      onChange={(e) => dispatch({ type: 'SET_NEXT_SERVICE_DATE', value: e.target.value })}
+                      className="text-sm"
+                    />
+                  </div>
                 </div>
               )}
 

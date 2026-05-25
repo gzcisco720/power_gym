@@ -84,4 +84,19 @@ describe('EquipmentModel schema', () => {
     expect(err).toBeUndefined();
     expect(doc.trackCondition).toBe(true);
   });
+
+  it('defaults nextServiceDate to null', async () => {
+    const { EquipmentModel } = await import('@/lib/db/models/equipment.model');
+    const doc = new EquipmentModel({ name: 'Barbell' });
+    expect(doc.nextServiceDate).toBeNull();
+  });
+
+  it('accepts a valid Date for nextServiceDate', async () => {
+    const { EquipmentModel } = await import('@/lib/db/models/equipment.model');
+    const date = new Date('2026-12-01');
+    const doc = new EquipmentModel({ name: 'Treadmill', nextServiceDate: date });
+    const err = doc.validateSync();
+    expect(err).toBeUndefined();
+    expect(doc.nextServiceDate).toEqual(date);
+  });
 });

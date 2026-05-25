@@ -9,6 +9,7 @@ export interface CreateEquipmentData {
   images: string[];
   note: string | null;
   trackCondition: boolean;
+  nextServiceDate?: Date | null;
 }
 
 export type UpdateEquipmentData = Partial<CreateEquipmentData>;
@@ -16,6 +17,7 @@ export type UpdateEquipmentData = Partial<CreateEquipmentData>;
 export interface IEquipmentRepository {
   findAll(): Promise<IEquipment[]>;
   findById(id: string): Promise<IEquipment | null>;
+  findOverdue(): Promise<IEquipment[]>;
   create(data: CreateEquipmentData): Promise<IEquipment>;
   update(id: string, data: UpdateEquipmentData): Promise<IEquipment | null>;
   deleteById(id: string): Promise<void>;
@@ -28,6 +30,10 @@ export class MongoEquipmentRepository implements IEquipmentRepository {
 
   async findById(id: string): Promise<IEquipment | null> {
     return EquipmentModel.findById(id);
+  }
+
+  async findOverdue(): Promise<IEquipment[]> {
+    return EquipmentModel.find({ nextServiceDate: { $lt: new Date(), $ne: null } }).sort({ name: 1 });
   }
 
   async create(data: CreateEquipmentData): Promise<IEquipment> {

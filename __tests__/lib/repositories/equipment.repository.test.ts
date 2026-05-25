@@ -9,6 +9,7 @@ jest.mock('@/lib/db/models/equipment.model', () => ({
   }),
 }));
 
+
 import { EquipmentModel } from '@/lib/db/models/equipment.model';
 import { MongoEquipmentRepository } from '@/lib/repositories/equipment.repository';
 
@@ -69,5 +70,24 @@ describe('MongoEquipmentRepository', () => {
     mockEquipmentModel.findByIdAndDelete.mockResolvedValue(null);
     await repo.deleteById(EQUIP_ID);
     expect(mockEquipmentModel.findByIdAndDelete).toHaveBeenCalledWith(EQUIP_ID);
+  });
+
+  it('findOverdue returns equipment where nextServiceDate is in the past', async () => {
+    const overdueItem = { _id: EQUIP_ID, name: 'Treadmill', nextServiceDate: new Date('2020-01-01') };
+    mockEquipmentModel.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([overdueItem]) } as never);
+    const result = await repo.findOverdue();
+    expect(mockEquipmentModel.find).toHaveBeenCalledWith({
+      nextServiceDate: { $lt: expect.any(Date), $ne: null },
+    });
+    expect(result).toEqual([overdueItem]);
+  });
+
+  it('create accepts nextServiceDate', async () => {
+    const date = new Date('2026-12-01');
+    const saved = { _id: EQUIP_ID, name: 'Treadmill', status: 'active', brand: null, quantity: 1, images: [], note: null, trackCondition: false, nextServiceDate: date };
+    const saveMock = jest.fn().mockResolvedValue(saved);
+    (EquipmentModel as unknown as jest.Mock).mockImplementation(() => ({ save: saveMock }));
+    const result = await repo.create({ name: 'Treadmill', status: 'active', brand: null, quantity: 1, images: [], note: null, trackCondition: false, nextServiceDate: date });
+    expect(result).toEqual(saved);
   });
 });
