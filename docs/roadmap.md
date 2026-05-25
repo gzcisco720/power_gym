@@ -24,25 +24,6 @@ Export body test history and training session records to CSV or PDF.
 
 ---
 
-### B — 训练进阶追踪 (Progressive Overload Tracking)
-
-**Priority**: High | **Effort**: Medium
-
-Show members and trainers whether weight is progressing over time, and prompt for increases when appropriate.
-
-**Scope:**
-- In SessionLogger, each exercise card shows the last logged weight for that exercise
-- A "recommended weight" badge: if last session's weight was hit for all sets, suggest +2.5kg
-- Trainer member hub: progress tab shows per-exercise weight trend over time
-- Optional: 1RM trend chart (Epley estimate plotted over sessions)
-
-**Technical approach:**
-- Query last completed session for the same exercise on session start
-- Reuse existing Recharts setup for trend charts
-- No new model changes required — reads from existing `WorkoutSession.sets[]`
-
----
-
 ### C — 器材管理完善 (Equipment Management Enhancement)
 
 **Priority**: Low | **Effort**: Small
@@ -81,25 +62,6 @@ Make the app ready for real-world use.
 
 ---
 
-### E — 营养日志 (Member Nutrition Logging)
-
-**Priority**: Medium | **Effort**: Large
-
-Let members log what they actually ate each day and compare against assigned nutrition plan targets.
-
-**Scope:**
-- Member logs meals: select food from library, enter grams/servings
-- Daily summary: actual vs target macros (kcal, protein, carbs, fat) as progress bars
-- History: 7-day or 30-day macro adherence chart
-- Trainer view: nutrition log alongside plan in member hub
-
-**Technical approach:**
-- New model: `NutritionLog` — `{ memberId, date, entries: [{ foodId, foodName, grams, macros }] }`
-- New pages: `/member/nutrition/log`, `/member/nutrition/log/history`
-- Reuse existing food library and macro calculation utilities
-
----
-
 ### F — 更多进度图表 (Additional Progress Charts)
 
 **Priority**: Low | **Effort**: Small
@@ -126,19 +88,6 @@ Notify members when a scheduled session is approaching via Web Push (in addition
 
 ---
 
-### H — 会员训练反馈 (Member Workout Feedback)
-
-**Priority**: Medium | **Effort**: Small
-
-After completing a session, members leave a subjective rating for the trainer to review.
-
-**Scope:**
-- On workout completion modal: RPE (1–10), fatigue level, free-text notes
-- Trainer view: feedback history per member in member hub
-- Aggregate: trainer dashboard shows average RPE trend across all members
-
----
-
 ### I — 训练计划推荐 (Training Plan Recommendations)
 
 **Priority**: Low | **Effort**: Medium
@@ -155,11 +104,8 @@ Use member profile data to suggest suitable plan templates when a trainer assign
 ## Suggested Priority Order
 
 1. **D — Production Deployment** (when there's a real user or demo needed)
-2. **B — Progressive Overload Tracking** (highest training value, no model changes)
-3. **A — Data Export** (quick win, high practical value)
-4. **H — Member Workout Feedback** (small effort, high trainer value)
-5. **E — Nutrition Logging** (large but high value for serious members)
-6. **F — Additional Progress Charts** (low effort, nice to have)
-7. **G — Push Notifications** (medium effort, low urgency given email exists)
-8. **I — Training Plan Recommendations** (medium effort, lower priority)
-9. **C — Equipment Enhancement** (low urgency)
+2. **A — Data Export** (quick win, high practical value)
+3. **F — Additional Progress Charts** (low effort, nice to have)
+4. **G — Push Notifications** (medium effort, low urgency given email exists)
+5. **I — Training Plan Recommendations** (medium effort, lower priority)
+6. **C — Equipment Enhancement** (low urgency)

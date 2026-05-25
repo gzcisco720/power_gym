@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { SessionLogger } from '@/app/(dashboard)/member/plan/session/[id]/_components/session-logger';
+import { SessionLogger } from '@/components/training/session-logger';
 
 jest.mock('@/components/animations/workout-complete', () => ({
   WorkoutCompleteAnimation: ({ onComplete }: { onComplete?: () => void }) => {

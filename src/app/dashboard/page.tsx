@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 const ROLE_DEFAULT_PATH = {
   owner: '/owner',
   trainer: '/trainer/members',
-  member: '/member/plan',
+  member: '/member/my-training',
 } as const;
 
 export default async function DashboardRedirectPage() {

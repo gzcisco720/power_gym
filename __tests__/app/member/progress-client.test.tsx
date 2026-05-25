@@ -1,7 +1,7 @@
 /** @jest-environment jsdom */
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { ProgressClient } from '@/app/(dashboard)/member/progress/_components/progress-client';
+import { ProgressClient } from '@/components/training/progress-client';
 
 jest.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,

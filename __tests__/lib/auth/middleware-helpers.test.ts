@@ -10,7 +10,7 @@ describe('getRedirectForRole', () => {
   });
 
   it('returns null when trainer accesses member pages', () => {
-    expect(getRedirectForRole('trainer', '/member/plan')).toBeNull();
+    expect(getRedirectForRole('trainer', '/member/my-training')).toBeNull();
   });
 
   it('returns trainer redirect when trainer accesses owner pages', () => {

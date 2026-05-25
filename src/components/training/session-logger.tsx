@@ -169,7 +169,7 @@ function sessionLoggerReducer(state: SessionLoggerState, action: SessionLoggerAc
 
 export function SessionLogger({
   session: initialSession,
-  backPath = '/member/plan',
+  backPath = '/member/my-training',
   mode = 'member',
   loggedForMember,
 }: {
@@ -263,7 +263,6 @@ export function SessionLogger({
     const nextInputs = [...inputs];
     nextInputs[index] = { ...nextInputs[index], [field]: value };
     dispatch({ type: 'SET_INPUTS', value: nextInputs });
-    // Clear error for this field when user starts correcting it
     if (inputErrors[index]?.[field]) {
       const nextErrors = { ...inputErrors };
       nextErrors[index] = { ...nextErrors[index], [field]: undefined };
@@ -288,7 +287,7 @@ export function SessionLogger({
       if (deletedIndices.has(i)) return;
       const input = inputs[i] ?? { weight: '', reps: '' };
       const isBw = bwOverrides[set.exerciseId] ?? set.isBodyweight;
-      if (isBw) return; // BW only needs reps; empty reps means skip, no error
+      if (isBw) return;
       const weightFilled = input.weight.trim() !== '';
       const repsFilled = input.reps.trim() !== '';
       if (weightFilled && !repsFilled) errors[i] = { reps: true };
@@ -303,7 +302,6 @@ export function SessionLogger({
       dispatch({ type: 'SET_INPUT_ERRORS', value: errors });
       return;
     }
-    // Only block if there are non-deleted sets and none have any data filled
     const nonDeletedCount = session.sets.filter((_, i) => !deletedIndices.has(i)).length;
     if (nonDeletedCount > 0) {
       const hasAnyData = session.sets.some((set, i) => {
@@ -391,7 +389,6 @@ export function SessionLogger({
     dispatch({ type: 'SET_COMPLETING', value: true });
     dispatch({ type: 'SET_SHOW_COMPLETE_MODAL', value: false });
 
-    // Collect all sets that have data to save
     const setsToSave: { index: number; weight: number | null; reps: number | null }[] = [];
     session.sets.forEach((set, i) => {
       if (deletedIndices.has(i)) return;
@@ -399,7 +396,7 @@ export function SessionLogger({
       const isBw = bwOverrides[set.exerciseId] ?? set.isBodyweight;
       const repsFilled = input.reps.trim() !== '';
       const weightFilled = !isBw && input.weight.trim() !== '';
-      if (!repsFilled && !weightFilled) return; // skip fully empty sets
+      if (!repsFilled && !weightFilled) return;
       setsToSave.push({
         index: i,
         weight: isBw ? null : parseFloat(input.weight) || null,

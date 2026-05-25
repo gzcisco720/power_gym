@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { MongoWorkoutSessionRepository } from '@/lib/repositories/workout-session.repository';
-import { ProgressClient } from '@/app/(dashboard)/member/progress/_components/progress-client';
+import { ProgressClient } from '@/components/training/progress-client';
 
 export default async function TrainerMemberProgressPage({
   params,

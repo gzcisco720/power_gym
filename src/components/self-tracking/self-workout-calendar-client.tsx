@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { SelfWeekCalendarGrid, type SelfCalendarLog } from './self-week-calendar-grid';
 
-type BasePath = '/owner/my-training' | '/trainer/my-training' | '/member/plan' | '/member/my-training';
+type BasePath = '/owner/my-training' | '/trainer/my-training' | '/member/my-training';
 
 interface Props {
   basePath: BasePath;
@@ -37,10 +37,7 @@ export function SelfWorkoutCalendarClient({ basePath, initialDate }: Props) {
     const controller = new AbortController();
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 7);
-    const apiUrl =
-      basePath === '/member/plan'
-        ? `/api/sessions?memberId=me&start=${weekStart.toISOString()}&end=${weekEnd.toISOString()}`
-        : `/api/me/workout-logs/range?start=${weekStart.toISOString()}&end=${weekEnd.toISOString()}`;
+    const apiUrl = `/api/me/workout-logs/range?start=${weekStart.toISOString()}&end=${weekEnd.toISOString()}`;
     fetch(apiUrl, { signal: controller.signal })
       .then((r) => r.json())
       .then((data: SelfCalendarLog[]) => {
@@ -93,7 +90,7 @@ export function SelfWorkoutCalendarClient({ basePath, initialDate }: Props) {
           href={basePath}
           className="text-[12px] text-foreground/65 hover:text-foreground transition-colors mr-1"
         >
-          {basePath === '/member/plan' ? '← Back to Plan' : '← Back'}
+          ← Back
         </a>
         <button
           type="button"

@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { connectDB } from '@/lib/db/connect';
 import { MongoWorkoutSessionRepository } from '@/lib/repositories/workout-session.repository';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
-import { SessionLogger } from '@/app/(dashboard)/member/plan/session/[id]/_components/session-logger';
+import { SessionLogger } from '@/components/training/session-logger';
 
 export default async function TrainerLogSessionPage({
   params,

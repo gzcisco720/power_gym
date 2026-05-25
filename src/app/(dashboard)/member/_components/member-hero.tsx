@@ -105,7 +105,7 @@ export async function MemberHero() {
               </div>
             </div>
             <Link
-              href="/member/plan"
+              href="/member/my-training"
               aria-label="Start today's workout"
               className="flex-shrink-0 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-[13px] font-bold rounded-xl px-4 py-2.5 hover:opacity-90 transition-opacity shadow-lg shadow-primary/[.25]"
             >

@@ -67,18 +67,18 @@ describe('DayAlreadyLoggedDialog', () => {
     expect(screen.queryByText('Already trained today')).not.toBeInTheDocument();
   });
 
-  it('View session link uses /member/plan basePath correctly', () => {
+  it('View session link uses /member/my-training basePath correctly', () => {
     render(
       <DayAlreadyLoggedDialog
         open
         dayName="Push"
         sessionId="abc123"
-        basePath="/member/plan"
+        basePath="/member/my-training"
         onClose={jest.fn()}
       />
     );
     const link = screen.getByRole('link', { name: /view session/i });
-    expect(link).toHaveAttribute('href', '/member/plan/session/abc123');
+    expect(link).toHaveAttribute('href', '/member/my-training/session/abc123');
   });
 
   describe('delete previous log option', () => {
