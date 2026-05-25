@@ -58,6 +58,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Pricing & Billing Management | [pricing-billing-design.md](2026-05-22/plans/pricing-billing-design.md) | Approved |
 | Progressive Overload Tracking | [progressive-overload-design.md](2026-05-24/plans/progressive-overload-design.md) | Approved |
 | React Doctor 689-Issue Fix | [react-doctor-fixes.md](2026-05-24/plans/react-doctor-fixes.md) | Complete |
+| Data Export (CSV — Body Tests & Sessions) | [data-export-design.md](2026-05-25/plans/data-export-design.md) | Approved |
 
 ---
 

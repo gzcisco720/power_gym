@@ -6,24 +6,6 @@ Backlog items not yet started. When an item is confirmed, remove it from here an
 
 ## Backlog Items
 
-### A — 数据导出 (Data Export)
-
-**Priority**: Medium | **Effort**: Small–Medium
-
-Export body test history and training session records to CSV or PDF.
-
-**Scope:**
-- Body tests: export all entries for a member (date, weight, BF%, lean mass, fat mass)
-- Training sessions: export session history (date, day name, sets × reps per exercise)
-- Accessible from trainer member hub (per-member export) and member progress page (self-export)
-- Format: CSV first, PDF as stretch goal
-
-**Technical approach:**
-- Server-side CSV generation via a Route Handler returning `Content-Type: text/csv`
-- PDF via `@react-pdf/renderer` or server-side `pdfmake` if needed
-
----
-
 ### C — 器材管理完善 (Equipment Management Enhancement)
 
 **Priority**: Low | **Effort**: Small
@@ -104,8 +86,7 @@ Use member profile data to suggest suitable plan templates when a trainer assign
 ## Suggested Priority Order
 
 1. **D — Production Deployment** (when there's a real user or demo needed)
-2. **A — Data Export** (quick win, high practical value)
-3. **F — Additional Progress Charts** (low effort, nice to have)
-4. **G — Push Notifications** (medium effort, low urgency given email exists)
-5. **I — Training Plan Recommendations** (medium effort, lower priority)
-6. **C — Equipment Enhancement** (low urgency)
+2. **F — Additional Progress Charts** (low effort, nice to have)
+3. **G — Push Notifications** (medium effort, low urgency given email exists)
+4. **I — Training Plan Recommendations** (medium effort, lower priority)
+5. **C — Equipment Enhancement** (low urgency)
