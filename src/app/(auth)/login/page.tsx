@@ -1,7 +1,9 @@
 import { AuthError } from 'next-auth';
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { signIn } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
+import { checkRateLimitByIp } from '@/lib/rate-limit';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { ROLE_DEFAULT_PATH } from '@/lib/auth/middleware-helpers';
 import { getGymBranding } from '@/lib/db/queries/gym-branding';
@@ -58,6 +60,10 @@ export default async function LoginPage({
           <p className="mb-4 text-[13px] text-red-400">Invalid email or password.</p>
         )}
 
+        {error === 'TooManyRequests' && (
+          <p className="mb-4 text-[13px] text-red-400">Too many login attempts. Please try again in 15 minutes.</p>
+        )}
+
         {message === 'password-reset' && (
           <p className="mb-4 text-[13px] text-green-400">Password reset successfully. Please sign in.</p>
         )}
@@ -65,6 +71,13 @@ export default async function LoginPage({
         <form
           action={async (formData: FormData) => {
             'use server';
+            const hdrs = await headers();
+            const forwarded = hdrs.get('x-forwarded-for');
+            const ip = (forwarded ? forwarded.split(',')[0] : '127.0.0.1').trim();
+            if (!checkRateLimitByIp(ip, 'login', 10, 15 * 60_000)) {
+              redirect('/login?error=TooManyRequests');
+            }
+
             const email = formData.get('email') as string;
             const password = formData.get('password') as string;
             const remember = formData.get('remember') === 'on' ? 'true' : 'false';

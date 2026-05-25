@@ -9,16 +9,22 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [rateLimited, setRateLimited] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    await fetch('/api/auth/forgot-password', {
+    setRateLimited(false);
+    const res = await fetch('/api/auth/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     });
     setLoading(false);
+    if (res.status === 429) {
+      setRateLimited(true);
+      return;
+    }
     setSubmitted(true);
   }
 
@@ -62,6 +68,11 @@ export default function ForgotPasswordPage() {
                 className="bg-[#0c0c0c] border-[#1e1e1e] text-white placeholder:text-[#555] focus-visible:ring-white"
               />
             </div>
+            {rateLimited && (
+              <p className="text-[13px] text-red-400">
+                Too many attempts. Please try again in 10 minutes.
+              </p>
+            )}
             <Button
               type="submit"
               disabled={loading}

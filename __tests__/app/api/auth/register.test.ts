@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 jest.mock('bcryptjs');
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 jest.mock('@/lib/auth/auth', () => ({ signIn: jest.fn() }));
+jest.mock('@/lib/rate-limit', () => ({ checkRateLimit: jest.fn(() => true) }));
 
 const mockUserRepo = {
   findByEmail: jest.fn(),
@@ -26,6 +27,8 @@ jest.mock('@/lib/repositories/invite.repository', () => ({
 }));
 
 const mockBcrypt = jest.mocked(bcrypt);
+import { checkRateLimit } from '@/lib/rate-limit';
+const mockCheckRateLimit = jest.mocked(checkRateLimit);
 
 function makeRequest(body: object) {
   return new Request('http://localhost/api/auth/register', {
@@ -36,7 +39,18 @@ function makeRequest(body: object) {
 }
 
 describe('POST /api/auth/register', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockCheckRateLimit.mockReturnValue(true);
+  });
+
+  it('returns 429 when rate limit exceeded', async () => {
+    mockCheckRateLimit.mockReturnValue(false);
+
+    const { POST } = await import('@/app/api/auth/register/route');
+    const res = await POST(new Request('http://localhost/api/auth/register', { method: 'POST' }));
+    expect(res.status).toBe(429);
+  });
 
   it('creates owner when no users exist', async () => {
     mockUserRepo.count.mockResolvedValue(0);

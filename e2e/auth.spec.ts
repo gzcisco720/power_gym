@@ -1,6 +1,74 @@
 import { test, expect } from '@playwright/test';
 import { waitForEmailTo } from './helpers/mailpit';
 
+// Each test uses a unique x-forwarded-for IP so in-memory rate limit store
+// entries don't bleed across tests (or into the UI-based auth tests above).
+test.describe('rate limiting', () => {
+  test('forgot-password blocks after 3 attempts', async ({ request }) => {
+    for (let i = 0; i < 3; i++) {
+      const res = await request.post('/api/auth/forgot-password', {
+        data: { email: 'nobody@test.com' },
+        headers: { 'x-forwarded-for': '10.0.1.1' },
+      });
+      expect(res.status()).not.toBe(429);
+    }
+    const blocked = await request.post('/api/auth/forgot-password', {
+      data: { email: 'nobody@test.com' },
+      headers: { 'x-forwarded-for': '10.0.1.1' },
+    });
+    expect(blocked.status()).toBe(429);
+    expect(await blocked.json()).toMatchObject({ error: 'Too many requests' });
+  });
+
+  test('register blocks after 5 attempts', async ({ request }) => {
+    for (let i = 0; i < 5; i++) {
+      const res = await request.post('/api/auth/register', {
+        data: { email: 'x@x.com', password: 'x', firstName: 'x', lastName: 'x' },
+        headers: { 'x-forwarded-for': '10.0.1.2' },
+      });
+      expect(res.status()).not.toBe(429);
+    }
+    const blocked = await request.post('/api/auth/register', {
+      data: { email: 'x@x.com', password: 'x', firstName: 'x', lastName: 'x' },
+      headers: { 'x-forwarded-for': '10.0.1.2' },
+    });
+    expect(blocked.status()).toBe(429);
+    expect(await blocked.json()).toMatchObject({ error: 'Too many requests' });
+  });
+
+  test('reset-password blocks after 5 attempts', async ({ request }) => {
+    for (let i = 0; i < 5; i++) {
+      const res = await request.post('/api/auth/reset-password', {
+        data: { token: 'fake', userId: '000000000000000000000001', newPassword: 'Fake1234!' },
+        headers: { 'x-forwarded-for': '10.0.1.3' },
+      });
+      expect(res.status()).not.toBe(429);
+    }
+    const blocked = await request.post('/api/auth/reset-password', {
+      data: { token: 'fake', userId: '000000000000000000000001', newPassword: 'Fake1234!' },
+      headers: { 'x-forwarded-for': '10.0.1.3' },
+    });
+    expect(blocked.status()).toBe(429);
+    expect(await blocked.json()).toMatchObject({ error: 'Too many requests' });
+  });
+
+  test('login blocks after 10 attempts', async ({ request }) => {
+    for (let i = 0; i < 10; i++) {
+      const res = await request.post('/api/auth/callback/credentials', {
+        form: { email: 'x@x.com', password: 'wrong', csrfToken: 'fake', callbackUrl: '/' },
+        headers: { 'x-forwarded-for': '10.0.1.4' },
+      });
+      expect(res.status()).not.toBe(429);
+    }
+    const blocked = await request.post('/api/auth/callback/credentials', {
+      form: { email: 'x@x.com', password: 'wrong', csrfToken: 'fake', callbackUrl: '/' },
+      headers: { 'x-forwarded-for': '10.0.1.4' },
+    });
+    expect(blocked.status()).toBe(429);
+    expect(await blocked.json()).toMatchObject({ error: 'Too many requests' });
+  });
+});
+
 test.describe('Authentication', () => {
   test('owner login redirects to /owner', async ({ page }) => {
     await page.goto('/login');

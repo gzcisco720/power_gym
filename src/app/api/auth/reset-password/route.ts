@@ -2,8 +2,13 @@ import bcrypt from 'bcryptjs';
 import { connectDB } from '@/lib/db/connect';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { MongoPasswordResetTokenRepository } from '@/lib/repositories/password-reset-token.repository';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: Request): Promise<Response> {
+  if (!checkRateLimit(req, 'reset-password', 5, 10 * 60_000)) {
+    return Response.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const { token, userId, newPassword } = (await req.json()) as {
     token: string;
     userId: string;

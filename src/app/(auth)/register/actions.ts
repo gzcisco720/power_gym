@@ -1,8 +1,10 @@
 'use server';
 
 import bcrypt from 'bcryptjs';
+import { headers } from 'next/headers';
 import { signIn } from '@/lib/auth/auth';
 import { connectDB } from '@/lib/db/connect';
+import { checkRateLimitByIp } from '@/lib/rate-limit';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { MongoInviteRepository } from '@/lib/repositories/invite.repository';
 import { validateInviteToken } from '@/lib/auth/invite';
@@ -27,6 +29,13 @@ export async function registerAction(
   _prev: RegisterState,
   formData: FormData,
 ): Promise<RegisterState> {
+  const hdrs = await headers();
+  const forwarded = hdrs.get('x-forwarded-for');
+  const ip = (forwarded ? forwarded.split(',')[0] : '127.0.0.1').trim();
+  if (!checkRateLimitByIp(ip, 'register', 5, 10 * 60_000)) {
+    return { error: 'Too many attempts. Please try again in 10 minutes.' };
+  }
+
   const firstName = (formData.get('firstName') ?? '') as string;
   const lastName = (formData.get('lastName') ?? '') as string;
   const email = ((formData.get('email') ?? '') as string).toLowerCase().trim();

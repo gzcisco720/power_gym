@@ -31,7 +31,9 @@ function ResetPasswordForm() {
     });
     const data = (await res.json()) as { error?: string };
     setLoading(false);
-    if (!res.ok) {
+    if (res.status === 429) {
+      setError('Too many attempts. Please try again in 10 minutes.');
+    } else if (!res.ok) {
       setError(data.error ?? 'Reset failed. The link may have expired.');
     } else {
       push('/login?message=password-reset');

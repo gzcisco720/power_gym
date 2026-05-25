@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect, useReducer } from 'react';
+import { useState, useEffect, useReducer } from 'react';
 import { useMemberHub } from '../../_components/member-hub-provider';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -292,12 +292,9 @@ export function TrainerMemberPlanClient({
   }));
   const { selectedTemplate, assigning, selectedDay, peekSession, conflictBanner, visibleCount } = state;
 
-  const prevSessionsRef = useRef(sessions);
-
-  if (prevSessionsRef.current !== sessions) {
-    prevSessionsRef.current = sessions;
+  useEffect(() => {
     dispatch({ type: 'SET_VISIBLE_COUNT', value: 8 });
-  }
+  }, [sessions]);
 
   async function assignPlan(): Promise<boolean> {
     if (!selectedTemplate) return false;

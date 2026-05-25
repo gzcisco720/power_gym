@@ -3,8 +3,13 @@ import { connectDB } from '@/lib/db/connect';
 import { MongoUserRepository } from '@/lib/repositories/user.repository';
 import { MongoInviteRepository } from '@/lib/repositories/invite.repository';
 import { validateInviteToken } from '@/lib/auth/invite';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: Request): Promise<Response> {
+  if (!checkRateLimit(req, 'register', 5, 10 * 60_000)) {
+    return Response.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const { firstName, lastName, email, password, token } = (await req.json()) as {
     firstName: string;
     lastName: string;

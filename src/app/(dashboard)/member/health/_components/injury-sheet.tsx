@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -97,18 +97,13 @@ function existingToForm(existing: SerializedInjury | undefined): FormState {
 export function InjurySheet({ open, onOpenChange, memberId, existing, onSaved }: InjurySheetProps) {
   const [form, setForm] = useState<FormState>(() => existingToForm(existing));
   const [saving, setSaving] = useState(false);
-  const prevExistingRef = useRef(existing);
-  const prevOpenRef = useRef(open);
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [prevExisting, setPrevExisting] = useState(existing);
 
-  // Reset form when sheet opens or existing changes — synchronous setState during render
-  const openChanged = open !== prevOpenRef.current;
-  const existingChanged = existing !== prevExistingRef.current;
-  if (openChanged || existingChanged) {
-    prevOpenRef.current = open;
-    prevExistingRef.current = existing;
-    if (open) {
-      setForm(existingToForm(existing));
-    }
+  if (open !== prevOpen || existing !== prevExisting) {
+    setPrevOpen(open);
+    setPrevExisting(existing);
+    if (open) setForm(existingToForm(existing));
   }
 
   function set(field: keyof FormState, value: string | boolean) {

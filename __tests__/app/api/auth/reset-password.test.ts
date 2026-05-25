@@ -3,6 +3,7 @@
  */
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 jest.mock('bcryptjs');
+jest.mock('@/lib/rate-limit', () => ({ checkRateLimit: jest.fn(() => true) }));
 
 const mockTokenRepo = {
   findValidByUserId: jest.fn(),
@@ -19,6 +20,8 @@ jest.mock('@/lib/repositories/user.repository', () => ({
 
 import bcrypt from 'bcryptjs';
 const mockBcrypt = jest.mocked(bcrypt);
+import { checkRateLimit } from '@/lib/rate-limit';
+const mockCheckRateLimit = jest.mocked(checkRateLimit);
 
 function makeRequest(body: object) {
   return new Request('http://localhost/api/auth/reset-password', {
@@ -29,7 +32,18 @@ function makeRequest(body: object) {
 }
 
 describe('POST /api/auth/reset-password', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockCheckRateLimit.mockReturnValue(true);
+  });
+
+  it('returns 429 when rate limit exceeded', async () => {
+    mockCheckRateLimit.mockReturnValue(false);
+
+    const { POST } = await import('@/app/api/auth/reset-password/route');
+    const res = await POST(new Request('http://localhost/api/auth/reset-password', { method: 'POST' }));
+    expect(res.status).toBe(429);
+  });
 
   it('returns 400 when no valid token found for user', async () => {
     mockTokenRepo.findValidByUserId.mockResolvedValue(null);

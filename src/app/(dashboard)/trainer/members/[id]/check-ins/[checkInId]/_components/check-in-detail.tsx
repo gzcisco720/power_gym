@@ -46,7 +46,6 @@ function RatingBar({ value }: { value: number }) {
 }
 
 export function CheckInDetail({ checkIn, otherCheckIns }: Props) {
-  const checkInId = String((checkIn as ICheckIn & { _id: unknown })._id);
   const [compareId, setCompareId] = useState<string>('');
   const compareCheckIn = otherCheckIns.find(
     (c) => String((c as ICheckIn & { _id: unknown })._id) === compareId,

@@ -13,12 +13,12 @@ interface Props {
 
 export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Props) {
   const [index, setIndex] = useState(initialIndex);
-  const prevOpenRef = useRef(open);
+  const [prevOpen, setPrevOpen] = useState(open);
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; });
 
-  if (open !== prevOpenRef.current) {
-    prevOpenRef.current = open;
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) setIndex(initialIndex);
   }
 

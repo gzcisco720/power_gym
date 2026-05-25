@@ -4,6 +4,7 @@
 jest.mock('@/lib/db/connect', () => ({ connectDB: jest.fn() }));
 jest.mock('bcryptjs');
 jest.mock('crypto');
+jest.mock('@/lib/rate-limit', () => ({ checkRateLimit: jest.fn(() => true) }));
 
 const mockUserRepo = { findByEmail: jest.fn() };
 const mockTokenRepo = { create: jest.fn() };
@@ -21,6 +22,8 @@ jest.mock('@/lib/email/index', () => ({
 
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { checkRateLimit } from '@/lib/rate-limit';
+const mockCheckRateLimit = jest.mocked(checkRateLimit);
 
 const mockBcrypt = jest.mocked(bcrypt);
 const mockCrypto = jest.mocked(crypto);
@@ -34,7 +37,18 @@ function makeRequest(body: object) {
 }
 
 describe('POST /api/auth/forgot-password', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockCheckRateLimit.mockReturnValue(true);
+  });
+
+  it('returns 429 when rate limit exceeded', async () => {
+    mockCheckRateLimit.mockReturnValue(false);
+
+    const { POST } = await import('@/app/api/auth/forgot-password/route');
+    const res = await POST(new Request('http://localhost/api/auth/forgot-password', { method: 'POST' }));
+    expect(res.status).toBe(429);
+  });
 
   it('returns 200 even when user does not exist (no enumeration)', async () => {
     mockUserRepo.findByEmail.mockResolvedValue(null);
