@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trash2 } from 'lucide-react';
+import { ExportCsvButton } from '@/components/shared/export-csv-button';
 import { m, useReducedMotion } from 'framer-motion';
 import { variants } from '@/lib/animations/variants';
 import { toast } from 'sonner';
@@ -115,7 +116,17 @@ export function BodyTestClient({ memberId, memberName, initialTests, defaultSex,
       <PageHeader
         title={memberName ? `${memberName}'s Body Tests` : 'Body Tests'}
         subtitle={`${tests.length} record${tests.length !== 1 ? 's' : ''}${sharedProtocolLabel ? ` · ${sharedProtocolLabel}` : ''}`}
-        actions={dialogTrigger}
+        actions={
+          <div className="flex items-center gap-2">
+            {tests.length > 0 && (
+              <ExportCsvButton
+                url={`/api/members/${memberId}/body-tests/export`}
+                filename={`body-tests-${memberId}.csv`}
+              />
+            )}
+            {dialogTrigger}
+          </div>
+        }
       />
 
       <div className="px-4 sm:px-8 py-7 space-y-6">

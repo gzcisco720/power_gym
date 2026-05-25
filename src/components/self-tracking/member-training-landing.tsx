@@ -12,6 +12,7 @@ import { MiniWorkoutCalendar } from './mini-workout-calendar';
 import { PageHeader } from '@/components/shared/page-header';
 import { ActiveSessionPrompt } from '@/components/shared/active-session-prompt';
 import { WorkoutCalendarHeaderTrigger } from './workout-calendar-header-trigger';
+import { ExportCsvButton } from '@/components/shared/export-csv-button';
 import { PathCardsGrid, PathCardItem } from './path-cards-grid';
 import type { ISelfWorkoutLog } from '@/lib/db/models/self-workout-log.model';
 import type { IMemberPlan } from '@/lib/db/models/member-plan.model';
@@ -75,7 +76,12 @@ export async function MemberTrainingLanding() {
       <PageHeader
         title="My Training"
         subtitle={headerSubtitle}
-        actions={<WorkoutCalendarHeaderTrigger basePath={BASE_PATH} />}
+        actions={
+          <div className="flex items-center gap-2">
+            <ExportCsvButton url="/api/me/sessions/export" filename="my-sessions.csv" />
+            <WorkoutCalendarHeaderTrigger basePath={BASE_PATH} />
+          </div>
+        }
       />
       <div className="px-4 sm:px-8 py-6 max-w-5xl mx-auto w-full">
         {activeLog && (

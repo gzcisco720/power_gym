@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { SectionHeader } from '@/components/shared/section-header';
 import { BodyTestImprovementAnimation } from '@/components/animations/body-test-improvement';
 import { BodyTestHistoryChart } from './body-test-history-chart-client';
+import { ExportCsvButton } from '@/components/shared/export-csv-button';
 
 interface BodyTestRecord {
   _id: string;
@@ -74,7 +75,10 @@ export function BodyTestViewer({ tests }: Props) {
           </div>
         </div>
       )}
-      <PageHeader title="Body Composition" />
+      <PageHeader
+        title="Body Composition"
+        actions={<ExportCsvButton url="/api/me/body-tests/export" filename="my-body-tests.csv" />}
+      />
 
       <div className="px-4 sm:px-8 py-7 space-y-7">
         <div>

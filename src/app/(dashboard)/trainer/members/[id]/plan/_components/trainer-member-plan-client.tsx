@@ -8,6 +8,7 @@ import { ChevronRight, TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { SectionHeader } from '@/components/shared/section-header';
+import { ExportCsvButton } from '@/components/shared/export-csv-button';
 import { ActiveSessionPrompt } from '@/components/shared/active-session-prompt';
 import { SessionPeekSheet } from './session-peek-sheet';
 import type { SessionSummary } from '@/lib/training/session-summary';
@@ -488,7 +489,14 @@ export function TrainerMemberPlanClient({
 
       {sessions.length > 0 && (
         <section className="px-4 sm:px-8">
-          <SectionHeader title="Session History" />
+          <div className="flex items-center justify-between">
+            <SectionHeader title="Session History" />
+            <ExportCsvButton
+              url={`/api/members/${memberId}/sessions/export`}
+              filename={`sessions-${memberId}.csv`}
+              className="inline-flex items-center gap-1.5 h-7 rounded-lg bg-foreground/8 px-2.5 text-[11px] font-semibold text-foreground/65 hover:bg-foreground/12 hover:text-foreground transition-colors disabled:opacity-50"
+            />
+          </div>
 
           <div className="mt-3 space-y-5">
             {groupByMonth(sessions.slice(0, visibleCount)).map(({ label, sessions: group }) => (
