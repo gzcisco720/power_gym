@@ -2,32 +2,24 @@
 
 Central registry of all generated documents. Update this file whenever a new doc is created or removed.
 
----
-
 ## Active Documents
 
 | Topic | File | Status |
 | ----- | ---- | ------ |
-| Phase 1 — Core Feature Summary | [phase-one-summary.md](2026-04-23/phase-one-summary.md) | Complete |
-| **基础功能里程碑总结（全部 12 域）** | [milestone-summary.md](2026-05-14/milestone-summary.md) | **Complete** |
+| **基础功能里程碑总结（全部 12 域）** | [milestone-summary.md](2026-05-14/milestone-summary.md) | **Living** |
 | gstack Skills 参考手册 | [gstack-skills-reference.md](2026-05-23/gstack-skills-reference.md) | Living |
 | Roadmap & Backlog | [roadmap.md](roadmap.md) | Living |
 | Superseded Doc Archive | [superseded.md](superseded.md) | Permanent |
 
 ## Specs & Designs
 
-Reference specs for implemented features. Delete when the area is significantly redesigned.
-
 | Topic | File | Status |
 | ----- | ---- | ------ |
 | Auth system | [auth-design.md](2026-04-20/plans/auth-design.md) | Approved |
-| Body Composition Testing | [body-test-design.md](2026-04-23/plans/body-test-design.md) | Approved |
 | Body Test UI Redesign | [body-test-ui-redesign.md](2026-05-07/plans/body-test-ui-redesign.md) | Approved |
 | E2E Test Suite | [e2e-design.md](2026-04-25/plans/e2e-design.md) | Approved |
 | Mobile Responsive Design | [mobile-responsive-design.md](2026-04-26/plans/mobile-responsive-design.md) | Approved |
 | Calendar & Session Scheduling | [calendar-design.md](2026-04-27/plans/calendar-design.md) | Approved |
-| Member Hub (Tab 导航) | [member-hub-design.md](2026-04-28/plans/member-hub-design.md) | Approved |
-| Per-Trainer Hub (Owner 视角) | [per-trainer-hub-design.md](2026-04-28/plans/per-trainer-hub-design.md) | Approved |
 | Progress Charts & Analytics | [progress-design.md](2026-04-28/plans/progress-design.md) | Approved |
 | Owner/Trainer Self-Tracking | [self-tracking-design.md](2026-05-08/plans/self-tracking-design.md) | Approved |
 | My Nutrition Calendar Popover Refactor | [my-nutrition-refactor-design.md](2026-05-08/plans/my-nutrition-refactor-design.md) | Approved |
@@ -37,7 +29,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Free Day Logging | [free-day-logging-design.md](2026-05-11/plans/free-day-logging-design.md) | Approved |
 | My Training Bug Fixes + Calendar | [my-training-fixes-and-calendar.md](2026-05-11/plans/my-training-fixes-and-calendar.md) | Approved |
 | Profile & Account Redesign | [profile-account-redesign.md](2026-05-13/plans/profile-account-redesign.md) | Approved |
-| Edit Equipment Dialog | [edit-equipment-design.md](2025-05-14/plans/edit-equipment-design.md) | Approved |
+| Edit Equipment Dialog | [edit-equipment-design.md](2026-05-14/plans/edit-equipment-design.md) | Approved |
 | UI/UX Comprehensive Upgrade (Design) | [ui-ux-upgrade-design.md](2026-05-14/plans/ui-ux-upgrade-design.md) | Approved |
 | Dashboard Expansion (Design) | [dashboard-expansion-design.md](2026-05-14/plans/dashboard-expansion-design.md) | Approved |
 | Per-Trainer Hub Redesign | [per-trainer-hub-redesign.md](2026-05-15/plans/per-trainer-hub-redesign.md) | Approved |
@@ -57,10 +49,7 @@ Reference specs for implemented features. Delete when the area is significantly 
 | Trainer Dashboard Redesign | [trainer-dashboard-redesign.md](2026-05-22/plans/trainer-dashboard-redesign.md) | Approved |
 | Pricing & Billing Management | [pricing-billing-design.md](2026-05-22/plans/pricing-billing-design.md) | Approved |
 | Progressive Overload Tracking | [progressive-overload-design.md](2026-05-24/plans/progressive-overload-design.md) | Approved |
-| React Doctor 689-Issue Fix | [react-doctor-fixes.md](2026-05-24/plans/react-doctor-fixes.md) | Complete |
 | Data Export (CSV — Body Tests & Sessions) | [data-export-design.md](2026-05-25/plans/data-export-design.md) | Approved |
-
----
 
 ## Rules
 - Add a row to the correct table; use relative path from `docs/` as link
