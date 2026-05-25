@@ -6,23 +6,6 @@ Backlog items not yet started. When an item is confirmed, remove it from here an
 
 ## Backlog Items
 
-### C — 器材管理完善 (Equipment Management Enhancement)
-
-**Priority**: Low | **Effort**: Small
-
-Extend existing equipment condition tracking with maintenance scheduling and usage stats.
-
-**Scope:**
-- Maintenance reminders: set a next-service date per equipment; dashboard badge when overdue
-- Usage counter: increment when a session includes an exercise tagged to this equipment
-- Filter equipment list by status (active / maintenance / retired)
-
-**Technical approach:**
-- Add `nextServiceDate` and `usageCount` fields to Equipment model
-- Cron job or on-demand calculation for usage stats
-
----
-
 ### D — 生产部署准备 (Production Deployment)
 
 **Priority**: High (when ready to go live) | **Effort**: Medium
@@ -75,4 +58,3 @@ Use member profile data to suggest suitable plan templates when a trainer assign
 1. **D — Production Deployment** (when there's a real user or demo needed)
 2. **G — Push Notifications** (medium effort, low urgency given email exists)
 3. **I — Training Plan Recommendations** (medium effort, lower priority)
-4. **C — Equipment Enhancement** (low urgency)
