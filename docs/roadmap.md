@@ -44,19 +44,6 @@ Make the app ready for real-world use.
 
 ---
 
-### F — 更多进度图表 (Additional Progress Charts)
-
-**Priority**: Low | **Effort**: Small
-
-Richer analytics on the Progress page.
-
-**Scope:**
-- Body weight trend line overlaid with BF% trend
-- Training volume trend (total sets or total volume per week)
-- Optionally: 1RM trend across all exercises in one view
-
----
-
 ### G — 训练提醒 / 推送通知 (Training Reminders / Push Notifications)
 
 **Priority**: Low | **Effort**: Medium
@@ -86,7 +73,6 @@ Use member profile data to suggest suitable plan templates when a trainer assign
 ## Suggested Priority Order
 
 1. **D — Production Deployment** (when there's a real user or demo needed)
-2. **F — Additional Progress Charts** (low effort, nice to have)
-3. **G — Push Notifications** (medium effort, low urgency given email exists)
-4. **I — Training Plan Recommendations** (medium effort, lower priority)
-5. **C — Equipment Enhancement** (low urgency)
+2. **G — Push Notifications** (medium effort, low urgency given email exists)
+3. **I — Training Plan Recommendations** (medium effort, lower priority)
+4. **C — Equipment Enhancement** (low urgency)
