@@ -765,6 +765,53 @@ export async function seed(): Promise<void> {
     trackCondition: false,
   });
 
+  // dedicated to filter tab tests — maintenance status, never changed by other specs
+  await EquipmentModel.create({
+    name: 'E2E Filter Machine',
+    status: 'maintenance',
+    brand: null,
+    quantity: 1,
+    images: [],
+    note: null,
+    trackCondition: true,
+  });
+
+  // dedicated to service date display tests — future date → "Due:" label
+  await EquipmentModel.create({
+    name: 'E2E Service Due',
+    status: 'active',
+    brand: null,
+    quantity: 1,
+    images: [],
+    note: null,
+    trackCondition: true,
+    nextServiceDate: new Date('2099-06-15'),
+  });
+
+  // dedicated to overdue badge tests — past date → "Overdue" badge
+  await EquipmentModel.create({
+    name: 'E2E Service Overdue',
+    status: 'active',
+    brand: null,
+    quantity: 1,
+    images: [],
+    note: null,
+    trackCondition: true,
+    nextServiceDate: new Date('2020-01-01'),
+  });
+
+  // dedicated to service date edit test — starts with no date
+  await EquipmentModel.create({
+    name: 'E2E Service Edit',
+    status: 'active',
+    brand: null,
+    quantity: 1,
+    images: [],
+    note: null,
+    trackCondition: true,
+    nextServiceDate: null,
+  });
+
   // ── Check-In Config ───────────────────────────────────────────────────────
   // Thursday 7am — used by trainer check-in schedule tests
   await CheckInConfigModel.create({

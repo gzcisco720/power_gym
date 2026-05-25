@@ -216,6 +216,8 @@ export function AddEquipmentDialog({ open, onClose, onCreated }: Props) {
             </div>
             <button
               type="button"
+              role="switch"
+              aria-checked={trackCondition}
               aria-label="Track condition status"
               onClick={() => dispatch({ type: 'SET_TRACK_CONDITION', value: !trackCondition })}
               className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${trackCondition ? 'bg-white' : 'bg-[#333]'}`}
