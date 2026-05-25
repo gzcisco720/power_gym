@@ -14,6 +14,7 @@ interface EquipmentRow {
   images: string[];
   note: string | null;
   trackCondition: boolean;
+  nextServiceDate: string | null;
 }
 
 export default async function OwnerEquipmentPage() {
@@ -31,6 +32,7 @@ export default async function OwnerEquipmentPage() {
     images: e.images ?? [],
     note: e.note ?? null,
     trackCondition: e.trackCondition ?? false,
+    nextServiceDate: e.nextServiceDate ? e.nextServiceDate.toISOString() : null,
   }));
 
   return (

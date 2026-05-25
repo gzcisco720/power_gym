@@ -29,6 +29,13 @@ function isOverdue(nextServiceDate: string | null): boolean {
   return nextServiceDate !== null && new Date(nextServiceDate) < new Date();
 }
 
+const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function formatServiceDate(iso: string): string {
+  const d = new Date(iso);
+  return `${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+}
+
 interface Props {
   initialItems: EquipmentItem[];
 }
@@ -179,18 +186,25 @@ export function EquipmentClient({ initialItems }: Props) {
 
                   <div className="hidden sm:block text-[12px] text-foreground/40">{item.quantity}</div>
 
-                  <div className="hidden sm:flex items-center gap-1.5">
-                    {item.trackCondition ? (
-                      <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold capitalize ${STATUS_COLOURS[item.status]}`}>
-                        {item.status}
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-foreground/20">N/A</span>
-                    )}
-                    {isOverdue(item.nextServiceDate) && (
-                      <span className="inline-flex items-center rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-400">
-                        Overdue
-                      </span>
+                  <div className="hidden sm:flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5">
+                      {item.trackCondition ? (
+                        <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold capitalize ${STATUS_COLOURS[item.status]}`}>
+                          {item.status}
+                        </span>
+                      ) : (
+                        <span className="text-[11px] text-foreground/20">N/A</span>
+                      )}
+                      {isOverdue(item.nextServiceDate) && (
+                        <span className="inline-flex items-center rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-400">
+                          Overdue
+                        </span>
+                      )}
+                    </div>
+                    {item.nextServiceDate && (
+                      <div className={`text-[10px] ${isOverdue(item.nextServiceDate) ? 'text-amber-400/70' : 'text-foreground/40'}`}>
+                        {isOverdue(item.nextServiceDate) ? 'Was due' : 'Due'}: {formatServiceDate(item.nextServiceDate)}
+                      </div>
                     )}
                   </div>
 
