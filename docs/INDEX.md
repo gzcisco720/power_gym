@@ -50,6 +50,7 @@ Central registry of all generated documents. Update this file whenever a new doc
 | Pricing & Billing Management | [pricing-billing-design.md](2026-05-22/plans/pricing-billing-design.md) | Approved |
 | Progressive Overload Tracking | [progressive-overload-design.md](2026-05-24/plans/progressive-overload-design.md) | Approved |
 | Data Export (CSV — Body Tests & Sessions) | [data-export-design.md](2026-05-25/plans/data-export-design.md) | Approved |
+| Landing Page (Gatsby, glassmorphism, AUD) | [landing-page-design.md](2026-05-26/plans/landing-page-design.md) | Approved |
 
 ## Rules
 - Add a row to the correct table; use relative path from `docs/` as link
