@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { connectDB } from '@/lib/db/connect';
 import { UserModel } from '@/lib/db/models/user.model';
 import { UserProfileModel } from '@/lib/db/models/user-profile.model';
@@ -8,7 +9,7 @@ export interface GymBranding {
   loginLogoUrl: string | null;
 }
 
-export async function getGymBranding(): Promise<GymBranding> {
+export const getGymBranding = cache(async function getGymBranding(): Promise<GymBranding> {
   await connectDB();
   const owner = await UserModel.findOne({ role: 'owner' }).lean();
   if (!owner) return { name: null, logoUrl: null, loginLogoUrl: null };
@@ -20,4 +21,4 @@ export async function getGymBranding(): Promise<GymBranding> {
     logoUrl: gymInfo?.logoUrl ?? null,
     loginLogoUrl: gymInfo?.loginLogoUrl ?? null,
   };
-}
+});

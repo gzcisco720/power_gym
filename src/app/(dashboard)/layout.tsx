@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
 import { connectDB } from '@/lib/db/connect';
@@ -9,6 +10,11 @@ import { PageTransition } from '@/components/shared/page-transition';
 import { LogoutButton } from '@/components/shared/logout-button';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import type { UserRole } from '@/types/auth';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const branding = await getGymBranding();
+  return { title: branding.name ?? 'POWER GYM' };
+}
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
