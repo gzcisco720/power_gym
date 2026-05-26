@@ -4,6 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## 🔴 CRITICAL: NO FILES IN PROJECT ROOT 🔴
+
+**Before writing any file, ask: "does this belong in the root?" — the answer is almost always no.**
+
+| File type | Correct location |
+|---|---|
+| Temporary screenshots, debug images, scratch files | `.tmp/` |
+| Superpowers / brainstorm tool outputs | `.superpowers/` |
+| Implementation plans and design specs | `docs/YYYY-MM-DD/plans/` |
+
+This applies to Playwright screenshots, comparison images, and any intermediate output. The project root is for permanent project files only (`CLAUDE.md`, `README.md`, `package.json`, etc.).
+
+---
+
 ## 🔴 CRITICAL: ONE-FIX-AT-A-TIME RULE 🔴
 
 **If a fix doesn't work, that proves the fix is wrong — immediately revert it, re-analyze, then try the next approach. Never stack more changes on top of an unverified fix.**
