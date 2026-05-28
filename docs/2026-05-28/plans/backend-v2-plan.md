@@ -50,8 +50,20 @@ All new files are created under `backend/`. Reference files in `web/` are read-o
 **Created — tests**
 - `backend/src/**/*.spec.ts` (unit) and `backend/test/*.e2e-spec.ts` (Supertest, one per domain)
 
-**Dependencies to add** (via pnpm in `backend/`, scaffold untouched otherwise):
-`@nestjs/mongoose mongoose @nestjs/jwt @nestjs/passport passport passport-jwt @nestjs/config @nestjs/schedule class-validator class-transformer bcryptjs nodemailer` plus their `@types`.
+**Dependencies** (already installed):
+`@nestjs/mongoose mongoose @nestjs/jwt @nestjs/passport passport passport-jwt @nestjs/config @nestjs/schedule @nestjs/throttler class-validator class-transformer bcryptjs nodemailer` plus `@types/passport-jwt @types/bcryptjs @types/nodemailer @types/multer`.
+
+## E2E Test Environment
+
+E2E tests run against real local services via `web/docker-compose.yml` (same setup as the web app). Start with `docker compose -f web/docker-compose.yml up -d` before running `pnpm test:e2e`.
+
+| Service | URL | Used by |
+|---|---|---|
+| MongoDB | `mongodb://power_gym_user:power_gym_pass@localhost:27017/power_gym?authSource=admin` | All E2E specs |
+| MinIO | `http://localhost:9000` | Storage E2E |
+| Mailpit SMTP | `localhost:1025` (no auth) | Email / cron E2E |
+
+No mocking needed for these services — use them directly in test env vars.
 
 ---
 
@@ -79,7 +91,7 @@ All new files are created under `backend/`. Reference files in `web/` are read-o
 
 ## Stage 2: Auth
 
-**Goal**: JWT access + refresh auth. Endpoints: login, register (owner-initial vs invite), refresh, logout (revoke), forgot-password, reset-password. `JwtStrategy` + `RefreshTokenStrategy`, global `JwtAuthGuard`, `@Public()` on auth endpoints. Reuses `user`, `invite-token`, `password-reset-token` repos and `bcryptjs` + invite validation logic from `web/src/lib/auth/invite.ts`.
+**Goal**: JWT access + refresh auth. Endpoints: login, register (owner-initial vs invite), refresh, logout (revoke), forgot-password, reset-password. `JwtStrategy` + `RefreshTokenStrategy`, global `JwtAuthGuard`, `@Public()` on auth endpoints. Rate limiting via `@nestjs/throttler` on auth endpoints (10 requests / 15 minutes per IP) to prevent brute-force attacks. Reuses `user`, `invite-token`, `password-reset-token` repos and `bcryptjs` + invite validation logic from `web/src/lib/auth/invite.ts`.
 
 **Sprint Contract** (Supertest):
 - [ ] `POST /api/v1/auth/register` with no existing users and no token creates an owner → `expect(res.status).toBe(201)`
@@ -90,6 +102,7 @@ All new files are created under `backend/`. Reference files in `web/` are read-o
 - [ ] `GET` on any protected route with no `Authorization` header → `expect(res.status).toBe(401)`
 - [ ] `POST /api/v1/auth/refresh` with a valid refresh token → `expect(res.status).toBe(200)` and `expect(res.body.access_token).toBeDefined()`; after `POST /api/v1/auth/logout`, reusing that refresh token → `expect(res.status).toBe(401)`
 - [ ] `POST /api/v1/auth/forgot-password` for a known email → `expect(res.status).toBe(200)`; `POST /api/v1/auth/reset-password` with the issued token → `expect(res.status).toBe(200)` and the new password then logs in successfully
+- [ ] Exceeding 10 login attempts in 15 minutes from the same IP → `expect(res.status).toBe(429)` and `expect(res.body.message).toMatch(/too many/i)`
 
 **TDD Test Cases**:
 - [ ] `JwtStrategy (unit)`: valid token payload → `{ userId, email, role }`; expired → throws
