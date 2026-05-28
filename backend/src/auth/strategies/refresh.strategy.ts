@@ -35,7 +35,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
   async validate(
     req: Request,
     payload: RefreshTokenPayload,
-  ): Promise<AuthUser> {
+  ): Promise<AuthUser & { refreshToken: string }> {
     const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
     if (!token) {
       throw new UnauthorizedException('Refresh token missing');
@@ -50,6 +50,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
       userId: payload.sub,
       email: payload.email,
       role: payload.role,
+      refreshToken: token,
     };
   }
 }

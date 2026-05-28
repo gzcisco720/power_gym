@@ -16,11 +16,11 @@ import { RefreshTokenRepository } from '../repositories/refresh-token.repository
 import { PasswordResetTokenRepository } from '../repositories/password-reset-token.repository';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { RESET_TOKEN_TTL_MS } from '../common/constants';
 
 type JwtExpiry = JwtSignOptions['expiresIn'];
 
 const BCRYPT_ROUNDS = 10;
-const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000; // 1 hour
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 interface TokenPayload {
@@ -135,14 +135,26 @@ export class AuthService {
     return this.issueTokens(user);
   }
 
-  async refresh(userId: string): Promise<{ access_token: string }> {
+  async refresh(
+    userId: string,
+    oldRefreshToken: string,
+  ): Promise<{ access_token: string; refresh_token: string }> {
     // Token validity was already confirmed by RefreshTokenStrategy — no second DB lookup needed.
     const user = await this.userRepo.findById(userId);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
+    // Rotate: revoke the consumed token and issue a fresh one.
+    await this.refreshTokenRepo.revokeByToken(oldRefreshToken);
     const access_token = this.signAccessToken(user);
-    return { access_token };
+    const refresh_token = this.signRefreshToken(user);
+    const expiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL_MS);
+    await this.refreshTokenRepo.create(
+      user._id.toString(),
+      refresh_token,
+      expiresAt,
+    );
+    return { access_token, refresh_token };
   }
 
   async logout(refreshToken: string): Promise<{ success: boolean }> {
@@ -150,18 +162,22 @@ export class AuthService {
     return { success: true };
   }
 
-  async forgotPassword(
-    email: string,
-  ): Promise<{ success: boolean; resetToken?: string }> {
+  async forgotPassword(email: string): Promise<Record<string, unknown>> {
     const user = await this.userRepo.findByEmail(email);
     // Always return success to avoid leaking which emails exist.
     if (user) {
       const token = randomUUID();
-      const expiresAt = new Date(Date.now() + PASSWORD_RESET_TTL_MS);
+      const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MS);
       await this.resetTokenRepo.create(user._id.toString(), token, expiresAt);
       // EmailService integration is deferred to a later stage.
-      // TODO: remove resetToken from response once email delivery is wired up.
-      return { success: true, resetToken: token };
+      const response: Record<string, unknown> = { success: true };
+      if (
+        process.env.NODE_ENV !== 'production' &&
+        process.env.AUTH_EXPOSE_RESET_TOKEN === '1'
+      ) {
+        response.resetToken = token;
+      }
+      return response;
     }
     return { success: true };
   }

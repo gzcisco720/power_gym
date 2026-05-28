@@ -1,4 +1,4 @@
-import { IsEmail, IsIn, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsIn, IsMongoId, IsOptional } from 'class-validator';
 
 export class CreateInviteDto {
   @IsIn(['trainer', 'member'])
@@ -8,6 +8,6 @@ export class CreateInviteDto {
   recipientEmail!: string;
 
   @IsOptional()
-  @IsString()
+  @IsMongoId()
   trainerId?: string;
 }

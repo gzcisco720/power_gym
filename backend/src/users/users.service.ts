@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -13,8 +14,7 @@ import type { IUserProfile } from '../database/models/user-profile.model';
 import type { UpdateProfileData } from '../repositories/user-profile.repository';
 import type { UserRole } from '../common/interfaces/auth-user.interface';
 import { CreateInviteDto } from './dto/create-invite.dto';
-
-const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+import { INVITE_TTL_MS } from '../common/constants';
 
 @Injectable()
 export class UsersService {
@@ -90,10 +90,23 @@ export class UsersService {
       throw new ForbiddenException('Only owners can invite trainers');
     }
 
-    const trainerId =
-      dto.role === 'member'
-        ? (dto.trainerId ?? (callerRole === 'trainer' ? callerId : undefined))
-        : undefined;
+    let trainerId: string | null = null;
+    if (dto.role === 'member') {
+      if (callerRole === 'trainer') {
+        trainerId = callerId; // always force to caller — ignore any client-supplied trainerId
+      } else if (callerRole === 'owner') {
+        if (dto.trainerId) {
+          const t = await this.userRepo.findById(dto.trainerId);
+          if (!t || t.role !== 'trainer') {
+            throw new BadRequestException(
+              'Invalid trainerId: must be an existing trainer',
+            );
+          }
+          trainerId = dto.trainerId;
+        }
+        // owner inviting member without trainerId → member assigned directly to owner (trainerId null)
+      }
+    }
 
     return this.inviteRepo.create({
       token: randomUUID(),
@@ -101,7 +114,7 @@ export class UsersService {
       invitedBy: callerId,
       recipientEmail: dto.recipientEmail,
       expiresAt: new Date(Date.now() + INVITE_TTL_MS),
-      trainerId: trainerId ?? null,
+      trainerId,
     });
   }
 

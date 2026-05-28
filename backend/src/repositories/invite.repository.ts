@@ -6,6 +6,7 @@ import {
   IInviteToken,
   INVITE_TOKEN_MODEL,
 } from '../database/models/invite-token.model';
+import { INVITE_TTL_MS } from '../common/constants';
 
 export interface CreateInviteData {
   token: string;
@@ -15,8 +16,6 @@ export interface CreateInviteData {
   expiresAt: Date;
   trainerId?: string | null;
 }
-
-const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 @Injectable()
 export class InviteRepository {

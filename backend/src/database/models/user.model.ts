@@ -37,7 +37,14 @@ export const UserSchema = new Schema<IUser>(
   },
   {
     timestamps: { createdAt: true, updatedAt: false },
-    toJSON: { virtuals: true },
+    toJSON: {
+      virtuals: true,
+      transform: (_doc, ret: Record<string, unknown>) => {
+        delete ret['passwordHash'];
+        delete ret['__v'];
+        return ret;
+      },
+    },
   },
 );
 

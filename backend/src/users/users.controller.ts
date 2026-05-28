@@ -11,6 +11,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { Types } from 'mongoose';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
@@ -18,6 +19,7 @@ import { UsersService } from './users.service';
 import { CreateInviteDto } from './dto/create-invite.dto';
 import { UpdateTrainerDto } from './dto/update-trainer.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ParseObjectIdPipe } from '../common/pipes/parse-object-id.pipe';
 
 @Controller()
 export class UsersController {
@@ -40,30 +42,40 @@ export class UsersController {
   }
 
   @Get('members/:id')
-  getMember(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+  getMember(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+  ) {
     if (user.role === 'member') {
       throw new ForbiddenException('Forbidden');
     }
-    return this.usersService.getMember(user.role, user.userId, id);
+    return this.usersService.getMember(user.role, user.userId, id.toString());
   }
 
   // ── Member profile ─────────────────────────────────────────
 
   @Get('members/:id/profile')
-  getMemberProfile(@CurrentUser() user: AuthUser, @Param('id') id: string) {
-    return this.usersService.getMemberProfile(user.role, user.userId, id);
+  getMemberProfile(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+  ) {
+    return this.usersService.getMemberProfile(
+      user.role,
+      user.userId,
+      id.toString(),
+    );
   }
 
   @Patch('members/:id/profile')
   updateMemberProfile(
     @CurrentUser() user: AuthUser,
-    @Param('id') id: string,
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
     @Body() dto: UpdateProfileDto,
   ) {
     return this.usersService.upsertMemberProfile(
       user.role,
       user.userId,
-      id,
+      id.toString(),
       dto,
     );
   }
@@ -79,8 +91,11 @@ export class UsersController {
   @Roles('owner')
   @Patch('owner/members/:id/trainer')
   @HttpCode(HttpStatus.OK)
-  assignTrainer(@Param('id') id: string, @Body() dto: UpdateTrainerDto) {
-    return this.usersService.assignTrainer(id, dto.trainerId);
+  assignTrainer(
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+    @Body() dto: UpdateTrainerDto,
+  ) {
+    return this.usersService.assignTrainer(id.toString(), dto.trainerId);
   }
 
   // ── Owner: trainer management ────────────────────────────────
@@ -102,15 +117,22 @@ export class UsersController {
   @Roles('owner')
   @Post('owner/invites/:id/resend')
   @HttpCode(HttpStatus.OK)
-  resendOwnerInvite(@CurrentUser() user: AuthUser, @Param('id') id: string) {
-    return this.usersService.resendInvite(id, user.role, user.userId);
+  resendOwnerInvite(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+  ) {
+    return this.usersService.resendInvite(
+      id.toString(),
+      user.role,
+      user.userId,
+    );
   }
 
   @Roles('owner')
   @Delete('owner/invites/:id')
   @HttpCode(HttpStatus.OK)
-  revokeOwnerInvite(@Param('id') id: string) {
-    return this.usersService.revokeInvite(id);
+  revokeOwnerInvite(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
+    return this.usersService.revokeInvite(id.toString());
   }
 
   // ── Owner: stats ─────────────────────────────────────────────
@@ -132,8 +154,15 @@ export class UsersController {
   @Roles('trainer')
   @Post('trainer/invites/:id/resend')
   @HttpCode(HttpStatus.OK)
-  resendTrainerInvite(@CurrentUser() user: AuthUser, @Param('id') id: string) {
-    return this.usersService.resendInvite(id, user.role, user.userId);
+  resendTrainerInvite(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+  ) {
+    return this.usersService.resendInvite(
+      id.toString(),
+      user.role,
+      user.userId,
+    );
   }
 
   @Roles('trainer')
@@ -141,11 +170,11 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async revokeTrainerInvite(
     @CurrentUser() user: AuthUser,
-    @Param('id') id: string,
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
   ) {
     // Ownership check: only the trainer who created the invite can revoke it
-    await this.usersService.assertInviteOwner(id, user.userId);
-    return this.usersService.revokeInvite(id);
+    await this.usersService.assertInviteOwner(id.toString(), user.userId);
+    return this.usersService.revokeInvite(id.toString());
   }
 
   // ── Shared: create invite ────────────────────────────────────

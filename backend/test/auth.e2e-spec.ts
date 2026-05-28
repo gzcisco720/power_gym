@@ -35,6 +35,8 @@ describe('Auth (e2e)', () => {
   let throttlerStorage: ClearableStorage;
 
   beforeAll(async () => {
+    process.env.AUTH_EXPOSE_RESET_TOKEN = '1';
+
     moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -199,15 +201,31 @@ describe('Auth (e2e)', () => {
   });
 
   describe('POST /auth/refresh and logout', () => {
-    it('with valid refresh token → 200 + access_token', async () => {
+    it('with valid refresh token → 200 + access_token + refresh_token (rotation)', async () => {
       const owner = await registerOwner();
       const res = await request(app.getHttpServer())
         .post('/api/v1/auth/refresh')
         .set('Authorization', `Bearer ${owner.refresh_token}`)
         .send({ refresh_token: owner.refresh_token });
       expect(res.status).toBe(200);
-      const body = res.body as { access_token: string };
+      const body = res.body as { access_token: string; refresh_token: string };
       expect(body.access_token).toBeDefined();
+      expect(body.refresh_token).toBeDefined();
+    });
+
+    it('after refresh, old refresh token is revoked → 401', async () => {
+      const owner = await registerOwner();
+      await request(app.getHttpServer())
+        .post('/api/v1/auth/refresh')
+        .set('Authorization', `Bearer ${owner.refresh_token}`)
+        .send({ refresh_token: owner.refresh_token });
+
+      // Old token must be invalidated after rotation.
+      const res = await request(app.getHttpServer())
+        .post('/api/v1/auth/refresh')
+        .set('Authorization', `Bearer ${owner.refresh_token}`)
+        .send({ refresh_token: owner.refresh_token });
+      expect(res.status).toBe(401);
     });
 
     it('after logout, reuse same refresh token → 401', async () => {

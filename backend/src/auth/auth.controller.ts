@@ -46,8 +46,8 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  refresh(@CurrentUser() user: AuthUser) {
-    return this.authService.refresh(user.userId);
+  refresh(@CurrentUser() user: AuthUser & { refreshToken: string }) {
+    return this.authService.refresh(user.userId, user.refreshToken);
   }
 
   @Post('logout')
