@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-POWER_GYM is a gym management web application built with Next.js. It supports three user roles (owner, trainer, member) and provides workout plan management, nutrition plan management, body composition testing, and performance tracking.
+POWER_GYM is a gym management web application. The repository is a monorepo with three independent apps: `web/` (Next.js, the main app), `landing/` (Gatsby, static marketing page), and `backend/` (NestJS, v2 API — to be scaffolded). All commands for the web app run from the `web/` directory. It supports three user roles (owner, trainer, member) and provides workout plan management, nutrition plan management, body composition testing, and performance tracking.
 
 ## Tech Stack
 
@@ -43,14 +43,47 @@ Ownership hierarchy: Owner > Trainer > Member. A member belongs to exactly one t
 
 ## Directory Structure
 
-For current structure run:
+```
+power_gym/               ← repo root (no package.json)
+  web/                   ← Next.js app — run all commands from here
+    src/
+      app/
+        (dashboard)/
+          owner/
+          trainer/
+          member/
+        api/
+      lib/
+        db/
+          models/        ← one Mongoose model file per entity
+          connect.ts
+        repositories/    ← one repository file per model
+        animations/
+      components/
+        ui/              ← Shadcn primitives — do not modify
+    __tests__/           ← Jest tests (mirrors src/)
+    __mocks__/           ← Jest mocks (next-auth, next/link)
+    e2e/                 ← Playwright specs grouped by role
+    public/
+    context/             ← seed data and dev images
+    scripts/             ← migrate and seed scripts
+  landing/               ← Gatsby static page (independent)
+  backend/               ← NestJS API v2 (to be scaffolded)
+  .claude/               ← harness — covers entire repo
+    agents/
+    instructions/
+  docs/                  ← harness Sprint Plans
+  .archive/              ← historical design docs
+```
+
+For current web app structure run (from `web/`):
 ```bash
 find src/app/api -type d | sort      # API routes
 find src/lib -type d | sort          # lib layer
 find src/components -type d | sort   # components
 ```
 
-**Stable conventions:**
+**Stable conventions (all paths relative to `web/`):**
 
 - Pages live under `src/app/(dashboard)/{owner|trainer|member}/`
 - API routes grouped by domain under `src/app/api/`; owner-only routes under `src/app/api/owner/`

@@ -59,9 +59,9 @@ Reference existing specs before writing new ones — `e2e/self-tracking/owner-se
 ## Commands
 
 ```bash
-pnpm test                                        # All Jest tests
-pnpm test --watch                                # Watch mode
-pnpm test -- --testPathPattern=<path>            # Single file
-pnpm test:e2e                                    # Playwright E2E
-pnpm test:coverage                               # Coverage report
+cd web && pnpm test                                        # All Jest tests
+cd web && pnpm test --watch                                # Watch mode
+cd web && pnpm test -- --testPathPattern=<path>            # Single file
+cd web && pnpm test:e2e                                    # Playwright E2E
+cd web && pnpm test:coverage                               # Coverage report
 ```

@@ -97,3 +97,4 @@ Before writing any file, ask: "does this belong in the root?" — the answer is 
 | Historical design docs, mockups, research | `.archive/YYYY-MM-DD/` |
 | Claude instruction files | `.claude/instructions/` |
 | Agent definitions | `.claude/agents/` |
+| Web app source, configs, tests | `web/` |

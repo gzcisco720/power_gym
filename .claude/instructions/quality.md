@@ -23,16 +23,16 @@ const profile: any = {};
 
 **Every commit must:**
 
-- Pass `pnpm test` (100% pass rate)
-- Pass `pnpm lint` (no warnings, no errors)
+- Pass `cd web && pnpm test` (100% pass rate)
+- Pass `cd web && pnpm lint` (no warnings, no errors)
 - Use no `any`/`unknown` types
 - Have gone through `/simplify` (the Refactor step)
 - Have a Playwright E2E spec covering the changed flow
 
 **Before every push:**
 
-- `pnpm build` must pass cleanly
-- `pnpm test:e2e` must pass for any spec touching changed flows
+- `cd web && pnpm build` must pass cleanly
+- `cd web && pnpm test:e2e` must pass for any spec touching changed flows
 
 **Never:**
 
