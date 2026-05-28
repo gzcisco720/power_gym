@@ -12,6 +12,8 @@ import { NutritionModule } from './nutrition/nutrition.module';
 import { BodyTestsModule } from './body-tests/body-tests.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { CheckInsModule } from './check-ins/check-ins.module';
+import { EquipmentModule } from './equipment/equipment.module';
+import { MemberHealthModule } from './member-health/member-health.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -34,6 +36,8 @@ import { RolesGuard } from './common/guards/roles.guard';
     BodyTestsModule,
     ScheduleModule,
     CheckInsModule,
+    EquipmentModule,
+    MemberHealthModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
