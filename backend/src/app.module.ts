@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { AccountModule } from './account/account.module';
 import { TrainingModule } from './training/training.module';
 import { NutritionModule } from './nutrition/nutrition.module';
+import { BodyTestsModule } from './body-tests/body-tests.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -28,6 +29,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     AccountModule,
     TrainingModule,
     NutritionModule,
+    BodyTestsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
