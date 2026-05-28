@@ -4,26 +4,35 @@ Backlog items not yet started. When an item is confirmed, remove it from here an
 
 ---
 
+## V2 Pipeline (active — `feature/v2`)
+
+These items are confirmed and in progress. Not backlog.
+
+| # | Item | Status |
+|---|---|---|
+| V2-1 | Workspace restructure (web/ landing/ backend/) | ✅ Done |
+| V2-2 | NestJS backend init | ✅ Done |
+| V2-3 | Backend API migration (all 12 domains) | 🔄 Planning — planner agent in progress |
+| V2-4 | Web frontend migration (replace Route Handlers, swap Next-Auth → NestJS JWT) | ⏳ After V2-3 |
+| V2-5 | Mobile app (React Native) | ⏳ After V2-4 |
+
+---
+
 ## Backlog Items
 
 ### D — 生产部署准备 (Production Deployment)
 
-**Priority**: High (when ready to go live) | **Effort**: Medium
+**Priority**: High (when V2 backend is stable) | **Effort**: Medium
 
-Make the app ready for real-world use.
+Make the app ready for real-world use. Scope needs revisiting once V2 architecture is in place (Vercel for web, separate host for NestJS).
 
 **Scope:**
-- Vercel deployment with environment variable configuration
+- NestJS deployment (Railway / Render / EC2)
+- Vercel deployment for Next.js web
 - MongoDB Atlas production cluster setup
 - Email provider (SMTP) with valid credentials
-- Security audit: rate limiting on auth routes, CSRF review, input sanitization
-- Performance: audit `loading.tsx` Suspense boundaries, image optimization
+- Security audit: rate limiting, CSRF review, input sanitization
 - Monitoring: error tracking (Sentry or similar)
-
-**Technical approach:**
-- `vercel env` for secrets management
-- Auth.js production secret rotation
-- `next/image` audit for all `<img>` tags
 
 ---
 
@@ -31,7 +40,7 @@ Make the app ready for real-world use.
 
 **Priority**: Low | **Effort**: Medium
 
-Notify members when a scheduled session is approaching via Web Push (in addition to existing email reminders).
+Notify members when a scheduled session is approaching via Web Push.
 
 **Scope:**
 - Web Push subscription management for members
@@ -55,6 +64,7 @@ Use member profile data to suggest suitable plan templates when a trainer assign
 
 ## Suggested Priority Order
 
-1. **D — Production Deployment** (when there's a real user or demo needed)
-2. **G — Push Notifications** (medium effort, low urgency given email exists)
-3. **I — Training Plan Recommendations** (medium effort, lower priority)
+1. **V2-3 → V2-4 → V2-5** (current focus)
+2. **D — Production Deployment** (after V2 is stable)
+3. **G — Push Notifications** (low urgency given email exists)
+4. **I — Training Plan Recommendations** (lowest priority)
