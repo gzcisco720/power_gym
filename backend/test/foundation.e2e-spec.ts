@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
@@ -7,6 +9,24 @@ import { Connection } from 'mongoose';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { AppModule } from './../src/app.module';
 import { HttpExceptionFilter } from './../src/common/filters/http-exception.filter';
+
+describe('.env.example config spec', () => {
+  it('.env.example contains all required keys', () => {
+    const envPath = path.resolve(__dirname, '../.env.example');
+    const content = fs.readFileSync(envPath, 'utf-8');
+    const requiredKeys = [
+      'PORT',
+      'MONGODB_URI',
+      'JWT_SECRET',
+      'JWT_REFRESH_SECRET',
+      'JWT_EXPIRY',
+      'JWT_REFRESH_EXPIRY',
+    ];
+    for (const key of requiredKeys) {
+      expect(content).toMatch(new RegExp(`^${key}=`, 'm'));
+    }
+  });
+});
 
 describe('Foundation (e2e)', () => {
   let app: INestApplication<App>;
