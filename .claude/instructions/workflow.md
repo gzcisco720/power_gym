@@ -15,81 +15,68 @@ For multi-stage work, create `docs/YYYY-MM-DD/plans/IMPLEMENTATION_PLAN.md`:
 
 Use the `superpowers:writing-plans` skill to generate plans. Use the `planner` subagent for harness-style sessions that need a full Sprint Contract.
 
-## Generated Document Management
+## Document Management
 
 > **IMPORTANT — Path override**: These rules take precedence over any skill's default output path. Always use the layout below regardless of what a skill instructs.
 
-### Finding existing documents
+### `docs/` is harness-only
 
-**Always check [`docs/INDEX.md`](../../docs/INDEX.md) first.** It is the single source of truth for all generated documents. Every time you create or delete a doc, update the index.
-
-### Directory Layout
+`docs/` is the harness working directory. It holds only Sprint Contract plans and the three management files. Historical design specs, mockups, and research live in `.archive/` — outside the harness workflow.
 
 ```text
 docs/
-  INDEX.md          # ← Central registry — check here first
-  superseded.md     # Permanent audit trail of superseded design docs
-  roadmap.md        # Feature backlog (ideas not yet started)
-  YYYY-MM-DD/       # One folder per work date
-    plans/          # Implementation plans and design specs
+  INDEX.md          # Active Sprint Plans only — check here first
+  superseded.md     # Audit trail of closed plans
+  roadmap.md        # Feature backlog (ideas not yet planned)
+  YYYY-MM-DD/
+    plans/          # Sprint Contract plans from the planner agent
+
+.archive/           # Historical artifacts — not part of harness workflow
+  YYYY-MM-DD/       # Preserves original date structure
 ```
 
-### File Naming
+### Sprint Plan lifecycle
 
-All generated markdown files use **lowercase kebab-case**:
+Sprint plans are produced by the planner agent and consumed by Generator + Evaluator. They have a strict lifecycle — they do not accumulate.
+
+| Stage | Action |
+|---|---|
+| **Create** | Planner agent writes `docs/YYYY-MM-DD/plans/<feature>-plan.md`. Add a row to INDEX.md with status `In Progress`. |
+| **Active** | Generator implements stage by stage. Evaluator checks each stage against the Sprint Contract. |
+| **Complete** | All stages marked `Complete` → **delete the file and its INDEX.md row immediately.** |
+
+If INDEX.md has more than 3 active plans, something is wrong — plans are not being closed.
+
+### Plan rot — when to handle it
+
+| Type | Trigger |
+|---|---|
+| Sprint status rot (stage says "In Progress" but code is done) | Immediately when the stage completes |
+| Implementation diverged from plan | The moment you consciously diverge — update plan **before** changing code |
+
+**Never batch rot cleanup.** A stale plan is wrong handoff information for the next session.
+
+Two session triggers:
+
+1. Diverging from plan → update plan first, then code
+2. New session start → skim active plans against code; update status if stale
+
+### File naming
+
+All markdown files use **lowercase kebab-case**:
 
 ```text
-✅  body-fat-formula-research.md
-✅  jwt-auth-implementation-plan.md
-❌  BodyFatFormula.md
+✅  progressive-overload-plan.md
+✅  web-push-plan.md
+❌  ProgressiveOverload.md
 ❌  PLAN.md
 ```
 
-### Lifecycle Rules
+### After any significant code change
 
-**Create** a new date folder (`docs/YYYY-MM-DD/`) at the start of each distinct work session.
-
-**Update** an existing doc in the same date folder if work continues on the same day.
-
-**Close** an implementation plan by marking all stages `Complete`, then **deleting the file and its INDEX.md row**.
-
-**Keep** design docs as long as they accurately reflect the implementation.
-
-**Supersede** a design doc when it no longer accurately reflects the implementation:
-1. Remove its row from `INDEX.md`
-2. Append a row to [`docs/superseded.md`](../../docs/superseded.md) with: doc name, original path, date, and reason
-3. Delete the file
-
-**INDEX.md hygiene** — keep under 60 lines total. Never keep a row in INDEX.md for a file that no longer exists.
-
-### Keeping Docs Current
-
-**Before starting work on an existing feature area**, check if it has a design doc in `INDEX.md`. If it does:
-- Skim the doc against the current code
-- If it still reflects reality → proceed
-- If it has drifted → supersede it before writing new code
-
-**After any significant code change**, check:
-
-- [ ] `docs/INDEX.md` — add/update the row for any new or changed doc
-- [ ] `docs/superseded.md` — did any existing doc become inaccurate? Supersede it
-- [ ] `CLAUDE.md` or instruction files — does it reflect new patterns, commands, or conventions?
-- [ ] `plans/` — mark completed stages, delete file when all done
-
-## Plan Rot — When to Handle It
-
-Plan rot has two types with different handling:
-
-| Type | Trigger to handle |
-|---|---|
-| Sprint status rot (plan says "In Progress" but code is done) | Immediately when the sprint completes |
-| Design drift (implementation took a different approach) | The moment you consciously diverge — update plan before changing code |
-
-**Never batch rot cleanup.** The cost of a stale plan is immediate: the next session reads wrong handoff information.
-
-Two session triggers:
-1. When you consciously diverge from the plan → update plan first, then code
-2. At the start of each new session → skim plan against code, supersede if drifted
+- [ ] `docs/INDEX.md` — close completed plans (delete file + row); update status of in-progress ones
+- [ ] `.claude/instructions/` — does any instruction file need updating for new patterns or conventions?
+- [ ] `CLAUDE.md` — does it reflect new commands or critical rules?
 
 ## When Stuck (After 3 Attempts)
 
@@ -106,6 +93,7 @@ Before writing any file, ask: "does this belong in the root?" — the answer is 
 |---|---|
 | Temporary screenshots, debug images, scratch files | `.tmp/` |
 | Superpowers / brainstorm tool outputs | `.superpowers/` |
-| Implementation plans and design specs | `docs/YYYY-MM-DD/plans/` |
+| Sprint Contract implementation plans | `docs/YYYY-MM-DD/plans/` |
+| Historical design docs, mockups, research | `.archive/YYYY-MM-DD/` |
 | Claude instruction files | `.claude/instructions/` |
 | Agent definitions | `.claude/agents/` |

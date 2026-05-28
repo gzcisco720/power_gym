@@ -1,59 +1,21 @@
 # Docs Index
 
-Central registry of all generated documents. Update this file whenever a new doc is created or removed.
+Harness working directory. Only active Sprint Contract plans are listed here.
 
-## Active Documents
+## Active Sprint Plans
 
-| Topic | File | Status |
-| ----- | ---- | ------ |
-| **基础功能里程碑总结（全部 12 域）** | [milestone-summary.md](2026-05-14/milestone-summary.md) | **Living** |
-| gstack Skills 参考手册 | [gstack-skills-reference.md](2026-05-23/gstack-skills-reference.md) | Living |
-| Roadmap & Backlog | [roadmap.md](roadmap.md) | Living |
-| Superseded Doc Archive | [superseded.md](superseded.md) | Permanent |
+| Feature | Plan File | Status |
+|---|---|---|
+| *(no active plans)* | — | — |
 
-## Specs & Designs
+## Management Files
 
-| Topic | File | Status |
-| ----- | ---- | ------ |
-| Auth system | [auth-design.md](2026-04-20/plans/auth-design.md) | Approved |
-| Body Test UI Redesign | [body-test-ui-redesign.md](2026-05-07/plans/body-test-ui-redesign.md) | Approved |
-| E2E Test Suite | [e2e-design.md](2026-04-25/plans/e2e-design.md) | Approved |
-| Mobile Responsive Design | [mobile-responsive-design.md](2026-04-26/plans/mobile-responsive-design.md) | Approved |
-| Calendar & Session Scheduling | [calendar-design.md](2026-04-27/plans/calendar-design.md) | Approved |
-| Progress Charts & Analytics | [progress-design.md](2026-04-28/plans/progress-design.md) | Approved |
-| Owner/Trainer Self-Tracking | [self-tracking-design.md](2026-05-08/plans/self-tracking-design.md) | Approved |
-| My Nutrition Calendar Popover Refactor | [my-nutrition-refactor-design.md](2026-05-08/plans/my-nutrition-refactor-design.md) | Approved |
-| Day Complete Confirm + Future Date Lockdown | [day-complete-confirm-design.md](2026-05-08/plans/day-complete-confirm-design.md) | Approved |
-| My Training Cockpit Landing | [my-training-cockpit-design.md](2026-05-08/plans/my-training-cockpit-design.md) | Approved |
-| Training Template Redesign | [training-template-redesign-design.md](2026-05-09/plans/training-template-redesign-design.md) | Approved |
-| Free Day Logging | [free-day-logging-design.md](2026-05-11/plans/free-day-logging-design.md) | Approved |
-| My Training Bug Fixes + Calendar | [my-training-fixes-and-calendar.md](2026-05-11/plans/my-training-fixes-and-calendar.md) | Approved |
-| Profile & Account Redesign | [profile-account-redesign.md](2026-05-13/plans/profile-account-redesign.md) | Approved |
-| Edit Equipment Dialog | [edit-equipment-design.md](2026-05-14/plans/edit-equipment-design.md) | Approved |
-| UI/UX Comprehensive Upgrade (Design) | [ui-ux-upgrade-design.md](2026-05-14/plans/ui-ux-upgrade-design.md) | Approved |
-| Dashboard Expansion (Design) | [dashboard-expansion-design.md](2026-05-14/plans/dashboard-expansion-design.md) | Approved |
-| Per-Trainer Hub Redesign | [per-trainer-hub-redesign.md](2026-05-15/plans/per-trainer-hub-redesign.md) | Approved |
-| Member Dashboard Redesign (Design) | [member-dashboard-design.md](2026-05-16/plans/member-dashboard-design.md) | Approved |
-| Member Schedule Redesign | [member-schedule-redesign.md](2026-05-16/plans/member-schedule-redesign.md) | Approved |
-| Check-In UI Refactor | [check-in-ui-refactor.md](2026-05-16/plans/check-in-ui-refactor.md) | Approved |
-| Journey Page (Member Milestone Timeline) | [journey-page-design.md](2026-05-17/plans/journey-page-design.md) | Approved |
-| Check-In Dashboard Redesign (Design) | [check-in-dashboard-design.md](2026-05-17/plans/check-in-dashboard-design.md) | Approved |
-| Gym Branding (Logo + Login BG) | [gym-branding-design.md](2026-05-18/plans/gym-branding-design.md) | Approved |
-| Logo Crop (Design) | [logo-crop-design.md](2026-05-18/plans/logo-crop-design.md) | Approved |
-| Member My Training (Design) | [member-my-training-design.md](2026-05-18/plans/member-my-training-design.md) | Approved |
-| Nutrition Enhancement (Design) | [nutrition-enhancement-design.md](2026-05-19/plans/nutrition-enhancement-design.md) | Approved |
-| Member Health Profile (Design) | [member-health-profile-design.md](2026-05-19/plans/member-health-profile-design.md) | Approved |
-| Member Hub Header Redesign | [member-hub-header-redesign.md](2026-05-20/plans/member-hub-header-redesign.md) | Approved |
-| Member Hub Overview Redesign | [member-hub-overview-redesign.md](2026-05-20/plans/member-hub-overview-redesign.md) | Approved |
-| Member Plan Create Flow | [member-plan-create-flow-design.md](2026-05-21/plans/member-plan-create-flow-design.md) | Approved |
-| Trainer Dashboard Redesign | [trainer-dashboard-redesign.md](2026-05-22/plans/trainer-dashboard-redesign.md) | Approved |
-| Pricing & Billing Management | [pricing-billing-design.md](2026-05-22/plans/pricing-billing-design.md) | Approved |
-| Progressive Overload Tracking | [progressive-overload-design.md](2026-05-24/plans/progressive-overload-design.md) | Approved |
-| Data Export (CSV — Body Tests & Sessions) | [data-export-design.md](2026-05-25/plans/data-export-design.md) | Approved |
-| Landing Page (Gatsby, glassmorphism, AUD) | [landing-page-design.md](2026-05-26/plans/landing-page-design.md) | Approved |
+- [roadmap.md](roadmap.md) — feature backlog for future Sprint planning
+- [superseded.md](superseded.md) — audit trail of closed plans
 
 ## Rules
-- Add a row to the correct table; use relative path from `docs/` as link
-- Status: `Draft` | `Approved` | `In Progress` | `Complete` | `Superseded`
-- Delete file **and row** when area is redesigned/superseded
-- Target: keep this file under 60 lines
+
+- Add a row when a planner agent creates a new Sprint Plan (`In Progress`)
+- Delete the file **and its row** when all stages are `Complete`
+- If this index has more than 3 active rows, plans are not being closed
+- Historical design docs and mockups live in `.archive/` — not here

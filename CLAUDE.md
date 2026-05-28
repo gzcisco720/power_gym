@@ -6,7 +6,7 @@ Guidance for Claude Code working in this repository. Keep this file short — de
 
 ## 🔴 CRITICAL RULES
 
-1. **No files in project root** — temp files → `.tmp/`, brainstorm outputs → `.superpowers/`, plans → `docs/YYYY-MM-DD/plans/`, Claude instructions → `.claude/instructions/`, agents → `.claude/agents/`
+1. **No files in project root** — temp files → `.tmp/`, brainstorm outputs → `.superpowers/`, Sprint Contract plans → `docs/YYYY-MM-DD/plans/`, historical design docs/mockups → `.archive/`, Claude instructions → `.claude/instructions/`, agents → `.claude/agents/`
 2. **One fix at a time** — if a fix doesn't work, revert it immediately before trying anything else. Never stack changes on an unverified fix.
 3. **TDD** — never write implementation code before a failing test. Governed by the `superpowers:test-driven-development` skill.
 4. **E2E tests mandatory** — every flow or UI change needs a Playwright spec that passes against a real browser. See `.claude/instructions/testing.md`.
