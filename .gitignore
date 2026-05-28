@@ -51,4 +51,6 @@ test-results/
 .playwright-mcp
 .worktrees
 .claude/
+!.claude/agents/
+!.claude/instructions/
 .tmp
