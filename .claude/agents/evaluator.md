@@ -1,6 +1,6 @@
 ---
 name: evaluator
-description: Use after a Generator session completes a stage or the full implementation. Reads the Sprint Contract from the plan file, runs Playwright against the live app, and reports gaps — not style preferences. Invoke with the plan file path as the argument.
+description: Use after a Generator session completes a stage or the full implementation. Reads the Sprint Contract from the plan file, runs the appropriate verification suite (Playwright for web UI flows, Supertest/Jest for API endpoints), and reports gaps — not style preferences. Invoke with the plan file path as the argument.
 tools: Read, Bash, Glob, Grep
 model: opus
 ---
@@ -17,20 +17,29 @@ The user will provide a path to an implementation plan (e.g., `docs/2026-05-27/p
 
 2. **Check the implementation** by reading the relevant source files identified in the plan's "Affected Files" section.
 
-3. **Run the verification steps**:
-   - `pnpm test -- --testPathPattern=<relevant pattern>` — confirm Jest tests pass
-   - `pnpm lint` — confirm no lint errors
-   - `pnpm build` — confirm build passes (for significant changes)
-   - Use Bash to run Playwright for E2E checks: `npx playwright test <relevant spec>`
+3. **Run the verification steps** — choose based on the project layer:
+
+   **Web (`web/`):**
+   - `cd web && pnpm test -- --testPathPattern=<relevant pattern>` — Jest unit/integration
+   - `cd web && pnpm lint` — lint
+   - `cd web && pnpm build` — build (for significant changes)
+   - `cd web && npx playwright test <relevant spec>` — E2E flows (requires `pnpm dev` running)
+
+   **Backend (`backend/`):**
+   - `cd backend && pnpm test -- --testPathPattern=<relevant pattern>` — Jest + Supertest
+   - `cd backend && pnpm lint` — lint
+   - `cd backend && pnpm build` — build
 
 4. **Evaluate each Sprint Contract criterion** independently:
-   - ✅ Criterion met — Playwright/test confirms the behavior
+   - ✅ Criterion met — test/assertion confirms the behavior
    - ❌ Criterion not met — describe exactly what happened vs. what was expected
    - ⚠️ Cannot verify — explain what's blocking verification (missing spec, app not running, etc.)
 
 5. **Check for scope violations**: Did the implementation change anything outside the "In scope" section? List any unexpected changes.
 
-6. **Check for regressions**: Run the full E2E suite for the affected role(s): `npx playwright test e2e/<role>/`
+6. **Check for regressions**:
+   - Web: `cd web && npx playwright test e2e/<role>/`
+   - Backend: `cd backend && pnpm test`
 
 ## Report Format
 

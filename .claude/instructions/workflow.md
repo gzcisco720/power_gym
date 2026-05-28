@@ -8,7 +8,7 @@ For multi-stage work, create `docs/YYYY-MM-DD/plans/IMPLEMENTATION_PLAN.md`:
 ## Stage N: [Name]
 
 **Goal**: [Specific deliverable]
-**Success Criteria**: [Testable outcomes — each must be writable as a Playwright expect()]
+**Success Criteria**: [Testable outcomes — each must be writable as a runnable assertion: Playwright expect() for web UI flows, Supertest/Jest expect() for API endpoints]
 **Tests**: [List of TDD test cases]
 **Status**: [Not Started|In Progress|Complete]
 ```
