@@ -6,7 +6,7 @@ Harness working directory. Only active Sprint Contract plans are listed here.
 
 | Feature | Plan File | Status |
 |---|---|---|
-| Backend V2 — NestJS API Migration | [2026-05-28/plans/backend-v2-plan.md](2026-05-28/plans/backend-v2-plan.md) | In Progress |
+| *(no active plans)* | — | — |
 
 ## Management Files
 
