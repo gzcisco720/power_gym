@@ -163,7 +163,7 @@ export function SelfWorkoutSession({ logId, basePath }: Props) {
   const { push } = useRouter();
   const [state, dispatch] = useReducer(selfWorkoutSessionReducer, {
     log: null, loading: true, completeOpen: false, pickerOpen: false,
-    inputs: [], bwOverrides: {}, deletedIndices: new Set(), inputErrors: {},
+    inputs: [], bwOverrides: {}, deletedIndices: new Set<number>(), inputErrors: {},
     availableExercises: [], savingSets: false,
   });
   const { log, loading, completeOpen, pickerOpen, inputs, bwOverrides, deletedIndices, inputErrors, availableExercises, savingSets } = state;
