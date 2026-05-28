@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { randomUUID } from 'crypto';
 import {
   IInviteToken,
   INVITE_TOKEN_MODEL,
@@ -15,6 +16,8 @@ export interface CreateInviteData {
   trainerId?: string | null;
 }
 
+const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
 @Injectable()
 export class InviteRepository {
   constructor(
@@ -24,6 +27,20 @@ export class InviteRepository {
 
   async findByToken(token: string): Promise<IInviteToken | null> {
     return this.inviteModel.findOne({ token });
+  }
+
+  async findById(id: string): Promise<IInviteToken | null> {
+    return this.inviteModel.findById(id);
+  }
+
+  async findAll(): Promise<IInviteToken[]> {
+    return this.inviteModel.find().sort({ createdAt: -1 });
+  }
+
+  async findByInvitedBy(invitedBy: string): Promise<IInviteToken[]> {
+    return this.inviteModel
+      .find({ invitedBy: new Types.ObjectId(invitedBy) })
+      .sort({ createdAt: -1 });
   }
 
   async create(data: CreateInviteData): Promise<IInviteToken> {
@@ -43,5 +60,34 @@ export class InviteRepository {
       { token },
       { $set: { usedAt: new Date() } },
     );
+  }
+
+  async countPending(now: Date): Promise<number> {
+    return this.inviteModel.countDocuments({
+      usedAt: null,
+      expiresAt: { $gt: now },
+    });
+  }
+
+  async regenerate(id: string): Promise<IInviteToken> {
+    const updated = await this.inviteModel.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          token: randomUUID(),
+          expiresAt: new Date(Date.now() + INVITE_TTL_MS),
+          usedAt: null,
+        },
+      },
+      { new: true },
+    );
+    if (!updated) {
+      throw new NotFoundException('Invite not found');
+    }
+    return updated;
+  }
+
+  async revoke(id: string): Promise<void> {
+    await this.inviteModel.findByIdAndDelete(id);
   }
 }
