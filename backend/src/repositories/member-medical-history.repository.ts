@@ -37,7 +37,7 @@ export class MemberMedicalHistoryRepository {
     const result = await this.model.findOneAndUpdate(
       { memberId: new Types.ObjectId(memberId) },
       { $set: data },
-      { new: true, upsert: true },
+      { returnDocument: 'after', upsert: true },
     );
     return result;
   }

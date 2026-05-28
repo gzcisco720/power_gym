@@ -69,7 +69,7 @@ export class MemberInjuryRepository {
     return this.model.findByIdAndUpdate(
       new Types.ObjectId(id),
       { $set: data },
-      { new: true },
+      { returnDocument: 'after' },
     );
   }
 

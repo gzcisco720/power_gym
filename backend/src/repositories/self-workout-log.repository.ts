@@ -88,7 +88,7 @@ export class SelfWorkoutLogRepository {
           lastActivityAt: now,
         },
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
   }
 
@@ -102,7 +102,7 @@ export class SelfWorkoutLogRepository {
     return this.model.findOneAndUpdate(
       { _id: oid(id), userId: oid(userId) },
       { $set: { completedAt: now, lastActivityAt: now, rpe, note } },
-      { new: true },
+      { returnDocument: 'after' },
     );
   }
 

@@ -78,7 +78,7 @@ export class InviteRepository {
           usedAt: null,
         },
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!updated) {
       throw new NotFoundException('Invite not found');

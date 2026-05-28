@@ -54,7 +54,7 @@ export class ScheduledSessionRepository {
     return this.model.findByIdAndUpdate(
       id,
       { $set: { status: 'cancelled' } },
-      { new: true },
+      { returnDocument: 'after' },
     );
   }
 

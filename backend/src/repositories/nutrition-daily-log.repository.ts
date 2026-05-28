@@ -69,7 +69,7 @@ export class NutritionDailyLogRepository {
           dayCompleted: data.dayCompleted,
         },
       },
-      { new: true, upsert: true, setDefaultsOnInsert: true },
+      { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true },
     );
     if (!result) throw new Error('Upsert failed');
     return result;

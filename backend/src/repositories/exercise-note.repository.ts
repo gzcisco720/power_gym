@@ -50,7 +50,7 @@ export class ExerciseNoteRepository {
         },
         $push: { entries: entry },
       },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: 'after' },
     );
   }
 
@@ -64,7 +64,7 @@ export class ExerciseNoteRepository {
       { $set: { 'entries.$[elem].content': content } },
       {
         arrayFilters: [{ 'elem._id': new Types.ObjectId(entryId) }],
-        new: true,
+        returnDocument: 'after',
       },
     );
   }

@@ -41,7 +41,7 @@ export class UserProfileRepository {
     const doc = await this.profileModel.findOneAndUpdate(
       { userId: new Types.ObjectId(userId) },
       { $set: data },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: 'after' },
     );
     return doc;
   }

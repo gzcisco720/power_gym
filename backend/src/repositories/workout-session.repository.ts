@@ -98,7 +98,7 @@ export class WorkoutSessionRepository {
           lastActivityAt: now,
         },
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
   }
 
@@ -117,7 +117,7 @@ export class WorkoutSessionRepository {
           memberNote: data?.memberNote ?? null,
         },
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
   }
 

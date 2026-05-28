@@ -47,7 +47,7 @@ export class EquipmentRepository {
     return this.model.findByIdAndUpdate(
       new Types.ObjectId(id),
       { $set: data },
-      { new: true },
+      { returnDocument: 'after' },
     );
   }
 
