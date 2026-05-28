@@ -40,4 +40,27 @@ export class CheckInConfigRepository {
     );
     return result;
   }
+
+  async findDueForReminder(
+    dayOfWeek: number,
+    hour: number,
+    weekStart: Date,
+  ): Promise<ICheckInConfig[]> {
+    return this.model.find({
+      active: true,
+      dayOfWeek,
+      hour,
+      $or: [
+        { lastReminderSentAt: null },
+        { lastReminderSentAt: { $lt: weekStart } },
+      ],
+    });
+  }
+
+  async markReminderSent(memberId: string, sentAt: Date): Promise<void> {
+    await this.model.findOneAndUpdate(
+      { memberId: new Types.ObjectId(memberId) },
+      { $set: { lastReminderSentAt: sentAt } },
+    );
+  }
 }

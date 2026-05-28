@@ -9,6 +9,7 @@ export interface ICheckInConfig extends Document {
   hour: number;
   minute: number;
   active: boolean;
+  lastReminderSentAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,6 +24,7 @@ export const CheckInConfigSchema = new Schema<ICheckInConfig>(
     hour: { type: Number, required: true, min: 0, max: 23 },
     minute: { type: Number, required: true, min: 0, max: 59 },
     active: { type: Boolean, default: true },
+    lastReminderSentAt: { type: Date, default: null },
   },
   { timestamps: true },
 );

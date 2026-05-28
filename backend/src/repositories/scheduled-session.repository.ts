@@ -57,4 +57,51 @@ export class ScheduledSessionRepository {
       { new: true },
     );
   }
+
+  async findUnreminded(
+    windowStart: Date,
+    windowEnd: Date,
+  ): Promise<IScheduledSession[]> {
+    return this.model.find({
+      status: 'scheduled',
+      date: { $gte: windowStart, $lt: windowEnd },
+      reminderSentAt: null,
+    });
+  }
+
+  async markReminderSent(id: string): Promise<void> {
+    await this.model.findByIdAndUpdate(id, {
+      $set: { reminderSentAt: new Date() },
+    });
+  }
+
+  async findActiveSeriesIds(): Promise<string[]> {
+    const results = await this.model.distinct('seriesId', {
+      seriesId: { $ne: null },
+      status: 'scheduled',
+    });
+    return results.map((id: Types.ObjectId) => id.toString());
+  }
+
+  async findLatestInSeries(
+    seriesId: string,
+  ): Promise<IScheduledSession | null> {
+    return this.model
+      .findOne({ seriesId: new Types.ObjectId(seriesId), status: 'scheduled' })
+      .sort({ date: -1 });
+  }
+
+  async createMany(
+    sessions: CreateScheduledSessionData[],
+  ): Promise<IScheduledSession[]> {
+    const docs = sessions.map((s) => ({
+      trainerId: new Types.ObjectId(s.trainerId),
+      memberIds: s.memberIds.map((id) => new Types.ObjectId(id)),
+      date: s.date,
+      startTime: s.startTime,
+      endTime: s.endTime,
+      seriesId: s.seriesId ? new Types.ObjectId(s.seriesId) : null,
+    }));
+    return this.model.insertMany(docs);
+  }
 }

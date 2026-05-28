@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { EmailModule } from '../email/email.module';
 import { USER_MODEL, UserSchema } from '../database/models/user.model';
 import {
   INVITE_TOKEN_MODEL,
@@ -17,6 +18,7 @@ import { UsersService } from './users.service';
 
 @Module({
   imports: [
+    EmailModule,
     MongooseModule.forFeature([
       { name: USER_MODEL, schema: UserSchema },
       { name: INVITE_TOKEN_MODEL, schema: InviteTokenSchema },

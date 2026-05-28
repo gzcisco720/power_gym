@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -14,6 +15,7 @@ import { UserRepository } from '../repositories/user.repository';
 import { InviteRepository } from '../repositories/invite.repository';
 import { RefreshTokenRepository } from '../repositories/refresh-token.repository';
 import { PasswordResetTokenRepository } from '../repositories/password-reset-token.repository';
+import { EmailService } from '../email/email.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RESET_TOKEN_TTL_MS } from '../common/constants';
@@ -22,6 +24,7 @@ type JwtExpiry = JwtSignOptions['expiresIn'];
 
 const BCRYPT_ROUNDS = 10;
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const logger = new Logger('AuthService');
 
 interface TokenPayload {
   sub: string;
@@ -44,6 +47,7 @@ export class AuthService {
     private readonly resetTokenRepo: PasswordResetTokenRepository,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   async validateUser(email: string, password: string): Promise<IUser> {
@@ -169,11 +173,22 @@ export class AuthService {
       const token = randomUUID();
       const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MS);
       await this.resetTokenRepo.create(user._id.toString(), token, expiresAt);
-      // EmailService integration is deferred to a later stage.
+
+      const appUrl =
+        this.config.get<string>('APP_URL') ?? 'http://localhost:3000';
+      const resetUrl = `${appUrl}/reset-password?token=${token}`;
+      this.emailService
+        .sendPasswordReset({ to: user.email, resetUrl })
+        .catch((err) => {
+          logger.warn(
+            `Failed to send password reset email to ${user.email}: ${String(err)}`,
+          );
+        });
+
       const response: Record<string, unknown> = { success: true };
       if (
-        process.env.NODE_ENV !== 'production' &&
-        process.env.AUTH_EXPOSE_RESET_TOKEN === '1'
+        this.config.get<string>('NODE_ENV') !== 'production' &&
+        this.config.get<string>('AUTH_EXPOSE_RESET_TOKEN') === '1'
       ) {
         response.resetToken = token;
       }

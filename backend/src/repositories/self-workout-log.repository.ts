@@ -113,4 +113,21 @@ export class SelfWorkoutLogRepository {
     });
     return result !== null;
   }
+
+  async findStaleActive(staleAfterHours: number): Promise<ISelfWorkoutLog[]> {
+    const cutoff = new Date(Date.now() - staleAfterHours * 60 * 60 * 1000);
+    return this.model.find({
+      completedAt: null,
+      lastActivityAt: { $lt: cutoff },
+    });
+  }
+
+  async autoSeal(id: string): Promise<{ autoSealed: boolean } | null> {
+    const log = await this.model.findById(id);
+    if (!log || log.completedAt) return null;
+    log.completedAt = log.lastActivityAt;
+    log.autoSealed = true;
+    await log.save();
+    return { autoSealed: true };
+  }
 }

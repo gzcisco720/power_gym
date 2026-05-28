@@ -133,6 +133,23 @@ export class WorkoutSessionRepository {
     return result !== null;
   }
 
+  async findStaleActive(staleAfterHours: number): Promise<IWorkoutSession[]> {
+    const cutoff = new Date(Date.now() - staleAfterHours * 60 * 60 * 1000);
+    return this.model.find({
+      completedAt: null,
+      lastActivityAt: { $lt: cutoff },
+    });
+  }
+
+  async autoSeal(id: string): Promise<{ autoSealed: boolean } | null> {
+    const sess = await this.model.findById(id);
+    if (!sess || sess.completedAt) return null;
+    sess.completedAt = sess.lastActivityAt;
+    sess.autoSealed = true;
+    await sess.save();
+    return { autoSealed: true };
+  }
+
   async findByDateRange(
     memberId: string,
     start: Date,

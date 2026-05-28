@@ -2,12 +2,15 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { UserRepository } from '../repositories/user.repository';
 import { InviteRepository } from '../repositories/invite.repository';
 import { UserProfileRepository } from '../repositories/user-profile.repository';
+import { EmailService } from '../email/email.service';
 import type { IUser } from '../database/models/user.model';
 import type { IInviteToken } from '../database/models/invite-token.model';
 import type { IUserProfile } from '../database/models/user-profile.model';
@@ -16,12 +19,16 @@ import type { UserRole } from '../common/interfaces/auth-user.interface';
 import { CreateInviteDto } from './dto/create-invite.dto';
 import { INVITE_TTL_MS } from '../common/constants';
 
+const logger = new Logger('UsersService');
+
 @Injectable()
 export class UsersService {
   constructor(
     private readonly userRepo: UserRepository,
     private readonly inviteRepo: InviteRepository,
     private readonly profileRepo: UserProfileRepository,
+    private readonly emailService: EmailService,
+    private readonly config: ConfigService,
   ) {}
 
   // ── Members ──────────────────────────────────────────────
@@ -108,7 +115,7 @@ export class UsersService {
       }
     }
 
-    return this.inviteRepo.create({
+    const invite = await this.inviteRepo.create({
       token: randomUUID(),
       role: dto.role,
       invitedBy: callerId,
@@ -116,6 +123,25 @@ export class UsersService {
       expiresAt: new Date(Date.now() + INVITE_TTL_MS),
       trainerId,
     });
+
+    const caller = await this.userRepo.findById(callerId);
+    const appUrl =
+      this.config.get<string>('APP_URL') ?? 'http://localhost:3000';
+    const inviteUrl = `${appUrl}/register?token=${invite.token}`;
+    this.emailService
+      .sendInvite({
+        to: invite.recipientEmail,
+        inviterName: caller?.name ?? 'POWER GYM',
+        role: invite.role,
+        inviteUrl,
+      })
+      .catch((err) => {
+        logger.warn(
+          `Failed to send invite email to ${invite.recipientEmail}: ${String(err)}`,
+        );
+      });
+
+    return invite;
   }
 
   async listOwnerInvites(): Promise<IInviteToken[]> {

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { MongooseModule } from '@nestjs/mongoose';
+import { EmailModule } from '../email/email.module';
 import { USER_MODEL, UserSchema } from '../database/models/user.model';
 import {
   INVITE_TOKEN_MODEL,
@@ -28,6 +29,7 @@ import { RefreshTokenStrategy } from './strategies/refresh.strategy';
   imports: [
     PassportModule,
     JwtModule.register({}),
+    EmailModule,
     MongooseModule.forFeature([
       { name: USER_MODEL, schema: UserSchema },
       { name: INVITE_TOKEN_MODEL, schema: InviteTokenSchema },
