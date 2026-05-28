@@ -10,6 +10,7 @@ export interface IScheduledSession extends Document {
   startTime: string;
   endTime: string;
   status: 'scheduled' | 'cancelled';
+  serviceTypeId: Types.ObjectId | null;
   reminderSentAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
@@ -30,6 +31,7 @@ export const ScheduledSessionSchema = new Schema<IScheduledSession>(
       enum: ['scheduled', 'cancelled'],
       default: 'scheduled',
     },
+    serviceTypeId: { type: Schema.Types.ObjectId, default: null },
     reminderSentAt: { type: Date, default: null },
   },
   { timestamps: true },
