@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import { UserRepository } from '../repositories/user.repository';
 import { MemberInjuryRepository } from '../repositories/member-injury.repository';
