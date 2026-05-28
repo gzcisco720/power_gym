@@ -13,7 +13,16 @@ For multi-stage work, create `docs/YYYY-MM-DD/plans/IMPLEMENTATION_PLAN.md`:
 **Status**: [Not Started|In Progress|Complete]
 ```
 
-Use the `superpowers:writing-plans` skill to generate plans. Use the `planner` subagent for harness-style sessions that need a full Sprint Contract.
+**Which planning tool to use — one question decides it:**
+
+> Can "done" be expressed as a runnable `expect()` assertion?
+
+| Answer | Tool | Output | When |
+|---|---|---|---|
+| **Yes** | `planner` subagent | Sprint Contract — testable assertions per Stage | API endpoints, UI flows, any feature the Evaluator will verify |
+| **No** | `superpowers:writing-plans` | Step-by-step implementation checklist | File moves, config changes, refactoring, docs — mechanical work with self-evident completion |
+
+**Note:** The `superpowers:brainstorming` skill always transitions to `writing-plans` by default. Override this and use the `planner` subagent whenever the feature has verifiable business behaviour. Project rules take precedence over skill defaults.
 
 ## Document Management
 
