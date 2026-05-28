@@ -13,9 +13,14 @@ For multi-stage work, create `docs/YYYY-MM-DD/plans/IMPLEMENTATION_PLAN.md`:
 **Status**: [Not Started|In Progress|Complete]
 ```
 
-**Which planning tool to use — one question decides it:**
+**Which planning tool to use:**
 
-> Can "done" be expressed as a runnable `expect()` assertion?
+**Step 1 — How big is the change?**
+
+- **Small** (bug fix, 1-2 files, cause is clear) → **TDD directly**. Write a failing test that reproduces the bug or describes the behaviour, fix the code, make it pass. No planning tool needed.
+- **Medium / large** → go to Step 2.
+
+**Step 2 — Can "done" be expressed as a runnable `expect()` assertion?**
 
 | Answer | Tool | Output | When |
 |---|---|---|---|
