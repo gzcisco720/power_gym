@@ -6,7 +6,7 @@ Harness working directory. Only active Sprint Contract plans are listed here.
 
 | Feature | Plan File | Status |
 |---|---|---|
-| *(no active plans)* | — | — |
+| Workspace Restructure | [workspace-restructure-plan.md](2026-05-28/plans/workspace-restructure-plan.md) | In Progress |
 
 ## Management Files
 
