@@ -250,8 +250,12 @@ export function PlanTemplateForm({ initialData, onSubmit, onCancel, mode = 'crea
         </div>
       </div>
 
-      {/* Days */}
-      {days.length === 0 ? (
+      {/* Days — only available in edit mode (createPlanTemplate API accepts name+description only) */}
+      {mode === 'create' ? (
+        <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-6 text-center">
+          <p className="text-sm text-foreground/65">Save to create the template — then edit it to add training days and exercises.</p>
+        </div>
+      ) : days.length === 0 ? (
         <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-8 text-center space-y-3">
           <p className="text-sm text-foreground/65">No training days yet.</p>
           <Button type="button" variant="outline" onClick={addDay}>

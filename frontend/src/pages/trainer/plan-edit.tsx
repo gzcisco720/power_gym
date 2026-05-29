@@ -40,13 +40,21 @@ export function TrainerPlanEditPage() {
 
   async function handleSubmit(data: PlanFormPayload) {
     if (!id) return;
+    // Map form shape → backend PlanDayExerciseDto shape
     const days = data.days.map((d) => ({
       dayNumber: d.dayNumber,
       name: d.name,
       exercises: d.exercises.map((ex) => ({
+        groupId: ex.exerciseId,
+        isSuperset: false,
         exerciseId: ex.exerciseId,
-        exerciseName: ex.exerciseName,
-        sets: Array.from({ length: ex.sets }, () => ({ targetReps: ex.repsMin })),
+        exerciseName: ex.exerciseName ?? '',
+        imageUrl: null,
+        isBodyweight: false,
+        sets: ex.sets,
+        repsMin: ex.repsMin,
+        repsMax: ex.repsMax,
+        restSeconds: ex.restSeconds,
       })),
     }));
     await updatePlan(id, { name: data.name, description: data.description, days });
