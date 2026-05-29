@@ -40,10 +40,16 @@ export function TrainerPlanEditPage() {
 
   async function handleSubmit(data: PlanFormPayload) {
     if (!id) return;
-    await updatePlan(id, {
-      name: data.name,
-      description: data.description,
-    });
+    const days = data.days.map((d) => ({
+      dayNumber: d.dayNumber,
+      name: d.name,
+      exercises: d.exercises.map((ex) => ({
+        exerciseId: ex.exerciseId,
+        exerciseName: ex.exerciseName,
+        sets: Array.from({ length: ex.sets }, () => ({ targetReps: ex.repsMin })),
+      })),
+    }));
+    await updatePlan(id, { name: data.name, description: data.description, days });
     toast.success('Plan updated');
     void navigate('/trainer/plans');
   }

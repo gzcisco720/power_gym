@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { LazyMotion, domAnimation, m, useReducedMotion } from 'framer-motion';
 import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -17,6 +17,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 // ---------------------------------------------------------------------------
 // Create form state
@@ -81,6 +91,7 @@ function createReducer(state: CreateState, action: CreateAction): CreateState {
 export function TrainerFoodsPage() {
   const { foods, fetchFoods, createFood, deleteFood, isLoading } = useNutritionStore();
   const [create, dispatchCreate] = useReducer(createReducer, INITIAL);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const shouldReduce = useReducedMotion();
 
   useEffect(() => {
@@ -124,12 +135,15 @@ export function TrainerFoodsPage() {
     }
   }
 
-  async function handleDelete(id: string) {
+  async function handleDeleteConfirm() {
+    if (!confirmId) return;
     try {
-      await deleteFood(id);
+      await deleteFood(confirmId);
       toast.success('Food deleted');
     } catch {
       toast.error('Failed to delete food');
+    } finally {
+      setConfirmId(null);
     }
   }
 
@@ -193,7 +207,7 @@ export function TrainerFoodsPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => void handleDelete(food._id)}
+                    onClick={() => setConfirmId(food._id)}
                     aria-label={`Delete ${food.name}`}
                     className="shrink-0 size-7 text-foreground/25 hover:text-destructive hover:bg-destructive/10"
                   >
@@ -319,6 +333,21 @@ export function TrainerFoodsPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={confirmId !== null} onOpenChange={(open) => { if (!open) setConfirmId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete food?</AlertDialogTitle>
+            <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void handleDeleteConfirm()} className="bg-destructive/10 text-destructive hover:bg-destructive/20">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </LazyMotion>
   );
 }

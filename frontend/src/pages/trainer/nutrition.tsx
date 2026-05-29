@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LazyMotion, domAnimation, m, useReducedMotion } from 'framer-motion';
 import { Plus, Trash2, Apple } from 'lucide-react';
@@ -8,6 +8,16 @@ import { PageHeader } from '@/components/shared/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const ACCENT_BORDERS = [
   'border-t-emerald-400/50',
@@ -35,17 +45,21 @@ function hashIndex(s: string, mod: number): number {
 export function TrainerNutritionPage() {
   const { templates, fetchTemplates, deleteTemplate, isLoading } = useNutritionStore();
   const shouldReduce = useReducedMotion();
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     void fetchTemplates();
   }, [fetchTemplates]);
 
-  async function handleDelete(id: string) {
+  async function handleDeleteConfirm() {
+    if (!confirmId) return;
     try {
-      await deleteTemplate(id);
+      await deleteTemplate(confirmId);
       toast.success('Template deleted');
     } catch {
       toast.error('Failed to delete template');
+    } finally {
+      setConfirmId(null);
     }
   }
 
@@ -147,7 +161,7 @@ export function TrainerNutritionPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => void handleDelete(template._id)}
+                      onClick={() => setConfirmId(template._id)}
                       className="absolute right-2 top-2 size-8 text-foreground/25 hover:bg-white/[.05] hover:text-red-400"
                       aria-label="Delete"
                     >
@@ -160,6 +174,20 @@ export function TrainerNutritionPage() {
           )}
         </div>
       </div>
+      <AlertDialog open={confirmId !== null} onOpenChange={(open) => { if (!open) setConfirmId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete template?</AlertDialogTitle>
+            <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void handleDeleteConfirm()} className="bg-destructive/10 text-destructive hover:bg-destructive/20">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </LazyMotion>
   );
 }
