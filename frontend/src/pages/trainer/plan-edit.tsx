@@ -57,10 +57,10 @@ export function TrainerPlanEditPage() {
         restSeconds: ex.restSeconds,
       })),
     }));
-    // The backend PATCH endpoint accepts PlanDayExerciseDto shape for exercises, which differs
-    // from the response type (Exercise). Single assertion is required here since the DTO
-    // and API response Exercise types diverge at the `sets` field (number vs array).
-    await updatePlan(id, { name: data.name, description: data.description, days: (days as unknown) as PlanTemplate['days'] });
+    // PlanDayExerciseDto (sets: number) vs Exercise (sets: Array) mismatch — the API client
+    // and store types reflect the GET response shape, but PATCH sends DTO format. Runtime is correct.
+    // @ts-expect-error: exercises.sets is a number (DTO) not an array (response type)
+    await updatePlan(id, { name: data.name, description: data.description, days });
     toast.success('Plan updated');
     void navigate('/trainer/plans');
   }
