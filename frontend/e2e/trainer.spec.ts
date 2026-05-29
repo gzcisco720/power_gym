@@ -36,14 +36,139 @@ test.describe('Trainer domain', () => {
     await expect(sharedPage.getByText('member@test.com')).toBeVisible({ timeout: 8000 });
   });
 
-  test('plans list: create plan → appears in list', async () => {
+  // ── Sprint 4 Stage 1: Plans (golden path) ─────────────────────────────────
+
+  test('plans golden: New → fill name + add day + exercise → save → plan visible in list', async () => {
     await sharedPage.goto('/trainer/plans');
+    await sharedPage.waitForSelector('nav', { timeout: 8000 });
+
+    // Click "New Template" link
+    await sharedPage.getByRole('link', { name: /new template/i }).first().click();
+    await sharedPage.waitForURL('**/trainer/plans/new', { timeout: 8000 });
+
     const planName = `E2E Plan ${Date.now()}`;
-    await sharedPage.getByRole('button', { name: /new plan/i }).click();
-    await sharedPage.fill('input[name="name"]', planName);
-    await sharedPage.getByRole('button', { name: /create/i }).click();
-    await expect(sharedPage.getByText(planName)).toBeVisible({ timeout: 5000 });
+
+    // Fill plan name
+    const nameInput = sharedPage.getByRole('textbox', { name: /plan name/i });
+    await nameInput.fill(planName);
+
+    // Add a day — the empty state card has an "Add Day" button
+    const addDayBtn = sharedPage.getByRole('button', { name: /add day/i }).first();
+    await addDayBtn.waitFor({ timeout: 5000 });
+    await addDayBtn.click();
+
+    // Add an exercise on the new day
+    const addExerciseBtn = sharedPage.getByText('+ Add Exercise');
+    await addExerciseBtn.waitFor({ timeout: 5000 });
+    await addExerciseBtn.click();
+
+    // Fill exercise name
+    const exerciseInput = sharedPage.getByRole('textbox', { name: /exercise name/i }).first();
+    await exerciseInput.fill('Squat');
+
+    // Save
+    await sharedPage.getByRole('button', { name: /save plan/i }).click();
+
+    // Should redirect to /trainer/plans
+    await sharedPage.waitForURL('**/trainer/plans', { timeout: 10000 });
+
+    // Plan should be visible in list
+    await expect(sharedPage.getByText(planName)).toBeVisible({ timeout: 8000 });
   });
+
+  test('plans edit + dirty: change name, Save enabled only after edit, save → updated name visible', async () => {
+    await sharedPage.goto('/trainer/plans');
+    await sharedPage.waitForSelector('nav', { timeout: 8000 });
+
+    // Click the first edit link
+    const editLink = sharedPage.getByRole('link', { name: /edit/i }).first();
+    await editLink.click();
+    await sharedPage.waitForURL('**/trainer/plans/**/edit', { timeout: 8000 });
+
+    // Save button should be disabled initially (no dirty)
+    const saveBtn = sharedPage.getByRole('button', { name: /save plan/i });
+    await expect(saveBtn).toBeDisabled({ timeout: 5000 });
+
+    // Edit the name
+    const nameInput = sharedPage.getByRole('textbox', { name: /plan name/i });
+    const originalName = await nameInput.inputValue();
+    const updatedName = `Updated ${Date.now()}`;
+    await nameInput.fill(updatedName);
+
+    // Save should now be enabled
+    await expect(saveBtn).toBeEnabled({ timeout: 3000 });
+
+    // Save
+    await saveBtn.click();
+    await sharedPage.waitForURL('**/trainer/plans', { timeout: 10000 });
+
+    // Updated name should be visible
+    await expect(sharedPage.getByText(updatedName)).toBeVisible({ timeout: 8000 });
+
+    // Suppress unused var
+    void originalName;
+  });
+
+  // ── Sprint 4 Stage 1: Foods ───────────────────────────────────────────────
+
+  test('foods: create a food → appears in list with macro pills visible', async () => {
+    await sharedPage.goto('/trainer/foods');
+    const foodName = `E2E Food ${Date.now()}`;
+
+    await sharedPage.getByRole('button', { name: /new food/i }).first().click();
+
+    // Wait for dialog
+    await sharedPage.getByRole('dialog').waitFor({ timeout: 5000 });
+
+    await sharedPage.getByLabel(/^name/i).fill(foodName);
+
+    // Fill macros by label
+    const dialog = sharedPage.getByRole('dialog');
+    await dialog.getByLabel(/calor/i).fill('165');
+    await dialog.getByLabel(/protein/i).fill('31');
+    await dialog.getByLabel(/carbs/i).fill('0');
+    await dialog.getByLabel(/^fat/i).fill('3.6');
+
+    await sharedPage.getByRole('button', { name: /^create$/i }).click();
+
+    // Food appears in list
+    await expect(sharedPage.getByText(foodName)).toBeVisible({ timeout: 5000 });
+
+    // Macro pills visible (protein 'P' pill shows "31P" or similar)
+    await expect(sharedPage.getByText(/31P/)).toBeVisible({ timeout: 3000 });
+  });
+
+  // ── Sprint 4 Stage 1: Members search ─────────────────────────────────────
+
+  test('members search: type query → list narrows; clearing restores full list', async () => {
+    await sharedPage.goto('/trainer/members');
+    await sharedPage.waitForSelector('nav', { timeout: 8000 });
+    await sharedPage.waitForTimeout(500); // let members load
+
+    // Get visible member names before search
+    const allCards = sharedPage.locator('div.space-y-1\\.5 > div');
+    const initialCount = await allCards.count();
+    expect(initialCount).toBeGreaterThan(0);
+
+    // Type a partial match — use "member" which should match member@test.com
+    const searchInput = sharedPage.getByPlaceholder(/search members/i);
+    await searchInput.fill('member');
+    await sharedPage.waitForTimeout(400); // wait for 300ms debounce
+
+    // Should show only matching members
+    const filteredCount = await allCards.count();
+    expect(filteredCount).toBeLessThanOrEqual(initialCount);
+
+    // Clear search by clicking X
+    await sharedPage.getByRole('button', { name: /clear search/i }).click();
+    await sharedPage.waitForTimeout(400);
+
+    // Full list should be restored
+    const restoredCount = await allCards.count();
+    expect(restoredCount).toEqual(initialCount);
+  });
+
+  // ── Legacy tests (body tests, health, session logging) ────────────────────
 
   test('assign training plan: trainer assigns plan to member → active plan shown', async () => {
     const mid = await getFirstMemberId();
@@ -57,13 +182,13 @@ test.describe('Trainer domain', () => {
     await select.waitFor({ timeout: 5000 });
     const options = await select.locator('option').all();
     if (options.length <= 1) {
-      // No plans yet — create one first
+      // No plans yet — create one first via new flow
       await sharedPage.getByRole('button', { name: /cancel/i }).click();
-      await sharedPage.goto('/trainer/plans');
+      await sharedPage.goto('/trainer/plans/new');
       const planName = `Auto Plan ${Date.now()}`;
-      await sharedPage.getByRole('button', { name: /new plan/i }).click();
-      await sharedPage.fill('input[name="name"]', planName);
-      await sharedPage.getByRole('button', { name: /create/i }).click();
+      await sharedPage.getByRole('textbox', { name: /plan name/i }).fill(planName);
+      await sharedPage.getByRole('button', { name: /save plan/i }).click();
+      await sharedPage.waitForURL('**/trainer/plans', { timeout: 8000 });
       await expect(sharedPage.getByText(planName)).toBeVisible({ timeout: 5000 });
 
       // Back to member plan
@@ -123,25 +248,15 @@ test.describe('Trainer domain', () => {
     await expect(sharedPage.getByText(/body fat/i)).toBeVisible({ timeout: 8000 });
   });
 
-  test('create food: appears in foods list', async () => {
-    await sharedPage.goto('/trainer/foods');
-    const foodName = `E2E Food ${Date.now()}`;
-    await sharedPage.getByRole('button', { name: /new food/i }).click();
-    await sharedPage.fill('input[name="name"]', foodName);
-    await sharedPage.fill('input[name="kcal"]', '165');
-    await sharedPage.fill('input[name="protein"]', '31');
-    await sharedPage.fill('input[name="carbs"]', '0');
-    await sharedPage.fill('input[name="fat"]', '3.6');
-    await sharedPage.getByRole('button', { name: /create/i }).click();
-    await expect(sharedPage.getByText(foodName)).toBeVisible({ timeout: 5000 });
-  });
-
   test('create nutrition template: appears in list', async () => {
     await sharedPage.goto('/trainer/nutrition');
     const templateName = `E2E Template ${Date.now()}`;
-    await sharedPage.getByRole('button', { name: /new template/i }).click();
-    await sharedPage.fill('input[name="name"]', templateName);
-    await sharedPage.getByRole('button', { name: /create/i }).click();
+    await sharedPage.getByRole('link', { name: /new template/i }).first().click();
+    await sharedPage.waitForURL('**/trainer/nutrition/new', { timeout: 8000 });
+
+    await sharedPage.getByRole('textbox').first().fill(templateName);
+    await sharedPage.getByRole('button', { name: /save plan/i }).click();
+    await sharedPage.waitForURL('**/trainer/nutrition', { timeout: 8000 });
     await expect(sharedPage.getByText(templateName)).toBeVisible({ timeout: 5000 });
   });
 
@@ -160,12 +275,12 @@ test.describe('Trainer domain', () => {
   test('assign plan then reassign: plan B is active not plan A', async () => {
     const mid = await getFirstMemberId();
 
-    // Ensure we have two plans — create a second one
-    await sharedPage.goto('/trainer/plans');
+    // Create plan B via new flow
+    await sharedPage.goto('/trainer/plans/new');
     const planNameB = `Plan B ${Date.now()}`;
-    await sharedPage.getByRole('button', { name: /new plan/i }).click();
-    await sharedPage.fill('input[name="name"]', planNameB);
-    await sharedPage.getByRole('button', { name: /create/i }).click();
+    await sharedPage.getByRole('textbox', { name: /plan name/i }).fill(planNameB);
+    await sharedPage.getByRole('button', { name: /save plan/i }).click();
+    await sharedPage.waitForURL('**/trainer/plans', { timeout: 8000 });
     await expect(sharedPage.getByText(planNameB)).toBeVisible({ timeout: 5000 });
 
     // Go to member plan, assign Plan B

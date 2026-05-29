@@ -223,7 +223,7 @@ Every v2 dashboard page (`frontend/src/pages/`) looks and behaves like its v1 co
 
 **TDD sequence**: Red unit -> Green pages -> extend `e2e/owner.spec.ts` -> design-reviewer.
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 3 Checkpoint
 - [x] `frontend/src/pages/owner/equipment.tsx` — PageHeader + Add dialog + Delete confirm dialog + condition badges + skeleton + EmptyState
@@ -267,7 +267,24 @@ Every v2 dashboard page (`frontend/src/pages/`) looks and behaves like its v1 co
 
 **TDD sequence**: Red unit -> Green pages -> extend `e2e/trainer.spec.ts` -> design-reviewer. Wire new routes in `router/index.tsx` (replace `TrainerPlansDetailStub`/`Placeholder`).
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 1 Checkpoint
+- [x] `frontend/src/components/training/plan-template-form.tsx` — PlanTemplateForm v2 (day tabs, exercise rows, dirty detection, discard dialog)
+- [x] `frontend/src/pages/trainer/plans.tsx` — list with grid cards, day chips, day/exercise counts, delete
+- [x] `frontend/src/pages/trainer/plan-new.tsx` — new plan page using PlanTemplateForm
+- [x] `frontend/src/pages/trainer/plan-detail.tsx` — plan detail view
+- [x] `frontend/src/pages/trainer/plan-edit.tsx` — edit plan page using PlanTemplateForm
+- [x] `frontend/src/components/nutrition/nutrition-template-form.tsx` — NutritionTemplateForm v2
+- [x] `frontend/src/pages/trainer/nutrition.tsx` — list with grid cards, delete
+- [x] `frontend/src/pages/trainer/nutrition-new.tsx` — new nutrition template page
+- [x] `frontend/src/pages/trainer/nutrition-edit.tsx` — edit nutrition template page
+- [x] `frontend/src/pages/trainer/foods.tsx` — list with MacroPills, create dialog, delete
+- [x] `frontend/src/pages/trainer/members.tsx` — PageHeader, dense cards, debounced search (300ms), skeleton, EmptyState
+- [x] `frontend/src/router/index.tsx` — wired plan new/detail/edit + nutrition new/edit routes
+- [x] `frontend/src/pages/trainer/stubs.tsx` — removed TrainerPlansDetailStub
+- [x] Unit tests: 6/6 Sprint Contract tests passing (168 total)
+- [x] E2E: 4 Sprint Contract scenarios passing
 
 ---
 

@@ -37,7 +37,12 @@ import { TrainerMemberBodyTestsPage } from '@/pages/trainer/member-body-tests';
 import { TrainerMemberHealthPage } from '@/pages/trainer/member-health';
 import { TrainerMemberNutritionPage } from '@/pages/trainer/member-nutrition';
 import { TrainerPlansPage } from '@/pages/trainer/plans';
+import { TrainerPlanNewPage } from '@/pages/trainer/plan-new';
+import { TrainerPlanDetailPage } from '@/pages/trainer/plan-detail';
+import { TrainerPlanEditPage } from '@/pages/trainer/plan-edit';
 import { TrainerNutritionPage } from '@/pages/trainer/nutrition';
+import { TrainerNutritionNewPage } from '@/pages/trainer/nutrition-new';
+import { TrainerNutritionEditPage } from '@/pages/trainer/nutrition-edit';
 import { TrainerFoodsPage } from '@/pages/trainer/foods';
 import {
   TrainerCalendarStub,
@@ -50,7 +55,6 @@ import {
   TrainerMemberBillingStub,
   TrainerMemberProgressStub,
   TrainerMemberPhotosStub,
-  TrainerPlansDetailStub,
 } from '@/pages/trainer/stubs';
 
 // Owner pages
@@ -147,13 +151,13 @@ export const router = createBrowserRouter([
               { path: '/trainer/members/:id/photos', element: <TrainerMemberPhotosStub /> },
               { path: '/trainer/members/:id/*', element: <Placeholder title="Member" /> },
               { path: '/trainer/plans', element: <TrainerPlansPage /> },
-              { path: '/trainer/plans/new', element: <TrainerPlansDetailStub /> },
-              { path: '/trainer/plans/:id', element: <TrainerPlansDetailStub /> },
-              { path: '/trainer/plans/:id/edit', element: <TrainerPlansDetailStub /> },
+              { path: '/trainer/plans/new', element: <TrainerPlanNewPage /> },
+              { path: '/trainer/plans/:id', element: <TrainerPlanDetailPage /> },
+              { path: '/trainer/plans/:id/edit', element: <TrainerPlanEditPage /> },
               { path: '/trainer/nutrition', element: <TrainerNutritionPage /> },
-              { path: '/trainer/nutrition/*', element: <Placeholder title="Nutrition" /> },
+              { path: '/trainer/nutrition/new', element: <TrainerNutritionNewPage /> },
+              { path: '/trainer/nutrition/:id/edit', element: <TrainerNutritionEditPage /> },
               { path: '/trainer/foods', element: <TrainerFoodsPage /> },
-              { path: '/trainer/foods/*', element: <Placeholder title="Foods" /> },
               { path: '/trainer/calendar', element: <TrainerCalendarStub /> },
               { path: '/trainer/billing', element: <TrainerBillingStub /> },
               { path: '/trainer/invites', element: <TrainerInvitesStub /> },

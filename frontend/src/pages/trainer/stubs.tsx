@@ -16,4 +16,3 @@ export function TrainerMemberCheckInsStub() { return <Stub title="Member Check-i
 export function TrainerMemberBillingStub() { return <Stub title="Member Billing" />; }
 export function TrainerMemberProgressStub() { return <Stub title="Member Progress" />; }
 export function TrainerMemberPhotosStub() { return <Stub title="Member Photos" />; }
-export function TrainerPlansDetailStub() { return <Stub title="Plan" />; }
