@@ -36,6 +36,10 @@ export class BillingService {
     return this.serviceTypeRepo.findActive();
   }
 
+  async deleteServiceType(id: string): Promise<void> {
+    await this.serviceTypeRepo.delete(id);
+  }
+
   async getMemberBilling(
     caller: AuthUser,
     memberId: string,

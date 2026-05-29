@@ -60,6 +60,7 @@ function makeService(
     create: jest.fn().mockResolvedValue(makeServiceType()),
     findActive: jest.fn().mockResolvedValue([]),
     findByIds: jest.fn().mockResolvedValue([]),
+    delete: jest.fn().mockResolvedValue(undefined),
   };
   const scheduledSessionRepo = overrides.scheduledSessionRepo ?? {
     findForBilling: jest.fn().mockResolvedValue([]),
@@ -114,6 +115,18 @@ describe('BillingService > findActiveServiceTypes', () => {
 
     expect(serviceTypeRepo.findActive).toHaveBeenCalledTimes(1);
     expect(result).toBe(types);
+  });
+});
+
+// ── deleteServiceType ─────────────────────────────────────────────────────────
+
+describe('BillingService > deleteServiceType', () => {
+  it('delegates to serviceTypeRepo.delete with the provided id', async () => {
+    const { service, serviceTypeRepo } = makeService();
+
+    await service.deleteServiceType('st1');
+
+    expect(serviceTypeRepo.delete).toHaveBeenCalledWith('st1');
   });
 });
 

@@ -41,6 +41,7 @@ function makeService(
     create: jest.fn().mockResolvedValue(makeEquipment()),
     findAll: jest.fn().mockResolvedValue([makeEquipment()]),
     findById: jest.fn().mockResolvedValue(makeEquipment()),
+    deleteById: jest.fn().mockResolvedValue(undefined),
   };
   const conditionReportRepo = overrides.conditionReportRepo ?? {
     create: jest.fn().mockResolvedValue(makeReport()),
@@ -114,6 +115,18 @@ describe('EquipmentService > create', () => {
     expect(equipmentRepo.create).toHaveBeenCalledWith(
       expect.objectContaining({ nextServiceDate: null }),
     );
+  });
+});
+
+// ── deleteEquipment ───────────────────────────────────────────────────────────
+
+describe('EquipmentService > deleteEquipment', () => {
+  it('delegates to equipmentRepo.deleteById', async () => {
+    const { service, equipmentRepo } = makeService();
+
+    await service.deleteEquipment('eq1');
+
+    expect(equipmentRepo.deleteById).toHaveBeenCalledWith('eq1');
   });
 });
 

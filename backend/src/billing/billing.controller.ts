@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -36,6 +37,14 @@ export class BillingController {
   async getActiveServiceTypes() {
     const serviceTypes = await this.billingService.findActiveServiceTypes();
     return { serviceTypes };
+  }
+
+  @Roles('owner')
+  @Delete('service-types/:id')
+  @HttpCode(HttpStatus.OK)
+  async deleteServiceType(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
+    await this.billingService.deleteServiceType(id.toString());
+    return { success: true };
   }
 
   @Roles('owner', 'trainer', 'member')

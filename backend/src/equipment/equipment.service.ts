@@ -53,4 +53,8 @@ export class EquipmentService {
   async listConditionReports(equipmentId: string): Promise<IConditionReport[]> {
     return this.conditionReportRepo.findByEquipmentId(equipmentId);
   }
+
+  async deleteEquipment(id: string): Promise<void> {
+    await this.equipmentRepo.deleteById(id);
+  }
 }

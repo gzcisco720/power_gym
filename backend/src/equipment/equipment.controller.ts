@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -29,6 +30,14 @@ export class EquipmentController {
   @HttpCode(HttpStatus.CREATED)
   create(@Body() dto: CreateEquipmentDto) {
     return this.equipmentService.create(dto);
+  }
+
+  @Roles('owner')
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  async deleteEquipment(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
+    await this.equipmentService.deleteEquipment(id.toString());
+    return { success: true };
   }
 
   @Roles('owner', 'trainer')

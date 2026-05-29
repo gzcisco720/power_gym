@@ -50,4 +50,8 @@ export class ServiceTypeRepository {
       _id: { $in: ids.map((id) => new Types.ObjectId(id)) },
     });
   }
+
+  async delete(id: string): Promise<void> {
+    await this.model.findByIdAndDelete(id);
+  }
 }
