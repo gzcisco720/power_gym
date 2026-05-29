@@ -29,9 +29,43 @@ function checkUsersSeeded(): boolean {
   }
 }
 
+function cleanupTestData(): void {
+  const scriptFile = join(tmpdir(), 'power-gym-cleanup.js');
+  writeFileSync(scriptFile, `
+    const db = db.getSiblingDB('power_gym_test');
+    // Find the test member
+    const member = db.users.findOne({ email: 'member@test.com' });
+    if (member) {
+      // Clean up E2E-created test data for the test member
+      db.getCollection('bodytests').deleteMany({ memberId: member._id });
+      db.getCollection('memberinjuries').deleteMany({ memberId: member._id });
+      db.getCollection('workoutsessions').deleteMany({ memberId: member._id });
+      db.getCollection('memberplans').deleteMany({ memberId: member._id });
+      db.getCollection('membernutritionplans').deleteMany({ memberId: member._id });
+      print('Cleaned up test data for member');
+    }
+    // Find the test trainer and clean up their plan templates
+    const trainer = db.users.findOne({ email: 'trainer@test.com' });
+    if (trainer) {
+      db.getCollection('plantemplates').deleteMany({ createdBy: trainer._id });
+      db.getCollection('nutritiontemplates').deleteMany({ createdBy: trainer._id });
+      db.getCollection('foods').deleteMany({ createdBy: trainer._id });
+      print('Cleaned up test data for trainer');
+    }
+  `);
+  try {
+    runMongosh(scriptFile);
+  } finally {
+    unlinkSync(scriptFile);
+  }
+}
+
 export default async function globalSetup() {
-  // Check if test users already exist directly in MongoDB (no API calls = no rate limiting)
-  if (checkUsersSeeded()) return;
+  // Always clean up test data from previous runs first
+  if (checkUsersSeeded()) {
+    cleanupTestData();
+    return;
+  }
 
   const passwordHash = await bcrypt.hash(PASSWORD, 10);
   const now = new Date().toISOString();

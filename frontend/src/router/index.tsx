@@ -7,6 +7,32 @@ import { ResetPasswordPage } from '@/pages/auth/reset-password';
 import { Placeholder } from './placeholder';
 import { DashboardLayout } from '@/components/shared/dashboard-layout';
 
+// Trainer pages
+import { TrainerMembersPage } from '@/pages/trainer/members';
+import { TrainerMemberHubPage } from '@/pages/trainer/member-hub';
+import { TrainerMemberPlanPage } from '@/pages/trainer/member-plan';
+import { TrainerMemberLogNewPage } from '@/pages/trainer/member-log-new';
+import { TrainerMemberLogSessionPage } from '@/pages/trainer/member-log-session';
+import { TrainerMemberBodyTestsPage } from '@/pages/trainer/member-body-tests';
+import { TrainerMemberHealthPage } from '@/pages/trainer/member-health';
+import { TrainerMemberNutritionPage } from '@/pages/trainer/member-nutrition';
+import { TrainerPlansPage } from '@/pages/trainer/plans';
+import { TrainerNutritionPage } from '@/pages/trainer/nutrition';
+import { TrainerFoodsPage } from '@/pages/trainer/foods';
+import {
+  TrainerCalendarStub,
+  TrainerBillingStub,
+  TrainerInvitesStub,
+  TrainerSettingsStub,
+  TrainerMyTrainingStub,
+  TrainerMyNutritionStub,
+  TrainerMemberCheckInsStub,
+  TrainerMemberBillingStub,
+  TrainerMemberProgressStub,
+  TrainerMemberPhotosStub,
+  TrainerPlansDetailStub,
+} from '@/pages/trainer/stubs';
+
 // Owner pages
 import { OwnerDashboardPage } from '@/pages/owner/dashboard';
 import { OwnerMembersPage } from '@/pages/owner/members';
@@ -87,6 +113,35 @@ export const router = createBrowserRouter([
             element: <DashboardLayout />,
             children: [
               { path: '/trainer', element: <Navigate to="/trainer/members" replace /> },
+              { path: '/trainer/members', element: <TrainerMembersPage /> },
+              { path: '/trainer/members/:id', element: <TrainerMemberHubPage /> },
+              { path: '/trainer/members/:id/plan', element: <TrainerMemberPlanPage /> },
+              { path: '/trainer/members/:id/log/new', element: <TrainerMemberLogNewPage /> },
+              { path: '/trainer/members/:id/log/:sessionId', element: <TrainerMemberLogSessionPage /> },
+              { path: '/trainer/members/:id/body-tests', element: <TrainerMemberBodyTestsPage /> },
+              { path: '/trainer/members/:id/health', element: <TrainerMemberHealthPage /> },
+              { path: '/trainer/members/:id/nutrition', element: <TrainerMemberNutritionPage /> },
+              { path: '/trainer/members/:id/check-ins', element: <TrainerMemberCheckInsStub /> },
+              { path: '/trainer/members/:id/billing', element: <TrainerMemberBillingStub /> },
+              { path: '/trainer/members/:id/progress', element: <TrainerMemberProgressStub /> },
+              { path: '/trainer/members/:id/photos', element: <TrainerMemberPhotosStub /> },
+              { path: '/trainer/members/:id/*', element: <Placeholder title="Member" /> },
+              { path: '/trainer/plans', element: <TrainerPlansPage /> },
+              { path: '/trainer/plans/new', element: <TrainerPlansDetailStub /> },
+              { path: '/trainer/plans/:id', element: <TrainerPlansDetailStub /> },
+              { path: '/trainer/plans/:id/edit', element: <TrainerPlansDetailStub /> },
+              { path: '/trainer/nutrition', element: <TrainerNutritionPage /> },
+              { path: '/trainer/nutrition/*', element: <Placeholder title="Nutrition" /> },
+              { path: '/trainer/foods', element: <TrainerFoodsPage /> },
+              { path: '/trainer/foods/*', element: <Placeholder title="Foods" /> },
+              { path: '/trainer/calendar', element: <TrainerCalendarStub /> },
+              { path: '/trainer/billing', element: <TrainerBillingStub /> },
+              { path: '/trainer/invites', element: <TrainerInvitesStub /> },
+              { path: '/trainer/settings', element: <TrainerSettingsStub /> },
+              { path: '/trainer/my-training', element: <TrainerMyTrainingStub /> },
+              { path: '/trainer/my-training/*', element: <TrainerMyTrainingStub /> },
+              { path: '/trainer/my-nutrition', element: <TrainerMyNutritionStub /> },
+              { path: '/trainer/my-nutrition/*', element: <TrainerMyNutritionStub /> },
               { path: '/trainer/*', element: <Placeholder title="Trainer" /> },
             ],
           },

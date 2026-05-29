@@ -9,6 +9,7 @@ interface UsersState {
   isLoading: boolean;
   error: string | null;
   fetchOwnerMembers: (trainerId?: string) => Promise<void>;
+  fetchMembers: (trainerId?: string) => Promise<void>;
   fetchTrainers: () => Promise<void>;
   fetchOwnerInvites: () => Promise<void>;
   createInvite: (data: { recipientEmail: string; role: string; trainerId?: string }) => Promise<string>;
@@ -29,6 +30,16 @@ export const useUsersStore = create<UsersState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const members = await usersApi.fetchOwnerMembers(trainerId);
+      set({ members, isLoading: false });
+    } catch (e) {
+      set({ error: String(e), isLoading: false });
+    }
+  },
+
+  fetchMembers: async (trainerId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const members = await usersApi.fetchMembers(trainerId);
       set({ members, isLoading: false });
     } catch (e) {
       set({ error: String(e), isLoading: false });
