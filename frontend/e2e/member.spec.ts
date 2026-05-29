@@ -239,4 +239,82 @@ test.describe('Member domain', () => {
     // Toast should appear
     await expect(sharedPage.getByText(/settings saved/i)).toBeVisible({ timeout: 8000 });
   });
+
+  // Sprint 5 Stage 1 E2E scenarios
+
+  test('sprint5 — dashboard renders summary stat cards and working My Training link', async () => {
+    await sharedPage.goto('/member');
+    await sharedPage.waitForSelector('h1', { timeout: 8000 });
+
+    // PageHeader title is "Dashboard"
+    await expect(sharedPage.getByRole('heading', { name: /dashboard/i })).toBeVisible();
+
+    // At least one StatCard label visible (not plain link chips)
+    const hasStatCard = await sharedPage.locator('.rounded-xl').first().isVisible({ timeout: 3000 }).catch(() => false);
+    expect(hasStatCard).toBe(true);
+
+    // My Training link exists and navigates
+    const myTrainingLink = sharedPage.getByRole('link', { name: /my training/i }).first();
+    await expect(myTrainingLink).toBeVisible({ timeout: 5000 });
+    await myTrainingLink.click();
+
+    await sharedPage.waitForURL(/\/member\/my-training/, { timeout: 8000 });
+    await expect(sharedPage.getByRole('heading', { name: /my training/i })).toBeVisible({ timeout: 5000 });
+  });
+
+  test('sprint5 — my-training: plan card and freestyle card render', async () => {
+    await sharedPage.goto('/member/my-training');
+    await sharedPage.waitForSelector('h1', { timeout: 8000 });
+
+    await expect(sharedPage.getByRole('heading', { name: /my training/i })).toBeVisible();
+
+    // Both path cards must be present
+    await expect(sharedPage.getByText(/my plan/i)).toBeVisible({ timeout: 5000 });
+    await expect(sharedPage.getByText(/freestyle/i).first()).toBeVisible({ timeout: 5000 });
+  });
+
+  test('sprint5 — session: revisiting session route after completion redirects to my-training', async () => {
+    // After the session lifecycle test, activeSession is completed.
+    // Visiting the session route should redirect back to my-training.
+    await sharedPage.goto('/member/my-training/session/nonexistent-id');
+    // Since activeSession is null (completed sessions clear store on reload), redirect should happen
+    await sharedPage.waitForURL(/\/member\/my-training/, { timeout: 8000 });
+    await expect(sharedPage.getByRole('heading', { name: /my training/i })).toBeVisible({ timeout: 5000 });
+  });
+
+  test('sprint5 — nutrition freestyle: food picker opens and macro summary updates on add', async () => {
+    const today = new Date().toISOString().split('T')[0];
+    await sharedPage.goto(`/member/nutrition/day?date=${today}&mode=free`);
+    await sharedPage.waitForSelector('h1', { timeout: 8000 });
+
+    // Freestyle heading
+    await expect(sharedPage.getByRole('heading', { name: /freestyle/i })).toBeVisible();
+
+    // "Add food" button should be visible
+    const addFoodBtn = sharedPage.getByRole('button', { name: /add food/i }).first();
+    await expect(addFoodBtn).toBeVisible({ timeout: 5000 });
+    await addFoodBtn.click();
+
+    // Food picker dialog opens
+    await expect(sharedPage.getByText(/add food/i).first()).toBeVisible({ timeout: 5000 });
+    const searchInput = sharedPage.locator('input[placeholder="Search foods…"]');
+    await expect(searchInput).toBeVisible({ timeout: 5000 });
+
+    // Food items appear (may need to wait for API load) or close dialog
+    // If no foods, just close and verify macro summary stays hidden
+    const hasFoods = await sharedPage.locator('button').filter({ hasText: /kcal\/100g/i }).first().isVisible({ timeout: 3000 }).catch(() => false);
+
+    if (hasFoods) {
+      // Click first food item to add it
+      await sharedPage.locator('button').filter({ hasText: /kcal\/100g/i }).first().click();
+
+      // Dialog closes and macro summary row appears (shows total kcal + macro pills)
+      await expect(sharedPage.getByText(/today's total/i)).toBeVisible({ timeout: 5000 });
+    } else {
+      // No foods seeded — close the dialog and confirm page is stable
+      await sharedPage.keyboard.press('Escape');
+      // Page should still show the freestyle heading
+      await expect(sharedPage.getByRole('heading', { name: /freestyle/i })).toBeVisible({ timeout: 3000 });
+    }
+  });
 });

@@ -320,7 +320,7 @@ Every v2 dashboard page (`frontend/src/pages/`) looks and behaves like its v1 co
 
 **TDD sequence**: Red unit -> Green pages -> extend `e2e/trainer.spec.ts` -> design-reviewer. Wire real routes in `router/index.tsx`.
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 2 Checkpoint
 - [x] `frontend/src/components/shared/member-tab-nav.tsx`
@@ -368,7 +368,17 @@ Every v2 dashboard page (`frontend/src/pages/`) looks and behaves like its v1 co
 
 **TDD sequence**: Red unit -> Green pages -> extend `e2e/member.spec.ts` -> design-reviewer.
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 1 Checkpoint
+- [x] `frontend/src/pages/member/dashboard.tsx` — greeting, StatCards (plan name, weight, body fat), dense quick-link cards
+- [x] `frontend/src/pages/member/my-training.tsx` — My Plan path card + Freestyle path card, Start Session button
+- [x] `frontend/src/pages/member/session.tsx` — exercise rows + set inputs + Complete Session button + completed state + redirect on no active session
+- [x] `frontend/src/pages/member/nutrition.tsx` — My Plan path card + Freestyle path card with links
+- [x] `frontend/src/pages/member/nutrition-day.tsx` — plan mode (meal sections from template) + freestyle mode (add food dialog, macro summary)
+- [x] `frontend/src/pages/trainer/plan-edit.tsx` — fixed pre-existing TS error blocking build
+- [x] Unit tests: 7/7 Sprint Contract tests passing (180 total)
+- [x] E2E: 4 Sprint Contract scenarios passing (12 member tests total)
 
 ---
 

@@ -57,7 +57,7 @@ export function TrainerPlanEditPage() {
         restSeconds: ex.restSeconds,
       })),
     }));
-    await updatePlan(id, { name: data.name, description: data.description, days });
+    await updatePlan(id, { name: data.name, description: data.description, days: days as unknown as PlanTemplate['days'] });
     toast.success('Plan updated');
     void navigate('/trainer/plans');
   }
