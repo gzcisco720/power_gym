@@ -142,23 +142,15 @@ export class AuthService {
   async refresh(
     userId: string,
     oldRefreshToken: string,
-  ): Promise<{ access_token: string; refresh_token: string }> {
+  ): Promise<AuthResult> {
     // Token validity was already confirmed by RefreshTokenStrategy — no second DB lookup needed.
     const user = await this.userRepo.findById(userId);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
-    // Rotate: revoke the consumed token and issue a fresh one.
+    // Rotate: revoke the consumed token and issue fresh tokens.
     await this.refreshTokenRepo.revokeByToken(oldRefreshToken);
-    const access_token = this.signAccessToken(user);
-    const refresh_token = this.signRefreshToken(user);
-    const expiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL_MS);
-    await this.refreshTokenRepo.create(
-      user._id.toString(),
-      refresh_token,
-      expiresAt,
-    );
-    return { access_token, refresh_token };
+    return this.issueTokens(user);
   }
 
   async logout(refreshToken: string): Promise<{ success: boolean }> {

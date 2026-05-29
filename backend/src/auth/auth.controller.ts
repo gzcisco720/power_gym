@@ -9,8 +9,8 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
-import { Request, Response } from 'express';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import type { Request, Response } from 'express';
 import { Public } from '../common/decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RefreshTokenGuard } from '../common/guards/refresh-token.guard';
@@ -61,7 +61,7 @@ export class AuthController {
   }
 
   @Public()
-  @Throttle(AUTH_THROTTLE)
+  @SkipThrottle()
   @UseGuards(RefreshTokenGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)

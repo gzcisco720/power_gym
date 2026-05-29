@@ -5,6 +5,7 @@ import { RegisterPage } from '@/pages/auth/register';
 import { ForgotPasswordPage } from '@/pages/auth/forgot-password';
 import { ResetPasswordPage } from '@/pages/auth/reset-password';
 import { Placeholder } from './placeholder';
+import { DashboardLayout } from '@/components/shared/dashboard-layout';
 
 export const router = createBrowserRouter([
   // Public routes
@@ -20,8 +21,13 @@ export const router = createBrowserRouter([
       {
         element: <RequireRole roles={['owner']} />,
         children: [
-          { path: '/owner', element: <Placeholder title="Owner Dashboard" /> },
-          { path: '/owner/*', element: <Placeholder title="Owner" /> },
+          {
+            element: <DashboardLayout />,
+            children: [
+              { path: '/owner', element: <Placeholder title="Owner Dashboard" /> },
+              { path: '/owner/*', element: <Placeholder title="Owner" /> },
+            ],
+          },
         ],
       },
     ],
@@ -34,8 +40,13 @@ export const router = createBrowserRouter([
       {
         element: <RequireRole roles={['trainer']} />,
         children: [
-          { path: '/trainer', element: <Navigate to="/trainer/members" replace /> },
-          { path: '/trainer/*', element: <Placeholder title="Trainer" /> },
+          {
+            element: <DashboardLayout />,
+            children: [
+              { path: '/trainer', element: <Navigate to="/trainer/members" replace /> },
+              { path: '/trainer/*', element: <Placeholder title="Trainer" /> },
+            ],
+          },
         ],
       },
     ],
@@ -48,8 +59,13 @@ export const router = createBrowserRouter([
       {
         element: <RequireRole roles={['member']} />,
         children: [
-          { path: '/member', element: <Placeholder title="Member Dashboard" /> },
-          { path: '/member/*', element: <Placeholder title="Member" /> },
+          {
+            element: <DashboardLayout />,
+            children: [
+              { path: '/member', element: <Placeholder title="Member Dashboard" /> },
+              { path: '/member/*', element: <Placeholder title="Member" /> },
+            ],
+          },
         ],
       },
     ],
