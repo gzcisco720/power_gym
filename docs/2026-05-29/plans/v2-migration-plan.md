@@ -180,7 +180,7 @@ Every v2 dashboard page (`frontend/src/pages/`) looks and behaves like its v1 co
 
 **TDD sequence**: Red unit -> Green pages -> extend `e2e/owner.spec.ts` golden + one edge case -> design-reviewer.
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 2 Checkpoint
 - [x] `frontend/src/pages/owner/dashboard.tsx` — expanded stat cards + sections
@@ -223,7 +223,17 @@ Every v2 dashboard page (`frontend/src/pages/`) looks and behaves like its v1 co
 
 **TDD sequence**: Red unit -> Green pages -> extend `e2e/owner.spec.ts` -> design-reviewer.
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] `frontend/src/pages/owner/equipment.tsx` — PageHeader + Add dialog + Delete confirm dialog + condition badges + skeleton + EmptyState
+- [x] `frontend/src/pages/owner/services.tsx` — PageHeader + Add dialog + Delete confirm dialog + stats strip + EmptyState
+- [x] `frontend/src/pages/owner/billing.tsx` — PageHeader + member selector panel + billing lines table
+- [x] `frontend/src/pages/owner/calendar.tsx` — PageHeader + 7-day week grid + Create session dialog + inline Delete
+- [x] `frontend/src/pages/owner/settings.tsx` — PageHeader + profile form + dirty detection + sticky save bar
+- [x] `frontend/src/pages/owner/stubs.tsx` (OwnerMyTrainingStub, OwnerMyNutritionStub, OwnerMyBodyTestsStub) — PageHeader + EmptyState
+- [x] Unit tests: 5/5 Sprint Contract tests passing (162 total)
+- [x] E2E tests written in `frontend/e2e/owner.spec.ts` (lines 73–162)
 
 ---
 

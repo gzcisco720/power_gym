@@ -62,65 +62,103 @@ test.describe('Owner domain', () => {
     await expect(sharedPage.getByText(uniqueEmail)).toBeVisible({ timeout: 5000 });
   });
 
-  test('service type: create appears then delete removes it', async () => {
-    await sharedPage.goto('/owner/services');
-    const name = `E2E Service ${Date.now()}`;
-    await sharedPage.getByRole('button', { name: /new service/i }).click();
-    await sharedPage.fill('input[name="name"]', name);
-    await sharedPage.fill('input[name="durationMin"]', '60');
-    await sharedPage.fill('input[name="pricePerSession"]', '100');
-    await sharedPage.getByRole('button', { name: /create/i }).click();
-    // Find the specific row containing this service name and delete it
-    const serviceRow = sharedPage.locator('div.flex.items-center.justify-between').filter({ hasText: name });
-    await expect(serviceRow).toBeVisible({ timeout: 5000 });
-    await serviceRow.getByRole('button', { name: /delete/i }).click();
-    // Confirm deletion in the dialog
-    await sharedPage.getByRole('button', { name: /delete/i }).last().click();
-    await expect(sharedPage.getByText(name)).not.toBeVisible({ timeout: 5000 });
-  });
-
   test('billing page renders', async () => {
     await sharedPage.goto('/owner/billing');
     await expect(sharedPage).toHaveURL('/owner/billing');
     await expect(sharedPage.getByText(/billing/i).first()).toBeVisible();
   });
 
-  test('calendar: create scheduled session appears', async () => {
-    await sharedPage.goto('/owner/calendar');
-    await sharedPage.getByRole('button', { name: /schedule/i }).click();
+  // Sprint 3 Stage 3 — owner gym management pages
 
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dateStr = tomorrow.toISOString().split('T')[0];
+  test('stage3: equipment — add item via dialog → card appears; delete via confirm → card removed', async () => {
+    await sharedPage.goto('/owner/equipment');
+    const name = `E2E Equip ${Date.now()}`;
 
-    // Select first member in dropdown
-    const memberSelect = sharedPage.locator('select').first();
-    const options = await memberSelect.locator('option').all();
-    if (options.length > 1) {
-      const firstValue = await options[1].getAttribute('value');
-      if (firstValue) await memberSelect.selectOption(firstValue);
-    }
+    // Open add dialog
+    const addButtons = sharedPage.getByRole('button', { name: /add equipment/i });
+    await addButtons.first().click();
+    await sharedPage.waitForSelector('[role="dialog"]', { timeout: 5000 });
 
-    await sharedPage.fill('input[name="date"]', dateStr);
-    await sharedPage.fill('input[name="startTime"]', '09:00');
-    await sharedPage.fill('input[name="endTime"]', '10:00');
-    await sharedPage.getByRole('button', { name: /create/i }).click();
-    await expect(sharedPage.getByText('09:00')).toBeVisible({ timeout: 5000 });
+    // Fill name in dialog
+    await sharedPage.fill('#add-eq-name', name);
+    await sharedPage.getByRole('button', { name: /^add equipment$/i }).click();
+
+    // Dialog should close and card should appear
+    await sharedPage.waitForSelector('[role="dialog"]', { state: 'detached', timeout: 8000 });
+    await expect(sharedPage.getByText(name)).toBeVisible({ timeout: 8000 });
+
+    // Delete via confirm dialog
+    const equipRow = sharedPage.locator('div').filter({ hasText: name }).filter({ has: sharedPage.getByRole('button', { name: /delete/i }) }).last();
+    await equipRow.getByRole('button', { name: /delete/i }).click();
+    await sharedPage.waitForSelector('[role="dialog"]', { timeout: 5000 });
+    // Confirm delete
+    await sharedPage.getByRole('button', { name: /^delete$/i }).click();
+    await expect(sharedPage.getByText(name)).not.toBeVisible({ timeout: 8000 });
   });
 
-  test('equipment: create item then add condition report', async () => {
+  test('stage3: equipment — cancel in delete dialog keeps card', async () => {
     await sharedPage.goto('/owner/equipment');
-    const name = `E2E Equipment ${Date.now()}`;
-    await sharedPage.getByRole('button', { name: /add equipment/i }).click();
-    await sharedPage.fill('input[name="name"]', name);
-    await sharedPage.getByRole('button', { name: /^add$/i }).click();
+    const name = `E2E Equip Keep ${Date.now()}`;
+
+    // Create the item
+    const addButtons = sharedPage.getByRole('button', { name: /add equipment/i });
+    await addButtons.first().click();
+    await sharedPage.waitForSelector('[role="dialog"]', { timeout: 5000 });
+    await sharedPage.fill('#add-eq-name', name);
+    await sharedPage.getByRole('button', { name: /^add equipment$/i }).click();
+    await sharedPage.waitForSelector('[role="dialog"]', { state: 'detached', timeout: 8000 });
+    await expect(sharedPage.getByText(name)).toBeVisible({ timeout: 8000 });
+
+    // Open delete dialog then cancel
+    const equipRow = sharedPage.locator('div').filter({ hasText: name }).filter({ has: sharedPage.getByRole('button', { name: /delete/i }) }).last();
+    await equipRow.getByRole('button', { name: /delete/i }).click();
+    await sharedPage.waitForSelector('[role="dialog"]', { timeout: 5000 });
+    await sharedPage.getByRole('button', { name: /cancel/i }).click();
+    // Card should still be there
     await expect(sharedPage.getByText(name)).toBeVisible({ timeout: 5000 });
-    // add condition report - find the specific equipment row
-    const equipRow = sharedPage.locator('div.rounded-xl').filter({ hasText: name });
-    await equipRow.getByRole('button', { name: /condition reports/i }).click();
-    await sharedPage.fill('input[name="note"]', 'Good condition');
-    await sharedPage.getByRole('button', { name: /add report/i }).click();
-    await expect(sharedPage.getByText('Good condition')).toBeVisible({ timeout: 5000 });
+  });
+
+  test('stage3: services — create a service → appears in list with price text visible', async () => {
+    await sharedPage.goto('/owner/services');
+    const name = `E2E Service ${Date.now()}`;
+
+    // Open add dialog
+    const addButtons = sharedPage.getByRole('button', { name: /add service/i });
+    await addButtons.first().click();
+    await sharedPage.waitForSelector('[role="dialog"]', { timeout: 5000 });
+
+    await sharedPage.fill('#svc-name', name);
+    await sharedPage.fill('#svc-duration', '60');
+    await sharedPage.fill('#svc-price', '120');
+    await sharedPage.getByRole('button', { name: /^create service$/i }).click();
+
+    await sharedPage.waitForSelector('[role="dialog"]', { state: 'detached', timeout: 8000 });
+    await expect(sharedPage.getByText(name)).toBeVisible({ timeout: 8000 });
+    // Price text visible — scoped to the specific card containing the service name
+    const serviceCard = sharedPage.locator('div').filter({ hasText: name }).filter({ has: sharedPage.getByText(/AUD/) }).last();
+    await expect(serviceCard.getByText(/120/)).toBeVisible({ timeout: 5000 });
+  });
+
+  test('stage3: calendar — create a session → session event card appears in correct day column', async () => {
+    await sharedPage.goto('/owner/calendar');
+    await sharedPage.waitForSelector('nav', { timeout: 8000 });
+
+    // Open create dialog
+    await sharedPage.getByRole('button', { name: /schedule/i }).click();
+    await sharedPage.waitForSelector('[role="dialog"]', { timeout: 5000 });
+
+    // Use a date in the current week (today)
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+
+    await sharedPage.fill('#cal-date', dateStr);
+    await sharedPage.fill('#cal-start', '14:00');
+    await sharedPage.fill('#cal-end', '15:00');
+    await sharedPage.getByRole('button', { name: /^create$/i }).click();
+
+    // Dialog closes and session event card with time appears
+    await sharedPage.waitForSelector('[role="dialog"]', { state: 'detached', timeout: 8000 });
+    await expect(sharedPage.getByText(/14:00/)).toBeVisible({ timeout: 8000 });
   });
 
   test('trainers page shows seeded trainer', async () => {

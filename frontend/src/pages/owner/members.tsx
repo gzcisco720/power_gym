@@ -253,7 +253,7 @@ export function OwnerMembersPage() {
                             <Select
                               value={selectedTrainerId}
                               onValueChange={(val) =>
-                                dispatch({ type: 'SET_SELECTED_TRAINER', value: val })
+                                dispatch({ type: 'SET_SELECTED_TRAINER', value: val ?? '' })
                               }
                               aria-label="Select trainer"
                             >

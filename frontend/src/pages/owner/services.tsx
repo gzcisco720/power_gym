@@ -1,6 +1,11 @@
-import { useEffect, useState } from 'react';
-import { useBillingStore } from '@/stores/billingStore';
+import { useEffect, useReducer } from 'react';
+import { LazyMotion, domAnimation, m, useReducedMotion } from 'framer-motion';
+import { Clock, DollarSign, Layers, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { useBillingStore } from '@/stores/billingStore';
+import { PageHeader } from '@/components/shared/page-header';
+import { EmptyState } from '@/components/shared/empty-state';
+import { StatCardsSkeleton } from '@/components/shared/stat-cards-skeleton';
 import {
   Dialog,
   DialogContent,
@@ -9,157 +14,337 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { variants } from '@/lib/animations/variants';
+
+interface ServicesPageState {
+  showAdd: boolean;
+  addName: string;
+  addDuration: string;
+  addPrice: string;
+  addNote: string;
+  addSubmitting: boolean;
+  deleteId: string | null;
+  deleteSubmitting: boolean;
+}
+
+type ServicesPageAction =
+  | { type: 'OPEN_ADD' }
+  | { type: 'CLOSE_ADD' }
+  | { type: 'SET_ADD_NAME'; value: string }
+  | { type: 'SET_ADD_DURATION'; value: string }
+  | { type: 'SET_ADD_PRICE'; value: string }
+  | { type: 'SET_ADD_NOTE'; value: string }
+  | { type: 'SET_ADD_SUBMITTING'; value: boolean }
+  | { type: 'SET_DELETE_ID'; id: string | null }
+  | { type: 'SET_DELETE_SUBMITTING'; value: boolean };
+
+function reducer(state: ServicesPageState, action: ServicesPageAction): ServicesPageState {
+  switch (action.type) {
+    case 'OPEN_ADD': return { ...state, showAdd: true, addName: '', addDuration: '60', addPrice: '', addNote: '' };
+    case 'CLOSE_ADD': return { ...state, showAdd: false, addName: '', addDuration: '60', addPrice: '', addNote: '' };
+    case 'SET_ADD_NAME': return { ...state, addName: action.value };
+    case 'SET_ADD_DURATION': return { ...state, addDuration: action.value };
+    case 'SET_ADD_PRICE': return { ...state, addPrice: action.value };
+    case 'SET_ADD_NOTE': return { ...state, addNote: action.value };
+    case 'SET_ADD_SUBMITTING': return { ...state, addSubmitting: action.value };
+    case 'SET_DELETE_ID': return { ...state, deleteId: action.id };
+    case 'SET_DELETE_SUBMITTING': return { ...state, deleteSubmitting: action.value };
+    default: return state;
+  }
+}
 
 export function OwnerServicesPage() {
-  const { serviceTypes, fetchServiceTypes, createServiceType, deleteServiceType, isLoading } = useBillingStore();
-  const [showForm, setShowForm] = useState(false);
-  const [name, setName] = useState('');
-  const [durationMin, setDurationMin] = useState('60');
-  const [pricePerSession, setPricePerSession] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const { serviceTypes, isLoading, fetchServiceTypes, createServiceType, deleteServiceType } =
+    useBillingStore();
+  const shouldReduceMotion = useReducedMotion();
+
+  const [state, dispatch] = useReducer(reducer, {
+    showAdd: false,
+    addName: '',
+    addDuration: '60',
+    addPrice: '',
+    addNote: '',
+    addSubmitting: false,
+    deleteId: null,
+    deleteSubmitting: false,
+  });
 
   useEffect(() => {
     void fetchServiceTypes();
   }, [fetchServiceTypes]);
 
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    setSubmitting(true);
+  async function handleCreate() {
+    const name = state.addName.trim();
+    const durationMin = Number(state.addDuration);
+    const pricePerSession = Number(state.addPrice);
+    if (!name || !durationMin || !pricePerSession) return;
+    dispatch({ type: 'SET_ADD_SUBMITTING', value: true });
     try {
-      await createServiceType({ name, durationMin: Number(durationMin), pricePerSession: Number(pricePerSession) });
-      toast.success('Service type created');
-      setShowForm(false);
-      setName('');
-      setDurationMin('60');
-      setPricePerSession('');
+      await createServiceType({
+        name,
+        durationMin,
+        pricePerSession,
+        note: state.addNote.trim() || undefined,
+      });
+      toast.success('Service created');
+      dispatch({ type: 'CLOSE_ADD' });
     } catch {
-      toast.error('Failed to create service type');
+      toast.error('Failed to create service');
     } finally {
-      setSubmitting(false);
+      dispatch({ type: 'SET_ADD_SUBMITTING', value: false });
     }
   }
 
-  if (isLoading && serviceTypes.length === 0) return <div className="p-8 text-foreground/65">Loading...</div>;
+  async function handleDelete() {
+    if (!state.deleteId) return;
+    dispatch({ type: 'SET_DELETE_SUBMITTING', value: true });
+    try {
+      await deleteServiceType(state.deleteId);
+      toast.success('Service deleted');
+      dispatch({ type: 'SET_DELETE_ID', id: null });
+    } catch {
+      toast.error('Failed to delete service');
+      dispatch({ type: 'SET_DELETE_ID', id: null });
+    } finally {
+      dispatch({ type: 'SET_DELETE_SUBMITTING', value: false });
+    }
+  }
+
+  const currency = serviceTypes[0]?.currency ?? 'AUD';
+  const active = serviceTypes.filter((s) => s.isActive);
+
+  const addActions = (
+    <Button size="sm" onClick={() => dispatch({ type: 'OPEN_ADD' })}>
+      <Plus className="size-3.5" />
+      Add Service
+    </Button>
+  );
 
   return (
-    <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Service Types</h1>
-        <button
-          onClick={() => setShowForm(true)}
-          className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white"
-        >
-          New Service
-        </button>
-      </div>
+    <LazyMotion features={domAnimation}>
+      <PageHeader
+        title="Services"
+        subtitle="Manage session types and pricing"
+        actions={addActions}
+      />
 
-      {showForm && (
-        <div className="mb-6 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
-          <h2 className="mb-4 text-sm font-semibold text-foreground">New Service Type</h2>
-          <form onSubmit={(e) => void handleCreate(e)} className="space-y-3">
-            <div>
-              <label htmlFor="name" className="text-xs text-foreground/80">Name</label>
-              <input
-                id="name"
-                name="name"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-1 w-full rounded-lg bg-background px-3 py-2 text-sm text-foreground ring-1 ring-foreground/10"
-              />
+      <div className="px-4 sm:px-8 py-6 space-y-4">
+        {/* Stats strip */}
+        {!isLoading && serviceTypes.length > 0 && (
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 flex items-center gap-2.5">
+              <div className="size-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Layers className="size-3.5 text-primary-light" />
+              </div>
+              <div>
+                <div className="text-[18px] font-semibold leading-none">{active.length}</div>
+                <div className="text-[11px] text-foreground/65 mt-0.5">Active</div>
+              </div>
             </div>
-            <div>
-              <label htmlFor="durationMin" className="text-xs text-foreground/80">Duration (min)</label>
-              <input
-                id="durationMin"
-                name="durationMin"
-                type="text"
-                inputMode="decimal"
-                required
-                value={durationMin}
-                onChange={(e) => setDurationMin(e.target.value)}
-                className="mt-1 w-full rounded-lg bg-background px-3 py-2 text-sm text-foreground ring-1 ring-foreground/10"
-              />
+            <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 flex items-center gap-2.5">
+              <div className="size-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <DollarSign className="size-3.5 text-primary-light" />
+              </div>
+              <div>
+                <div className="text-[18px] font-semibold leading-none">
+                  {active.length
+                    ? `${currency} ${Math.min(...active.map((s) => s.pricePerSession))}`
+                    : '—'}
+                </div>
+                <div className="text-[11px] text-foreground/65 mt-0.5">From</div>
+              </div>
             </div>
-            <div>
-              <label htmlFor="pricePerSession" className="text-xs text-foreground/80">Price per session</label>
-              <input
-                id="pricePerSession"
-                name="pricePerSession"
-                type="text"
-                inputMode="decimal"
-                required
-                value={pricePerSession}
-                onChange={(e) => setPricePerSession(e.target.value)}
-                className="mt-1 w-full rounded-lg bg-background px-3 py-2 text-sm text-foreground ring-1 ring-foreground/10"
-              />
+            <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 flex items-center gap-2.5">
+              <div className="size-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Clock className="size-3.5 text-primary-light" />
+              </div>
+              <div>
+                <div className="text-[18px] font-semibold leading-none">
+                  {active.length
+                    ? `${Math.round(active.reduce((s, st) => s + st.pricePerSession, 0) / active.length)}`
+                    : '—'}
+                </div>
+                <div className="text-[11px] text-foreground/65 mt-0.5">Avg price</div>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={submitting}
-                className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
-              >
-                Create
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="rounded-lg px-3 py-2 text-sm text-foreground/65"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      <div className="space-y-2">
-        {serviceTypes.map((st) => (
-          <div key={st._id} className="flex items-center justify-between rounded-xl bg-card px-4 py-3 ring-1 ring-foreground/10">
-            <div>
-              <p className="text-sm font-medium text-foreground">{st.name}</p>
-              <p className="text-xs text-foreground/65">{st.durationMin} min · ${st.pricePerSession}</p>
-            </div>
-            <button
-              onClick={() => setDeleteId(st._id)}
-              className="rounded px-2 py-1 text-xs text-destructive ring-1 ring-foreground/10 hover:ring-destructive/40"
-            >
-              Delete
-            </button>
           </div>
-        ))}
-        {serviceTypes.length === 0 && !showForm && (
-          <p className="text-sm text-foreground/65">No service types yet.</p>
+        )}
+
+        {isLoading && serviceTypes.length === 0 ? (
+          <StatCardsSkeleton count={3} className="grid-cols-1 sm:grid-cols-3" />
+        ) : serviceTypes.length === 0 ? (
+          <EmptyState
+            heading="No services yet"
+            description="Create your first service type to start tracking session billing."
+            action={
+              <Button size="sm" onClick={() => dispatch({ type: 'OPEN_ADD' })}>
+                <Plus className="size-3.5" />
+                Add Service
+              </Button>
+            }
+          />
+        ) : (
+          <m.div
+            variants={!shouldReduceMotion ? variants.staggerContainer : undefined}
+            initial="hidden"
+            animate="visible"
+            className="space-y-1.5"
+          >
+            {serviceTypes.map((st) => (
+              <m.div
+                key={st._id}
+                variants={!shouldReduceMotion ? variants.staggerItem : undefined}
+                className="flex items-center justify-between rounded-xl bg-card px-3 py-2 ring-1 ring-foreground/10 hover:ring-foreground/25 transition-all"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground">{st.name}</p>
+                  <p className="text-xs text-foreground/65">
+                    {st.durationMin} min · {st.currency} {st.pricePerSession} / session
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => dispatch({ type: 'SET_DELETE_ID', id: st._id })}
+                  className="text-foreground/40 hover:text-destructive hover:bg-destructive/10 shrink-0"
+                >
+                  Delete
+                </Button>
+              </m.div>
+            ))}
+          </m.div>
         )}
       </div>
 
-      <Dialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
+      {/* Add Service Dialog */}
+      <Dialog
+        open={state.showAdd}
+        onOpenChange={(open) => {
+          if (!open) dispatch({ type: 'CLOSE_ADD' });
+        }}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete service type?</DialogTitle>
+            <DialogTitle>Add Service</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-1">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="svc-name"
+                className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65"
+              >
+                Name <span className="text-destructive">*</span>
+              </label>
+              <Input
+                id="svc-name"
+                aria-label="Name"
+                value={state.addName}
+                onChange={(e) => dispatch({ type: 'SET_ADD_NAME', value: e.target.value })}
+                placeholder="e.g. Personal Training"
+                autoFocus
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="svc-duration"
+                  className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65"
+                >
+                  Duration (min) <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  id="svc-duration"
+                  aria-label="Duration (min)"
+                  type="text"
+                  inputMode="decimal"
+                  value={state.addDuration}
+                  onChange={(e) => dispatch({ type: 'SET_ADD_DURATION', value: e.target.value })}
+                  placeholder="60"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="svc-price"
+                  className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65"
+                >
+                  Price / session <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  id="svc-price"
+                  aria-label="Price per session"
+                  type="text"
+                  inputMode="decimal"
+                  value={state.addPrice}
+                  onChange={(e) => dispatch({ type: 'SET_ADD_PRICE', value: e.target.value })}
+                  placeholder="120"
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="svc-note"
+                className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65"
+              >
+                Note{' '}
+                <span className="normal-case text-foreground/40">(optional)</span>
+              </label>
+              <Input
+                id="svc-note"
+                value={state.addNote}
+                onChange={(e) => dispatch({ type: 'SET_ADD_NOTE', value: e.target.value })}
+                placeholder="Description of this service"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => dispatch({ type: 'CLOSE_ADD' })}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => void handleCreate()}
+              disabled={
+                state.addSubmitting ||
+                !state.addName.trim() ||
+                !state.addDuration ||
+                !state.addPrice
+              }
+            >
+              Create Service
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirm Dialog */}
+      <Dialog
+        open={state.deleteId !== null}
+        onOpenChange={(open) => {
+          if (!open) dispatch({ type: 'SET_DELETE_ID', id: null });
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete service?</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-foreground/65">This action cannot be undone.</p>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setDeleteId(null)}>Cancel</Button>
+            <Button
+              variant="ghost"
+              onClick={() => dispatch({ type: 'SET_DELETE_ID', id: null })}
+            >
+              Cancel
+            </Button>
             <Button
               variant="destructive"
-              onClick={() => {
-                void deleteServiceType(deleteId!).then(() => {
-                  toast.success('Service type deleted');
-                  setDeleteId(null);
-                }).catch(() => {
-                  toast.error('Failed to delete');
-                  setDeleteId(null);
-                });
-              }}
+              disabled={state.deleteSubmitting}
+              onClick={() => void handleDelete()}
             >
               Delete
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </LazyMotion>
   );
 }
