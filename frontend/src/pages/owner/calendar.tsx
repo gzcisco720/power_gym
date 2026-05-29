@@ -12,6 +12,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -286,25 +293,24 @@ export function OwnerCalendarPage() {
               >
                 Member
               </label>
-              <select
-                id="cal-member"
-                aria-label="Member"
+              <Select
                 value={state.createMemberIds[0] ?? ''}
-                onChange={(e) =>
-                  dispatch({
-                    type: 'SET_CREATE_MEMBERS',
-                    ids: e.target.value ? [e.target.value] : [],
-                  })
+                onValueChange={(val) =>
+                  dispatch({ type: 'SET_CREATE_MEMBERS', ids: val ? [val] : [] })
                 }
-                className="w-full rounded-xl border border-foreground/10 bg-input px-3 py-2 text-sm text-foreground"
+                aria-label="Member"
               >
-                <option value="">Select member (optional)</option>
-                {members.map((m) => (
-                  <option key={m._id} value={m._id}>
-                    {m.name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select member (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {members.map((m) => (
+                    <SelectItem key={m._id} value={m._id}>
+                      {m.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
               <label
