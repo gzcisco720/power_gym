@@ -7,6 +7,13 @@ import { StatCard } from '@/components/shared/stat-card';
 import { StatCardsSkeleton } from '@/components/shared/stat-cards-skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { variants } from '@/lib/animations/variants';
 import { initials } from '@/lib/utils';
 import type { Member } from '@/api/users';
@@ -243,21 +250,24 @@ export function OwnerMembersPage() {
                         {/* Reassign inline */}
                         {isReassigning ? (
                           <div className="flex items-center gap-2 shrink-0">
-                            <select
+                            <Select
                               value={selectedTrainerId}
-                              onChange={(e) =>
-                                dispatch({ type: 'SET_SELECTED_TRAINER', value: e.target.value })
+                              onValueChange={(val) =>
+                                dispatch({ type: 'SET_SELECTED_TRAINER', value: val })
                               }
                               aria-label="Select trainer"
-                              className="h-7 rounded-lg bg-white/[.03] ring-1 ring-white/[.08] px-2 text-sm text-foreground/80 focus:outline-none focus:ring-white/20 transition-all"
                             >
-                              <option value="">Select trainer</option>
-                              {trainers.map((t) => (
-                                <option key={t._id} value={t._id}>
-                                  {t.name}
-                                </option>
-                              ))}
-                            </select>
+                              <SelectTrigger size="sm" className="w-36">
+                                <SelectValue placeholder="Select trainer" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {trainers.map((t) => (
+                                  <SelectItem key={t._id} value={t._id}>
+                                    {t.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                             <Button
                               size="sm"
                               disabled={!selectedTrainerId || saving}

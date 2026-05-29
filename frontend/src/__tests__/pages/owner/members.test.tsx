@@ -21,6 +21,21 @@ vi.mock('@/stores/usersStore', () => ({
   useUsersStore: vi.fn(),
 }));
 
+// Base UI Select doesn't render properly in JSDOM — mock it as a native select
+vi.mock('@/components/ui/select', () => ({
+  Select: ({ value, onValueChange, children }: { value: string; onValueChange: (v: string) => void; children: React.ReactNode }) => (
+    <select value={value} onChange={(e) => onValueChange(e.target.value)} aria-label="Select trainer">
+      {children}
+    </select>
+  ),
+  SelectTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  SelectValue: ({ placeholder }: { placeholder?: string }) => <option value="">{placeholder}</option>,
+  SelectContent: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  SelectItem: ({ value, children }: { value: string; children: React.ReactNode }) => (
+    <option value={value}>{children}</option>
+  ),
+}));
+
 // Mock sonner toast
 vi.mock('sonner', () => ({
   toast: {
