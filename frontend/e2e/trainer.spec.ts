@@ -1,14 +1,5 @@
 import { test, expect, type Page, type BrowserContext } from '@playwright/test';
 
-async function loginAsTrainer(page: Page) {
-  await page.goto('/login');
-  await page.fill('#email', 'trainer@test.com');
-  await page.fill('#password', 'TestPass123!');
-  await page.getByRole('button', { name: 'Sign in' }).click();
-  await page.waitForURL('/trainer/members', { timeout: 15000 });
-  await page.waitForSelector('nav', { timeout: 10000 });
-}
-
 test.describe.configure({ mode: 'serial' });
 
 test.describe('Trainer domain', () => {
@@ -17,9 +8,10 @@ test.describe('Trainer domain', () => {
   let memberId: string;
 
   test.beforeAll(async ({ browser }) => {
-    sharedContext = await browser.newContext();
+    sharedContext = await browser.newContext({ storageState: 'e2e/.auth/trainer.json' });
     sharedPage = await sharedContext.newPage();
-    await loginAsTrainer(sharedPage);
+    await sharedPage.goto('/trainer/members');
+    await sharedPage.waitForSelector('nav', { timeout: 15000 });
   });
 
   test.afterAll(async () => {

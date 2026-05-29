@@ -1,17 +1,5 @@
-import { test, expect, type Page, type BrowserContext, chromium } from '@playwright/test';
+import { test, expect, type Page, type BrowserContext } from '@playwright/test';
 
-async function loginAsOwner(page: Page) {
-  await page.goto('/login');
-  await page.fill('#email', 'owner@test.com');
-  await page.fill('#password', 'TestPass123!');
-  await page.getByRole('button', { name: 'Sign in' }).click();
-  await page.waitForURL('/owner', { timeout: 15000 });
-  // Wait for sidebar to confirm auth + layout ready
-  await page.waitForSelector('nav', { timeout: 10000 });
-}
-
-// All owner tests share one login via serial mode + beforeAll.
-// This avoids hitting the auth rate limit (10 logins / 15 min).
 test.describe.configure({ mode: 'serial' });
 
 test.describe('Owner domain', () => {
@@ -19,9 +7,10 @@ test.describe('Owner domain', () => {
   let sharedContext: BrowserContext;
 
   test.beforeAll(async ({ browser }) => {
-    sharedContext = await browser.newContext();
+    sharedContext = await browser.newContext({ storageState: 'e2e/.auth/owner.json' });
     sharedPage = await sharedContext.newPage();
-    await loginAsOwner(sharedPage);
+    await sharedPage.goto('/owner');
+    await sharedPage.waitForSelector('nav', { timeout: 15000 });
   });
 
   test.afterAll(async () => {
@@ -60,6 +49,8 @@ test.describe('Owner domain', () => {
     const serviceRow = sharedPage.locator('div.flex.items-center.justify-between').filter({ hasText: name });
     await expect(serviceRow).toBeVisible({ timeout: 5000 });
     await serviceRow.getByRole('button', { name: /delete/i }).click();
+    // Confirm deletion in the dialog
+    await sharedPage.getByRole('button', { name: /delete/i }).last().click();
     await expect(sharedPage.getByText(name)).not.toBeVisible({ timeout: 5000 });
   });
 

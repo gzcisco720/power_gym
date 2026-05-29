@@ -1,8 +1,9 @@
 import { execFileSync } from 'child_process';
-import { writeFileSync, unlinkSync } from 'fs';
+import { writeFileSync, unlinkSync, mkdirSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import * as bcrypt from 'bcryptjs';
+import { chromium } from '@playwright/test';
 
 const PASSWORD = 'TestPass123!';
 const MONGODB_URI = 'mongodb://power_gym_user:power_gym_pass@localhost:27017/power_gym_test?authSource=admin';
@@ -60,10 +61,36 @@ function cleanupTestData(): void {
   }
 }
 
+async function saveAuthStates() {
+  const AUTH_DIR = join(process.cwd(), 'e2e', '.auth');
+  mkdirSync(AUTH_DIR, { recursive: true });
+
+  const browser = await chromium.launch();
+
+  for (const role of [
+    { email: 'owner@test.com', password: PASSWORD, file: 'owner.json', waitUrl: '/owner' },
+    { email: 'trainer@test.com', password: PASSWORD, file: 'trainer.json', waitUrl: '/trainer/members' },
+    { email: 'member@test.com', password: PASSWORD, file: 'member.json', waitUrl: '/member' },
+  ]) {
+    const context = await browser.newContext({ baseURL: 'http://localhost:5173' });
+    const page = await context.newPage();
+    await page.goto('/login');
+    await page.fill('#email', role.email);
+    await page.fill('#password', role.password);
+    await page.getByRole('button', { name: 'Sign in' }).click();
+    await page.waitForURL(role.waitUrl, { timeout: 15000 });
+    await context.storageState({ path: join(AUTH_DIR, role.file) });
+    await context.close();
+  }
+
+  await browser.close();
+}
+
 export default async function globalSetup() {
   // Always clean up test data from previous runs first
   if (checkUsersSeeded()) {
     cleanupTestData();
+    await saveAuthStates();
     return;
   }
 
@@ -163,4 +190,6 @@ export default async function globalSetup() {
     unlinkSync(dataFile);
     unlinkSync(scriptFile);
   }
+
+  await saveAuthStates();
 }

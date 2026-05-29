@@ -7,6 +7,26 @@ import { ResetPasswordPage } from '@/pages/auth/reset-password';
 import { Placeholder } from './placeholder';
 import { DashboardLayout } from '@/components/shared/dashboard-layout';
 
+// Member pages
+import { MemberDashboardPage } from '@/pages/member/dashboard';
+import { MemberMyTrainingPage } from '@/pages/member/my-training';
+import { MemberSessionPage } from '@/pages/member/session';
+import { MemberCheckInDashboardPage } from '@/pages/member/check-in-dashboard';
+import { MemberCheckInNewPage } from '@/pages/member/check-in-new';
+import { MemberCheckInHistoryPage } from '@/pages/member/check-in-history';
+import { MemberNutritionPage } from '@/pages/member/nutrition';
+import { MemberNutritionDayPage } from '@/pages/member/nutrition-day';
+import { MemberBodyTestsPage } from '@/pages/member/body-tests';
+import { MemberJourneyPage } from '@/pages/member/journey';
+import { MemberSettingsPage } from '@/pages/member/settings';
+import {
+  MemberHealthStub,
+  MemberScheduleStub,
+  MemberBillingStub,
+  MemberCalendarStub,
+  MemberCheckInDetailStub,
+} from '@/pages/member/stubs';
+
 // Trainer pages
 import { TrainerMembersPage } from '@/pages/trainer/members';
 import { TrainerMemberHubPage } from '@/pages/trainer/member-hub';
@@ -160,7 +180,22 @@ export const router = createBrowserRouter([
           {
             element: <DashboardLayout />,
             children: [
-              { path: '/member', element: <Placeholder title="Member Dashboard" /> },
+              { path: '/member', element: <MemberDashboardPage /> },
+              { path: '/member/my-training', element: <MemberMyTrainingPage /> },
+              { path: '/member/my-training/session/:id', element: <MemberSessionPage /> },
+              { path: '/member/my-training/*', element: <MemberCalendarStub /> },
+              { path: '/member/check-in', element: <MemberCheckInDashboardPage /> },
+              { path: '/member/check-in/new', element: <MemberCheckInNewPage /> },
+              { path: '/member/check-in/history', element: <MemberCheckInHistoryPage /> },
+              { path: '/member/check-in/:id', element: <MemberCheckInDetailStub /> },
+              { path: '/member/nutrition', element: <MemberNutritionPage /> },
+              { path: '/member/nutrition/day', element: <MemberNutritionDayPage /> },
+              { path: '/member/body-tests', element: <MemberBodyTestsPage /> },
+              { path: '/member/journey', element: <MemberJourneyPage /> },
+              { path: '/member/health', element: <MemberHealthStub /> },
+              { path: '/member/schedule', element: <MemberScheduleStub /> },
+              { path: '/member/billing', element: <MemberBillingStub /> },
+              { path: '/member/settings', element: <MemberSettingsPage /> },
               { path: '/member/*', element: <Placeholder title="Member" /> },
             ],
           },
