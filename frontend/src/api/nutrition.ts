@@ -8,12 +8,17 @@ export interface Food {
   servings: Array<{ label: string; grams: number }>;
 }
 
+export interface NutritionMeal {
+  name: string;
+  items: Array<{ foodId: string; servingGrams: number }>;
+}
+
 export interface NutritionTemplate {
   _id: string;
   name: string;
   description: string | null;
   createdBy: string;
-  dayTypes: Array<{ name: string; meals: unknown[] }>;
+  dayTypes: Array<{ name: string; meals: NutritionMeal[] }>;
 }
 
 export interface MemberNutritionPlan {
@@ -37,6 +42,18 @@ export const createFood = (data: Partial<Food>) =>
 
 export const searchFoods = (q: string) =>
   request<Food[]>(`/api/v1/food-search?q=${encodeURIComponent(q)}`);
+
+export const updateNutritionTemplate = (id: string, data: Partial<NutritionTemplate>) =>
+  request<NutritionTemplate>(`/api/v1/nutrition-templates/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+
+export const deleteNutritionTemplate = (id: string) =>
+  request<void>(`/api/v1/nutrition-templates/${id}`, { method: 'DELETE' });
+
+export const updateFood = (id: string, data: Partial<Food>) =>
+  request<Food>(`/api/v1/foods/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+
+export const deleteFood = (id: string) =>
+  request<void>(`/api/v1/foods/${id}`, { method: 'DELETE' });
 
 export const fetchMemberNutritionPlan = (memberId: string) =>
   request<MemberNutritionPlan | null>(`/api/v1/members/${memberId}/nutrition`);

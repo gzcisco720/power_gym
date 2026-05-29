@@ -6,7 +6,6 @@ Harness working directory. Only active Sprint Contract plans are listed here.
 
 | Feature | Plan File | Status |
 |---|---|---|
-| Sprint 2 — Frontend Vite SPA Migration | [frontend-vite-spa-plan.md](2026-05-29/plans/frontend-vite-spa-plan.md) | In Progress |
 
 ## Management Files
 

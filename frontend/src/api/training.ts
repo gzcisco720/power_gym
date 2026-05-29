@@ -85,3 +85,15 @@ export const completeSession = (id: string) =>
 
 export const fetchPbs = (memberId: string) =>
   request<PersonalBest[]>(`/api/v1/members/${memberId}/pbs`);
+
+export interface ExerciseNote {
+  _id: string;
+  memberId: string;
+  exerciseId: string;
+  exerciseName: string;
+  content: string;
+  sessionId: string | null;
+}
+
+export const saveExerciseNote = (data: { memberId: string; exerciseId: string; exerciseName: string; content: string; sessionId?: string | null }) =>
+  request<ExerciseNote>('/api/v1/exercise-notes', { method: 'POST', body: JSON.stringify(data) });

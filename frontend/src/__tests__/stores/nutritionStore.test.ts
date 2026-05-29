@@ -3,8 +3,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 vi.mock('@/api/nutrition', () => ({
   fetchNutritionTemplates: vi.fn(),
   createNutritionTemplate: vi.fn(),
+  updateNutritionTemplate: vi.fn(),
+  deleteNutritionTemplate: vi.fn(),
   fetchFoods: vi.fn(),
   createFood: vi.fn(),
+  updateFood: vi.fn(),
+  deleteFood: vi.fn(),
   searchFoods: vi.fn(),
   fetchMemberNutritionPlan: vi.fn(),
   assignNutritionPlan: vi.fn(),
@@ -69,6 +73,29 @@ describe('nutritionStore', () => {
     });
   });
 
+  describe('updateTemplate', () => {
+    it('replaces an existing template', async () => {
+      useNutritionStore.setState({ templates: [mockTemplate] });
+      const updated = { ...mockTemplate, name: 'Updated Plan' };
+      vi.mocked(nutritionApi.updateNutritionTemplate).mockResolvedValueOnce(updated);
+
+      await useNutritionStore.getState().updateTemplate('nt1', { name: 'Updated Plan' });
+
+      expect(useNutritionStore.getState().templates[0].name).toBe('Updated Plan');
+    });
+  });
+
+  describe('deleteTemplate', () => {
+    it('removes the template from state', async () => {
+      useNutritionStore.setState({ templates: [mockTemplate] });
+      vi.mocked(nutritionApi.deleteNutritionTemplate).mockResolvedValueOnce(undefined);
+
+      await useNutritionStore.getState().deleteTemplate('nt1');
+
+      expect(useNutritionStore.getState().templates).toHaveLength(0);
+    });
+  });
+
   describe('fetchFoods', () => {
     it('populates foods', async () => {
       vi.mocked(nutritionApi.fetchFoods).mockResolvedValueOnce([mockFood]);
@@ -86,6 +113,29 @@ describe('nutritionStore', () => {
       await useNutritionStore.getState().createFood({ name: 'Chicken Breast' });
 
       expect(useNutritionStore.getState().foods).toEqual([mockFood]);
+    });
+  });
+
+  describe('updateFood', () => {
+    it('replaces an existing food', async () => {
+      useNutritionStore.setState({ foods: [mockFood] });
+      const updated = { ...mockFood, name: 'Turkey Breast' };
+      vi.mocked(nutritionApi.updateFood).mockResolvedValueOnce(updated);
+
+      await useNutritionStore.getState().updateFood('f1', { name: 'Turkey Breast' });
+
+      expect(useNutritionStore.getState().foods[0].name).toBe('Turkey Breast');
+    });
+  });
+
+  describe('deleteFood', () => {
+    it('removes the food from state', async () => {
+      useNutritionStore.setState({ foods: [mockFood] });
+      vi.mocked(nutritionApi.deleteFood).mockResolvedValueOnce(undefined);
+
+      await useNutritionStore.getState().deleteFood('f1');
+
+      expect(useNutritionStore.getState().foods).toHaveLength(0);
     });
   });
 

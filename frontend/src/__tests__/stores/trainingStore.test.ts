@@ -60,6 +60,7 @@ beforeEach(() => {
     memberPlans: {},
     activeSession: null,
     pbs: {},
+    exerciseNotes: {},
     isLoading: false,
     error: null,
   });
@@ -135,7 +136,7 @@ describe('trainingStore', () => {
     it('sets activeSession', async () => {
       vi.mocked(trainingApi.startSession).mockResolvedValueOnce(mockSession);
 
-      await useTrainingStore.getState().startSession('m1', 'mp1', 1);
+      await useTrainingStore.getState().startSession('m1', 1);
 
       expect(useTrainingStore.getState().activeSession).toEqual(mockSession);
     });
@@ -156,12 +157,13 @@ describe('trainingStore', () => {
   });
 
   describe('completeSession', () => {
-    it('clears the active reference after completing', async () => {
-      vi.mocked(trainingApi.completeSession).mockResolvedValueOnce(undefined as unknown as trainingApi.WorkoutSession);
+    it('sets activeSession to the completed session', async () => {
+      const completedSession: trainingApi.WorkoutSession = { ...mockSession, completedAt: '2026-01-01T12:00:00Z' };
+      vi.mocked(trainingApi.completeSession).mockResolvedValueOnce(completedSession);
 
       await useTrainingStore.getState().completeSession('s1');
 
-      expect(useTrainingStore.getState().activeSession).toBeNull();
+      expect(useTrainingStore.getState().activeSession?.completedAt).toBe('2026-01-01T12:00:00Z');
     });
   });
 
@@ -172,6 +174,14 @@ describe('trainingStore', () => {
       await useTrainingStore.getState().fetchPbs('m1');
 
       expect(useTrainingStore.getState().pbs['m1']).toEqual([mockPb]);
+    });
+  });
+
+  describe('saveExerciseNote', () => {
+    it('stores the note for the exercise', () => {
+      useTrainingStore.getState().saveExerciseNote('e1', 'Focus on form');
+
+      expect(useTrainingStore.getState().exerciseNotes['e1']).toBe('Focus on form');
     });
   });
 });

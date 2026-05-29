@@ -29,7 +29,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     ThrottlerModule.forRoot([
       {
         ttl: 900000,
-        limit: 100,
+        limit: process.env.NODE_ENV === 'production' ? 100 : 1000,
       },
     ]),
     DatabaseModule,

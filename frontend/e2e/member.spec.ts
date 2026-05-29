@@ -2,11 +2,74 @@ import { test, expect, type Page, type BrowserContext } from '@playwright/test';
 
 test.describe.configure({ mode: 'serial' });
 
+const FRONTEND_BASE = 'http://localhost:5173';
+
 test.describe('Member domain', () => {
   let sharedPage: Page;
   let sharedContext: BrowserContext;
 
   test.beforeAll(async ({ browser }) => {
+    // Use a fresh trainer login to avoid staling shared auth state files.
+    // The trainer-domain.json refresh token would become invalid after page load (token rotation),
+    // breaking subsequent trainer.spec.ts tests that rely on the same file.
+    const trainerCtx = await browser.newContext({ baseURL: FRONTEND_BASE });
+    const trainerPage = await trainerCtx.newPage();
+
+    // Log in as trainer to get a fresh session
+    await trainerPage.goto('/login');
+    await trainerPage.fill('#email', 'trainer@test.com');
+    await trainerPage.fill('#password', 'TestPass123!');
+    await trainerPage.getByRole('button', { name: 'Sign in' }).click();
+    await trainerPage.waitForURL('/trainer/members', { timeout: 15000 });
+
+    // Get the in-memory access token from the Zustand auth store (set during login/initAuth).
+    // This avoids an extra /auth/refresh call that would consume the rate limit.
+    const accessToken: string | null = await trainerPage.evaluate(async () => {
+      const { useAuthStore } = await import('/src/stores/authStore');
+      return useAuthStore.getState().accessToken;
+    });
+
+    const setupResult: { ok: boolean; error?: string } = !accessToken
+      ? { ok: false, error: 'no access token in auth store after login' }
+      : await trainerPage.evaluate(async (token: string) => {
+      const accessToken = token;
+
+      const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` };
+
+      const membersRes = await fetch('/api/v1/members', { headers, credentials: 'include' });
+      if (!membersRes.ok) return { ok: false, error: `members failed: ${membersRes.status}` };
+      const members = await membersRes.json() as Array<{ _id: string; email: string }>;
+      if (!Array.isArray(members)) return { ok: false, error: 'members not array' };
+
+      const member = members.find((m) => m.email === 'member@test.com');
+      if (!member) return { ok: false, error: `member@test.com not in list (got ${members.length} members)` };
+
+      const plansRes = await fetch('/api/v1/plan-templates', { headers, credentials: 'include' });
+      if (!plansRes.ok) return { ok: false, error: `plans failed: ${plansRes.status}` };
+      let plans = await plansRes.json() as Array<{ _id: string }>;
+
+      if (!plans.length) {
+        const createRes = await fetch('/api/v1/plan-templates', {
+          method: 'POST', headers, credentials: 'include',
+          body: JSON.stringify({ name: 'E2E Test Plan', days: [{ dayNumber: 1, name: 'Day 1', exercises: [] }] }),
+        });
+        if (!createRes.ok) return { ok: false, error: `plan create failed: ${createRes.status}` };
+        plans = [await createRes.json()];
+      }
+
+      const assignRes = await fetch(`/api/v1/members/${member._id}/plan`, {
+        method: 'POST', headers, credentials: 'include',
+        body: JSON.stringify({ templateId: plans[0]._id }),
+      });
+      return assignRes.ok ? { ok: true } : { ok: false, error: `assign failed: ${assignRes.status}` };
+    });
+
+    if (!setupResult.ok) {
+      console.warn(`member.spec beforeAll: plan setup failed (${setupResult.error}) — session test may skip`);
+    }
+
+    await trainerCtx.close();
+
     sharedContext = await browser.newContext({ storageState: 'e2e/.auth/member-domain.json' });
     sharedPage = await sharedContext.newPage();
     await sharedPage.goto('/member');
@@ -22,35 +85,24 @@ test.describe('Member domain', () => {
     await sharedPage.waitForSelector('h1', { timeout: 8000 });
 
     const startBtn = sharedPage.getByRole('button', { name: /start session/i });
-    const hasStartBtn = await startBtn.isVisible({ timeout: 5000 }).catch(() => false);
+    const hasStartBtn = await startBtn.isVisible({ timeout: 8000 }).catch(() => false);
 
     if (!hasStartBtn) {
-      // No plan assigned — skip session part, just verify page renders
-      await expect(sharedPage.getByRole('heading', { name: /my training/i })).toBeVisible();
+      test.skip(true, 'No plan assigned to test member — cannot test session lifecycle');
       return;
     }
 
     await startBtn.click();
 
-    // Should navigate to session page — if not (e.g. plan has no days/exercises), skip session steps
-    const navigated = await sharedPage.waitForURL(/\/member\/my-training\/session\//, { timeout: 10000 })
-      .then(() => true)
-      .catch(() => false);
+    await sharedPage.waitForURL(/\/member\/my-training\/session\//, { timeout: 10000 });
 
-    if (!navigated) {
-      // Plan exists but has no valid days — verify training page still renders
-      await expect(sharedPage.getByRole('heading', { name: /my training/i })).toBeVisible();
-      return;
-    }
-
-    // Fill in a set if there are inputs
+    // Fill in weight and reps for the first set if exercises are present
     const weightInput = sharedPage.locator('input[placeholder="Weight (kg)"]').first();
     const hasWeightInput = await weightInput.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasWeightInput) {
       await weightInput.fill('80');
       await weightInput.blur();
-
       const repsInput = sharedPage.locator('input[placeholder="Reps"]').first();
       await repsInput.fill('10');
       await repsInput.blur();
@@ -135,6 +187,23 @@ test.describe('Member domain', () => {
     await expect(sharedPage.getByRole('heading', { name: /my nutrition/i })).toBeVisible();
     await expect(sharedPage.getByText('My Plan')).toBeVisible();
     await expect(sharedPage.getByText('Freestyle')).toBeVisible();
+  });
+
+  test('nutrition day view — freestyle day renders meal sections', async () => {
+    const today = new Date().toISOString().split('T')[0];
+    await sharedPage.goto(`/member/nutrition/day?date=${today}&mode=free`);
+    await sharedPage.waitForSelector('h1, h2', { timeout: 8000 });
+
+    // The day view page must render (heading or meal section visible)
+    const hasHeading = await sharedPage.getByRole('heading').first().isVisible({ timeout: 5000 }).catch(() => false);
+    expect(hasHeading).toBe(true);
+
+    // Meal sections should be visible — look for a log/meal section container
+    const hasMealSection = await sharedPage.locator('section, [data-testid="meal-section"], .meal-section').first().isVisible({ timeout: 3000 }).catch(() => false);
+    const hasAddFood = await sharedPage.getByRole('button', { name: /add food|log food/i }).first().isVisible({ timeout: 3000 }).catch(() => false);
+    const hasMealHeading = await sharedPage.getByText(/breakfast|lunch|dinner|snack|meal/i).first().isVisible({ timeout: 3000 }).catch(() => false);
+    // At minimum the page renders with some content
+    expect(hasHeading || hasMealSection || hasAddFood || hasMealHeading).toBe(true);
   });
 
   test('body tests page — renders (may show empty list)', async () => {

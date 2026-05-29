@@ -71,7 +71,7 @@ describe('api/training', () => {
   });
 
   it('startSession calls POST /api/v1/sessions', async () => {
-    await startSession('m1', 'mp1', 1);
+    await startSession('m1', 1);
     expect(mockRequest).toHaveBeenCalledWith(
       '/api/v1/sessions',
       expect.objectContaining({ method: 'POST' }),

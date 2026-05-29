@@ -10,8 +10,12 @@ interface NutritionState {
   error: string | null;
   fetchTemplates: () => Promise<void>;
   createTemplate: (data: { name: string; description?: string }) => Promise<void>;
+  updateTemplate: (id: string, data: Partial<api.NutritionTemplate>) => Promise<void>;
+  deleteTemplate: (id: string) => Promise<void>;
   fetchFoods: (q?: string) => Promise<void>;
   createFood: (data: Partial<api.Food>) => Promise<void>;
+  updateFood: (id: string, data: Partial<api.Food>) => Promise<void>;
+  deleteFood: (id: string) => Promise<void>;
   searchFood: (q: string) => Promise<void>;
   assignPlan: (memberId: string, nutritionTemplateId: string) => Promise<void>;
   fetchMemberPlan: (memberId: string) => Promise<void>;
@@ -40,6 +44,16 @@ export const useNutritionStore = create<NutritionState>((set) => ({
     set((s) => ({ templates: [...s.templates, template] }));
   },
 
+  updateTemplate: async (id, data) => {
+    const updated = await api.updateNutritionTemplate(id, data);
+    set((s) => ({ templates: s.templates.map((t) => (t._id === id ? updated : t)) }));
+  },
+
+  deleteTemplate: async (id) => {
+    await api.deleteNutritionTemplate(id);
+    set((s) => ({ templates: s.templates.filter((t) => t._id !== id) }));
+  },
+
   fetchFoods: async (q) => {
     set({ isLoading: true, error: null });
     try {
@@ -53,6 +67,16 @@ export const useNutritionStore = create<NutritionState>((set) => ({
   createFood: async (data) => {
     const food = await api.createFood(data);
     set((s) => ({ foods: [...s.foods, food] }));
+  },
+
+  updateFood: async (id, data) => {
+    const updated = await api.updateFood(id, data);
+    set((s) => ({ foods: s.foods.map((f) => (f._id === id ? updated : f)) }));
+  },
+
+  deleteFood: async (id) => {
+    await api.deleteFood(id);
+    set((s) => ({ foods: s.foods.filter((f) => f._id !== id) }));
   },
 
   searchFood: async (q) => {

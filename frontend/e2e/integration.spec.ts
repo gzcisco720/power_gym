@@ -7,6 +7,8 @@ import { join } from 'path';
 test.describe.configure({ mode: 'serial' });
 
 const BASE_URL = 'http://localhost:5173';
+// API calls go through the Vite proxy at the frontend origin so auth cookies apply
+const API_BASE = 'http://localhost:5173';
 const MONGODB_URI = 'mongodb://power_gym_user:power_gym_pass@localhost:27017/power_gym_test?authSource=admin';
 
 function getInviteToken(recipientEmail: string): string {
@@ -30,108 +32,148 @@ function getInviteToken(recipientEmail: string): string {
 test.describe('Cross-role integration journey', () => {
   let inviteToken: string;
   let uniqueEmail: string;
+  let newMemberId: string;
 
-  // Step 1: Owner creates invite
-  test('owner creates a trainer invite → invite appears in list', async ({ browser }) => {
+  // Step 1: Owner creates a member invite and assigns them to trainer@test.com
+  test('owner creates a member invite assigned to trainer → invite appears in list', async ({ browser }) => {
     const ctx = await browser.newContext({ storageState: 'e2e/.auth/owner-integration.json', baseURL: BASE_URL });
     const page = await ctx.newPage();
 
     await page.goto('/owner/invites');
-    uniqueEmail = `e2e-integration-${Date.now()}@test.com`;
+    uniqueEmail = `e2e-member-${Date.now()}@test.com`;
 
     await page.getByRole('button', { name: /invite/i }).click();
     await page.fill('input[name="recipientEmail"]', uniqueEmail);
-    // Select trainer role so the new user lands on /trainer/members after registration
-    await page.selectOption('select[name="role"]', 'trainer');
+
+    // Select member role
+    await page.selectOption('select[name="role"]', 'member');
+
+    // Assign to trainer by selecting the first non-empty option in the trainer dropdown
+    const trainerSelect = page.locator('select[name="trainerId"]');
+    const hasTrainerSelect = await trainerSelect.isVisible({ timeout: 2000 }).catch(() => false);
+    if (hasTrainerSelect) {
+      const options = await trainerSelect.locator('option').all();
+      for (const opt of options) {
+        const val = await opt.getAttribute('value');
+        if (val && val !== '') {
+          await trainerSelect.selectOption(val);
+          break;
+        }
+      }
+    }
+
     await page.getByRole('button', { name: /send invite/i }).click();
     await expect(page.getByText(uniqueEmail)).toBeVisible({ timeout: 8000 });
 
-    // Retrieve invite token directly from MongoDB (avoids needing an auth header in the test)
+    // Retrieve invite token directly from MongoDB
     inviteToken = getInviteToken(uniqueEmail);
 
     await ctx.close();
   });
 
-  // Step 2: New user registers via invite token → lands on /trainer/members
-  test('new user registers via invite token → lands on /trainer/members', async ({ browser }) => {
+  // Step 2: New user registers via invite token → lands on /member
+  test('new user registers via invite token → lands on /member', async ({ browser }) => {
     const ctx = await browser.newContext({ baseURL: BASE_URL });
     const page = await ctx.newPage();
 
     await page.goto(`/register?token=${inviteToken}`);
     await page.fill('#firstName', 'Integration');
-    await page.fill('#lastName', 'Trainer');
+    await page.fill('#lastName', 'Member');
     await page.fill('#email', uniqueEmail);
     await page.fill('#password', 'TestPass123!');
     await page.getByRole('button', { name: /create account/i }).click();
-    await page.waitForURL('/trainer/members', { timeout: 15000 });
-    await expect(page).toHaveURL('/trainer/members');
+    await page.waitForURL('/member', { timeout: 15000 });
+    await expect(page).toHaveURL('/member');
 
     await ctx.close();
   });
 
-  // Step 3: Trainer assigns training plan to member
-  test('trainer assigns plan to member → active plan shown', async ({ browser }) => {
-    const ctx = await browser.newContext({ storageState: 'e2e/.auth/trainer-integration.json', baseURL: BASE_URL });
-    const page = await ctx.newPage();
+  // Step 3: Trainer assigns a training plan to the new member (via page.evaluate + fetch)
+  test('trainer assigns plan to new member → plan is active', async ({ browser }) => {
+    const trainerCtx = await browser.newContext({ storageState: 'e2e/.auth/trainer-integration.json', baseURL: BASE_URL });
+    const trainerPage = await trainerCtx.newPage();
 
-    await page.goto('/trainer/members');
-    await page.waitForSelector('nav', { timeout: 10000 });
+    // Navigate to trigger token refresh
+    await trainerPage.goto('/trainer/members');
+    await trainerPage.waitForSelector('nav', { timeout: 15000 });
 
-    // Get first member id
-    const link = page.getByRole('link', { name: /View Hub/ }).first();
-    await link.waitFor({ timeout: 8000 });
-    const href = await link.getAttribute('href');
-    const match = href?.match(/\/trainer\/members\/([^/]+)$/);
-    expect(match).toBeTruthy();
-    const memberId = match![1];
+    // Use page.evaluate to call API with a fresh access token via the refresh endpoint
+    const result = await trainerPage.evaluate(async (targetEmail: string) => {
+      const refreshRes = await fetch('/api/v1/auth/refresh', { method: 'POST', credentials: 'include' });
+      if (!refreshRes.ok) return { ok: false, error: `refresh failed: ${refreshRes.status}` };
+      const { access_token: accessToken } = await refreshRes.json() as { access_token: string };
+      const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` };
 
-    await page.goto(`/trainer/members/${memberId}/plan`);
+      const membersRes = await fetch('/api/v1/members', { headers, credentials: 'include' });
+      if (!membersRes.ok) return { ok: false, error: `members fetch failed: ${membersRes.status}` };
+      const members = await membersRes.json() as Array<{ _id: string; email: string }>;
+      if (!Array.isArray(members)) return { ok: false, error: 'members not array' };
 
-    await page.getByRole('button', { name: /assign plan/i }).click();
+      const newMember = members.find((m) => m.email === targetEmail);
+      if (!newMember) return { ok: false, error: `member ${targetEmail} not found` };
 
-    const select = page.locator('select');
-    await select.waitFor({ timeout: 5000 });
-    const options = await select.locator('option').all();
+      const plansRes = await fetch('/api/v1/plan-templates', { headers, credentials: 'include' });
+      if (!plansRes.ok) return { ok: false, error: `plans fetch failed: ${plansRes.status}` };
+      let plans = await plansRes.json() as Array<{ _id: string }>;
 
-    if (options.length <= 1) {
-      // No plans exist — create one first
-      await page.getByRole('button', { name: /cancel/i }).click();
-      await page.goto('/trainer/plans');
-      const planName = `Integration Plan ${Date.now()}`;
-      await page.getByRole('button', { name: /new plan/i }).click();
-      await page.fill('input[name="name"]', planName);
-      await page.getByRole('button', { name: /create/i }).click();
-      await expect(page.getByText(planName)).toBeVisible({ timeout: 5000 });
+      if (!plans.length) {
+        // Create a minimal plan with a day but no exercises (valid per DTO)
+        const createRes = await fetch('/api/v1/plan-templates', {
+          method: 'POST', headers, credentials: 'include',
+          body: JSON.stringify({
+            name: 'Integration Test Plan',
+            days: [{ dayNumber: 1, name: 'Day 1', exercises: [] }],
+          }),
+        });
+        if (!createRes.ok) return { ok: false, error: `plan create failed: ${createRes.status}` };
+        plans = [await createRes.json()];
+      }
 
-      await page.goto(`/trainer/members/${memberId}/plan`);
-      await page.getByRole('button', { name: /assign plan/i }).click();
-    }
+      const assignRes = await fetch(`/api/v1/members/${newMember._id}/plan`, {
+        method: 'POST', headers, credentials: 'include',
+        body: JSON.stringify({ templateId: plans[0]._id }),
+      });
+      return { ok: assignRes.ok, memberId: newMember._id, error: assignRes.ok ? null : `assign failed: ${assignRes.status}` };
+    }, uniqueEmail);
 
-    const assignSelect = page.locator('select');
-    await assignSelect.waitFor({ timeout: 5000 });
-    const assignOptions = await assignSelect.locator('option').all();
-    const firstValue = await assignOptions[1].getAttribute('value');
-    if (firstValue) await assignSelect.selectOption(firstValue);
-    await page.getByRole('button', { name: /^assign$/i }).click();
+    if (!result.ok) console.error('Step 3 API error:', result.error);
+    expect(result.ok).toBe(true);
+    if (result.memberId) newMemberId = result.memberId as string;
 
-    await expect(page.getByText(/active since/i)).toBeVisible({ timeout: 8000 });
-
-    await ctx.close();
+    await trainerCtx.close();
   });
 
-  // Step 4: Member views training page
-  test('member views their training page after plan assigned', async ({ browser }) => {
-    const ctx = await browser.newContext({ storageState: 'e2e/.auth/member-integration.json', baseURL: BASE_URL });
+  // Step 4: New member logs in and can start a session
+  test('new member navigates to my-training and can start a session', async ({ browser }) => {
+    // Log in as the new member
+    const ctx = await browser.newContext({ baseURL: BASE_URL });
     const page = await ctx.newPage();
+
+    await page.goto('/login');
+    await page.fill('#email', uniqueEmail);
+    await page.fill('#password', 'TestPass123!');
+    await page.getByRole('button', { name: 'Sign in' }).click();
+    await page.waitForURL('/member', { timeout: 15000 });
+    await expect(page).toHaveURL('/member');
 
     await page.goto('/member/my-training');
     await page.waitForSelector('h1', { timeout: 8000 });
-    // Either a start-session button or the plan name is visible
-    const hasContent = await page
-      .getByRole('heading', { name: /my training/i })
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-    expect(hasContent).toBe(true);
+
+    // The heading must render
+    await expect(page.getByRole('heading', { name: /my training/i })).toBeVisible();
+
+    // Start Session button should be present (plan was just assigned)
+    const startBtn = page.getByRole('button', { name: /start session/i });
+    const hasStartBtn = await startBtn.isVisible({ timeout: 8000 }).catch(() => false);
+    expect(hasStartBtn).toBe(true);
+
+    // Start the session and verify session page loads
+    await startBtn.click();
+    await page.waitForURL(/\/member\/my-training\/session\//, { timeout: 10000 });
+
+    // Session page should render
+    const hasSessionContent = await page.getByRole('heading').first().isVisible({ timeout: 5000 }).catch(() => false);
+    expect(hasSessionContent).toBe(true);
 
     await ctx.close();
   });

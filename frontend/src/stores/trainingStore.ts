@@ -6,6 +6,7 @@ interface TrainingState {
   memberPlans: Record<string, api.MemberPlan | null>;
   activeSession: api.WorkoutSession | null;
   pbs: Record<string, api.PersonalBest[]>;
+  exerciseNotes: Record<string, string>;
   isLoading: boolean;
   error: string | null;
   fetchPlans: () => Promise<void>;
@@ -18,6 +19,7 @@ interface TrainingState {
   updateSet: (sessionId: string, setIndex: number, data: { weight?: number; reps?: number; completed?: boolean }) => Promise<void>;
   completeSession: (sessionId: string) => Promise<void>;
   fetchPbs: (memberId: string) => Promise<void>;
+  saveExerciseNote: (exerciseId: string, note: string) => void;
 }
 
 export const useTrainingStore = create<TrainingState>((set) => ({
@@ -25,6 +27,7 @@ export const useTrainingStore = create<TrainingState>((set) => ({
   memberPlans: {},
   activeSession: null,
   pbs: {},
+  exerciseNotes: {},
   isLoading: false,
   error: null,
 
@@ -78,12 +81,16 @@ export const useTrainingStore = create<TrainingState>((set) => ({
   },
 
   completeSession: async (sessionId) => {
-    await api.completeSession(sessionId);
-    set({ activeSession: null });
+    const completed = await api.completeSession(sessionId);
+    set({ activeSession: completed });
   },
 
   fetchPbs: async (memberId) => {
     const pbs = await api.fetchPbs(memberId);
     set((s) => ({ pbs: { ...s.pbs, [memberId]: pbs } }));
+  },
+
+  saveExerciseNote: (exerciseId, note) => {
+    set((s) => ({ exerciseNotes: { ...s.exerciseNotes, [exerciseId]: note } }));
   },
 }));
