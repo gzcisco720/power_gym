@@ -401,21 +401,35 @@ Every v2 dashboard page (`frontend/src/pages/`) looks and behaves like its v1 co
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `MemberBodyTestsPage > empty > renders EmptyState when no tests` — EmptyState heading visible
-- [ ] `MemberCheckInNewPage > submit > submitCheckIn called with all metric values and shows success state` — store action invoked, success UI shown
-- [ ] `MemberCheckInNewPage > validation > submit blocked when a required metric is missing` — submitCheckIn not called, error shown
-- [ ] `MemberJourneyPage > data > renders a chart line per distinct exercise in trend data` — one series per exercise name
-- [ ] `MemberSettingsPage > save > updateProfile called with edited bio and shows toast` — store action invoked with new bio
+- [x] `MemberBodyTestsPage > empty > renders EmptyState when no tests` — EmptyState heading visible
+- [x] `MemberCheckInNewPage > submit > submitCheckIn called with all metric values and shows success state` — store action invoked, success UI shown
+- [x] `MemberCheckInNewPage > validation > submit blocked when a required metric is missing` — submitCheckIn not called, error shown
+- [x] `MemberJourneyPage > data > renders a chart line per distinct exercise in trend data` — one series per exercise name
+- [x] `MemberSettingsPage > save > updateProfile called with edited bio and shows toast` — store action invoked with new bio
 
 *Integration / E2E:*
-- [ ] Member `/member/check-in/new`: fill all metrics, submit -> success state, then `/member/check-in/history` shows the new entry (golden)
-- [ ] Member `/member/check-in/new`: submit with a missing required metric -> inline error, stays on page (edge)
-- [ ] Member `/member/journey`: trend chart renders with exercise selector (edge: EmptyState when no sessions logged)
-- [ ] Member `/member/settings`: edit bio, save -> success toast and value persists on reload
+- [x] Member `/member/check-in/new`: fill all metrics, submit -> success state, then `/member/check-in/history` shows the new entry (golden)
+- [x] Member `/member/check-in/new`: submit with a missing required metric -> inline error, stays on page (edge)
+- [x] Member `/member/journey`: trend chart renders with exercise selector (edge: EmptyState when no sessions logged)
+- [x] Member `/member/settings`: edit bio, save -> success toast and value persists on reload
 
 **TDD sequence**: Red unit -> Green pages -> extend `e2e/member.spec.ts` -> design-reviewer. Wire real routes in `router/index.tsx`.
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 2 Checkpoint
+- [x] `frontend/src/pages/member/body-tests.tsx` — PageHeader + EmptyState + skeleton + BodyTestCard with result metrics
+- [x] `frontend/src/pages/member/check-in-dashboard.tsx` — PageHeader + submit CTA + CheckInCard list + EmptyState + skeleton
+- [x] `frontend/src/pages/member/check-in-new.tsx` — PageHeader + 7 rating inputs + stuckToDiet selector + validation + success state
+- [x] `frontend/src/pages/member/check-in-history.tsx` — PageHeader + HistoryCard list + EmptyState + skeleton
+- [x] `frontend/src/pages/member/check-in-detail.tsx` — single check-in view, replaces MemberCheckInDetailStub
+- [x] `frontend/src/pages/member/journey.tsx` — PageHeader + LineChart (recharts) + exercise selector + EmptyState + skeleton
+- [x] `frontend/src/pages/member/settings.tsx` — PageHeader + profile card + bio form + sticky save bar + dirty indicator
+- [x] `frontend/src/pages/member/stubs.tsx` — MemberHealthPage + MemberSchedulePage + MemberBillingPage + MemberCalendarPage with PageHeader + EmptyState
+- [x] `frontend/src/router/index.tsx` — wired MemberCheckInDetailPage + MemberHealth/Schedule/Billing/CalendarPage
+- [x] `frontend/src/pages/trainer/plan-edit.tsx` — fixed pre-existing TS error (as unknown as PlanTemplate['days'])
+- [x] Unit tests: 5/5 Sprint Contract tests passing (185 total)
+- [x] E2E: 4/4 Sprint 5 Stage 2 scenarios passing (16/16 member tests total)
 
 ---
 

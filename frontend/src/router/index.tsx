@@ -19,12 +19,12 @@ import { MemberNutritionDayPage } from '@/pages/member/nutrition-day';
 import { MemberBodyTestsPage } from '@/pages/member/body-tests';
 import { MemberJourneyPage } from '@/pages/member/journey';
 import { MemberSettingsPage } from '@/pages/member/settings';
+import { MemberCheckInDetailPage } from '@/pages/member/check-in-detail';
 import {
-  MemberHealthStub,
-  MemberScheduleStub,
-  MemberBillingStub,
-  MemberCalendarStub,
-  MemberCheckInDetailStub,
+  MemberHealthPage,
+  MemberSchedulePage,
+  MemberBillingPage,
+  MemberCalendarPage,
 } from '@/pages/member/stubs';
 
 // Trainer pages
@@ -187,18 +187,18 @@ export const router = createBrowserRouter([
               { path: '/member', element: <MemberDashboardPage /> },
               { path: '/member/my-training', element: <MemberMyTrainingPage /> },
               { path: '/member/my-training/session/:id', element: <MemberSessionPage /> },
-              { path: '/member/my-training/*', element: <MemberCalendarStub /> },
+              { path: '/member/my-training/*', element: <MemberCalendarPage /> },
               { path: '/member/check-in', element: <MemberCheckInDashboardPage /> },
               { path: '/member/check-in/new', element: <MemberCheckInNewPage /> },
               { path: '/member/check-in/history', element: <MemberCheckInHistoryPage /> },
-              { path: '/member/check-in/:id', element: <MemberCheckInDetailStub /> },
+              { path: '/member/check-in/:id', element: <MemberCheckInDetailPage /> },
               { path: '/member/nutrition', element: <MemberNutritionPage /> },
               { path: '/member/nutrition/day', element: <MemberNutritionDayPage /> },
               { path: '/member/body-tests', element: <MemberBodyTestsPage /> },
               { path: '/member/journey', element: <MemberJourneyPage /> },
-              { path: '/member/health', element: <MemberHealthStub /> },
-              { path: '/member/schedule', element: <MemberScheduleStub /> },
-              { path: '/member/billing', element: <MemberBillingStub /> },
+              { path: '/member/health', element: <MemberHealthPage /> },
+              { path: '/member/schedule', element: <MemberSchedulePage /> },
+              { path: '/member/billing', element: <MemberBillingPage /> },
               { path: '/member/settings', element: <MemberSettingsPage /> },
               { path: '/member/*', element: <Placeholder title="Member" /> },
             ],

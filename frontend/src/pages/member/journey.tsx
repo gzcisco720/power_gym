@@ -1,11 +1,40 @@
 import { useEffect } from 'react';
+import { LazyMotion, domAnimation, m, useReducedMotion } from 'framer-motion';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useAuthStore } from '@/stores/authStore';
 import { useProgressStore } from '@/stores/progressStore';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { PageHeader } from '@/components/shared/page-header';
+import { EmptyState } from '@/components/shared/empty-state';
+import { variants } from '@/lib/animations/variants';
+import { type OneRepMaxTrendPoint } from '@/api/progress';
+
+const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+
+function buildChartData(trendData: OneRepMaxTrendPoint[]): { date: string; [exercise: string]: string | number }[] {
+  const map: Record<string, Record<string, number>> = {};
+  for (const point of trendData) {
+    const date = point.achievedAt.slice(0, 10);
+    map[date] = map[date] ?? {};
+    map[date][point.exerciseName] = point.estimatedOneRM;
+  }
+  return Object.entries(map)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, values]) => ({ date, ...values }));
+}
+
+function SkeletonChart() {
+  return (
+    <div className="space-y-3">
+      <div className="h-4 w-32 animate-pulse rounded bg-card ring-1 ring-foreground/10" />
+      <div className="h-[260px] animate-pulse rounded-xl bg-card ring-1 ring-foreground/10" />
+    </div>
+  );
+}
 
 export function MemberJourneyPage() {
-  const user = useAuthStore((s) => s.user);
-  const { trend, fetchTrend, isLoading } = useProgressStore();
+  const shouldReduceMotion = useReducedMotion();
+  const { user } = useAuthStore();
+  const { trend, isLoading, fetchTrend } = useProgressStore();
 
   const memberId = user?.id ?? '';
   const trendData = trend[memberId] ?? [];
@@ -14,61 +43,98 @@ export function MemberJourneyPage() {
     if (memberId) void fetchTrend(memberId);
   }, [memberId, fetchTrend]);
 
-  // Group trend points by exercise name for chart
   const exerciseNames = [...new Set(trendData.map((p) => p.exerciseName))];
-
-  // Build chart data: one entry per date with each exercise as a key
-  const chartDataMap: Record<string, Record<string, number>> = {};
-  for (const point of trendData) {
-    const date = point.achievedAt.slice(0, 10);
-    chartDataMap[date] = chartDataMap[date] ?? {};
-    chartDataMap[date][point.exerciseName] = point.estimatedOneRM;
-  }
-  const chartData = Object.entries(chartDataMap)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, values]) => ({ date, ...values }));
-
-  const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  const chartData = buildChartData(trendData);
 
   return (
-    <div className="p-8">
-      <h1 className="mb-6 text-2xl font-bold text-foreground">My Journey</h1>
+    <LazyMotion features={domAnimation}>
+      <PageHeader title="My Journey" subtitle="1RM progress over time" />
+      <div className="px-4 sm:px-8 py-6 max-w-3xl mx-auto">
+        {isLoading && <SkeletonChart />}
 
-      {isLoading && <p className="text-sm text-foreground/65">Loading…</p>}
+        {!isLoading && trendData.length === 0 && (
+          <EmptyState
+            heading="No 1RM data yet"
+            description="Complete training sessions to start tracking your 1RM progress over time."
+          />
+        )}
 
-      {!isLoading && trendData.length === 0 && (
-        <p className="text-sm text-foreground/65">
-          No 1RM data yet. Complete sessions to track your progress.
-        </p>
-      )}
+        {!isLoading && trendData.length > 0 && (
+          <m.div
+            className="space-y-4"
+            variants={shouldReduceMotion ? undefined : variants.fadeSlideUp}
+            initial="hidden"
+            animate="visible"
+          >
+            <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-4">
+              <p className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
+                1RM Trend
+              </p>
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.07)" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.45)' }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.45)' }}
+                    tickLine={false}
+                    axisLine={false}
+                    unit=" kg"
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'oklch(0.07 0 0)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '8px',
+                      fontSize: 12,
+                    }}
+                    labelStyle={{ color: 'rgba(255,255,255,0.65)' }}
+                  />
+                  <Legend
+                    wrapperStyle={{ fontSize: 11, color: 'rgba(255,255,255,0.65)' }}
+                  />
+                  {exerciseNames.map((name, i) => (
+                    <Line
+                      key={name}
+                      type="monotone"
+                      dataKey={name}
+                      stroke={COLORS[i % COLORS.length]}
+                      dot={false}
+                      strokeWidth={2}
+                      connectNulls
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
 
-      {!isLoading && trendData.length > 0 && (
-        <div>
-          <p className="mb-4 text-sm text-foreground/65">1RM Trend</p>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-              <XAxis dataKey="date" tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.65)' }} />
-              <YAxis tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.65)' }} />
-              <Tooltip
-                contentStyle={{ backgroundColor: '#0c0c0c', border: '1px solid rgba(255,255,255,0.1)' }}
-                labelStyle={{ color: 'rgba(255,255,255,0.65)' }}
-              />
-              <Legend />
-              {exerciseNames.map((name, i) => (
-                <Line
-                  key={name}
-                  type="monotone"
-                  dataKey={name}
-                  stroke={COLORS[i % COLORS.length]}
-                  dot={false}
-                  strokeWidth={2}
-                />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-    </div>
+            {/* Exercise selector / legend detail */}
+            <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65 mb-2">
+                Exercises tracked
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {exerciseNames.map((name, i) => (
+                  <span
+                    key={name}
+                    className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-foreground/[0.06] text-xs text-foreground/80"
+                  >
+                    <span
+                      className="inline-block w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: COLORS[i % COLORS.length] }}
+                    />
+                    {name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </m.div>
+        )}
+      </div>
+    </LazyMotion>
   );
 }

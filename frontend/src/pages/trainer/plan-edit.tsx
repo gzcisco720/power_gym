@@ -60,7 +60,7 @@ export function TrainerPlanEditPage() {
     // The backend PATCH endpoint accepts PlanDayExerciseDto shape for exercises, which differs
     // from the response type (Exercise). Single assertion is required here since the DTO
     // and API response Exercise types diverge at the `sets` field (number vs array).
-    await updatePlan(id, { name: data.name, description: data.description, days: days as PlanTemplate['days'] });
+    await updatePlan(id, { name: data.name, description: data.description, days: (days as unknown) as PlanTemplate['days'] });
     toast.success('Plan updated');
     void navigate('/trainer/plans');
   }
