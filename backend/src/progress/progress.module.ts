@@ -4,6 +4,7 @@ import {
   PERSONAL_BEST_MODEL,
   PersonalBestSchema,
 } from '../database/models/personal-best.model';
+import { PersonalBestRepository } from '../repositories/personal-best.repository';
 import { UsersModule } from '../users/users.module';
 import { ProgressController } from './progress.controller';
 import { ProgressService } from './progress.service';
@@ -16,6 +17,6 @@ import { ProgressService } from './progress.service';
     UsersModule,
   ],
   controllers: [ProgressController],
-  providers: [ProgressService],
+  providers: [ProgressService, PersonalBestRepository],
 })
 export class ProgressModule {}

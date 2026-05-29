@@ -27,6 +27,12 @@ export class PersonalBestRepository {
     return this.model.find({ memberId: new Types.ObjectId(memberId) });
   }
 
+  async findByMemberSorted(memberId: string): Promise<IPersonalBest[]> {
+    return this.model
+      .find({ memberId: new Types.ObjectId(memberId) })
+      .sort({ achievedAt: 1 });
+  }
+
   async upsertIfBetter(data: UpsertPBData): Promise<void> {
     const newEstimated = estimatedOneRM(data.weight, data.reps);
     try {

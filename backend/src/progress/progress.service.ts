@@ -3,21 +3,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
+import { PersonalBestRepository } from '../repositories/personal-best.repository';
 import { UserRepository } from '../repositories/user.repository';
-import {
-  IPersonalBest,
-  PERSONAL_BEST_MODEL,
-} from '../database/models/personal-best.model';
 
 @Injectable()
 export class ProgressService {
   constructor(
     private readonly userRepo: UserRepository,
-    @InjectModel(PERSONAL_BEST_MODEL)
-    private readonly personalBestModel: Model<IPersonalBest>,
+    private readonly personalBestRepo: PersonalBestRepository,
   ) {}
 
   async getMemberProgress(
@@ -40,9 +34,7 @@ export class ProgressService {
       }
     }
 
-    const pbs = await this.personalBestModel
-      .find({ memberId: new Types.ObjectId(memberId) })
-      .sort({ achievedAt: 1 });
+    const pbs = await this.personalBestRepo.findByMemberSorted(memberId);
 
     const oneRepMaxTrend = pbs.map((pb) => ({
       exerciseName: pb.exerciseName,

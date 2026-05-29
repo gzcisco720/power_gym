@@ -8,6 +8,7 @@ import {
   SCHEDULED_SESSION_MODEL,
   ScheduledSessionSchema,
 } from '../database/models/scheduled-session.model';
+import { ScheduledSessionRepository } from '../repositories/scheduled-session.repository';
 import { ServiceTypeRepository } from '../repositories/service-type.repository';
 import { UsersModule } from '../users/users.module';
 import { BillingController } from './billing.controller';
@@ -22,6 +23,10 @@ import { BillingService } from './billing.service';
     UsersModule,
   ],
   controllers: [BillingController],
-  providers: [BillingService, ServiceTypeRepository],
+  providers: [
+    BillingService,
+    ServiceTypeRepository,
+    ScheduledSessionRepository,
+  ],
 })
 export class BillingModule {}

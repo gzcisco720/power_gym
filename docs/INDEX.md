@@ -6,7 +6,6 @@ Harness working directory. Only active Sprint Contract plans are listed here.
 
 | Feature | Plan File | Status |
 |---|---|---|
-| *(no active plans)* | — | — |
 
 ## Management Files
 

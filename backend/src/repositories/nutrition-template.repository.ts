@@ -47,7 +47,11 @@ export class NutritionTemplateRepository {
     id: string,
     data: UpdateNutritionTemplateData,
   ): Promise<INutritionTemplate | null> {
-    return this.model.findByIdAndUpdate(id, { $set: data }, { returnDocument: 'after' });
+    return this.model.findByIdAndUpdate(
+      id,
+      { $set: data },
+      { returnDocument: 'after' },
+    );
   }
 
   async deleteById(id: string, createdBy: string): Promise<boolean> {

@@ -8,8 +8,21 @@ For multi-stage work, create `docs/YYYY-MM-DD/plans/IMPLEMENTATION_PLAN.md`:
 ## Stage N: [Name]
 
 **Goal**: [Specific deliverable]
-**Success Criteria**: [Testable outcomes — each must be writable as a runnable assertion: Playwright expect() for web UI flows, Supertest/Jest expect() for API endpoints]
-**Tests**: [List of TDD test cases]
+
+**Sprint Contract**:
+
+*Unit tests (mandatory — one per new/changed service method):*
+- [ ] [Jest: `ServiceName > method > scenario` — what it asserts]
+
+*Integration / E2E (mandatory — one per endpoint or user flow):*
+- [ ] [Supertest/Playwright: exact action and expected outcome]
+
+**TDD sequence** (no exceptions):
+1. Write the failing unit test → Red
+2. Implement minimal code → Green
+3. Run `/simplify` → Refactor
+4. Write/update integration or E2E test → pass against real stack
+
 **Status**: [Not Started|In Progress|Complete]
 ```
 

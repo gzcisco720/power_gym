@@ -30,14 +30,18 @@ The user will provide a path to an implementation plan (e.g., `docs/2026-05-27/p
    - `cd backend && pnpm lint` — lint
    - `cd backend && pnpm build` — build
 
-4. **Evaluate each Sprint Contract criterion** independently:
+4. **Check unit test existence first** — before running anything:
+   - For every service method added or changed in this stage, confirm a `.spec.ts` file exists with a test covering it.
+   - If any service method has no unit test at all, mark the stage **FAIL** immediately with: "Missing unit test for `ServiceName.methodName`". Do not proceed to E2E verification.
+
+5. **Evaluate each Sprint Contract criterion** independently:
    - ✅ Criterion met — test/assertion confirms the behavior
    - ❌ Criterion not met — describe exactly what happened vs. what was expected
    - ⚠️ Cannot verify — explain what's blocking verification (missing spec, app not running, etc.)
 
-5. **Check for scope violations**: Did the implementation change anything outside the "In scope" section? List any unexpected changes.
+6. **Check for scope violations**: Did the implementation change anything outside the "In scope" section? List any unexpected changes.
 
-6. **Check for regressions**:
+7. **Check for regressions**:
    - Web: `cd web && npx playwright test e2e/<role>/`
    - Backend: `cd backend && pnpm test`
 

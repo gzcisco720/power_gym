@@ -91,6 +91,21 @@ export class ScheduledSessionRepository {
       .sort({ date: -1 });
   }
 
+  async findForBilling(
+    memberId: string,
+    from: Date,
+    to: Date,
+  ): Promise<IScheduledSession[]> {
+    return this.model
+      .find({
+        memberIds: new Types.ObjectId(memberId),
+        date: { $gte: from, $lte: to },
+        status: 'scheduled',
+        serviceTypeId: { $ne: null },
+      })
+      .lean();
+  }
+
   async createMany(
     sessions: CreateScheduledSessionData[],
   ): Promise<IScheduledSession[]> {

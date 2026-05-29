@@ -47,7 +47,11 @@ export class PlanTemplateRepository {
     id: string,
     data: UpdatePlanTemplateData,
   ): Promise<IPlanTemplate | null> {
-    return this.model.findByIdAndUpdate(id, { $set: data }, { returnDocument: 'after' });
+    return this.model.findByIdAndUpdate(
+      id,
+      { $set: data },
+      { returnDocument: 'after' },
+    );
   }
 
   async deleteById(id: string, createdBy: string): Promise<boolean> {

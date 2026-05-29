@@ -1,6 +1,6 @@
 ---
 name: planner
-description: Use for starting any non-trivial new feature. Reads the codebase and the existing implementation docs, then produces a detailed plan with Sprint Contracts — acceptance criteria phrased as Playwright expect() statements. Invoke before the generator session begins.
+description: Use for starting any non-trivial new feature. Reads the codebase and the existing implementation docs, then produces a detailed plan with Sprint Contracts — acceptance criteria phrased as Playwright expect() or Jest expect() statements. Invoke before the generator session begins.
 tools: Read, Bash, Glob, Grep
 model: opus
 ---
@@ -43,12 +43,20 @@ The user will provide:
 **Goal**: [Specific deliverable for this stage]
 
 **Sprint Contract** (acceptance criteria — each must be directly testable):
-- [ ] [Playwright: describe exact user action and expected outcome]
-- [ ] [Playwright: another testable criterion]
-- [ ] [Jest: unit-level criterion if applicable]
 
-**TDD Test Cases**:
-- [ ] [Test name]: [what it verifies]
+*Unit tests (mandatory for every new service method — backend and web alike):*
+- [ ] [Jest: `ServiceName > methodName > [scenario]` — what it asserts]
+- [ ] [Jest: `ServiceName > methodName > [edge case]` — what it asserts]
+
+*Integration / E2E (mandatory for every user-facing flow or API endpoint):*
+- [ ] [Playwright/Supertest: describe exact action and expected outcome]
+- [ ] [Playwright/Supertest: another testable criterion]
+
+**TDD sequence** (Generator must follow this order — no exceptions):
+1. Write the failing unit test(s) listed above → confirm Red
+2. Implement the minimal code to make them pass → confirm Green
+3. Run `/simplify` on the diff → Refactor
+4. Write / update the integration or E2E test → confirm it passes against the real stack
 
 **Status**: Not Started
 
@@ -61,14 +69,21 @@ The user will provide:
 
 ## Sprint Contract Rules
 
-Every acceptance criterion in the Sprint Contract must be phrased so it can be directly written as a Playwright `expect()`:
+Every acceptance criterion must be phrased so it can be directly written as a Jest or Playwright `expect()`.
 
+**Unit test criteria** (one per service method being added or changed):
+✅ `AuthService > login > returns tokens on valid credentials`
+✅ `BodyTestsService > calculateBodyFat > applies Jackson-Pollock 3-site formula`
+❌ "auth works correctly"
+❌ "body fat is calculated"
+
+**Integration / E2E criteria** (one per user-facing flow or API endpoint):
 ✅ "Member can submit the check-in form and sees a success toast within 2 seconds"
 ✅ "Trainer cannot see members belonging to another trainer"
 ❌ "Check-in works correctly"
 ❌ "Proper authorization is in place"
 
-Each criterion maps to exactly one Playwright assertion. If you can't write it as a `page.expect()`, it's not specific enough.
+**Rule**: If a stage adds or changes any service method, it MUST have at least one unit test criterion for that method. There are no exceptions for "simple" methods — simple methods have simple tests.
 
 ## Output
 

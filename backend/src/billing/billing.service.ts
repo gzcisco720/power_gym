@@ -3,26 +3,20 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
-import { UserRepository } from '../repositories/user.repository';
+import { ScheduledSessionRepository } from '../repositories/scheduled-session.repository';
 import { ServiceTypeRepository } from '../repositories/service-type.repository';
-import {
-  IScheduledSession,
-  SCHEDULED_SESSION_MODEL,
-} from '../database/models/scheduled-session.model';
-import { IServiceType } from '../database/models/service-type.model';
+import { UserRepository } from '../repositories/user.repository';
 import { BillingLine, calculateMemberBilling } from './calculate-billing';
 import { CreateServiceTypeDto } from './dto/create-service-type.dto';
+import { IServiceType } from '../database/models/service-type.model';
 
 @Injectable()
 export class BillingService {
   constructor(
     private readonly userRepo: UserRepository,
     private readonly serviceTypeRepo: ServiceTypeRepository,
-    @InjectModel(SCHEDULED_SESSION_MODEL)
-    private readonly scheduledSessionModel: Model<IScheduledSession>,
+    private readonly scheduledSessionRepo: ScheduledSessionRepository,
   ) {}
 
   async createServiceType(
@@ -56,7 +50,6 @@ export class BillingService {
     currency: string;
     lines: BillingLine[];
   }> {
-    // Ownership check
     if (caller.role === 'member' && caller.userId !== memberId) {
       throw new ForbiddenException('Access denied');
     }
@@ -72,16 +65,12 @@ export class BillingService {
       from ?? new Date(now.getFullYear(), now.getMonth(), 1);
     const effectiveTo = to && to < now ? to : now;
 
-    const sessions = await this.scheduledSessionModel
-      .find({
-        memberIds: new Types.ObjectId(memberId),
-        date: { $gte: effectiveFrom, $lte: effectiveTo },
-        status: 'scheduled',
-        serviceTypeId: { $ne: null },
-      })
-      .lean();
+    const sessions = await this.scheduledSessionRepo.findForBilling(
+      memberId,
+      effectiveFrom,
+      effectiveTo,
+    );
 
-    // Fetch service types for the sessions
     const stIds = [
       ...new Set(
         sessions
