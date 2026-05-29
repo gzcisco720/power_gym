@@ -14,7 +14,7 @@ interface TrainingState {
   deletePlan: (id: string) => Promise<void>;
   fetchMemberPlan: (memberId: string) => Promise<void>;
   assignPlan: (memberId: string, planTemplateId: string) => Promise<void>;
-  startSession: (memberId: string, memberPlanId: string, dayNumber: number) => Promise<void>;
+  startSession: (memberId: string, dayNumber: number) => Promise<void>;
   updateSet: (sessionId: string, setIndex: number, data: { weight?: number; reps?: number; completed?: boolean }) => Promise<void>;
   completeSession: (sessionId: string) => Promise<void>;
   fetchPbs: (memberId: string) => Promise<void>;
@@ -67,8 +67,8 @@ export const useTrainingStore = create<TrainingState>((set) => ({
     set((s) => ({ memberPlans: { ...s.memberPlans, [memberId]: plan } }));
   },
 
-  startSession: async (memberId, memberPlanId, dayNumber) => {
-    const session = await api.startSession(memberId, memberPlanId, dayNumber);
+  startSession: async (memberId, dayNumber) => {
+    const session = await api.startSession(memberId, dayNumber);
     set({ activeSession: session });
   },
 

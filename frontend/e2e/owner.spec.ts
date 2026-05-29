@@ -7,7 +7,7 @@ test.describe('Owner domain', () => {
   let sharedContext: BrowserContext;
 
   test.beforeAll(async ({ browser }) => {
-    sharedContext = await browser.newContext({ storageState: 'e2e/.auth/owner.json' });
+    sharedContext = await browser.newContext({ storageState: 'e2e/.auth/owner-domain.json' });
     sharedPage = await sharedContext.newPage();
     await sharedPage.goto('/owner');
     await sharedPage.waitForSelector('nav', { timeout: 15000 });

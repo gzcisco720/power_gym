@@ -21,7 +21,12 @@ import { RegisterDto } from './dto/register.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
-const AUTH_THROTTLE = { default: { limit: 10, ttl: 900000 } };
+const AUTH_THROTTLE = {
+  default: {
+    limit: process.env.NODE_ENV === 'production' ? 10 : 50,
+    ttl: 900000,
+  },
+};
 const COOKIE_NAME = 'refresh_token';
 const COOKIE_OPTIONS = {
   httpOnly: true,

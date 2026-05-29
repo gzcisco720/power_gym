@@ -68,8 +68,8 @@ export const fetchMemberPlan = (memberId: string) =>
 export const assignPlan = (memberId: string, planTemplateId: string) =>
   request<MemberPlan>(`/api/v1/members/${memberId}/plan`, { method: 'POST', body: JSON.stringify({ templateId: planTemplateId }) });
 
-export const startSession = (memberId: string, memberPlanId: string, dayNumber: number) =>
-  request<WorkoutSession>('/api/v1/sessions', { method: 'POST', body: JSON.stringify({ memberId, memberPlanId, dayNumber }) });
+export const startSession = (memberId: string, dayNumber: number) =>
+  request<WorkoutSession>('/api/v1/sessions', { method: 'POST', body: JSON.stringify({ memberId, dayNumber }) });
 
 export const fetchSessions = (memberId: string) =>
   request<WorkoutSession[]>(`/api/v1/sessions?memberId=${memberId}`);

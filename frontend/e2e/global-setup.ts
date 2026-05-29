@@ -61,27 +61,49 @@ function cleanupTestData(): void {
   }
 }
 
+async function loginAndSave(
+  browser: import('@playwright/test').Browser,
+  email: string,
+  password: string,
+  waitUrl: string,
+  filePath: string,
+): Promise<void> {
+  const context = await browser.newContext({ baseURL: 'http://localhost:5173' });
+  const page = await context.newPage();
+  await page.goto('/login');
+  await page.fill('#email', email);
+  await page.fill('#password', password);
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.waitForURL(waitUrl, { timeout: 15000 });
+  await context.storageState({ path: filePath });
+  await context.close();
+}
+
 async function saveAuthStates() {
   const AUTH_DIR = join(process.cwd(), 'e2e', '.auth');
   mkdirSync(AUTH_DIR, { recursive: true });
 
   const browser = await chromium.launch();
 
-  for (const role of [
-    { email: 'owner@test.com', password: PASSWORD, file: 'owner.json', waitUrl: '/owner' },
-    { email: 'trainer@test.com', password: PASSWORD, file: 'trainer.json', waitUrl: '/trainer/members' },
-    { email: 'member@test.com', password: PASSWORD, file: 'member.json', waitUrl: '/member' },
-  ]) {
-    const context = await browser.newContext({ baseURL: 'http://localhost:5173' });
-    const page = await context.newPage();
-    await page.goto('/login');
-    await page.fill('#email', role.email);
-    await page.fill('#password', role.password);
-    await page.getByRole('button', { name: 'Sign in' }).click();
-    await page.waitForURL(role.waitUrl, { timeout: 15000 });
-    await context.storageState({ path: join(AUTH_DIR, role.file) });
-    await context.close();
-  }
+  // Each spec file that needs real authentication gets its own fresh login so
+  // token rotation does not revoke another spec's httpOnly cookie.
+  // access-control.spec — base files (stale tokens still redirect correctly)
+  await loginAndSave(browser, 'owner@test.com', PASSWORD, '/owner', join(AUTH_DIR, 'owner.json'));
+  await loginAndSave(browser, 'trainer@test.com', PASSWORD, '/trainer/members', join(AUTH_DIR, 'trainer.json'));
+  await loginAndSave(browser, 'member@test.com', PASSWORD, '/member', join(AUTH_DIR, 'member.json'));
+
+  // owner.spec, trainer.spec, member.spec — dedicated fresh tokens
+  await loginAndSave(browser, 'owner@test.com', PASSWORD, '/owner', join(AUTH_DIR, 'owner-domain.json'));
+  await loginAndSave(browser, 'trainer@test.com', PASSWORD, '/trainer/members', join(AUTH_DIR, 'trainer-domain.json'));
+  await loginAndSave(browser, 'member@test.com', PASSWORD, '/member', join(AUTH_DIR, 'member-domain.json'));
+
+  // integration.spec — dedicated fresh tokens
+  await loginAndSave(browser, 'owner@test.com', PASSWORD, '/owner', join(AUTH_DIR, 'owner-integration.json'));
+  await loginAndSave(browser, 'trainer@test.com', PASSWORD, '/trainer/members', join(AUTH_DIR, 'trainer-integration.json'));
+  await loginAndSave(browser, 'member@test.com', PASSWORD, '/member', join(AUTH_DIR, 'member-integration.json'));
+
+  // z-auth.spec deep-link test — dedicated fresh member token
+  await loginAndSave(browser, 'member@test.com', PASSWORD, '/member', join(AUTH_DIR, 'member-zauth.json'));
 
   await browser.close();
 }

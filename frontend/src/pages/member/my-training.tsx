@@ -22,7 +22,7 @@ export function MemberMyTrainingPage() {
   async function handleStart() {
     if (!memberPlan) return;
     try {
-      await startSession(memberId, memberPlan._id, 1);
+      await startSession(memberId, 1);
     } catch {
       toast.error('Failed to start session. Please try again.');
     }

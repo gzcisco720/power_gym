@@ -37,7 +37,7 @@ export function TrainerMemberPlanPage() {
     if (!memberId || !memberPlan) return;
     setIsStarting(true);
     try {
-      await startSession(memberId, memberPlan._id, 1);
+      await startSession(memberId, 1);
     } finally {
       setIsStarting(false);
     }

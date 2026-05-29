@@ -19,7 +19,7 @@ export function TrainerMemberLogNewPage() {
   async function handleStart() {
     if (!memberId || !memberPlan) return;
     try {
-      await startSession(memberId, memberPlan._id, 1);
+      await startSession(memberId, 1);
     } catch {
       // session start failed (e.g. no exercises in plan); page stays on start button
     }

@@ -8,7 +8,7 @@ test.describe('Trainer domain', () => {
   let memberId: string;
 
   test.beforeAll(async ({ browser }) => {
-    sharedContext = await browser.newContext({ storageState: 'e2e/.auth/trainer.json' });
+    sharedContext = await browser.newContext({ storageState: 'e2e/.auth/trainer-domain.json' });
     sharedPage = await sharedContext.newPage();
     await sharedPage.goto('/trainer/members');
     await sharedPage.waitForSelector('nav', { timeout: 15000 });

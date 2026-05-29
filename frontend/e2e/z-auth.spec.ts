@@ -77,4 +77,17 @@ test.describe('Authentication', () => {
     await expect(page.getByText('Invalid email or password.')).toBeVisible();
     await expect(page).toHaveURL('/login');
   });
+
+  test('deep-link + reload: authenticated member stays on /member/check-in after reload', async ({ browser }) => {
+    const ctx = await browser.newContext({ storageState: 'e2e/.auth/member-zauth.json', baseURL: 'http://localhost:5173' });
+    const page = await ctx.newPage();
+
+    await page.goto('/member/check-in');
+    await page.waitForURL('/member/check-in', { timeout: 10000 });
+    await page.reload();
+    await page.waitForURL('/member/check-in', { timeout: 10000 });
+    await expect(page).toHaveURL('/member/check-in');
+
+    await ctx.close();
+  });
 });
