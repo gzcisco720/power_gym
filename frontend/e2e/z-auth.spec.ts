@@ -78,15 +78,29 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL('/login');
   });
 
-  test('deep-link + reload: authenticated member stays on /member/check-in after reload', async ({ browser }) => {
+  test('deep-link + reload: authenticated member stays on static and parameterized deep-links after reload', async ({ browser }) => {
     const ctx = await browser.newContext({ storageState: 'e2e/.auth/member-zauth.json', baseURL: 'http://localhost:5173' });
     const page = await ctx.newPage();
 
-    await page.goto('/member/check-in');
-    await page.waitForURL('/member/check-in', { timeout: 10000 });
+    // 1. Static deep-link — navigate to /member (dashboard, no data-dependent rendering),
+    //    wait for nav (initAuth completed → authenticated), then reload and verify auth holds.
+    await page.goto('/member');
+    await page.waitForSelector('nav', { timeout: 10000 });  // nav only shows after initAuth → authenticated
     await page.reload();
-    await page.waitForURL('/member/check-in', { timeout: 10000 });
-    await expect(page).toHaveURL('/member/check-in');
+    // Wait for nav again to confirm initAuth completed after reload (cookie rotated T1→T2)
+    await page.waitForSelector('nav', { timeout: 10000 });
+    await expect(page).toHaveURL('/member');
+
+    // 2. Parameterized deep-link — the MemberCheckInDetailStub renders a plain h1 with no
+    //    extra API calls. Navigating within the same browser context uses the rotated cookie (T2).
+    //    Waiting for nav before reload ensures initAuth completes (T2→T3) before we reload.
+    const paramUrl = '/member/check-in/abc123';
+    await page.goto(paramUrl);
+    await page.waitForSelector('nav', { timeout: 10000 });  // initAuth completed → T2→T3 rotation done
+    await page.reload();
+    await page.waitForSelector('nav', { timeout: 10000 });  // initAuth completed after reload → T3→T4
+    await expect(page).toHaveURL(paramUrl);
+    await expect(page.getByRole('heading', { name: /check-in/i })).toBeVisible();
 
     await ctx.close();
   });

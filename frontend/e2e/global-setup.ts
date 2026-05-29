@@ -1,9 +1,9 @@
 import { execFileSync } from 'child_process';
-import { writeFileSync, unlinkSync, mkdirSync } from 'fs';
+import { writeFileSync, unlinkSync, mkdirSync, statSync, readFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import * as bcrypt from 'bcryptjs';
-import { chromium } from '@playwright/test';
+import { chromium, request } from '@playwright/test';
 
 const PASSWORD = 'TestPass123!';
 const MONGODB_URI = 'mongodb://power_gym_user:power_gym_pass@localhost:27017/power_gym_test?authSource=admin';
@@ -79,9 +79,64 @@ async function loginAndSave(
   await context.close();
 }
 
+/** Returns true if all auth state files exist. */
+function authFilesExist(authDir: string): boolean {
+  const files = [
+    'owner.json', 'trainer.json', 'member.json',
+    'owner-domain.json', 'trainer-domain.json', 'member-domain.json',
+    'owner-integration.json', 'trainer-integration.json', 'member-integration.json',
+    'member-zauth.json', 'trainer-member-setup.json',
+  ];
+  for (const file of files) {
+    try {
+      statSync(join(authDir, file));
+    } catch {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Returns true if the stored refresh token in the given auth file is still usable.
+ * Calls /api/v1/auth/refresh (which is @SkipThrottle) with the stored httpOnly cookie.
+ */
+async function authTokenIsValid(authFilePath: string): Promise<boolean> {
+  try {
+    const state = JSON.parse(readFileSync(authFilePath, 'utf8')) as {
+      cookies: Array<{ name: string; value: string; domain: string; path: string }>;
+    };
+    const refreshCookie = state.cookies.find((c) => c.name === 'refresh_token');
+    if (!refreshCookie) return false;
+
+    const ctx = await request.newContext({ baseURL: 'http://localhost:3001' });
+    const res = await ctx.post('/api/v1/auth/refresh', {
+      headers: { Cookie: `refresh_token=${refreshCookie.value}` },
+    });
+    await ctx.dispose();
+    return res.ok();
+  } catch {
+    return false;
+  }
+}
+
 async function saveAuthStates() {
   const AUTH_DIR = join(process.cwd(), 'e2e', '.auth');
   mkdirSync(AUTH_DIR, { recursive: true });
+
+  // Skip re-logging in if auth files exist and their tokens are still valid.
+  // The refresh endpoint is @SkipThrottle so we can probe it without burning the
+  // rate-limited login quota. Token rotation during a test run invalidates old cookies,
+  // so we check liveness rather than file age.
+  if (authFilesExist(AUTH_DIR)) {
+    const ownerFile = join(AUTH_DIR, 'owner.json');
+    const isValid = await authTokenIsValid(ownerFile);
+    if (isValid) {
+      console.log('global-setup: auth tokens are still valid — skipping re-login');
+      return;
+    }
+    console.log('global-setup: auth tokens expired/rotated — re-logging in');
+  }
 
   const browser = await chromium.launch();
 
@@ -104,6 +159,9 @@ async function saveAuthStates() {
 
   // z-auth.spec deep-link test — dedicated fresh member token
   await loginAndSave(browser, 'member@test.com', PASSWORD, '/member', join(AUTH_DIR, 'member-zauth.json'));
+
+  // member.spec.ts beforeAll — trainer token for plan setup (avoids burning the rate limit at test time)
+  await loginAndSave(browser, 'trainer@test.com', PASSWORD, '/trainer/members', join(AUTH_DIR, 'trainer-member-setup.json'));
 
   await browser.close();
 }

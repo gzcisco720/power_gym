@@ -171,9 +171,27 @@ test.describe('Cross-role integration journey', () => {
     await startBtn.click();
     await page.waitForURL(/\/member\/my-training\/session\//, { timeout: 10000 });
 
-    // Session page should render
-    const hasSessionContent = await page.getByRole('heading').first().isVisible({ timeout: 5000 }).catch(() => false);
-    expect(hasSessionContent).toBe(true);
+    // Session page should render a heading
+    await expect(page.getByRole('heading').first()).toBeVisible({ timeout: 5000 });
+
+    // Fill weight and reps if exercises are present (plan may have empty exercises)
+    const weightInput = page.locator('input[placeholder="Weight (kg)"]').first();
+    const hasWeightInput = await weightInput.isVisible({ timeout: 3000 }).catch(() => false);
+    if (hasWeightInput) {
+      await weightInput.fill('60');
+      await weightInput.blur();
+      const repsInput = page.locator('input[placeholder="Reps"]').first();
+      await repsInput.fill('8');
+      await repsInput.blur();
+    }
+
+    // Complete the session
+    const completeBtn = page.getByRole('button', { name: /complete session/i });
+    await completeBtn.waitFor({ timeout: 5000 });
+    await completeBtn.click();
+
+    // "Session Complete" confirmation must be visible
+    await expect(page.getByText(/session complete/i)).toBeVisible({ timeout: 8000 });
 
     await ctx.close();
   });

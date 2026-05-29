@@ -9,30 +9,26 @@ test.describe('Member domain', () => {
   let sharedContext: BrowserContext;
 
   test.beforeAll(async ({ browser }) => {
-    // Use a fresh trainer login to avoid staling shared auth state files.
-    // The trainer-domain.json refresh token would become invalid after page load (token rotation),
-    // breaking subsequent trainer.spec.ts tests that rely on the same file.
-    const trainerCtx = await browser.newContext({ baseURL: FRONTEND_BASE });
+    // Use a dedicated trainer auth file (trainer-member-setup.json) created by global-setup.
+    // Doing a fresh login here would consume the rate-limited /login quota mid-suite
+    // and break subsequent z-auth tests. The stored httpOnly cookie is used to call
+    // /refresh (which is @SkipThrottle), so no login request is needed at runtime.
+    const trainerCtx = await browser.newContext({
+      storageState: 'e2e/.auth/trainer-member-setup.json',
+      baseURL: FRONTEND_BASE,
+    });
     const trainerPage = await trainerCtx.newPage();
 
-    // Log in as trainer to get a fresh session
-    await trainerPage.goto('/login');
-    await trainerPage.fill('#email', 'trainer@test.com');
-    await trainerPage.fill('#password', 'TestPass123!');
-    await trainerPage.getByRole('button', { name: 'Sign in' }).click();
-    await trainerPage.waitForURL('/trainer/members', { timeout: 15000 });
+    // Navigate to the trainer dashboard to activate the session (triggers silent refresh)
+    await trainerPage.goto('/trainer/members');
+    await trainerPage.waitForSelector('nav', { timeout: 15000 });
 
-    // Get the in-memory access token from the Zustand auth store (set during login/initAuth).
-    // This avoids an extra /auth/refresh call that would consume the rate limit.
-    const accessToken: string | null = await trainerPage.evaluate(async () => {
-      const { useAuthStore } = await import('/src/stores/authStore');
-      return useAuthStore.getState().accessToken;
-    });
-
-    const setupResult: { ok: boolean; error?: string } = !accessToken
-      ? { ok: false, error: 'no access token in auth store after login' }
-      : await trainerPage.evaluate(async (token: string) => {
-      const accessToken = token;
+    // Get a fresh access token via the refresh endpoint — page.evaluate cannot reach the
+    // Zustand store's in-memory state because the browser sandbox has a separate module instance.
+    const setupResult: { ok: boolean; error?: string } = await trainerPage.evaluate(async () => {
+      const refreshRes = await fetch('/api/v1/auth/refresh', { method: 'POST', credentials: 'include' });
+      if (!refreshRes.ok) return { ok: false, error: `refresh failed: ${refreshRes.status}` };
+      const { access_token: accessToken } = await refreshRes.json() as { access_token: string };
 
       const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` };
 
@@ -65,7 +61,7 @@ test.describe('Member domain', () => {
     });
 
     if (!setupResult.ok) {
-      console.warn(`member.spec beforeAll: plan setup failed (${setupResult.error}) — session test may skip`);
+      console.warn(`member.spec beforeAll: plan setup failed (${setupResult.error})`);
     }
 
     await trainerCtx.close();
@@ -84,13 +80,9 @@ test.describe('Member domain', () => {
     await sharedPage.goto('/member/my-training');
     await sharedPage.waitForSelector('h1', { timeout: 8000 });
 
+    // Plan must have been assigned in beforeAll — assert Start Session is present
     const startBtn = sharedPage.getByRole('button', { name: /start session/i });
-    const hasStartBtn = await startBtn.isVisible({ timeout: 8000 }).catch(() => false);
-
-    if (!hasStartBtn) {
-      test.skip(true, 'No plan assigned to test member — cannot test session lifecycle');
-      return;
-    }
+    await expect(startBtn).toBeVisible({ timeout: 10000 });
 
     await startBtn.click();
 
@@ -189,21 +181,21 @@ test.describe('Member domain', () => {
     await expect(sharedPage.getByText('Freestyle')).toBeVisible();
   });
 
-  test('nutrition day view — freestyle day renders meal sections', async () => {
+  test('nutrition day view — freestyle day renders with date and log prompt', async () => {
     const today = new Date().toISOString().split('T')[0];
     await sharedPage.goto(`/member/nutrition/day?date=${today}&mode=free`);
-    await sharedPage.waitForSelector('h1, h2', { timeout: 8000 });
+    await sharedPage.waitForSelector('h1', { timeout: 8000 });
 
-    // The day view page must render (heading or meal section visible)
-    const hasHeading = await sharedPage.getByRole('heading').first().isVisible({ timeout: 5000 }).catch(() => false);
-    expect(hasHeading).toBe(true);
+    // Freestyle mode must show the "Freestyle" heading
+    await expect(sharedPage.getByRole('heading', { name: /freestyle/i })).toBeVisible();
 
-    // Meal sections should be visible — look for a log/meal section container
-    const hasMealSection = await sharedPage.locator('section, [data-testid="meal-section"], .meal-section').first().isVisible({ timeout: 3000 }).catch(() => false);
-    const hasAddFood = await sharedPage.getByRole('button', { name: /add food|log food/i }).first().isVisible({ timeout: 3000 }).catch(() => false);
-    const hasMealHeading = await sharedPage.getByText(/breakfast|lunch|dinner|snack|meal/i).first().isVisible({ timeout: 3000 }).catch(() => false);
-    // At minimum the page renders with some content
-    expect(hasHeading || hasMealSection || hasAddFood || hasMealHeading).toBe(true);
+    // The date paragraph (exact text) should be visible
+    await expect(sharedPage.getByText(today, { exact: true })).toBeVisible();
+
+    // The day log prompt ("Log your food" text or "No entries yet") must be visible
+    await expect(
+      sharedPage.getByText(/log your food for the day|no entries yet/i).first()
+    ).toBeVisible({ timeout: 5000 });
   });
 
   test('body tests page — renders (may show empty list)', async () => {
