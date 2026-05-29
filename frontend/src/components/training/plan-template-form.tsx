@@ -1,4 +1,13 @@
 import { useEffect, useMemo, useReducer } from 'react';
+
+// Generates a 24-char hex string compatible with MongoDB ObjectId format
+function generateObjectId(): string {
+  const ts = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0');
+  const rand = Array.from({ length: 16 }, () =>
+    Math.floor(Math.random() * 16).toString(16)
+  ).join('');
+  return ts + rand;
+}
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -143,7 +152,7 @@ export function PlanTemplateForm({ initialData, onSubmit, onCancel, mode = 'crea
 
   function addExercise(dayIdx: number) {
     const ex: PlanExercise = {
-      exerciseId: crypto.randomUUID(),
+      exerciseId: generateObjectId(),
       exerciseName: '',
       sets: 3,
       repsMin: 8,
