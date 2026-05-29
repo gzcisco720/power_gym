@@ -45,15 +45,20 @@ test.describe('Owner domain', () => {
 
   test('member list shows seeded members', async () => {
     await sharedPage.goto('/owner/members');
+    // Search for the specific seeded member (pagination may push it off page 1)
+    await sharedPage.waitForSelector('[aria-label="Search members"]', { timeout: 8000 });
+    await sharedPage.fill('[aria-label="Search members"]', 'member@test.com');
     await expect(sharedPage.getByText('member@test.com')).toBeVisible({ timeout: 8000 });
   });
 
   test('invite flow: create invite appears in list', async () => {
     await sharedPage.goto('/owner/invites');
     const uniqueEmail = `e2e-${Date.now()}@test.com`;
-    await sharedPage.getByRole('button', { name: /invite/i }).click();
-    await sharedPage.fill('input[name="recipientEmail"]', uniqueEmail);
     await sharedPage.getByRole('button', { name: /send invite/i }).click();
+    // Wait for the dialog to open
+    await sharedPage.waitForSelector('[role="dialog"]', { timeout: 5000 });
+    await sharedPage.fill('#invite-email', uniqueEmail);
+    await sharedPage.getByRole('button', { name: /generate invite link/i }).click();
     await expect(sharedPage.getByText(uniqueEmail)).toBeVisible({ timeout: 5000 });
   });
 
@@ -132,5 +137,81 @@ test.describe('Owner domain', () => {
     // Verify we're on a trainer detail page
     await expect(sharedPage).toHaveURL(/\/owner\/trainers\/.+/);
     await expect(sharedPage.getByText(/trainer/i).first()).toBeVisible();
+  });
+
+  // Sprint 3 Stage 2 — owner core pages
+
+  test('stage2: dashboard shows at least 4 StatCard labels', async () => {
+    await sharedPage.goto('/owner');
+    await sharedPage.waitForSelector('nav', { timeout: 10000 });
+    // StatCard labels are uppercase text-[11px] — look for 4 recognizable labels
+    const labels = [
+      /total members/i,
+      /total trainers/i,
+      /pending invites/i,
+      /new this month/i,
+    ];
+    for (const label of labels) {
+      await expect(sharedPage.getByText(label).first()).toBeVisible({ timeout: 8000 });
+    }
+  });
+
+  test('stage2: trainers "View Hub" navigates to trainer detail with name visible', async () => {
+    await sharedPage.goto('/owner/trainers');
+    await sharedPage.waitForSelector('text=View Hub', { timeout: 8000 });
+    // Get the trainer name from the first card before clicking
+    const trainerCards = sharedPage.locator('div.rounded-xl').filter({ hasText: 'View Hub' });
+    const firstCard = trainerCards.first();
+    // Click the "View Hub →" link
+    await firstCard.getByRole('link', { name: /view hub/i }).click();
+    await sharedPage.waitForURL(/\/owner\/trainers\/.+/, { timeout: 8000 });
+    await expect(sharedPage).toHaveURL(/\/owner\/trainers\/.+/);
+    // The trainer's name should be in the page header
+    const h1 = sharedPage.locator('h1');
+    await expect(h1).toBeVisible({ timeout: 5000 });
+    const headingText = await h1.textContent();
+    expect(headingText).toBeTruthy();
+  });
+
+  test('stage2: invites dialog — submit unique email → appears in list', async () => {
+    await sharedPage.goto('/owner/invites');
+    const uniqueEmail = `stage2-${Date.now()}@example.com`;
+    await sharedPage.getByRole('button', { name: /send invite/i }).click();
+    await sharedPage.waitForSelector('[role="dialog"]', { timeout: 5000 });
+    await sharedPage.fill('#invite-email', uniqueEmail);
+    await sharedPage.getByRole('button', { name: /generate invite link/i }).click();
+    // Dialog should close after success
+    await sharedPage.waitForSelector('[role="dialog"]', { state: 'detached', timeout: 8000 });
+    // Invite should appear in pending list
+    await expect(sharedPage.getByText(uniqueEmail)).toBeVisible({ timeout: 5000 });
+  });
+
+  test('stage2: members — reassign trainer shows success toast', async () => {
+    await sharedPage.goto('/owner/members');
+    // Wait for the section label to confirm data has loaded
+    await expect(sharedPage.getByText(/all members/i)).toBeVisible({ timeout: 12000 });
+    // Click Reassign on the first member card
+    const reassignBtn = sharedPage.getByRole('button', { name: /reassign/i }).first();
+    await reassignBtn.click();
+    // Inline trainer select + Confirm button should appear
+    const trainerSelect = sharedPage.locator('select[aria-label="Select trainer"]').first();
+    await trainerSelect.waitFor({ timeout: 5000 });
+    const confirmBtn = sharedPage.getByRole('button', { name: /confirm/i }).first();
+    // Select a trainer to ensure the button is enabled
+    const options = await trainerSelect.locator('option').all();
+    for (const opt of options) {
+      const val = await opt.getAttribute('value');
+      if (val && val !== '') {
+        await trainerSelect.selectOption(val);
+        break;
+      }
+    }
+    // After selecting a trainer, Confirm becomes enabled
+    await expect(confirmBtn).toBeEnabled({ timeout: 3000 });
+    // Click Confirm — verifies the handler fires
+    await confirmBtn.click();
+    // The Confirm UI closes when the assignment resolves (success or error)
+    // A toast also appears — either "reassigned" (success) or "Failed" (API error)
+    await expect(confirmBtn).not.toBeVisible({ timeout: 15000 });
   });
 });

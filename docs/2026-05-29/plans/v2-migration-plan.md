@@ -132,7 +132,7 @@ Every v2 dashboard page (`frontend/src/pages/`) looks and behaves like its v1 co
 2. Implement components minimally -> Green
 3. Add font `<link>`; write/extend E2E asserting computed font-family in real browser -> passes
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 1 Checkpoint
 - [x] `frontend/index.html` — Space Grotesk `<link>` (weights 300–700)
@@ -180,7 +180,16 @@ Every v2 dashboard page (`frontend/src/pages/`) looks and behaves like its v1 co
 
 **TDD sequence**: Red unit -> Green pages -> extend `e2e/owner.spec.ts` golden + one edge case -> design-reviewer.
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 2 Checkpoint
+- [x] `frontend/src/pages/owner/dashboard.tsx` — expanded stat cards + sections
+- [x] `frontend/src/pages/owner/trainers.tsx` — KPI strip + trainer cards
+- [x] `frontend/src/pages/owner/trainer-detail.tsx` — trainer header + member list + EmptyState
+- [x] `frontend/src/pages/owner/members.tsx` — dense cards + Select assign + toast
+- [x] `frontend/src/pages/owner/invites.tsx` — PageHeader + Dialog + invite list
+- [x] Unit tests: 6 tests passing
+- [x] E2E: 4 new scenarios passing
 
 ---
 
