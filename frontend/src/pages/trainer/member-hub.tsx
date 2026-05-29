@@ -1,12 +1,15 @@
 import { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useUsersStore } from '@/stores/usersStore';
 import { PageHeader } from '@/components/shared/page-header';
 import { MemberTabNav } from '@/components/shared/member-tab-nav';
+import { MemberHubOverview } from '@/components/trainer/member-hub-overview';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 
 export function TrainerMemberHubPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { members, isLoading, fetchMembers } = useUsersStore();
 
   useEffect(() => {
@@ -16,11 +19,22 @@ export function TrainerMemberHubPage() {
   const member = members.find((m) => m._id === id);
   const basePath = `/trainer/members/${id ?? ''}`;
 
+  function handleLogWorkout() {
+    void navigate(`/trainer/members/${id ?? ''}/log/new`);
+  }
+
   return (
     <div className="flex flex-col">
       <PageHeader
         title={member?.name ?? (isLoading ? '' : 'Member')}
         subtitle={member?.email}
+        actions={
+          id ? (
+            <Button size="sm" onClick={handleLogWorkout}>
+              Log Workout
+            </Button>
+          ) : undefined
+        }
       />
       {isLoading && !member ? (
         <div className="px-4 sm:px-8 py-4 space-y-2">
@@ -29,6 +43,7 @@ export function TrainerMemberHubPage() {
         </div>
       ) : null}
       <MemberTabNav basePath={basePath} />
+      {id ? <MemberHubOverview memberId={id} /> : null}
     </div>
   );
 }

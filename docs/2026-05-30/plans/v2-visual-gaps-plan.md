@@ -86,7 +86,7 @@ Note: the v2 `NutritionTemplate` frontend type is currently wrong — it declare
 2. Correct `api/nutrition.ts` types; implement helpers + panel; wire into `nutrition.tsx` and `dashboard.tsx` → Green
 3. Write/extend E2E specs against the real backend seed → pass
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 1 Checkpoint
 - [x] `frontend/src/lib/nutrition/macro-totals.ts`
@@ -123,7 +123,20 @@ Note: the v2 `NutritionTemplate` frontend type is currently wrong — it declare
 2. Implement components + helpers; assemble in `MemberHubOverview`; render from `member-hub.tsx` under the tab nav → Green
 3. Write `member-hub.spec.ts` E2E for the golden path + the "Log Workout" navigation → pass
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 2 Checkpoint
+- [x] `frontend/src/lib/training/session-stats.ts`
+- [x] `frontend/src/__tests__/lib/training/session-stats.test.ts`
+- [x] `frontend/src/components/trainer/member-stat-strip.tsx`
+- [x] `frontend/src/__tests__/components/trainer/member-stat-strip.test.tsx`
+- [x] `frontend/src/components/trainer/member-plan-card.tsx`
+- [x] `frontend/src/__tests__/components/trainer/member-plan-card.test.tsx`
+- [x] `frontend/src/components/trainer/member-health-panel.tsx`
+- [x] `frontend/src/__tests__/components/trainer/member-health-panel.test.tsx`
+- [x] `frontend/src/components/trainer/member-hub-overview.tsx`
+- [x] `frontend/src/pages/trainer/member-hub.tsx` (add MemberHubOverview + Log Workout button)
+- [x] E2E: `frontend/e2e/member-hub.spec.ts`
 
 ---
 

@@ -156,7 +156,7 @@ function authFilesExist(authDir: string): boolean {
     'owner.json', 'trainer.json', 'member.json',
     'owner-domain.json', 'trainer-domain.json', 'member-domain.json',
     'owner-integration.json', 'trainer-integration.json', 'member-integration.json',
-    'member-zauth.json', 'trainer-member-setup.json',
+    'member-zauth.json', 'trainer-member-setup.json', 'trainer-hub.json',
   ];
   for (const file of files) {
     try {
@@ -233,6 +233,9 @@ async function saveAuthStates() {
 
   // member.spec.ts beforeAll — trainer token for plan setup (avoids burning the rate limit at test time)
   await loginAndSave(browser, 'trainer@test.com', PASSWORD, '/trainer/members', join(AUTH_DIR, 'trainer-member-setup.json'));
+
+  // member-hub.spec.ts — dedicated fresh trainer token
+  await loginAndSave(browser, 'trainer@test.com', PASSWORD, '/trainer/members', join(AUTH_DIR, 'trainer-hub.json'));
 
   await browser.close();
 }
