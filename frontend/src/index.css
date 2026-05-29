@@ -50,6 +50,7 @@
 }
 
 :root {
+  --font-space-grotesk: 'Space Grotesk', sans-serif;
   --background: oklch(0.04 0 0);
   --foreground: oklch(1 0 0);
   --card: oklch(0.07 0 0);

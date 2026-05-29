@@ -17,6 +17,26 @@ test.describe('Owner domain', () => {
     await sharedContext.close();
   });
 
+  // Sprint 3 Stage 1 — font & PageHeader checks
+  test('body font-family contains Space Grotesk', async () => {
+    await sharedPage.goto('/owner');
+    await sharedPage.waitForSelector('nav', { timeout: 10000 });
+    const fontFamily = await sharedPage.evaluate(
+      () => getComputedStyle(document.body).fontFamily,
+    );
+    expect(fontFamily).toContain('Space Grotesk');
+  });
+
+  test('dashboard h1 "Dashboard" has computed font-size 18px', async () => {
+    await sharedPage.goto('/owner');
+    await sharedPage.waitForSelector('h1', { timeout: 10000 });
+    const fontSize = await sharedPage.evaluate(() => {
+      const h1 = document.querySelector('h1');
+      return h1 ? getComputedStyle(h1).fontSize : null;
+    });
+    expect(fontSize).toBe('18px');
+  });
+
   test('owner dashboard renders stats cards', async () => {
     await sharedPage.goto('/owner');
     await sharedPage.waitForSelector('nav', { timeout: 5000 });

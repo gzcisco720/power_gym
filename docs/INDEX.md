@@ -6,6 +6,7 @@ Sprint Contract plans only. One row per active plan.
 
 | Feature | Plan File | Status |
 |---|---|---|
+| v2 Frontend Migration | [2026-05-29/plans/v2-migration-plan.md](2026-05-29/plans/v2-migration-plan.md) | In Progress |
 
 ## Management Files
 
