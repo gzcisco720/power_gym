@@ -6,6 +6,7 @@ interface Entry {
 const store = new Map<string, Entry>();
 
 export function checkRateLimitByIp(ip: string, name: string, limit: number, windowMs: number): boolean {
+  if (process.env.THROTTLE_DISABLED === 'true') return true;
   const key = `${ip}:${name}`;
   const now = Date.now();
   const entry = store.get(key);
