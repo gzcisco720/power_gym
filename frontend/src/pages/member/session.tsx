@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { variants } from '@/lib/animations/variants';
+import { EmptyState } from '@/components/shared/empty-state';
 
 export function MemberSessionPage() {
   const { id: sessionId } = useParams<{ id: string }>();
@@ -154,7 +155,7 @@ export function MemberSessionPage() {
           </m.div>
 
           {activeSession.sets.length === 0 && (
-            <p className="py-4 text-sm text-foreground/65">No exercises in this session.</p>
+            <EmptyState heading="No exercises yet" description="Your trainer hasn't added exercises to this session." />
           )}
         </div>
 

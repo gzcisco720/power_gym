@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { MacroPill } from '@/components/nutrition/macro-pill';
 import { Skeleton } from '@/components/ui/skeleton';
 import { variants } from '@/lib/animations/variants';
+import { EmptyState } from '@/components/shared/empty-state';
 import type { NutritionMeal } from '@/api/nutrition';
 
 // ── Tiny food-picker dialog (inline, no portal needed for member scope) ─────
@@ -81,7 +82,7 @@ function PlanMealSection({ meal }: PlanMealSectionProps) {
         {meal.name}
       </div>
       {meal.items.length === 0 ? (
-        <p className="text-xs text-foreground/65">No items in this meal.</p>
+        <EmptyState heading="No items yet" description="This meal has no food entries." />
       ) : (
         <ul className="space-y-1">
           {meal.items.map((item, i) => (
@@ -191,7 +192,7 @@ function AddFoodDialog({ open, onClose, onAdd }: AddFoodDialogProps) {
           </div>
           <div className="max-h-48 overflow-y-auto space-y-1">
             {displayList.length === 0 ? (
-              <p className="py-4 text-center text-xs text-foreground/65">No foods found.</p>
+              <EmptyState heading="No foods found" description="Try a different search term." />
             ) : (
               displayList.map((food) => (
                 <button
@@ -240,7 +241,7 @@ function FreestyleMealSection({ meal, onAddFood, onRemoveItem }: FreestyleMealSe
         )}
       </div>
       {meal.items.length === 0 ? (
-        <p className="text-xs text-foreground/65 mb-2">No entries yet. Log your food for the day.</p>
+        <EmptyState heading="No entries yet" description="Log your food for the day." />
       ) : (
         <ul className="space-y-1 mb-2">
           {meal.items.map((item, i) => (
@@ -409,11 +410,10 @@ export function MemberNutritionDayPage() {
                 ))}
               </div>
             ) : !dayType ? (
-              <div className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-6 text-center">
-                <p className="text-[13px] text-foreground/65">
-                  No nutrition plan assigned for this day. Ask your trainer.
-                </p>
-              </div>
+              <EmptyState
+                heading="No nutrition plan"
+                description="No nutrition plan assigned for this day. Ask your trainer."
+              />
             ) : (
               <m.div
                 className="space-y-3"
