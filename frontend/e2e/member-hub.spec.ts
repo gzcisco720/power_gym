@@ -129,4 +129,35 @@ test.describe('Member Hub Overview', () => {
     await sharedPage.waitForURL(`**/trainer/members/${memberId}/log/new`, { timeout: 8000 });
     expect(sharedPage.url()).toContain(`/trainer/members/${memberId}/log/new`);
   });
+
+  test('body composition chart region is visible for member with body tests', async () => {
+    await sharedPage.goto(`/trainer/members/${memberId}`);
+    await sharedPage.waitForSelector('nav', { timeout: 15000 });
+    // Wait for skeletons to disappear (data loaded)
+    await sharedPage.waitForFunction(
+      () => !document.querySelector('.animate-pulse'),
+      { timeout: 12000 },
+    ).catch(() => {});
+
+    // The "Body Composition" section heading should be visible
+    await expect(sharedPage.getByText(/body composition/i)).toBeVisible({ timeout: 10000 });
+  });
+
+  test('training frequency heatmap renders with at least one intensity cell', async () => {
+    await sharedPage.goto(`/trainer/members/${memberId}`);
+    await sharedPage.waitForSelector('nav', { timeout: 15000 });
+    await sharedPage.waitForFunction(
+      () => !document.querySelector('.animate-pulse'),
+      { timeout: 12000 },
+    ).catch(() => {});
+
+    // The "Training Frequency" section heading should be visible
+    await expect(sharedPage.getByText(/training frequency/i)).toBeVisible({ timeout: 10000 });
+
+    // At least one week cell should have a non-muted intensity class (session logged in beforeAll)
+    const intensityCells = sharedPage.locator('[data-testid="freq-cell"]').filter({
+      has: sharedPage.locator('[class*="bg-primary"]'),
+    });
+    await expect(intensityCells.first()).toBeVisible({ timeout: 8000 });
+  });
 });

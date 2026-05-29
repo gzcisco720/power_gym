@@ -162,7 +162,17 @@ Note: the v2 `NutritionTemplate` frontend type is currently wrong — it declare
 2. Implement `MemberBodyCompositionChart` (recharts dual-axis line) + `MemberTrainingFrequency`; add to `MemberHubOverview` → Green
 3. Extend `member-hub.spec.ts` to assert chart + heatmap presence → pass
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] `frontend/src/lib/training/session-stats.ts` — add `frequencyBuckets`
+- [x] `frontend/src/__tests__/lib/training/session-stats.test.ts` — add `frequencyBuckets` tests
+- [x] `frontend/src/components/trainer/member-body-composition-chart.tsx`
+- [x] `frontend/src/__tests__/components/trainer/member-body-composition-chart.test.tsx`
+- [x] `frontend/src/components/trainer/member-training-frequency.tsx`
+- [x] `frontend/src/__tests__/components/trainer/member-training-frequency.test.tsx`
+- [x] `frontend/src/components/trainer/member-hub-overview.tsx` — wire chart + heatmap
+- [x] E2E: `frontend/e2e/member-hub.spec.ts` — chart + heatmap assertions
 
 ---
 

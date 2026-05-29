@@ -1,4 +1,4 @@
-import { countInWindow, lastSession } from '@/lib/training/session-stats';
+import { countInWindow, lastSession, frequencyBuckets } from '@/lib/training/session-stats';
 import type { WorkoutSession } from '@/api/training';
 
 function makeSession(overrides: Partial<WorkoutSession> = {}): WorkoutSession {
@@ -74,6 +74,44 @@ describe('session-stats', () => {
 
     it('returns null for an empty array', () => {
       expect(lastSession([])).toBeNull();
+    });
+  });
+
+  describe('frequencyBuckets', () => {
+    it('maps completed sessions to per-week counts over the trailing 14 weeks', () => {
+      // Reference: 2026-05-30 (Saturday)
+      // Week containing 2026-05-26 (Monday) → 2026-06-01 is the most recent week
+      // Put 2 sessions in the current week and 1 session 7 days ago (previous week)
+      const ref = new Date('2026-05-30T12:00:00Z');
+      const currentWeekDate = new Date('2026-05-28T10:00:00Z'); // this week
+      const prevWeekDate = new Date('2026-05-21T10:00:00Z');    // 1 week back
+      const oldWeekDate = new Date('2026-05-07T10:00:00Z');     // 3 weeks back
+
+      const sessions: WorkoutSession[] = [
+        makeSession({ _id: 's1', completedAt: currentWeekDate.toISOString() }),
+        makeSession({ _id: 's2', completedAt: currentWeekDate.toISOString() }),
+        makeSession({ _id: 's3', completedAt: prevWeekDate.toISOString() }),
+        makeSession({ _id: 's4', completedAt: oldWeekDate.toISOString() }),
+        makeSession({ _id: 's5', completedAt: null }), // not completed
+      ];
+
+      const buckets = frequencyBuckets(sessions, ref);
+
+      expect(buckets).toHaveLength(14);
+      // Most recent bucket (last in array) should have 2
+      expect(buckets[13].count).toBe(2);
+      // Second-to-last bucket should have 1
+      expect(buckets[12].count).toBe(1);
+      // 3 weeks back should have 1
+      expect(buckets[10].count).toBe(1);
+    });
+
+    it('returns all-zero buckets when there are no sessions', () => {
+      const ref = new Date('2026-05-30T12:00:00Z');
+      const buckets = frequencyBuckets([], ref);
+
+      expect(buckets).toHaveLength(14);
+      expect(buckets.every((b) => b.count === 0)).toBe(true);
     });
   });
 });

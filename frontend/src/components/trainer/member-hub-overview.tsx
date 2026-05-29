@@ -3,6 +3,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MemberStatStrip } from './member-stat-strip';
 import { MemberPlanCard } from './member-plan-card';
 import { MemberHealthPanel } from './member-health-panel';
+import { MemberBodyCompositionChart } from './member-body-composition-chart';
+import { MemberTrainingFrequency } from './member-training-frequency';
 import { useBodyTestsStore } from '@/stores/bodyTestsStore';
 import { useTrainingStore } from '@/stores/trainingStore';
 import { useMemberHealthStore } from '@/stores/memberHealthStore';
@@ -70,6 +72,8 @@ export function MemberHubOverview({ memberId }: MemberHubOverviewProps) {
         <div className="flex flex-col gap-3">
           <MemberStatStrip bodyTests={data.bodyTests} sessions={data.sessions} />
           <MemberPlanCard memberId={memberId} plan={plan} sessions={data.sessions} />
+          <MemberBodyCompositionChart bodyTests={data.bodyTests} />
+          <MemberTrainingFrequency sessions={data.sessions} />
         </div>
         <MemberHealthPanel memberId={memberId} injuries={data.injuries} />
       </div>
