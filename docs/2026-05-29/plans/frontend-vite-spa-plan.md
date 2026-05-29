@@ -117,7 +117,7 @@ New deps to introduce: `vite ^6`, `@vitejs/plugin-react`, `react-router-dom ^7`,
 
 *Integration / E2E (Playwright vs real NestJS):*
 - [ ] Login: fill `#email`/`#password` with owner creds on `/login`, click "Sign in" → URL becomes `/owner` and the sidebar shows "Members" (asserts redirect + authenticated shell)
-- [ ] Role redirect: trainer login lands on `/trainer/members` and "Plans" is visible; member login lands on `/member` and "Check-In" is visible
+- [ ] Role redirect: trainer login lands on `/trainer/members` and "Training Templates" is visible; member login lands on `/member` and "Check-In" is visible
 - [ ] Silent refresh on reload: after owner login, `page.reload()` stays on `/owner` with "Members" still visible (no flash to `/login`) — proves the httpOnly cookie restores the session via `initAuth`
 - [ ] Logout: "User menu" → "Sign out" → confirm "Sign out" → URL becomes `/login`; a subsequent `page.reload()` stays on `/login` (cookie cleared, refresh fails)
 - [ ] Unauthenticated guard: navigating directly to `/owner/members` redirects to `/login`

@@ -72,7 +72,7 @@ describe('apiClient', () => {
       expect(retryHeaders['Authorization']).toBe('Bearer newtoken');
     });
 
-    it('when refresh returns null throws Session expired without calling logout (no second retry)', async () => {
+    it('when refresh returns null calls logout and throws Session expired (no second retry)', async () => {
       const mockRefresh = vi.fn().mockResolvedValue(null);
       const mockLogout = vi.fn().mockResolvedValue(undefined);
       mockGetState.mockReturnValue({
@@ -89,7 +89,7 @@ describe('apiClient', () => {
 
       await expect(request('/api/v1/some-endpoint')).rejects.toThrow('Session expired');
       expect(mockRefresh).toHaveBeenCalledOnce();
-      expect(mockLogout).not.toHaveBeenCalled();
+      expect(mockLogout).toHaveBeenCalledOnce();
       // Only 1 fetch call — no retry
       expect(global.fetch).toHaveBeenCalledTimes(1);
     });

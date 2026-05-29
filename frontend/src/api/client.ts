@@ -18,6 +18,7 @@ export async function request<T>(url: string, options: RequestInit = {}): Promis
   // 401 — try one silent refresh
   const newToken = await useAuthStore.getState().refresh();
   if (!newToken) {
+    await useAuthStore.getState().logout();
     throw new Error('Session expired');
   }
 
