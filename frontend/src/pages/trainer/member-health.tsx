@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useMemberHealthStore } from '@/stores/memberHealthStore';
+import { PageHeader } from '@/components/shared/page-header';
+import { EmptyState } from '@/components/shared/empty-state';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -36,26 +38,46 @@ export function TrainerMemberHealthPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Member Health</h1>
-        <Button size="sm" onClick={() => setDialogOpen(true)}>Add Injury</Button>
-      </div>
+    <div className="flex flex-col">
+      <PageHeader
+        title="Member Health"
+        actions={
+          <Button size="sm" onClick={() => setDialogOpen(true)}>
+            Add Injury
+          </Button>
+        }
+      />
 
-      <h2 className="mb-3 text-[11px] uppercase tracking-wider text-foreground/65 font-semibold">Injuries</h2>
-      <div className="space-y-2">
-        {injuries.map((inj) => (
-          <div key={inj._id} className="rounded-xl bg-card px-4 py-3 ring-1 ring-foreground/10">
-            <p className="text-sm font-medium text-foreground">{inj.title}</p>
-            <div className="mt-1 flex gap-3">
-              <span className="text-xs text-foreground/65">{inj.recordedAt.slice(0, 10)}</span>
-              {inj.bodyPart && <span className="text-xs text-foreground/65">{inj.bodyPart}</span>}
-              {inj.status && <span className="text-xs text-foreground/65">{inj.status}</span>}
-            </div>
+      <div className="px-4 sm:px-8 py-6">
+        <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
+          Injuries
+        </p>
+
+        {injuries.length === 0 ? (
+          <EmptyState
+            heading="No injuries recorded"
+            description="Add an injury record to track this member's health history."
+          />
+        ) : (
+          <div className="space-y-1.5">
+            {injuries.map((inj) => (
+              <div
+                key={inj._id}
+                className="rounded-xl bg-card px-3 py-2 ring-1 ring-foreground/10 hover:ring-foreground/25 transition-all"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-foreground">{inj.title}</span>
+                  <span className="text-xs text-foreground/65">{inj.status}</span>
+                </div>
+                <div className="mt-1 flex gap-3">
+                  <span className="text-xs text-foreground/65">{inj.recordedAt.slice(0, 10)}</span>
+                  {inj.bodyPart && (
+                    <span className="text-xs text-foreground/65">{inj.bodyPart}</span>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-        {injuries.length === 0 && (
-          <p className="text-sm text-foreground/65">No injuries recorded.</p>
         )}
       </div>
 
@@ -65,39 +87,59 @@ export function TrainerMemberHealthPage() {
             <DialogTitle>Add Injury</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
-            <div>
-              <Label htmlFor="injury-description">Description <span className="text-destructive">*</span></Label>
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="injury-description"
+                className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65"
+              >
+                Description <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="injury-description"
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                className="mt-1"
                 placeholder="e.g. Left knee sprain"
+                aria-invalid={false}
               />
             </div>
-            <div>
-              <Label htmlFor="injury-date">Date <span className="text-foreground/65">(optional)</span></Label>
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="injury-date"
+                className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65"
+              >
+                Date <span className="text-foreground/65">(optional)</span>
+              </Label>
               <Input
                 id="injury-date"
                 type="date"
                 value={form.recordedAt}
                 onChange={(e) => setForm((f) => ({ ...f, recordedAt: e.target.value }))}
-                className="mt-1"
               />
             </div>
-            <div>
-              <Label htmlFor="injury-body-part">Body Part <span className="text-foreground/65">(optional)</span></Label>
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="injury-body-part"
+                className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65"
+              >
+                Body Part <span className="text-foreground/65">(optional)</span>
+              </Label>
               <Input
                 id="injury-body-part"
                 value={form.bodyPart}
                 onChange={(e) => setForm((f) => ({ ...f, bodyPart: e.target.value }))}
-                className="mt-1"
                 placeholder="e.g. knee"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setDialogOpen(false)} disabled={isSaving}>Cancel</Button>
+            <Button
+              variant="ghost"
+              onClick={() => setDialogOpen(false)}
+              disabled={isSaving}
+              className="text-foreground/65"
+            >
+              Cancel
+            </Button>
             <Button onClick={handleSave} disabled={isSaving || !form.title}>
               {isSaving ? 'Saving…' : 'Save'}
             </Button>

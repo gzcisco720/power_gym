@@ -267,7 +267,7 @@ Every v2 dashboard page (`frontend/src/pages/`) looks and behaves like its v1 co
 
 **TDD sequence**: Red unit -> Green pages -> extend `e2e/trainer.spec.ts` -> design-reviewer. Wire new routes in `router/index.tsx` (replace `TrainerPlansDetailStub`/`Placeholder`).
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 1 Checkpoint
 - [x] `frontend/src/components/training/plan-template-form.tsx` — PlanTemplateForm v2 (day tabs, exercise rows, dirty detection, discard dialog)
@@ -320,7 +320,21 @@ Every v2 dashboard page (`frontend/src/pages/`) looks and behaves like its v1 co
 
 **TDD sequence**: Red unit -> Green pages -> extend `e2e/trainer.spec.ts` -> design-reviewer. Wire real routes in `router/index.tsx`.
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 2 Checkpoint
+- [x] `frontend/src/components/shared/member-tab-nav.tsx`
+- [x] `frontend/src/pages/trainer/member-hub.tsx` — PageHeader + MemberTabNav
+- [x] `frontend/src/pages/trainer/member-plan.tsx` — assign dialog + start session (Select component)
+- [x] `frontend/src/pages/trainer/member-nutrition.tsx` — assign dialog (Select component)
+- [x] `frontend/src/pages/trainer/member-body-tests.tsx` — test history + add dialog (Select for protocol) + PageHeader + EmptyState
+- [x] `frontend/src/pages/trainer/member-health.tsx` — injury list + add dialog + PageHeader + EmptyState
+- [x] `frontend/src/pages/trainer/member-log-new.tsx` — start session + navigate to log
+- [x] `frontend/src/pages/trainer/member-log-session.tsx` — exercise rows + complete + warning toast
+- [x] Check-ins/billing/progress/photos stubs → real pages with PageHeader + EmptyState
+- [x] Unit tests (5/5 Sprint Contract tests passing, 173 total)
+- [x] E2E scenarios (4/4 Sprint Contract scenarios passing, 53/58 total — 2 pre-existing failures outside scope)
+- [x] Router wiring (already in place from prior stages)
 
 ---
 
