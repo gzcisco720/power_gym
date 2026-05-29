@@ -5,9 +5,12 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
+import { Request, Response } from 'express';
 import { Public } from '../common/decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RefreshTokenGuard } from '../common/guards/refresh-token.guard';
@@ -15,11 +18,17 @@ import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { RefreshDto } from './dto/refresh.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
 const AUTH_THROTTLE = { default: { limit: 10, ttl: 900000 } };
+const COOKIE_NAME = 'refresh_token';
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: 'lax' as const,
+  secure: process.env.NODE_ENV === 'production',
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
 
 @Controller('auth')
 export class AuthController {
@@ -29,16 +38,26 @@ export class AuthController {
   @Throttle(AUTH_THROTTLE)
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+  async register(
+    @Body() dto: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { refresh_token, ...rest } = await this.authService.register(dto);
+    res.cookie(COOKIE_NAME, refresh_token, COOKIE_OPTIONS);
+    return rest;
   }
 
   @Public()
   @Throttle(AUTH_THROTTLE)
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { refresh_token, ...rest } = await this.authService.login(dto);
+    res.cookie(COOKIE_NAME, refresh_token, COOKIE_OPTIONS);
+    return rest;
   }
 
   @Public()
@@ -46,14 +65,31 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  refresh(@CurrentUser() user: AuthUser & { refreshToken: string }) {
-    return this.authService.refresh(user.userId, user.refreshToken);
+  async refresh(
+    @CurrentUser() user: AuthUser & { refreshToken: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { refresh_token, ...rest } = await this.authService.refresh(
+      user.userId,
+      user.refreshToken,
+    );
+    res.cookie(COOKIE_NAME, refresh_token, COOKIE_OPTIONS);
+    return rest;
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(@Body() dto: RefreshDto) {
-    return this.authService.logout(dto.refresh_token);
+  async logout(
+    @CurrentUser() _user: AuthUser,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const token = (req.cookies as Record<string, string>)?.refresh_token;
+    if (token) {
+      await this.authService.logout(token);
+    }
+    res.clearCookie(COOKIE_NAME, { httpOnly: true, sameSite: COOKIE_OPTIONS.sameSite, secure: COOKIE_OPTIONS.secure });
+    return { success: true };
   }
 
   @Public()
