@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import { StatCard } from '@/components/shared/stat-card';
 import { StatCardsSkeleton } from '@/components/shared/stat-cards-skeleton';
 import { variants } from '@/lib/animations/variants';
+import { EquipmentStatusPanel } from '@/components/owner/equipment-status-panel';
 
 export function OwnerDashboardPage() {
   const { ownerStats, fetchOwnerStats, isLoading } = useUsersStore();
@@ -106,25 +107,7 @@ export function OwnerDashboardPage() {
               <div className="text-[11px] uppercase tracking-wider text-foreground/65 font-semibold mb-3">
                 Equipment Status
               </div>
-              {equipment.length === 0 ? (
-                <div className="text-sm text-foreground/40 italic">No equipment tracked</div>
-              ) : (
-                <div className="space-y-1.5">
-                  {equipment.slice(0, 5).map((item) => (
-                    <div key={item._id} className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-muted">
-                      <span className="text-sm text-foreground/80 truncate">{item.name}</span>
-                      {item.status && (
-                        <span className="text-[11px] text-foreground/50 shrink-0 ml-2">{item.status}</span>
-                      )}
-                    </div>
-                  ))}
-                  {equipment.length > 5 && (
-                    <div className="text-[11px] text-foreground/40 mt-1">
-                      +{equipment.length - 5} more items
-                    </div>
-                  )}
-                </div>
-              )}
+              <EquipmentStatusPanel equipment={equipment} />
             </m.div>
           </div>
         </div>

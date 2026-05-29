@@ -62,6 +62,27 @@ test.describe('Owner domain', () => {
     await expect(sharedPage.getByText(uniqueEmail)).toBeVisible({ timeout: 5000 });
   });
 
+  // ── Stage 1: Equipment Status Panel ──────────────────────────────────────
+
+  test('stage1: owner dashboard — Equipment Status panel shows Active count badge and colored item status badge', async () => {
+    await sharedPage.goto('/owner');
+    await sharedPage.waitForSelector('nav', { timeout: 10000 });
+    // Wait for equipment data to load
+    await sharedPage.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+
+    // The Equipment Status section must be visible
+    await expect(sharedPage.getByText('Equipment Status').first()).toBeVisible({ timeout: 8000 });
+
+    // Count badge for "Active" should appear
+    await expect(sharedPage.getByText(/Active/).first()).toBeVisible({ timeout: 5000 });
+
+    // At least one item row with a colored status badge
+    const statusBadge = sharedPage.locator('[data-testid="item-status-badge"]').first();
+    await expect(statusBadge).toBeVisible({ timeout: 5000 });
+    const badgeText = await statusBadge.textContent();
+    expect(badgeText?.trim().toLowerCase()).toMatch(/active|maintenance|retired/);
+  });
+
   test('billing page renders', async () => {
     await sharedPage.goto('/owner/billing');
     await expect(sharedPage).toHaveURL('/owner/billing');

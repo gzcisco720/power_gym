@@ -6,7 +6,7 @@ import * as bcrypt from 'bcryptjs';
 import { chromium, request } from '@playwright/test';
 
 const PASSWORD = 'TestPass123!';
-const MONGODB_URI = 'mongodb://power_gym_user:power_gym_pass@localhost:27017/power_gym_test?authSource=admin';
+const MONGODB_URI = process.env.E2E_MONGODB_URI ?? 'mongodb://power_gym_user:power_gym_pass@localhost:27017/power_gym?authSource=admin';
 
 /** Run a mongosh script file with execFileSync — no shell, no injection risk. */
 function runMongosh(scriptFile: string): string {
@@ -53,6 +53,77 @@ function cleanupTestData(): void {
       db.getCollection('foods').deleteMany({ createdBy: trainer._id });
       print('Cleaned up test data for trainer');
     }
+  `);
+  try {
+    runMongosh(scriptFile);
+  } finally {
+    unlinkSync(scriptFile);
+  }
+}
+
+function seedNutritionTemplateWithMeals(): void {
+  const scriptFile = join(tmpdir(), 'power-gym-seed-nutrition.js');
+  writeFileSync(scriptFile, `
+    const db = db.getSiblingDB('power_gym_test');
+    const trainer = db.users.findOne({ email: 'trainer@test.com' });
+    if (!trainer) { print('trainer not found — skipping nutrition seed'); quit(); }
+    // Only seed if no template with meals exists for the trainer
+    const existing = db.getCollection('nutritiontemplates').findOne({
+      createdBy: trainer._id,
+      'dayTypes.0': { $exists: true }
+    });
+    if (existing) { print('seeded nutrition template already exists'); quit(); }
+    db.getCollection('nutritiontemplates').insertOne({
+      _id: new ObjectId(),
+      name: 'E2E Seeded Plan',
+      description: 'Seeded for E2E macro row test',
+      createdBy: trainer._id,
+      dayTypes: [
+        {
+          name: 'Training Day',
+          meals: [
+            {
+              name: 'Breakfast',
+              order: 1,
+              items: [
+                { foodName: 'Eggs', quantityG: 150, kcal: 210, protein: 18, carbs: 1, fat: 14 },
+                { foodName: 'Oats', quantityG: 80, kcal: 296, protein: 10, carbs: 54, fat: 5 },
+              ]
+            },
+            {
+              name: 'Lunch',
+              order: 2,
+              items: [
+                { foodName: 'Chicken Breast', quantityG: 200, kcal: 330, protein: 62, carbs: 0, fat: 7 },
+                { foodName: 'Rice', quantityG: 150, kcal: 195, protein: 4, carbs: 43, fat: 1 },
+              ]
+            }
+          ]
+        }
+      ],
+      createdAt: new Date(),
+    });
+    print('Seeded E2E nutrition template with meals');
+  `);
+  try {
+    runMongosh(scriptFile);
+  } finally {
+    unlinkSync(scriptFile);
+  }
+}
+
+function seedEquipment(): void {
+  const scriptFile = join(tmpdir(), 'power-gym-seed-equipment.js');
+  writeFileSync(scriptFile, `
+    const db = db.getSiblingDB('power_gym_test');
+    const count = db.getCollection('equipment').countDocuments();
+    if (count > 0) { print('equipment already seeded: ' + count + ' items'); quit(); }
+    db.getCollection('equipment').insertMany([
+      { _id: new ObjectId(), name: 'Barbell', status: 'active', brand: null, quantity: 4, note: null, trackCondition: false, createdAt: new Date() },
+      { _id: new ObjectId(), name: 'Treadmill', status: 'maintenance', brand: 'Life Fitness', quantity: 2, note: 'Annual service', trackCondition: true, createdAt: new Date() },
+      { _id: new ObjectId(), name: 'Old Bike', status: 'retired', brand: null, quantity: 1, note: null, trackCondition: false, createdAt: new Date() },
+    ]);
+    print('Seeded 3 equipment items');
   `);
   try {
     runMongosh(scriptFile);
@@ -170,6 +241,8 @@ export default async function globalSetup() {
   // Always clean up test data from previous runs first
   if (checkUsersSeeded()) {
     cleanupTestData();
+    seedNutritionTemplateWithMeals();
+    seedEquipment();
     await saveAuthStates();
     return;
   }
@@ -271,5 +344,7 @@ export default async function globalSetup() {
     unlinkSync(scriptFile);
   }
 
+  seedNutritionTemplateWithMeals();
+  seedEquipment();
   await saveAuthStates();
 }

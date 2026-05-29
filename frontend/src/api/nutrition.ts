@@ -8,9 +8,22 @@ export interface Food {
   servings: Array<{ label: string; grams: number }>;
 }
 
+export interface NutritionMealItem {
+  foodName: string;
+  quantityG: number;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber?: number;
+  sugar?: number;
+  salt?: number;
+}
+
 export interface NutritionMeal {
   name: string;
-  items: Array<{ foodId: string; servingGrams: number }>;
+  order: number;
+  items: NutritionMealItem[];
 }
 
 export interface NutritionTemplate {

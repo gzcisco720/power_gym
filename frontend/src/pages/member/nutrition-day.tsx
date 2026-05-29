@@ -10,7 +10,7 @@ import { MacroPill } from '@/components/nutrition/macro-pill';
 import { Skeleton } from '@/components/ui/skeleton';
 import { variants } from '@/lib/animations/variants';
 import { EmptyState } from '@/components/shared/empty-state';
-import type { NutritionMeal } from '@/api/nutrition';
+import type { NutritionMeal, NutritionMealItem } from '@/api/nutrition';
 
 // ── Tiny food-picker dialog (inline, no portal needed for member scope) ─────
 
@@ -61,18 +61,13 @@ function computeMealMacros(items: FoodLogItem[]): { kcal: number; protein: numbe
 
 // ── Plan mode component ──────────────────────────────────────────────────────
 
-interface PlanDayTypeMeal {
-  name: string;
-  items: Array<{ foodId: string; servingGrams: number }>;
-}
-
 interface PlanDayType {
   name: string;
-  meals: PlanDayTypeMeal[];
+  meals: NutritionMeal[];
 }
 
 interface PlanMealSectionProps {
-  meal: PlanDayTypeMeal;
+  meal: NutritionMeal;
 }
 
 function PlanMealSection({ meal }: PlanMealSectionProps) {
@@ -85,10 +80,10 @@ function PlanMealSection({ meal }: PlanMealSectionProps) {
         <EmptyState heading="No items yet" description="This meal has no food entries." />
       ) : (
         <ul className="space-y-1">
-          {meal.items.map((item, i) => (
+          {meal.items.map((item: NutritionMealItem, i: number) => (
             <li key={i} className="flex items-center justify-between gap-2">
-              <span className="text-xs text-foreground">{item.foodId}</span>
-              <span className="text-xs text-foreground/65 shrink-0">{item.servingGrams}g</span>
+              <span className="text-xs text-foreground">{item.foodName}</span>
+              <span className="text-xs text-foreground/65 shrink-0">{item.quantityG}g</span>
             </li>
           ))}
         </ul>

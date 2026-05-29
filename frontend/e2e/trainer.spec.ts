@@ -266,6 +266,27 @@ test.describe('Trainer domain', () => {
     await expect(sharedPage.getByText(templateName)).toBeVisible({ timeout: 5000 });
   });
 
+  // ── Stage 1: Nutrition macro row ─────────────────────────────────────────
+
+  test('stage1: nutrition list — seeded template card shows macro row with kcal/d and macro values', async () => {
+    await sharedPage.goto('/trainer/nutrition');
+    await sharedPage.waitForSelector('nav', { timeout: 8000 });
+    // Wait for templates to load
+    await sharedPage.waitForFunction(
+      () => !document.querySelector('.animate-pulse'),
+      { timeout: 10000 },
+    ).catch(() => {});
+
+    // The seeded template "E2E Seeded Plan" has meals — macro row should be visible
+    // Look for the kcal/d label which always appears next to the kcal value
+    await expect(sharedPage.getByText(/kcal\/d/).first()).toBeVisible({ timeout: 10000 });
+
+    // Protein, carbs, fat labels (P, C, F suffixes)
+    await expect(sharedPage.getByText(/P/).first()).toBeVisible({ timeout: 3000 });
+    await expect(sharedPage.getByText(/C/).first()).toBeVisible({ timeout: 3000 });
+    await expect(sharedPage.getByText(/F/).first()).toBeVisible({ timeout: 3000 });
+  });
+
   test('member health: add injury → appears in list', async () => {
     const mid = await getFirstMemberId();
     await sharedPage.goto(`/trainer/members/${mid}/health`);

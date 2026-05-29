@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { averagePerDay } from '@/lib/nutrition/macro-totals';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -157,6 +158,33 @@ export function TrainerNutritionPage() {
                       ) : (
                         <div className="mt-3 text-[10px] italic text-foreground/20">No day types yet</div>
                       )}
+                      {(() => {
+                        const avg = averagePerDay(template);
+                        if (!avg) return null;
+                        return (
+                          <div className="mt-3 flex items-center gap-3 text-[11px] tabular-nums">
+                            <span>
+                              <span className="text-orange-300 font-semibold">{avg.kcal}</span>
+                              <span className="text-foreground/50"> kcal/d</span>
+                            </span>
+                            <span>
+                              <span className="text-rose-300 font-semibold">{avg.protein}</span>
+                              <span className="text-foreground/50">g</span>
+                              <span className="text-foreground/40"> P</span>
+                            </span>
+                            <span>
+                              <span className="text-sky-300 font-semibold">{avg.carbs}</span>
+                              <span className="text-foreground/50">g</span>
+                              <span className="text-foreground/40"> C</span>
+                            </span>
+                            <span>
+                              <span className="text-amber-300 font-semibold">{avg.fat}</span>
+                              <span className="text-foreground/50">g</span>
+                              <span className="text-foreground/40"> F</span>
+                            </span>
+                          </div>
+                        );
+                      })()}
                     </Link>
                     <Button
                       variant="ghost"
