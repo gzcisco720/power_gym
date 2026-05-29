@@ -2,17 +2,34 @@
 
 ## Project Overview
 
-POWER_GYM is a gym management web application. The repository is a monorepo with three independent apps: `web/` (Next.js, the main app), `landing/` (Gatsby, static marketing page), and `backend/` (NestJS, v2 API — to be scaffolded). All commands for the web app run from the `web/` directory. It supports three user roles (owner, trainer, member) and provides workout plan management, nutrition plan management, body composition testing, and performance tracking.
+POWER_GYM is a gym management web application. The repository is a monorepo with a v1/v2 split:
+
+- **`web/`** — v1 fullstack Next.js app (currently active, to be deprecated)
+- **`frontend/`** — v2 SPA frontend (React + Vite, in development)
+- **`backend/`** — v2 NestJS API (to be scaffolded)
+- **`landing/`** — Gatsby static marketing page (independent)
+
+Active development targets v2 (`frontend/` + `backend/`). Commands for v1 run from `web/`; commands for v2 run from `frontend/`. The app supports three user roles (owner, trainer, member) and provides workout plan management, nutrition plan management, body composition testing, and performance tracking.
 
 ## Tech Stack
+
+### v2 (active — `frontend/` + `backend/`)
+
+- **Frontend framework**: React 19 + Vite
+- **Routing**: React Router DOM v7
+- **UI**: Base UI + TailwindCSS + Framer Motion
+- **State**: Zustand
+- **Package Manager**: `pnpm`
+- **Testing**: Vitest (unit/integration), Playwright (E2E)
+- **Language**: TypeScript (strict mode, NO `any` or `unknown` in production code)
+
+### v1 (legacy — `web/`, to be deprecated)
 
 - **Framework**: Next.js (App Router)
 - **UI**: Shadcn/ui + TailwindCSS
 - **Database**: MongoDB (via Mongoose or MongoDB driver)
 - **Auth**: Auth.js (NextAuth v5) — session via httpOnly cookie, credentials provider, custom role callbacks
-- **Package Manager**: `pnpm`
 - **Testing**: Jest + React Testing Library (unit/integration), Playwright (E2E)
-- **Language**: TypeScript (strict mode, NO `any` or `unknown` in production code)
 
 ## User Roles & Access Control
 
@@ -45,7 +62,14 @@ Ownership hierarchy: Owner > Trainer > Member. A member belongs to exactly one t
 
 ```
 power_gym/               ← repo root (no package.json)
-  web/                   ← Next.js app — run all commands from here
+  frontend/              ← v2 SPA frontend (React + Vite) — active development
+    src/
+      components/
+      pages/
+      stores/            ← Zustand stores
+    e2e/                 ← Playwright specs
+  backend/               ← v2 NestJS API (to be scaffolded)
+  web/                   ← v1 Next.js fullstack app (legacy, to be deprecated)
     src/
       app/
         (dashboard)/
@@ -68,12 +92,10 @@ power_gym/               ← repo root (no package.json)
     context/             ← seed data and dev images
     scripts/             ← migrate and seed scripts
   landing/               ← Gatsby static page (independent)
-  backend/               ← NestJS API v2 (to be scaffolded)
-  .claude/               ← harness — covers entire repo
+  .claude/               ← agent definitions and instructions — covers entire repo
     agents/
     instructions/
-  docs/                  ← harness Sprint Plans
-  .archive/              ← historical design docs
+  docs/                  ← Sprint Contract plans
 ```
 
 For current web app structure run (from `web/`):

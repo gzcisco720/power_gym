@@ -6,7 +6,7 @@ Guidance for Claude Code working in this repository. Keep this file short — de
 
 ## 🔴 CRITICAL RULES
 
-1. **No files in project root** — temp files → `.tmp/`, brainstorm outputs → `.superpowers/`, Sprint Contract plans → `docs/YYYY-MM-DD/plans/`, historical design docs/mockups → `.archive/`, Claude instructions → `.claude/instructions/`, agents → `.claude/agents/`, web app files → `web/`
+1. **No files in project root** — temp files → `.tmp/`, brainstorm outputs → `.superpowers/`, Sprint Contract plans → `docs/YYYY-MM-DD/plans/`, Claude instructions → `.claude/instructions/`, agents → `.claude/agents/`, v2 frontend files → `frontend/`
 2. **One fix at a time** — if a fix doesn't work, revert it immediately before trying anything else. Never stack changes on an unverified fix.
 3. **TDD** — never write implementation code before a failing test. Governed by the `superpowers:test-driven-development` skill.
 4. **E2E tests mandatory** — every flow or UI change needs a Playwright spec that passes against a real browser. See `.claude/instructions/testing.md`.
@@ -22,20 +22,20 @@ The UI language is **English**. All user-facing strings must be in English.
 ## Quick Commands
 
 ```bash
-cd web && pnpm dev              # Dev server (localhost:3000)
-cd web && pnpm test             # Jest unit/integration tests
-cd web && pnpm test:e2e         # Playwright E2E tests
-cd web && pnpm lint             # ESLint
-cd web && pnpm build            # Production build
+cd frontend && pnpm dev         # Dev server (localhost:5173)
+cd frontend && pnpm test        # Vitest unit/integration tests
+cd frontend && pnpm test:e2e    # Playwright E2E tests
+cd frontend && pnpm lint        # ESLint
+cd frontend && pnpm build       # Production build
 ```
 
 ---
 
 ## Project Quick Reference
 
-- **Stack**: Next.js App Router · MongoDB · Auth.js · Shadcn/ui · TypeScript strict · pnpm
+- **Stack**: React 19 + Vite · React Router v7 · Base UI + TailwindCSS · Zustand · TypeScript strict · pnpm
 - **Roles**: Owner > Trainer > Member (ownership hierarchy)
-- **Testing**: Jest (unit/integration) + Playwright (E2E) — both required for every flow change
+- **Testing**: Vitest (unit/integration) + Playwright (E2E) — both required for every flow change
 
 ---
 
@@ -49,12 +49,13 @@ cd web && pnpm build            # Production build
 
 ---
 
-## Harness Engineering
+## Specialist Agents
 
-Three specialist subagents are available for long-running feature development:
+Four specialist agents are available for non-trivial feature development:
 
 | Agent | When to use | Invoke |
 |---|---|---|
 | `planner` | Before any non-trivial feature — produces Sprint Contract plan | `use the planner agent` |
-| `evaluator` | After Generator completes a stage — checks Sprint Contract criteria | `use the evaluator agent with docs/path/to/plan.md` |
+| `generator` | To implement exactly one Stage from a Sprint Contract plan | `use the generator agent with docs/path/to/plan.md Stage N` |
+| `evaluator` | After Generator completes a stage — checks Sprint Contract criteria | `use the evaluator agent with docs/path/to/plan.md Stage N` |
 | `design-reviewer` | After any UI change — checks against design guidelines | `use the design-reviewer agent on src/path/to/component` |

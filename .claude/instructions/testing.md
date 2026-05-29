@@ -9,7 +9,7 @@ TDD cadence (Red-Green-Refactor) is governed by the `superpowers:test-driven-dev
 Core principles that always apply:
 - Tests cover typical cases, edge cases, and error cases
 - Run tests after each implementation step to confirm state
-- Unit/integration tests via Jest; E2E coverage via Playwright
+- Unit/integration tests via Vitest (v2 `frontend/`) or Jest (v1 `web/`); E2E coverage via Playwright
 - After Green, run `/simplify` before committing (the Refactor step)
 
 ## E2E Tests Are Mandatory for Flow and UI Changes
@@ -39,10 +39,12 @@ Write or update a Playwright spec **before marking any of these done**:
 
 ### Where specs live
 
-`e2e/` is grouped by role and feature:
+**v2** — `frontend/e2e/` (grouped by role and feature, structure evolves with the app)
+
+**v1 (legacy)** — `web/e2e/` grouped by role:
 
 ```
-e2e/
+web/e2e/
   member/              # member plan sessions, nutrition, body tests
   self-tracking/       # owner/trainer my-training flows
   trainer/             # trainer managing members
@@ -50,14 +52,21 @@ e2e/
   access-control.spec.ts
 ```
 
-Reference existing specs before writing new ones — `e2e/self-tracking/owner-session-lifecycle.spec.ts` and `e2e/member/session-lifecycle.spec.ts` are the canonical patterns for workout logging flows.
-
 ### The rule in one sentence
 
 > A flow change is not complete until a Playwright spec has run the changed flow against a real browser and passed.
 
 ## Commands
 
+**v2 (`frontend/`)**
+```bash
+cd frontend && pnpm test                                   # All Vitest tests
+cd frontend && pnpm test:watch                             # Watch mode
+cd frontend && pnpm test:e2e                               # Playwright E2E
+cd frontend && pnpm test:coverage                          # Coverage report
+```
+
+**v1 (`web/`, legacy)**
 ```bash
 cd web && pnpm test                                        # All Jest tests
 cd web && pnpm test --watch                                # Watch mode

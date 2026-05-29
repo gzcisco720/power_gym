@@ -1,113 +1,185 @@
 # Development Workflow
 
-## Planning Complex Features
+## The Four Agents
 
-For multi-stage work, create `docs/YYYY-MM-DD/plans/IMPLEMENTATION_PLAN.md`:
+| Agent | Role | Invoke |
+|---|---|---|
+| `planner` | Reads the codebase, produces a Sprint Contract plan file | `use the planner agent` |
+| `generator` | Implements exactly one Stage from a plan — fresh context per Stage | `use the generator agent with docs/.../plan.md Stage N` |
+| `evaluator` | Independently verifies one Stage against the Sprint Contract — never trusts Generator's tests | `use the evaluator agent with docs/.../plan.md Stage N` |
+| `design-reviewer` | Checks any UI change against design guidelines and HTML/design artifacts — reports violations only | `use the design-reviewer agent on src/path/to/component` |
 
-```markdown
-## Stage N: [Name]
+**Superpowers integration — what we keep and what we skip:**
 
-**Goal**: [Specific deliverable]
+Superpowers has its own pipeline: brainstorming → writing-plans → subagent-driven-development. We keep the first step and replace the rest:
 
-**Sprint Contract**:
+| Skill | Status | Why |
+|---|---|---|
+| `brainstorming` | ✅ Keep | Captures approach decisions and design spec before planning — prevents generator from re-litigating architecture mid-implementation |
+| `writing-plans` | ⛔ Skip | Replaced by our `planner` agent — planner reads the design spec and produces a Sprint Contract instead of step-by-step code |
+| `subagent-driven-development` | ⛔ Skip | Replaced by our `generator` + `evaluator` loop — independent verification, no circular validation |
+| `superpowers:test-driven-development` | ✅ Keep | Governs Red-Green-Refactor inside generator sessions |
+| `/simplify` + `react-doctor` | ✅ Keep | The Refactor step after every Green phase |
 
-*Unit tests (mandatory — one per new/changed service method):*
-- [ ] [Jest: `ServiceName > method > scenario` — what it asserts]
+**The intercept rule:** when brainstorming finishes the design spec and offers to proceed to writing-plans — stop. Invoke our `planner` agent instead, pointing it at the design spec.
 
-*Integration / E2E (mandatory — one per endpoint or user flow):*
-- [ ] [Supertest/Playwright: exact action and expected outcome]
+---
 
-**TDD sequence** (no exceptions):
-1. Write the failing unit test → Red
-2. Implement minimal code → Green
-3. Run `/simplify` → Refactor
-4. Write/update integration or E2E test → pass against real stack
+## Standard Flow for Non-Trivial Features
 
-**Status**: [Not Started|In Progress|Complete]
+A feature is non-trivial if it spans more than one file or requires a new user-facing flow.
+
+### 0. Brainstorm (optional — for features where approach is unclear)
+
+Use when the right architecture or approach isn't obvious. Brainstorming explores 2-3 approaches, proposes a design, and saves a design spec to `.superpowers/specs/`.
+
+**Stop when brainstorming offers to invoke writing-plans.** At that point the design spec is ready — proceed to step 1 instead.
+
+### 1. Plan
+
+```
+use the planner agent
 ```
 
-Use the `superpowers:writing-plans` skill to generate plans. Use the `planner` subagent for harness-style sessions that need a full Sprint Contract.
+The planner reads the codebase and — if a design spec exists — reads it from `.superpowers/specs/` as additional context. It writes `docs/YYYY-MM-DD/plans/<feature>-plan.md` and adds a row to `docs/INDEX.md` with status `In Progress`.
+
+Do not start implementing before the plan exists.
+
+### 2. Implement — one Stage at a time
+
+```
+use the generator agent with docs/YYYY-MM-DD/plans/feature-plan.md Stage 1
+```
+
+Each Generator invocation is a **fresh-context subagent**. It reads only its assigned Stage, implements via TDD, commits, and stops. It does not self-evaluate.
+
+When the Generator reports completion, move to the Evaluator — do not proceed to the next Stage first.
+
+### 3. Verify — before moving to the next Stage
+
+```
+use the evaluator agent with docs/YYYY-MM-DD/plans/feature-plan.md Stage 1
+```
+
+The Evaluator reads the Sprint Contract and independently verifies every criterion. It does not consult the Generator's test files as primary evidence.
+
+- **PASS** → mark the Stage `Complete` in the plan file, proceed to Stage 2
+- **FAIL** → hand the gap list back to a new Generator session for that Stage; repeat until PASS
+
+**Bug handling during verification:**
+
+| Bug type | How to handle |
+|---|---|
+| Current Stage has gaps or broken criteria | Normal FAIL — new Generator session for this Stage with the gap list, re-evaluate after |
+| Regression from a previous Stage (test that passed before now fails) | Treat that earlier Stage as incomplete — new Generator session targeting that Stage, re-evaluate that Stage before continuing |
+| Bug in code outside any Stage's scope | Treat as a Quick Task — fix directly without planner/generator, then re-run the evaluator to confirm no new regressions before continuing |
+
+In all cases: a failing test is never skipped or deferred. The current Stage does not advance to `Complete` until all tests pass.
+
+### 4. Design check — after any Stage with UI changes
+
+```
+use the design-reviewer agent on src/path/to/changed/component
+```
+
+Run after the Evaluator PASses a Stage that contains UI work. The design-reviewer checks color tokens, spacing, form patterns, accessibility, and compares against any design documents in `.superpowers/`.
+
+Violations must be fixed before the Stage is considered complete.
+
+### 5. Close the plan
+
+When all Stages are `Complete`:
+1. Delete the plan file
+2. Delete its row from `docs/INDEX.md`
+
+Plans do not accumulate. A closed plan is deleted, not archived.
+
+---
+
+## Quick Tasks — No Plan Needed
+
+For single-file fixes, trivial bugs, or copy changes: implement directly without invoking the planner. Apply TDD and the Refactor step (`/simplify` + `react-doctor`) as normal.
+
+The test: if the task description fits in one sentence and touches at most two files, no plan is needed.
+
+---
 
 ## Document Management
 
-> **IMPORTANT — Path override**: These rules take precedence over any skill's default output path. Always use the layout below regardless of what a skill instructs.
+### `docs/` structure
 
-### `docs/` is harness-only
-
-`docs/` is the harness working directory. It holds only Sprint Contract plans and the three management files. Historical design specs, mockups, and research live in `.archive/` — outside the harness workflow.
-
-```text
+```
 docs/
-  INDEX.md          # Active Sprint Plans only — check here first
-  superseded.md     # Audit trail of closed plans
-  roadmap.md        # Feature backlog (ideas not yet planned)
+  INDEX.md          ← active Sprint Plans only — check here first
+  roadmap.md        ← feature backlog (ideas not yet planned)
   YYYY-MM-DD/
-    plans/          # Sprint Contract plans from the planner agent
-
-.archive/           # Historical artifacts — not part of harness workflow
-  YYYY-MM-DD/       # Preserves original date structure
+    plans/          ← Sprint Contract plans from the planner agent
 ```
 
-### Sprint Plan lifecycle
+`docs/` holds only Sprint Contract plans and the two management files. Design specs, brainstorm outputs, and HTML samples go to `.superpowers/` (their default path — do not redirect them).
 
-Sprint plans are produced by the planner agent and consumed by Generator + Evaluator. They have a strict lifecycle — they do not accumulate.
+### Plan lifecycle
 
-| Stage | Action |
+| Stage | Action | Who |
+|---|---|---|
+| **Create** | Planner writes the plan file, adds a row to INDEX.md with status `In Progress` | Planner agent |
+| **Stage starts** | Mark the Stage status `In Progress` in the plan file | Generator agent (at session start) |
+| **Stage verified** | Mark the Stage status `Complete` in the plan file | Main session, after Evaluator PASS |
+| **All stages complete** | Delete the plan file and its INDEX.md row immediately | Main session |
+
+If INDEX.md has more than 3 active rows, plans are not being closed.
+
+### Plan rot — handle immediately, never batch
+
+| Rot type | When to fix |
 |---|---|
-| **Create** | Planner agent writes `docs/YYYY-MM-DD/plans/<feature>-plan.md`. Add a row to INDEX.md with status `In Progress`. |
-| **Active** | Generator implements stage by stage. Evaluator checks each stage against the Sprint Contract. |
-| **Complete** | All stages marked `Complete` → **delete the file and its INDEX.md row immediately.** |
+| Stage status stale (says "In Progress" but code is done) | The moment the Stage completes |
+| Implementation diverged from plan | Update the plan **before** changing code |
 
-If INDEX.md has more than 3 active plans, something is wrong — plans are not being closed.
+### Session start
 
-### Plan rot — when to handle it
+Skim `docs/INDEX.md` against the current code state. Update any stale Stage statuses before doing any other work.
 
-| Type | Trigger |
-|---|---|
-| Sprint status rot (stage says "In Progress" but code is done) | Immediately when the stage completes |
-| Implementation diverged from plan | The moment you consciously diverge — update plan **before** changing code |
+---
 
-**Never batch rot cleanup.** A stale plan is wrong handoff information for the next session.
+## File Naming
 
-Two session triggers:
+All markdown files use lowercase kebab-case:
 
-1. Diverging from plan → update plan first, then code
-2. New session start → skim active plans against code; update status if stale
-
-### File naming
-
-All markdown files use **lowercase kebab-case**:
-
-```text
+```
 ✅  progressive-overload-plan.md
-✅  web-push-plan.md
+✅  body-composition-plan.md
 ❌  ProgressiveOverload.md
 ❌  PLAN.md
 ```
 
-### After any significant code change
-
-- [ ] `docs/INDEX.md` — close completed plans (delete file + row); update status of in-progress ones
-- [ ] `.claude/instructions/` — does any instruction file need updating for new patterns or conventions?
-- [ ] `CLAUDE.md` — does it reflect new commands or critical rules?
-
-## When Stuck (After 3 Attempts)
-
-1. Document what failed (exact error, what was tried, why it failed)
-2. **Search online** — DO NOT GUESS. Use web search for error messages, Stack Overflow, GitHub issues, official docs.
-3. Question the abstraction level — can this be split smaller?
-4. Try a different approach (different pattern, remove abstraction, simpler library feature)
+---
 
 ## No Files in Project Root
 
-Before writing any file, ask: "does this belong in the root?" — the answer is almost always no.
-
 | File type | Correct location |
 |---|---|
-| Temporary screenshots, debug images, scratch files | `.tmp/` |
-| Superpowers / brainstorm tool outputs | `.superpowers/` |
-| Sprint Contract implementation plans | `docs/YYYY-MM-DD/plans/` |
-| Historical design docs, mockups, research | `.archive/YYYY-MM-DD/` |
+| Temp screenshots, debug images, scratch files | `.tmp/` |
+| Brainstorm outputs, design specs, HTML samples | `.superpowers/` (default — do not override) |
+| Sprint Contract plans | `docs/YYYY-MM-DD/plans/` |
 | Claude instruction files | `.claude/instructions/` |
 | Agent definitions | `.claude/agents/` |
-| Web app source, configs, tests | `web/` |
+| v2 frontend source, configs, tests | `frontend/` |
+| v1 legacy source | `web/` |
+
+---
+
+## After Any Significant Code Change
+
+- [ ] `docs/INDEX.md` — close completed plans; update in-progress statuses
+- [ ] `.claude/instructions/` — does any instruction file need updating?
+- [ ] `CLAUDE.md` — does it reflect new commands or critical rules?
+
+---
+
+## When Stuck (After 3 Attempts)
+
+1. Document exactly what failed — error message, what was tried, why it failed
+2. Search online — do not guess. Use web search for error messages, Stack Overflow, GitHub issues, official docs
+3. Question the abstraction level — can this be split into a smaller, clearer problem?
+4. Try a fundamentally different approach — not a variation of the last one

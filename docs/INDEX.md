@@ -1,6 +1,6 @@
 # Docs Index
 
-Harness working directory. Only active Sprint Contract plans are listed here.
+Sprint Contract plans only. One row per active plan.
 
 ## Active Sprint Plans
 
@@ -10,11 +10,9 @@ Harness working directory. Only active Sprint Contract plans are listed here.
 ## Management Files
 
 - [roadmap.md](roadmap.md) — feature backlog for future Sprint planning
-- [superseded.md](superseded.md) — audit trail of closed plans
 
 ## Rules
 
 - Add a row when a planner agent creates a new Sprint Plan (`In Progress`)
 - Delete the file **and its row** when all stages are `Complete`
 - If this index has more than 3 active rows, plans are not being closed
-- Historical design docs and mockups live in `.archive/` — not here
