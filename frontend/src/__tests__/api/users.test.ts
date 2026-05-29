@@ -2,9 +2,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 vi.mock('@/api/client', () => ({
   request: vi.fn(),
+  requestVoid: vi.fn(),
 }));
 
-import { request } from '@/api/client';
+import { request, requestVoid } from '@/api/client';
 import {
   fetchOwnerMembers,
   fetchOwnerTrainers,
@@ -18,10 +19,12 @@ import {
 } from '@/api/users';
 
 const mockRequest = vi.mocked(request);
+const mockRequestVoid = vi.mocked(requestVoid);
 
 beforeEach(() => {
   vi.clearAllMocks();
   mockRequest.mockResolvedValue(undefined);
+  mockRequestVoid.mockResolvedValue(undefined);
 });
 
 describe('api/users', () => {
@@ -55,7 +58,7 @@ describe('api/users', () => {
 
   it('assignTrainer calls PATCH /api/v1/owner/members/:id/trainer', async () => {
     await assignTrainer('m1', 't2');
-    expect(mockRequest).toHaveBeenCalledWith(
+    expect(mockRequestVoid).toHaveBeenCalledWith(
       '/api/v1/owner/members/m1/trainer',
       expect.objectContaining({ method: 'PATCH' }),
     );

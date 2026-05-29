@@ -137,7 +137,7 @@ describe('usersStore', () => {
   describe('assignTrainer', () => {
     it("updates the member's trainerId in state", async () => {
       useUsersStore.setState({ members: [mockMember] });
-      vi.mocked(usersApi.assignTrainer).mockResolvedValueOnce({ ...mockMember, trainerId: 't2' });
+      vi.mocked(usersApi.assignTrainer).mockResolvedValueOnce(undefined);
 
       await useUsersStore.getState().assignTrainer('m1', 't2');
 
@@ -153,6 +153,19 @@ describe('usersStore', () => {
       await useUsersStore.getState().fetchOwnerStats();
 
       expect(useUsersStore.getState().ownerStats).toEqual(mockStats);
+    });
+  });
+
+  describe('unassignTrainer', () => {
+    it("calls assignTrainer with null and clears the member's trainerId in state", async () => {
+      useUsersStore.setState({ members: [mockMember] });
+      vi.mocked(usersApi.assignTrainer).mockResolvedValueOnce(undefined);
+
+      await useUsersStore.getState().unassignTrainer('m1');
+
+      expect(usersApi.assignTrainer).toHaveBeenCalledWith('m1', null);
+      const updated = useUsersStore.getState().members.find((m) => m._id === 'm1');
+      expect(updated?.trainerId).toBeNull();
     });
   });
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer } from 'react';
+import { useCallback, useEffect, useMemo, useReducer } from 'react';
 import { LazyMotion, domAnimation, m, useReducedMotion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useUsersStore } from '@/stores/usersStore';
@@ -23,17 +23,21 @@ const PAGE_SIZE = 10;
 interface State {
   reassigning: Member | null;
   selectedTrainerId: string;
+  filterTrainerId: string;
   search: string;
   page: number;
   saving: boolean;
+  unassigning: string | null;
 }
 
 type Action =
   | { type: 'SET_REASSIGNING'; value: Member | null }
   | { type: 'SET_SELECTED_TRAINER'; value: string }
+  | { type: 'SET_FILTER_TRAINER'; value: string }
   | { type: 'SET_SEARCH'; value: string }
   | { type: 'SET_PAGE'; value: number }
-  | { type: 'SET_SAVING'; value: boolean };
+  | { type: 'SET_SAVING'; value: boolean }
+  | { type: 'SET_UNASSIGNING'; value: string | null };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -41,30 +45,44 @@ function reducer(state: State, action: Action): State {
       return { ...state, reassigning: action.value, selectedTrainerId: action.value?.trainerId ?? '' };
     case 'SET_SELECTED_TRAINER':
       return { ...state, selectedTrainerId: action.value };
+    case 'SET_FILTER_TRAINER':
+      return { ...state, filterTrainerId: action.value, page: 1 };
     case 'SET_SEARCH':
       return { ...state, search: action.value, page: 1 };
     case 'SET_PAGE':
       return { ...state, page: action.value };
     case 'SET_SAVING':
       return { ...state, saving: action.value };
+    case 'SET_UNASSIGNING':
+      return { ...state, unassigning: action.value };
     default:
       return state;
   }
 }
 
 export function OwnerMembersPage() {
-  const { members, trainers, fetchOwnerMembers, fetchTrainers, assignTrainer, isLoading } =
+  const { members, trainers, fetchOwnerMembers, fetchTrainers, assignTrainer, unassignTrainer, isLoading } =
     useUsersStore();
   const shouldReduceMotion = useReducedMotion();
 
   const [state, dispatch] = useReducer(reducer, {
     reassigning: null,
     selectedTrainerId: '',
+    filterTrainerId: '',
     search: '',
     page: 1,
     saving: false,
+    unassigning: null,
   });
-  const { reassigning, selectedTrainerId, search, page, saving } = state;
+  const { reassigning, selectedTrainerId, filterTrainerId, search, page, saving, unassigning } = state;
+
+  const handleFilterChange = useCallback(
+    (val: string) => {
+      dispatch({ type: 'SET_FILTER_TRAINER', value: val });
+      void fetchOwnerMembers(val || undefined);
+    },
+    [fetchOwnerMembers],
+  );
 
   useEffect(() => {
     void fetchOwnerMembers();
@@ -119,6 +137,18 @@ export function OwnerMembersPage() {
     }
   }
 
+  async function handleUnassign(member: Member) {
+    dispatch({ type: 'SET_UNASSIGNING', value: member._id });
+    try {
+      await unassignTrainer(member._id);
+      toast.success(`${member.name} unassigned`);
+    } catch {
+      toast.error('Failed to unassign member');
+    } finally {
+      dispatch({ type: 'SET_UNASSIGNING', value: null });
+    }
+  }
+
   const subtitle = `${members.length} member${members.length !== 1 ? 's' : ''} across all trainers`;
 
   return (
@@ -149,39 +179,60 @@ export function OwnerMembersPage() {
                 />
               </div>
 
-              {/* Search */}
-              <div className="relative">
-                <svg
-                  className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-foreground/30"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
-                  />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Search members..."
-                  value={search}
-                  onChange={(e) => dispatch({ type: 'SET_SEARCH', value: e.target.value })}
-                  aria-label="Search members"
-                  className="w-full h-9 rounded-lg bg-white/[.03] ring-1 ring-white/[.08] pl-9 pr-4 text-sm text-foreground placeholder:text-foreground/25 focus:outline-none focus:ring-white/20 transition-all"
-                />
-                {search && (
-                  <button
-                    type="button"
-                    aria-label="Clear search"
-                    onClick={() => dispatch({ type: 'SET_SEARCH', value: '' })}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/30 hover:text-foreground/60 transition-colors"
+              {/* Search + Trainer filter row */}
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <svg
+                    className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-foreground/30"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
                   >
-                    ✕
-                  </button>
-                )}
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+                    />
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Search members..."
+                    value={search}
+                    onChange={(e) => dispatch({ type: 'SET_SEARCH', value: e.target.value })}
+                    aria-label="Search members"
+                    className="w-full h-9 rounded-lg bg-white/[.03] ring-1 ring-white/[.08] pl-9 pr-4 text-sm text-foreground placeholder:text-foreground/25 focus:outline-none focus:ring-white/20 transition-all"
+                  />
+                  {search && (
+                    <button
+                      type="button"
+                      aria-label="Clear search"
+                      onClick={() => dispatch({ type: 'SET_SEARCH', value: '' })}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/30 hover:text-foreground/60 transition-colors"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* Trainer filter */}
+                <Select
+                  value={filterTrainerId}
+                  onValueChange={(val) => handleFilterChange(val ?? '')}
+                  aria-label="Filter by trainer"
+                >
+                  <SelectTrigger size="sm" className="w-40 h-9">
+                    <SelectValue placeholder="All Trainers" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Trainers</SelectItem>
+                    {trainers.map((t) => (
+                      <SelectItem key={t._id} value={t._id}>
+                        {t.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Section label */}
@@ -287,14 +338,27 @@ export function OwnerMembersPage() {
                             </Button>
                           </div>
                         ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => dispatch({ type: 'SET_REASSIGNING', value: member })}
-                            className="text-primary-light/70 hover:text-primary-light hover:bg-primary/10 text-xs h-7 px-2 shrink-0"
-                          >
-                            Reassign
-                          </Button>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {member.trainerId && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={unassigning === member._id}
+                                onClick={() => void handleUnassign(member)}
+                                className="text-destructive/70 hover:text-destructive hover:bg-destructive/10 text-xs h-7 px-2"
+                              >
+                                {unassigning === member._id ? '...' : 'Unassign'}
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => dispatch({ type: 'SET_REASSIGNING', value: member })}
+                              className="text-primary-light/70 hover:text-primary-light hover:bg-primary/10 text-xs h-7 px-2"
+                            >
+                              Reassign
+                            </Button>
+                          </div>
                         )}
                       </m.div>
                     );

@@ -4,6 +4,7 @@ import * as api from '@/api/training';
 interface TrainingState {
   plans: api.PlanTemplate[];
   memberPlans: Record<string, api.MemberPlan | null>;
+  memberSessions: Record<string, api.WorkoutSession[]>;
   activeSession: api.WorkoutSession | null;
   pbs: Record<string, api.PersonalBest[]>;
   exerciseNotes: Record<string, string>;
@@ -15,6 +16,7 @@ interface TrainingState {
   deletePlan: (id: string) => Promise<void>;
   fetchMemberPlan: (memberId: string) => Promise<void>;
   assignPlan: (memberId: string, planTemplateId: string) => Promise<void>;
+  fetchSessions: (memberId: string) => Promise<void>;
   startSession: (memberId: string, dayNumber: number) => Promise<void>;
   updateSet: (sessionId: string, setIndex: number, data: { weight?: number; reps?: number; completed?: boolean }) => Promise<void>;
   completeSession: (sessionId: string) => Promise<void>;
@@ -25,6 +27,7 @@ interface TrainingState {
 export const useTrainingStore = create<TrainingState>((set) => ({
   plans: [],
   memberPlans: {},
+  memberSessions: {},
   activeSession: null,
   pbs: {},
   exerciseNotes: {},
@@ -68,6 +71,15 @@ export const useTrainingStore = create<TrainingState>((set) => ({
   assignPlan: async (memberId, planTemplateId) => {
     const plan = await api.assignPlan(memberId, planTemplateId);
     set((s) => ({ memberPlans: { ...s.memberPlans, [memberId]: plan } }));
+  },
+
+  fetchSessions: async (memberId) => {
+    try {
+      const sessions = await api.fetchSessions(memberId);
+      set((s) => ({ memberSessions: { ...s.memberSessions, [memberId]: sessions } }));
+    } catch {
+      // silently ignore — ActivityStrip degrades to empty state
+    }
   },
 
   startSession: async (memberId, dayNumber) => {

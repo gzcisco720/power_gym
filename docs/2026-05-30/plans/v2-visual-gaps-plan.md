@@ -162,7 +162,7 @@ Note: the v2 `NutritionTemplate` frontend type is currently wrong — it declare
 2. Implement `MemberBodyCompositionChart` (recharts dual-axis line) + `MemberTrainingFrequency`; add to `MemberHubOverview` → Green
 3. Extend `member-hub.spec.ts` to assert chart + heatmap presence → pass
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 3 Checkpoint
 - [x] `frontend/src/lib/training/session-stats.ts` — add `frequencyBuckets`
@@ -199,7 +199,22 @@ Note: the v2 `NutritionTemplate` frontend type is currently wrong — it declare
 2. Add `unassignTrainer` to store; widen `assignTrainer` API type to `string | null`; add Base UI `Select` filter + Unassign button to `members.tsx`; build `ActivityStrip` and add to `my-training.tsx` → Green
 3. Extend `owner-members-filter.spec.ts` and the member E2E for the strip → pass
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 4 Checkpoint
+- [x] `frontend/src/api/users.ts` — widen `assignTrainer` trainerId to `string | null`; use `requestVoid`
+- [x] `frontend/src/api/client.ts` — add `requestVoid` for endpoints returning empty body
+- [x] `frontend/src/stores/usersStore.ts` — add `unassignTrainer`
+- [x] `frontend/src/stores/trainingStore.ts` — add `fetchSessions` + `memberSessions`
+- [x] `frontend/src/__tests__/stores/usersStore.test.ts` — add unassignTrainer test
+- [x] `frontend/src/__tests__/api/users.test.ts` — update assignTrainer mock to requestVoid
+- [x] `frontend/src/__tests__/pages/owner/members.test.tsx` — add filter tests
+- [x] `frontend/src/__tests__/pages/member/my-training.test.tsx` — add memberSessions/fetchSessions to mocks
+- [x] `frontend/src/pages/owner/members.tsx` — trainer filter dropdown + Unassign button
+- [x] `frontend/src/components/self-tracking/activity-strip.tsx`
+- [x] `frontend/src/__tests__/components/self-tracking/activity-strip.test.tsx`
+- [x] `frontend/src/pages/member/my-training.tsx` — add ActivityStrip
+- [x] E2E: stage4 tests added to `frontend/e2e/owner.spec.ts` and `frontend/e2e/member.spec.ts`
 
 ---
 

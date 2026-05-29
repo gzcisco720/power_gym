@@ -1,4 +1,4 @@
-import { request } from './client';
+import { request, requestVoid } from './client';
 
 export interface Member {
   _id: string;
@@ -44,8 +44,8 @@ export const fetchOwnerMembers = (trainerId?: string) =>
 export const fetchOwnerTrainers = () =>
   request<Trainer[]>('/api/v1/owner/trainers');
 
-export const assignTrainer = (memberId: string, trainerId: string) =>
-  request<Member>(`/api/v1/owner/members/${memberId}/trainer`, {
+export const assignTrainer = (memberId: string, trainerId: string | null) =>
+  requestVoid(`/api/v1/owner/members/${memberId}/trainer`, {
     method: 'PATCH',
     body: JSON.stringify({ trainerId }),
   });

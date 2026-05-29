@@ -443,4 +443,34 @@ test.describe('Member domain', () => {
     const bioValue = await sharedPage.locator('#bio').inputValue();
     expect(bioValue).toBe(uniqueBio);
   });
+
+  // ── Stage 4: ActivityStrip on My Training ──────────────────────────────────
+
+  test('stage4: my-training — ActivityStrip is visible above the Plan/Freestyle path cards', async () => {
+    await sharedPage.goto('/member/my-training');
+    await sharedPage.waitForSelector('nav', { timeout: 10000 });
+    await sharedPage.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+
+    // ActivityStrip renders either "Last 14 days" label or "Build a streak" text
+    const stripText = sharedPage.getByText(/last 14 days|build a streak|log today/i).first();
+    await expect(stripText).toBeVisible({ timeout: 8000 });
+
+    // Both path cards must still be visible below the strip
+    await expect(sharedPage.getByText(/my plan/i)).toBeVisible({ timeout: 5000 });
+    await expect(sharedPage.getByText(/freestyle/i).first()).toBeVisible({ timeout: 5000 });
+  });
+
+  test('stage4: my-training — ActivityStrip is visible and path cards are present', async () => {
+    await sharedPage.goto('/member/my-training');
+    await sharedPage.waitForSelector('nav', { timeout: 10000 });
+    await sharedPage.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+
+    // ActivityStrip renders above path cards — verify it's present
+    const stripText = sharedPage.getByText(/last 14 days|build a streak|log today/i).first();
+    await expect(stripText).toBeVisible({ timeout: 8000 });
+
+    // Both path cards must be visible
+    await expect(sharedPage.getByText(/my plan/i)).toBeVisible({ timeout: 5000 });
+    await expect(sharedPage.getByText(/freestyle/i).first()).toBeVisible({ timeout: 5000 });
+  });
 });

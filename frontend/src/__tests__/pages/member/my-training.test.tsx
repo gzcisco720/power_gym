@@ -81,6 +81,7 @@ describe('MemberMyTrainingPage', () => {
       vi.mocked(useTrainingStore).mockReturnValue({
         plans: [],
         memberPlans: { 'member-1': samplePlan },
+        memberSessions: {},
         activeSession: null,
         pbs: {},
         exerciseNotes: {},
@@ -92,6 +93,7 @@ describe('MemberMyTrainingPage', () => {
         deletePlan: vi.fn(),
         fetchMemberPlan: mockFetchMemberPlan,
         assignPlan: vi.fn(),
+        fetchSessions: vi.fn(),
         startSession: mockStartSession,
         updateSet: vi.fn(),
         completeSession: vi.fn(),
@@ -123,6 +125,7 @@ describe('MemberMyTrainingPage', () => {
       vi.mocked(useTrainingStore).mockReturnValue({
         plans: [],
         memberPlans: { 'member-1': samplePlan },
+        memberSessions: {},
         activeSession: startedSession,
         pbs: {},
         exerciseNotes: {},
@@ -134,6 +137,7 @@ describe('MemberMyTrainingPage', () => {
         deletePlan: vi.fn(),
         fetchMemberPlan: mockFetchMemberPlan,
         assignPlan: vi.fn(),
+        fetchSessions: vi.fn(),
         startSession: mockStartSession,
         updateSet: vi.fn(),
         completeSession: vi.fn(),

@@ -13,7 +13,8 @@ interface UsersState {
   fetchTrainers: () => Promise<void>;
   fetchOwnerInvites: () => Promise<void>;
   createInvite: (data: { recipientEmail: string; role: string; trainerId?: string }) => Promise<string>;
-  assignTrainer: (memberId: string, trainerId: string) => Promise<void>;
+  assignTrainer: (memberId: string, trainerId: string | null) => Promise<void>;
+  unassignTrainer: (memberId: string) => Promise<void>;
   fetchOwnerStats: () => Promise<void>;
   reset: () => void;
 }
@@ -74,6 +75,13 @@ export const useUsersStore = create<UsersState>((set, get) => ({
     await usersApi.assignTrainer(memberId, trainerId);
     set((s) => ({
       members: s.members.map((m) => (m._id === memberId ? { ...m, trainerId } : m)),
+    }));
+  },
+
+  unassignTrainer: async (memberId) => {
+    await usersApi.assignTrainer(memberId, null);
+    set((s) => ({
+      members: s.members.map((m) => (m._id === memberId ? { ...m, trainerId: null } : m)),
     }));
   },
 

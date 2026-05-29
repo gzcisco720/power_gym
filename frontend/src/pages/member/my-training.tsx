@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { variants } from '@/lib/animations/variants';
+import { ActivityStrip } from '@/components/self-tracking/activity-strip';
 
 interface PathCardProps {
   icon: React.ReactNode;
@@ -39,12 +40,13 @@ function PathCard({ icon, title, subtitle, description, action, accentClass = 'b
 
 export function MemberMyTrainingPage() {
   const { user } = useAuthStore();
-  const { memberPlans, fetchMemberPlan, startSession, activeSession } = useTrainingStore();
+  const { memberPlans, memberSessions, fetchMemberPlan, fetchSessions, startSession, activeSession } = useTrainingStore();
   const navigate = useNavigate();
   const reducedMotion = useReducedMotion();
 
   const memberId = user?.id ?? '';
   const memberPlan = memberPlans[memberId];
+  const sessions = memberSessions[memberId] ?? [];
   const isLoading = !(memberId in memberPlans);
 
   useEffect(() => {
@@ -52,6 +54,12 @@ export function MemberMyTrainingPage() {
       void fetchMemberPlan(memberId);
     }
   }, [memberId, memberPlans, fetchMemberPlan]);
+
+  useEffect(() => {
+    if (memberId && !(memberId in memberSessions)) {
+      void fetchSessions(memberId);
+    }
+  }, [memberId, memberSessions, fetchSessions]);
 
   // Navigate to session when one becomes active
   useEffect(() => {
@@ -85,6 +93,7 @@ export function MemberMyTrainingPage() {
         <PageHeader title="My Training" subtitle={subtitle} />
 
         <div className="px-4 sm:px-8 py-6 max-w-3xl mx-auto w-full space-y-4">
+          <ActivityStrip sessions={sessions} />
           {isLoading ? (
             <div className="space-y-3">
               <Skeleton className="h-[140px] rounded-xl" />
