@@ -70,6 +70,16 @@ describe('equipmentStore', () => {
     });
   });
 
+  describe('fetchConditionReports', () => {
+    it('populates condition reports for an equipment item', async () => {
+      vi.mocked(equipmentApi.fetchConditionReports).mockResolvedValueOnce([mockReport]);
+
+      await useEquipmentStore.getState().fetchConditionReports('eq1');
+
+      expect(useEquipmentStore.getState().conditionReports['eq1']).toEqual([mockReport]);
+    });
+  });
+
   describe('addConditionReport', () => {
     it('appends a report to the targeted equipment item', async () => {
       useEquipmentStore.setState({ conditionReports: { eq1: [] } });

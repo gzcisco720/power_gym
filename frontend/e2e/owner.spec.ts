@@ -102,4 +102,15 @@ test.describe('Owner domain', () => {
     await sharedPage.goto('/owner/trainers');
     await expect(sharedPage.getByText('trainer@test.com')).toBeVisible({ timeout: 8000 });
   });
+
+  test('trainer detail page renders', async () => {
+    await sharedPage.goto('/owner/trainers');
+    await sharedPage.waitForSelector('a[href*="/owner/trainers/"]', { timeout: 8000 });
+    // Click the first trainer card link to navigate to detail page
+    await sharedPage.locator('a[href*="/owner/trainers/"]').first().click();
+    await sharedPage.waitForURL(/\/owner\/trainers\/.+/, { timeout: 8000 });
+    // Verify we're on a trainer detail page
+    await expect(sharedPage).toHaveURL(/\/owner\/trainers\/.+/);
+    await expect(sharedPage.getByText(/trainer/i).first()).toBeVisible();
+  });
 });

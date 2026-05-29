@@ -5,7 +5,7 @@ vi.mock('@/api/client', () => ({
 }));
 
 import { request } from '@/api/client';
-import { fetchEquipment, createEquipment, fetchConditionReports, addConditionReport } from '@/api/equipment';
+import { fetchEquipment, createEquipment, fetchConditionReports, addConditionReport, deleteEquipment } from '@/api/equipment';
 
 const mockRequest = vi.mocked(request);
 
@@ -38,6 +38,14 @@ describe('api/equipment', () => {
     expect(mockRequest).toHaveBeenCalledWith(
       '/api/v1/owner/equipment/eq1/condition-reports',
       expect.objectContaining({ method: 'POST' }),
+    );
+  });
+
+  it('deleteEquipment calls DELETE /api/v1/owner/equipment/:id', async () => {
+    await deleteEquipment('eq1');
+    expect(mockRequest).toHaveBeenCalledWith(
+      '/api/v1/owner/equipment/eq1',
+      expect.objectContaining({ method: 'DELETE' }),
     );
   });
 });
