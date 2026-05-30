@@ -1,0 +1,500 @@
+{
+  "equipment": [
+    {
+      "id": "EQ-0001",
+      "name": "Treadmill"
+    },
+    {
+      "id": "EQ-0002",
+      "name": "Curved Treadmill"
+    },
+    {
+      "id": "EQ-0003",
+      "name": "Indoor Cycling Bike"
+    },
+    {
+      "id": "EQ-0004",
+      "name": "Recumbent Bike"
+    },
+    {
+      "id": "EQ-0005",
+      "name": "Upright Bike"
+    },
+    {
+      "id": "EQ-0006",
+      "name": "Air Bike"
+    },
+    {
+      "id": "EQ-0007",
+      "name": "Elliptical Trainer"
+    },
+    {
+      "id": "EQ-0008",
+      "name": "Stair Climber"
+    },
+    {
+      "id": "EQ-0009",
+      "name": "Rowing Machine"
+    },
+    {
+      "id": "EQ-0010",
+      "name": "Ski Erg"
+    },
+    {
+      "id": "EQ-0011",
+      "name": "Arc Trainer"
+    },
+    {
+      "id": "EQ-0012",
+      "name": "Jacobs Ladder"
+    },
+    {
+      "id": "EQ-0013",
+      "name": "Stationary Bike"
+    },
+    {
+      "id": "EQ-0014",
+      "name": "Jump Rope"
+    },
+    {
+      "id": "EQ-0015",
+      "name": "Dumbbells"
+    },
+    {
+      "id": "EQ-0016",
+      "name": "Adjustable Dumbbells"
+    },
+    {
+      "id": "EQ-0017",
+      "name": "Barbell"
+    },
+    {
+      "id": "EQ-0018",
+      "name": "Olympic Barbell"
+    },
+    {
+      "id": "EQ-0019",
+      "name": "Trap Bar"
+    },
+    {
+      "id": "EQ-0020",
+      "name": "EZ Curl Bar"
+    },
+    {
+      "id": "EQ-0021",
+      "name": "Kettlebells"
+    },
+    {
+      "id": "EQ-0022",
+      "name": "Weight Plates"
+    },
+    {
+      "id": "EQ-0023",
+      "name": "Bumper Plates"
+    },
+    {
+      "id": "EQ-0024",
+      "name": "Micro Plates"
+    },
+    {
+      "id": "EQ-0025",
+      "name": "Barbell Collars"
+    },
+    {
+      "id": "EQ-0026",
+      "name": "Selectorized Leg Press"
+    },
+    {
+      "id": "EQ-0027",
+      "name": "Leg Extension Machine"
+    },
+    {
+      "id": "EQ-0028",
+      "name": "Leg Curl Machine"
+    },
+    {
+      "id": "EQ-0029",
+      "name": "Hip Abductor Machine"
+    },
+    {
+      "id": "EQ-0030",
+      "name": "Hip Adductor Machine"
+    },
+    {
+      "id": "EQ-0031",
+      "name": "Chest Press Machine"
+    },
+    {
+      "id": "EQ-0032",
+      "name": "Shoulder Press Machine"
+    },
+    {
+      "id": "EQ-0033",
+      "name": "Seated Row Machine"
+    },
+    {
+      "id": "EQ-0034",
+      "name": "Lat Pulldown Machine"
+    },
+    {
+      "id": "EQ-0035",
+      "name": "Pec Deck Machine"
+    },
+    {
+      "id": "EQ-0036",
+      "name": "Abdominal Crunch Machine"
+    },
+    {
+      "id": "EQ-0037",
+      "name": "Back Extension Machine"
+    },
+    {
+      "id": "EQ-0038",
+      "name": "Dual Adjustable Pulley"
+    },
+    {
+      "id": "EQ-0039",
+      "name": "Functional Trainer"
+    },
+    {
+      "id": "EQ-0040",
+      "name": "Cable Crossover"
+    },
+    {
+      "id": "EQ-0041",
+      "name": "Smith Machine"
+    },
+    {
+      "id": "EQ-0042",
+      "name": "Plate-Loaded Leg Press"
+    },
+    {
+      "id": "EQ-0043",
+      "name": "Hack Squat Machine"
+    },
+    {
+      "id": "EQ-0044",
+      "name": "Pendulum Squat"
+    },
+    {
+      "id": "EQ-0045",
+      "name": "Hip Thrust Machine"
+    },
+    {
+      "id": "EQ-0046",
+      "name": "Plate-Loaded Chest Press"
+    },
+    {
+      "id": "EQ-0047",
+      "name": "Plate-Loaded Lat Pulldown"
+    },
+    {
+      "id": "EQ-0048",
+      "name": "Plate-Loaded Row"
+    },
+    {
+      "id": "EQ-0049",
+      "name": "Calf Raise Machine"
+    },
+    {
+      "id": "EQ-0050",
+      "name": "Belt Squat"
+    },
+    {
+      "id": "EQ-0051",
+      "name": "Power Rack"
+    },
+    {
+      "id": "EQ-0052",
+      "name": "Half Rack"
+    },
+    {
+      "id": "EQ-0053",
+      "name": "Squat Stand"
+    },
+    {
+      "id": "EQ-0054",
+      "name": "Wall-Mounted Fold-Back Rack"
+    },
+    {
+      "id": "EQ-0055",
+      "name": "Training Rig"
+    },
+    {
+      "id": "EQ-0056",
+      "name": "Flat Bench"
+    },
+    {
+      "id": "EQ-0057",
+      "name": "Adjustable Bench"
+    },
+    {
+      "id": "EQ-0058",
+      "name": "Incline Bench"
+    },
+    {
+      "id": "EQ-0059",
+      "name": "Decline Bench"
+    },
+    {
+      "id": "EQ-0060",
+      "name": "Roman Chair"
+    },
+    {
+      "id": "EQ-0061",
+      "name": "Reverse Hyper"
+    },
+    {
+      "id": "EQ-0062",
+      "name": "Glute-Ham Developer (GHD)"
+    },
+    {
+      "id": "EQ-0063",
+      "name": "Dip Station"
+    },
+    {
+      "id": "EQ-0064",
+      "name": "Pull-Up Bar"
+    },
+    {
+      "id": "EQ-0065",
+      "name": "Power Tower"
+    },
+    {
+      "id": "EQ-0066",
+      "name": "Gymnastic Rings"
+    },
+    {
+      "id": "EQ-0067",
+      "name": "Parallettes"
+    },
+    {
+      "id": "EQ-0068",
+      "name": "Battle Ropes"
+    },
+    {
+      "id": "EQ-0069",
+      "name": "Training Sled"
+    },
+    {
+      "id": "EQ-0070",
+      "name": "Prowler Sled"
+    },
+    {
+      "id": "EQ-0071",
+      "name": "Medicine Ball"
+    },
+    {
+      "id": "EQ-0072",
+      "name": "Wall Ball"
+    },
+    {
+      "id": "EQ-0073",
+      "name": "Sandbag"
+    },
+    {
+      "id": "EQ-0074",
+      "name": "Bulgarian Bag"
+    },
+    {
+      "id": "EQ-0075",
+      "name": "Farmer's Walk Handles"
+    },
+    {
+      "id": "EQ-0076",
+      "name": "Atlas Stone"
+    },
+    {
+      "id": "EQ-0077",
+      "name": "Strongman Log"
+    },
+    {
+      "id": "EQ-0078",
+      "name": "Sledgehammer"
+    },
+    {
+      "id": "EQ-0079",
+      "name": "Sled Harness"
+    },
+    {
+      "id": "EQ-0080",
+      "name": "Plyo Box"
+    },
+    {
+      "id": "EQ-0081",
+      "name": "Agility Ladder"
+    },
+    {
+      "id": "EQ-0082",
+      "name": "Agility Cones"
+    },
+    {
+      "id": "EQ-0083",
+      "name": "Speed Hurdles"
+    },
+    {
+      "id": "EQ-0084",
+      "name": "Resistance Bands"
+    },
+    {
+      "id": "EQ-0085",
+      "name": "Suspension Trainer"
+    },
+    {
+      "id": "EQ-0086",
+      "name": "Climbing Rope"
+    },
+    {
+      "id": "EQ-0087",
+      "name": "Foam Roller"
+    },
+    {
+      "id": "EQ-0088",
+      "name": "Massage Ball"
+    },
+    {
+      "id": "EQ-0089",
+      "name": "Peanut Massage Ball"
+    },
+    {
+      "id": "EQ-0090",
+      "name": "Percussion Massage Gun"
+    },
+    {
+      "id": "EQ-0091",
+      "name": "Exercise Mat"
+    },
+    {
+      "id": "EQ-0092",
+      "name": "Yoga Block"
+    },
+    {
+      "id": "EQ-0093",
+      "name": "Yoga Strap"
+    },
+    {
+      "id": "EQ-0094",
+      "name": "Exercise Ball"
+    },
+    {
+      "id": "EQ-0095",
+      "name": "BOSU Ball"
+    },
+    {
+      "id": "EQ-0096",
+      "name": "Balance Board"
+    },
+    {
+      "id": "EQ-0097",
+      "name": "Inversion Table"
+    },
+    {
+      "id": "EQ-0098",
+      "name": "Pilates Reformer"
+    },
+    {
+      "id": "EQ-0099",
+      "name": "Punching Bag"
+    },
+    {
+      "id": "EQ-0100",
+      "name": "Speed Bag"
+    },
+    {
+      "id": "EQ-0101",
+      "name": "Focus Mitts"
+    },
+    {
+      "id": "EQ-0102",
+      "name": "Body Opponent Bag"
+    },
+    {
+      "id": "EQ-0103",
+      "name": "Aqua Cycle"
+    },
+    {
+      "id": "EQ-0104",
+      "name": "Kickboard"
+    },
+    {
+      "id": "EQ-0105",
+      "name": "Pull Buoy"
+    },
+    {
+      "id": "EQ-0106",
+      "name": "Hand Paddles"
+    },
+    {
+      "id": "EQ-0107",
+      "name": "Heart Rate Monitor"
+    },
+    {
+      "id": "EQ-0108",
+      "name": "Pedometer"
+    },
+    {
+      "id": "EQ-0109",
+      "name": "Fitness Smartwatch"
+    },
+    {
+      "id": "EQ-0110",
+      "name": "Body Composition Analyzer"
+    },
+    {
+      "id": "EQ-0111",
+      "name": "Digital Scale"
+    },
+    {
+      "id": "EQ-0112",
+      "name": "Plate Tree"
+    },
+    {
+      "id": "EQ-0113",
+      "name": "Barbell Storage Rack"
+    },
+    {
+      "id": "EQ-0114",
+      "name": "Dumbbell Rack"
+    },
+    {
+      "id": "EQ-0115",
+      "name": "Kettlebell Rack"
+    },
+    {
+      "id": "EQ-0116",
+      "name": "Accessory Storage Station"
+    },
+    {
+      "id": "EQ-0117",
+      "name": "Gym Chalk"
+    },
+    {
+      "id": "EQ-0118",
+      "name": "Lifting Straps"
+    },
+    {
+      "id": "EQ-0119",
+      "name": "Wrist Wraps"
+    },
+    {
+      "id": "EQ-0120",
+      "name": "Knee Sleeves"
+    },
+    {
+      "id": "EQ-0121",
+      "name": "Lifting Belt"
+    },
+    {
+      "id": "EQ-0122",
+      "name": "Weighted Vest"
+    },
+    {
+      "id": "EQ-0123",
+      "name": "Ankle Weights"
+    },
+    {
+      "id": "EQ-0124",
+      "name": "Wrist Weights"
+    }
+  ]
+}
