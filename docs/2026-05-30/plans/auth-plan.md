@@ -326,7 +326,19 @@ Modified:
 2. Write `auth.spec.ts` covering the four flows; build and run against the simulator until green.
 3. Confirm `cd mobile && pnpm test` and the Detox run both pass before marking complete.
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 6 Checkpoint
+- [x] `mobile/.detoxrc.js` — Detox config for iOS simulator (ios.sim.debug, iPhone 15, bundle ID com.powergym.mobile)
+- [x] `mobile/e2e/jest.config.js` — Jest config for Detox (testEnvironment detox, testRunner jest-circus)
+- [x] `mobile/e2e/auth.spec.ts` — 4 E2E test cases (golden path, biometrics, forgot-password, deep-link reset)
+- [x] `mobile/package.json` — detox, @types/detox, jest-circus added; detox:build + detox:test scripts; e2e/ excluded from unit test runner
+- [x] `mobile/src/screens/LoginScreen.tsx` — testID: login-email-input, login-password-input, login-sign-in-button, login-face-id-button, login-forgot-password-link, login-error-message
+- [x] `mobile/src/screens/ForgotPasswordScreen.tsx` — testID: forgot-password-email-input, forgot-password-submit-button, forgot-password-success-message
+- [x] `mobile/src/screens/ResetPasswordScreen.tsx` — testID: reset-password-new-password-input, reset-password-confirm-password-input, reset-password-submit-button, reset-password-error-message
+- [x] `mobile/src/screens/HomeScreen.tsx` — testID: home-screen
+- [x] `mobile/src/components/BiometricsPrompt.tsx` — testID: biometrics-enable-button, biometrics-skip-button
+- [x] `cd mobile && pnpm test` — 17 unit tests, 0 failures (e2e/ excluded from unit runner)
 
 ---
 

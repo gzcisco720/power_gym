@@ -40,6 +40,7 @@ export function BiometricsPrompt({
           </View>
 
           <Pressable
+            testID="biometrics-enable-button"
             accessibilityLabel="Enable Face ID"
             accessibilityRole="button"
             onPress={handleEnable}
@@ -50,6 +51,7 @@ export function BiometricsPrompt({
 
           <Dialog.Close asChild>
             <Pressable
+              testID="biometrics-skip-button"
               accessibilityLabel="Skip Face ID setup"
               accessibilityRole="button"
               onPress={handleSkip}

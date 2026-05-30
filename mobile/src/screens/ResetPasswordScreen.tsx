@@ -53,6 +53,7 @@ export function ResetPasswordScreen() {
           New Password
         </Text>
         <TextInput
+          testID="reset-password-new-password-input"
           value={newPassword}
           onChangeText={setNewPassword}
           placeholder="New password"
@@ -68,6 +69,7 @@ export function ResetPasswordScreen() {
           Confirm Password
         </Text>
         <TextInput
+          testID="reset-password-confirm-password-input"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           placeholder="Confirm password"
@@ -80,7 +82,7 @@ export function ResetPasswordScreen() {
 
       {error ? (
         <View className="mb-4">
-          <Text className="text-[13px] text-destructive">{error}</Text>
+          <Text testID="reset-password-error-message" className="text-[13px] text-destructive">{error}</Text>
           {isTokenError ? (
             <Pressable
               accessibilityLabel="Request a new reset link"
@@ -95,6 +97,7 @@ export function ResetPasswordScreen() {
       ) : null}
 
       <Pressable
+        testID="reset-password-submit-button"
         accessibilityLabel="Reset Password"
         accessibilityRole="button"
         onPress={handleSubmit}

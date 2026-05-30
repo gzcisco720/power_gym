@@ -61,6 +61,7 @@ export function LoginScreen() {
           Email
         </Text>
         <TextInput
+          testID="login-email-input"
           value={email}
           onChangeText={setEmail}
           placeholder="your@email.com"
@@ -78,6 +79,7 @@ export function LoginScreen() {
           Password
         </Text>
         <TextInput
+          testID="login-password-input"
           value={password}
           onChangeText={setPassword}
           placeholder="••••••••"
@@ -89,6 +91,7 @@ export function LoginScreen() {
       </View>
 
       <Pressable
+        testID="login-forgot-password-link"
         accessibilityLabel="Forgot password"
         accessibilityRole="button"
         onPress={() => navigation.navigate('ForgotPassword')}
@@ -98,10 +101,11 @@ export function LoginScreen() {
       </Pressable>
 
       {error ? (
-        <Text className="mb-4 text-[13px] text-destructive">{error}</Text>
+        <Text testID="login-error-message" className="mb-4 text-[13px] text-destructive">{error}</Text>
       ) : null}
 
       <Pressable
+        testID="login-sign-in-button"
         accessibilityLabel="Sign In"
         accessibilityRole="button"
         onPress={handleSignIn}
@@ -120,6 +124,7 @@ export function LoginScreen() {
           </View>
 
           <Pressable
+            testID="login-face-id-button"
             accessibilityLabel="Sign in with Face ID"
             accessibilityRole="button"
             onPress={handleBiometricSignIn}

@@ -26,7 +26,7 @@ export function ForgotPasswordScreen() {
   if (submitted) {
     return (
       <View className="flex-1 items-center justify-center bg-background px-6">
-        <Text className="text-[18px] font-semibold text-foreground">Check your email</Text>
+        <Text testID="forgot-password-success-message" className="text-[18px] font-semibold text-foreground">Check your email</Text>
         <Text className="mt-2 text-center text-[13px] text-foreground/65">
           If an account exists for {email}, you will receive a password reset link.
         </Text>
@@ -57,6 +57,7 @@ export function ForgotPasswordScreen() {
           Email
         </Text>
         <TextInput
+          testID="forgot-password-email-input"
           value={email}
           onChangeText={setEmail}
           placeholder="your@email.com"
@@ -70,6 +71,7 @@ export function ForgotPasswordScreen() {
       </View>
 
       <Pressable
+        testID="forgot-password-submit-button"
         accessibilityLabel="Send Reset Link"
         accessibilityRole="button"
         onPress={handleSubmit}
