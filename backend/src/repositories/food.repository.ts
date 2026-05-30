@@ -16,6 +16,13 @@ export interface CreateFoodData {
   servings: IFoodServing[];
 }
 
+export interface UpdateFoodData {
+  name?: string;
+  brand?: string | null;
+  macrosPer100g?: IFoodMacros;
+  servings?: IFoodServing[];
+}
+
 function escapeRegex(input: string): string {
   return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -47,6 +54,14 @@ export class FoodRepository {
       createdBy: new Types.ObjectId(data.createdBy),
     });
     return doc.save();
+  }
+
+  async update(id: string, data: UpdateFoodData): Promise<IFood | null> {
+    return this.model.findByIdAndUpdate(
+      new Types.ObjectId(id),
+      { $set: data },
+      { returnDocument: 'after' },
+    );
   }
 
   async deleteById(id: string, createdBy: string): Promise<boolean> {

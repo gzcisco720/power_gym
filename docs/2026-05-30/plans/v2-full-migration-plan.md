@@ -465,7 +465,19 @@ Goal: owner manages training-plan templates (CRUD), nutrition templates (CRUD), 
 - [ ] `POST /owner/equipment/:id/condition-reports` → report retrievable for that equipment
 - [ ] Foods endpoints as member token → 403 (match v1 access rules)
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 2 Checkpoint
+- [x] `backend/src/foods/foods.service.spec.ts`
+- [x] `backend/src/foods/foods.service.ts`
+- [x] `backend/src/foods/foods.controller.ts`
+- [x] `backend/src/foods/foods.module.ts`
+- [x] `backend/src/repositories/food.repository.ts` (added `UpdateFoodData` interface + `update` method)
+- [x] `backend/src/equipment/equipment.service.spec.ts`
+- [x] `backend/src/equipment/equipment.service.ts`
+- [x] `backend/src/equipment/equipment.controller.ts`
+- [x] `backend/src/equipment/equipment.module.ts`
+- [x] `backend/src/app.module.ts` (register FoodsModule + EquipmentModule)
 
 ## Stage 3: Frontend — plans + nutrition templates pages
 

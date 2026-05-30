@@ -15,6 +15,8 @@ import { OwnerPeopleModule } from './owner-people/owner-people.module';
 import { OwnerInvitesModule } from './owner-invites/owner-invites.module';
 import { PlanTemplatesModule } from './plan-templates/plan-templates.module';
 import { NutritionTemplatesModule } from './nutrition-templates/nutrition-templates.module';
+import { FoodsModule } from './foods/foods.module';
+import { EquipmentModule } from './equipment/equipment.module';
 
 @Module({
   imports: [
@@ -35,6 +37,8 @@ import { NutritionTemplatesModule } from './nutrition-templates/nutrition-templa
     OwnerInvitesModule,
     PlanTemplatesModule,
     NutritionTemplatesModule,
+    FoodsModule,
+    EquipmentModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ConditionalThrottlerGuard },
