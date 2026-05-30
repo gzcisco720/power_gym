@@ -55,9 +55,12 @@ import {
 } from './self-workout-log.model';
 import { SERVICE_TYPE_MODEL, ServiceTypeSchema } from './service-type.model';
 
-const m = (name: string, schema: mongoose.Schema): mongoose.Model<any> =>
-  (mongoose.models[name] as mongoose.Model<any> | undefined) ??
-  mongoose.model(name, schema);
+function m<T>(name: string, schema: mongoose.Schema<T>): mongoose.Model<T> {
+  return (
+    (mongoose.models[name] as mongoose.Model<T> | undefined) ??
+    mongoose.model<T>(name, schema)
+  );
+}
 
 export const UserModel = m(USER_MODEL, UserSchema);
 export const UserProfileModel = m(USER_PROFILE_MODEL, UserProfileSchema);
