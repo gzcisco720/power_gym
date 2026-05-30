@@ -37,7 +37,16 @@ For each Sprint Contract criterion, derive the verification steps yourself from 
 
 *For E2E/flow criteria:* Use the Playwright browser tools to perform the exact action described in the criterion and observe the outcome yourself.
 
-*For UI/visual criteria:* Navigate to the page and take a screenshot. Verify that the elements and interactions described in the criterion are present and functional.
+*For UI/visual criteria:*
+
+**CRITICAL — Route depth first.** Before navigating, read `frontend/src/router/index.tsx` and identify every route touched by this Stage. A Stage that modifies a list page also affects the detail page it links to, and every sub-tab of that detail page. Build the full URL list first, then verify each one.
+
+For each URL:
+- Navigate to the page
+- Click through any in-page navigation (tabs, "View Hub" buttons, list items linking to detail pages) to reach sub-pages
+- Take a full-page screenshot at each level and verify against the criterion
+
+**Never stop at the top-level URL.** Surface-only verification will miss broken sub-pages every time.
 
 **4. Check for regressions**
 

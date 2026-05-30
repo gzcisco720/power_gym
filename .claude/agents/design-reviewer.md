@@ -25,10 +25,17 @@ The user will provide:
 2. **Read the target files** — all `.tsx` and `.ts` files in the specified path.
 
 3. **Visual verification** (if a URL path is provided or the dev server is running):
-   - Navigate to the page in the browser
-   - Take a screenshot
-   - Compare the rendered result against every design reference collected in step 1 — layout, colors, spacing, typography, interaction states
+
+   **CRITICAL — Route depth first.** Before navigating, read `frontend/src/router/index.tsx` and identify every route that belongs to the feature being reviewed. A feature is not just its top-level URL — it includes all sub-pages reachable from it (detail pages, edit forms, member hub tabs, etc.). Build a complete list of URLs to visit before taking any screenshots.
+
+   For each URL in that list:
+   - Navigate to the page
+   - If the page contains navigation tabs, "View Hub" buttons, list items that link to detail pages, or any clickable affordance that leads to a sub-page — click through to that sub-page too
+   - Take a full-page screenshot at each level
+   - Compare each rendered result against every design reference collected in step 1 — layout, colors, spacing, typography, interaction states
    - Note any visual divergence, even if the correct class names are in the code
+
+   **Never stop at the landing page of a feature.** Surface-only review misses the majority of the UI.
 
 4. **Check each guideline category**:
 
