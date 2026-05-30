@@ -148,7 +148,11 @@ Goal: a seeded v2 database and a runnable Playwright harness so every later spri
 
 **TDD sequence**: Port each v1 spec assertion, run against the seeded stack, adjust selectors to v2 markup, green.
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 3 Checkpoint
+- [x] `frontend/e2e/auth.spec.ts`
+- [x] `frontend/e2e/access-control.spec.ts`
 
 ---
 
