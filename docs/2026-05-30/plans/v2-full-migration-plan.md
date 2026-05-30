@@ -1071,7 +1071,14 @@ Goal: member's Dashboard, My Training (+ live session + calendar), Check-ins (da
 - [ ] `GET /me/dashboard` as seeded member → 200 with KPI numbers reflecting seeded sessions/PBs
 - [ ] `GET /members/:meId/journey` as that member → 200 timeline; as another member → 403
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 1 Checkpoint
+- [x] `backend/src/member-portal/member-portal.service.ts`
+- [x] `backend/src/member-portal/member-portal.service.spec.ts`
+- [x] `backend/src/member-portal/member-portal.controller.ts`
+- [x] `backend/src/member-portal/member-portal.module.ts`
+- [x] registered in `app.module.ts`
 
 ## Stage 2: Frontend — member Dashboard + My Training (landing + session + calendar)
 

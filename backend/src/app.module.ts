@@ -28,6 +28,7 @@ import { MemberHealthModule } from './member-health/member-health.module';
 import { CheckInsModule } from './check-ins/check-ins.module';
 import { CheckInConfigModule } from './check-in-config/check-in-config.module';
 import { TrainerInvitesModule } from './trainer-invites/trainer-invites.module';
+import { MemberPortalModule } from './member-portal/member-portal.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { TrainerInvitesModule } from './trainer-invites/trainer-invites.module';
     CheckInsModule,
     CheckInConfigModule,
     TrainerInvitesModule,
+    MemberPortalModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ConditionalThrottlerGuard },
