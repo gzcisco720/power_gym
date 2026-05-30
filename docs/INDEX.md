@@ -6,6 +6,7 @@ Sprint Contract plans only. One row per active plan.
 
 | Feature | Plan File | Status |
 |---|---|---|
+| Auth (backend + mobile) | [2026-05-30/plans/auth-plan.md](2026-05-30/plans/auth-plan.md) | In Progress |
 
 ## Management Files
 
