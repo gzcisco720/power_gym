@@ -949,7 +949,14 @@ Goal: trainer's Plans CRUD, Nutrition templates CRUD, Foods list, My Training, M
 - [ ] `POST /trainer/invites` as trainer → 201, listed in `GET /trainer/invites`
 - [ ] As owner token hitting trainer invites scope → matches v1 access rule
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 1 Checkpoint
+- [x] `backend/src/trainer-invites/trainer-invites.service.spec.ts`
+- [x] `backend/src/trainer-invites/trainer-invites.service.ts`
+- [x] `backend/src/trainer-invites/trainer-invites.controller.ts`
+- [x] `backend/src/trainer-invites/trainer-invites.module.ts`
+- [x] `backend/src/app.module.ts` (register TrainerInvitesModule)
 
 ## Stage 2: Frontend — trainer Plans + Nutrition + Foods
 
