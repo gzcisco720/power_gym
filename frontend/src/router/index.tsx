@@ -31,6 +31,8 @@ import { OwnerSettingsPage } from '@/pages/owner/settings';
 import { OwnerServicesPage } from '@/pages/owner/services';
 import { OwnerBillingPage } from '@/pages/owner/billing';
 import { OwnerCalendarPage } from '@/pages/owner/calendar';
+import { TrainerMembersPage } from '@/pages/trainer/members';
+import { TrainerMemberHubPage } from '@/pages/trainer/member-hub';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -86,8 +88,21 @@ export const router = createBrowserRouter([
       {
         element: <RequireRole roles={['trainer']} />,
         children: [
-          { path: '/trainer', element: <div>Trainer home (placeholder)</div> },
-          { path: '/trainer/*', element: <div>Trainer (placeholder)</div> },
+          {
+            element: <DashboardLayout />,
+            children: [
+              { path: '/trainer', element: <div>Trainer home (placeholder)</div> },
+              { path: '/trainer/members', element: <TrainerMembersPage /> },
+              { path: '/trainer/members/:id', element: <TrainerMemberHubPage /> },
+              { path: '/trainer/members/:id/plan', element: <TrainerMemberHubPage /> },
+              { path: '/trainer/members/:id/nutrition', element: <TrainerMemberHubPage /> },
+              { path: '/trainer/members/:id/body-tests', element: <TrainerMemberHubPage /> },
+              { path: '/trainer/members/:id/health', element: <TrainerMemberHubPage /> },
+              { path: '/trainer/members/:id/check-ins', element: <TrainerMemberHubPage /> },
+              { path: '/trainer/members/:id/photos', element: <TrainerMemberHubPage /> },
+              { path: '/trainer/*', element: <div>Trainer (placeholder)</div> },
+            ],
+          },
         ],
       },
       {

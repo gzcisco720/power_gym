@@ -855,15 +855,34 @@ Goal: trainer's Members list and the full Member Hub: overview + Plan, Nutrition
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `memberHubStore > fetchOverview > populates member, plan card, stat strip, health summary`
-- [ ] `memberHubStore > fetchPlan > populates the active plan days`
-- [ ] `StatStripSection > renders seeded stat values`
+- [x] `memberHubStore > fetchOverview > populates member, plan card, stat strip, health summary`
+- [x] `memberHubStore > fetchPlan > populates the active plan days`
+- [x] `StatStripSection > renders seeded stat values`
 
 *Integration / E2E:*
-- [ ] Trainer on `/trainer/members` clicks a member → URL `/trainer/members/:id`, overview renders header + stat strip
-- [ ] Trainer clicks "Plan" tab → active plan days render; "Nutrition" tab → nutrition plan + schedule render
+- [x] Trainer on `/trainer/members` clicks a member → URL `/trainer/members/:id`, overview renders header + stat strip
+- [x] Trainer clicks "Plan" tab → active plan days render; "Nutrition" tab → nutrition plan + schedule render
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 3 Checkpoint
+- [x] `frontend/src/api/member-hub.ts`
+- [x] `frontend/src/stores/memberHubStore.ts`
+- [x] `frontend/src/stores/memberHubStore.spec.ts`
+- [x] `frontend/src/components/member-hub/stat-strip-section.tsx`
+- [x] `frontend/src/components/member-hub/stat-strip-section.spec.tsx`
+- [x] `frontend/src/components/member-hub/plan-card-section.tsx`
+- [x] `frontend/src/components/member-hub/health-panel-section.tsx`
+- [x] `frontend/src/components/member-hub/member-hub-tab-nav.tsx`
+- [x] `frontend/src/components/member-hub/plan-tab.tsx`
+- [x] `frontend/src/components/member-hub/nutrition-tab.tsx`
+- [x] `frontend/src/pages/trainer/members.tsx`
+- [x] `frontend/src/pages/trainer/member-hub.tsx`
+- [x] `frontend/src/api/members.ts` (add `fetchTrainerMembers`)
+- [x] `frontend/src/router/index.tsx` (add trainer routes)
+- [x] `backend/src/members/members.service.ts` (add `listForTrainer`, update `getProfile` to return user basic info)
+- [x] `backend/src/members/members.controller.ts` (add `GET /members` list endpoint)
+- [x] `frontend/e2e/trainer/member-hub.spec.ts`
 
 ## Stage 4: Frontend — Member Hub Body Tests + Health + Check-ins + Progress + Photos tabs
 

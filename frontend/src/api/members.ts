@@ -15,6 +15,11 @@ export function fetchMembers(trainerId?: string): Promise<MemberListItem[]> {
   return request<MemberListItem[]>(`${BASE}/owner/members${qs}`);
 }
 
+/** Returns members assigned to the currently authenticated trainer. */
+export function fetchTrainerMembers(): Promise<MemberListItem[]> {
+  return request<MemberListItem[]>(`${BASE}/members`);
+}
+
 export function reassignTrainer(memberId: string, trainerId: string | null): Promise<void> {
   return requestVoid(`${BASE}/owner/members/${memberId}/trainer`, {
     method: 'PATCH',

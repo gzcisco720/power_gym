@@ -44,11 +44,24 @@ export class MembersService {
     }
   }
 
+  async listForTrainer(
+    trainerId: string,
+  ): Promise<{ _id: string; name: string; email: string; trainerId: string | null; createdAt: Date }[]> {
+    const members = await this.userRepo.findAllMembers(trainerId);
+    return members.map((m) => ({
+      _id: m._id.toString(),
+      name: m.name,
+      email: m.email,
+      trainerId: m.trainerId?.toString() ?? null,
+      createdAt: m.createdAt,
+    }));
+  }
+
   async getProfile(
     memberId: string,
     requesterId: string,
     requesterRole: UserRole,
-  ): Promise<IUserProfile | null> {
+  ): Promise<{ _id: string; name: string; email: string; createdAt: Date; profile: IUserProfile | null }> {
     const member = await this.userRepo.findById(memberId);
     if (!member) throw new NotFoundException('Member not found');
     if (
@@ -57,7 +70,14 @@ export class MembersService {
     ) {
       throw new ForbiddenException('Forbidden');
     }
-    return this.profileRepo.findByUserId(memberId);
+    const profile = await this.profileRepo.findByUserId(memberId);
+    return {
+      _id: member._id.toString(),
+      name: member.name,
+      email: member.email,
+      createdAt: member.createdAt,
+      profile,
+    };
   }
 
   async getActivePlan(

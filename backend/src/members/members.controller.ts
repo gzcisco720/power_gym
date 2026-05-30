@@ -33,6 +33,11 @@ interface AssignNutritionBody {
 export class MembersController {
   constructor(private readonly service: MembersService) {}
 
+  @Get()
+  listForTrainer(@CurrentUser() user: AuthUser) {
+    return this.service.listForTrainer(user.userId);
+  }
+
   @Get(':id/profile')
   getProfile(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.service.getProfile(id, user.userId, user.role);
