@@ -51,11 +51,7 @@ export const linking = {
   prefixes: ['powergym://', 'https://app.powergym.com'],
   config: {
     screens: {
-      Auth: {
-        screens: {
-          ResetPassword: 'reset-password',
-        },
-      },
+      ResetPassword: 'reset-password',
     },
   },
 };

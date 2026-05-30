@@ -22,8 +22,8 @@ export function LoginScreen() {
     try {
       await login(email, password);
       setShowBiometricsPrompt(true);
-    } catch (err: unknown) {
-      const axiosError = err as { response?: { status: number } };
+    } catch (err) {
+      const axiosError = err as { response?: { status?: number } };
       if (axiosError?.response?.status === 401) {
         setError('Invalid email or password');
       } else {
