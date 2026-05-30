@@ -15,9 +15,17 @@ import type {
   SelfWorkoutSet,
   CreateLogPayload,
   UserTemplate,
+  UserTemplateDay,
 } from '@/api/self-training';
+import { buildPlannedSets } from '@/components/self-tracking/build-planned-sets';
 
-export type { SelfWorkoutLog, SelfWorkoutSet, UserTemplate };
+export type { SelfWorkoutLog, SelfWorkoutSet, UserTemplate, UserTemplateDay };
+
+interface FreestyleExercise {
+  exerciseId: string;
+  exerciseName: string;
+  isBodyweight: boolean;
+}
 
 interface SelfTrainingState {
   activeLog: SelfWorkoutLog | null;
@@ -30,6 +38,14 @@ interface SelfTrainingState {
   fetchActive: () => Promise<void>;
   fetchLog: (id: string) => Promise<SelfWorkoutLog | null>;
   startSession: (payload: CreateLogPayload, deleteActive?: boolean) => Promise<SelfWorkoutLog>;
+  /** Start a template-based session: seeds planned sets from the given template day. */
+  startFromTemplate: (
+    templateId: string,
+    day: UserTemplateDay,
+    deleteActive?: boolean,
+  ) => Promise<SelfWorkoutLog>;
+  /** Add one freestyle exercise (first set) to an active log. */
+  freestyleAddExercise: (logId: string, exercise: FreestyleExercise) => Promise<SelfWorkoutLog>;
   logSet: (logId: string, set: SelfWorkoutSet) => Promise<SelfWorkoutLog>;
   seal: (logId: string) => Promise<void>;
   discard: (logId: string) => Promise<void>;
@@ -74,6 +90,54 @@ export const useSelfTrainingStore = create<SelfTrainingState>((set) => ({
       timerStartedAt: log.startedAt,
     });
     return log;
+  },
+
+  startFromTemplate: async (
+    templateId: string,
+    day: UserTemplateDay,
+    deleteActive = false,
+  ) => {
+    const plannedSets = buildPlannedSets(day);
+    const log = await createLog(
+      {
+        dayName: day.name,
+        sourceTemplateId: templateId,
+        sourceTemplateDayNumber: day.dayNumber,
+        plannedSets,
+      },
+      deleteActive,
+    );
+    set({
+      activeLog: log,
+      activeLogId: log._id,
+      timerStartedAt: log.startedAt,
+    });
+    return log;
+  },
+
+  freestyleAddExercise: async (logId: string, exercise: FreestyleExercise) => {
+    // Generate a unique groupId for this exercise
+    const groupId = `${exercise.exerciseId}-${Date.now()}`;
+    const firstSet: SelfWorkoutSet = {
+      exerciseId: exercise.exerciseId,
+      exerciseName: exercise.exerciseName,
+      groupId,
+      isSuperset: false,
+      isBodyweight: exercise.isBodyweight,
+      setNumber: 1,
+      prescribedRepsMin: null,
+      prescribedRepsMax: null,
+      actualWeight: null,
+      actualReps: null,
+      completedAt: null,
+    };
+    const updated = await addSet(logId, firstSet);
+    set((state) => ({
+      activeLog: updated,
+      activeLogId: updated._id,
+      timerStartedAt: state.timerStartedAt,
+    }));
+    return updated;
   },
 
   logSet: async (logId: string, newSet: SelfWorkoutSet) => {

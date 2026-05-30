@@ -967,15 +967,26 @@ Goal: trainer's Plans CRUD, Nutrition templates CRUD, Foods list, My Training, M
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `plansStore > list (trainer scope) > returns trainer's own templates`
-- [ ] `PlanTemplateList > renders a card per template`
-- [ ] `NutritionTemplateForm > computes day-type macro totals from items`
+- [x] `plansStore > list (trainer scope) > returns trainer's own templates`
+- [x] `PlanTemplateList > renders a card per template`
+- [x] `NutritionTemplateForm > computes day-type macro totals from items`
 
 *Integration / E2E:*
 - [ ] Trainer creates a plan template → appears in `/trainer/plans` list
 - [ ] Trainer creates a nutrition template with a meal → totals shown; appears in list
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 2 Checkpoint
+- [x] `frontend/src/stores/plansStore.spec.ts` (add trainer scope list test)
+- [x] `frontend/src/components/training/plan-template-list.spec.tsx` (new)
+- [x] `frontend/src/components/nutrition/nutrition-template-form.spec.tsx` (new)
+- [x] `frontend/src/api/trainer-invites.ts` (new — trainer-scoped invites API)
+- [x] `frontend/src/stores/trainerInvitesStore.ts` (new)
+- [x] `frontend/src/pages/trainer/invites.tsx` (new — trainer-specific invites page)
+- [x] `frontend/src/pages/trainer/settings.tsx` (new — profile-only settings page)
+- [x] `frontend/src/router/index.tsx` (add all trainer plans/nutrition/foods/invites/settings routes)
+- [x] `frontend/e2e/trainer/plans.spec.ts` (new)
 
 ## Stage 3: Frontend — trainer My Training + My Nutrition + self-tracking flows
 
@@ -986,14 +997,20 @@ Goal: trainer's Plans CRUD, Nutrition templates CRUD, Foods list, My Training, M
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `selfTrainingStore > startFromTemplate > seeds session sets from a plan template day`
-- [ ] `selfTrainingStore > freestyleAddExercise > adds an exercise group to the active session`
+- [x] `selfTrainingStore > startFromTemplate > seeds session sets from a plan template day`
+- [x] `selfTrainingStore > freestyleAddExercise > adds an exercise group to the active session`
 
 *Integration / E2E:*
 - [ ] Trainer starts a template-based session → prescribed sets pre-filled; logs them → completes
 - [ ] Trainer starts a freestyle session, adds an exercise + set → persists and completes
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] `frontend/src/stores/selfTrainingStore.ts` (add `startFromTemplate` + `freestyleAddExercise` methods)
+- [x] `frontend/src/stores/selfTrainingStore.spec.ts` (add 2 new tests)
+- [x] `frontend/src/router/index.tsx` (add trainer my-training/my-nutrition routes)
+- [x] `frontend/e2e/self-tracking/trainer-training.spec.ts` (new)
 
 ## Stage 4: Frontend — trainer Settings + Calendar + Invites + Billing
 
@@ -1004,16 +1021,24 @@ Goal: trainer's Plans CRUD, Nutrition templates CRUD, Foods list, My Training, M
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `settingsStore > saveProfile (trainer) > patches and updates store`
-- [ ] `invitesStore > resend > triggers resend API for the invite`
-- [ ] `scheduleStore > fetchRange > populates calendar sessions`
+- [x] `settingsStore > saveProfile (trainer) > patches and updates store`
+- [x] `invitesStore > resend > triggers resend API for the invite`
+- [x] `scheduleStore > fetchRange > populates calendar sessions`
 
 *Integration / E2E:*
 - [ ] Trainer on `/trainer/invites` creates an invite → listed; resend shows success toast
 - [ ] Trainer on `/trainer/settings` edits profile bio, saves → persisted on reload
 - [ ] Trainer on `/trainer/calendar` sees a seeded session
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 4 Checkpoint
+- [x] `frontend/src/stores/scheduleStore.ts` (new)
+- [x] `frontend/src/stores/scheduleStore.spec.ts` (new — `fetchRange > populates calendar sessions`)
+- [x] `frontend/src/stores/settingsStore.spec.ts` (add `saveProfile (trainer)` test)
+- [x] `frontend/src/stores/invitesStore.spec.ts` (add `resend > triggers resend API` test)
+- [x] `frontend/src/router/index.tsx` (add trainer settings/calendar/billing routes — already done in Stage 2)
+- [x] `frontend/e2e/trainer/settings.spec.ts` (new)
 
 ---
 

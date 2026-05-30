@@ -25,6 +25,25 @@ describe('plansStore', () => {
     vi.clearAllMocks();
   });
 
+  describe('list (trainer scope)', () => {
+    it("returns trainer's own templates", async () => {
+      const template = {
+        _id: 'plan1',
+        name: 'Trainer Plan',
+        description: null,
+        days: [],
+        createdAt: '2024-01-01T00:00:00.000Z',
+      };
+      mockFetchPlans.mockResolvedValue([template]);
+
+      await usePlansStore.getState().fetch();
+
+      const state = usePlansStore.getState();
+      expect(state.plans).toHaveLength(1);
+      expect(state.plans[0].name).toBe('Trainer Plan');
+    });
+  });
+
   describe('save', () => {
     it('posts new template and adds to list', async () => {
       const newPlan = {

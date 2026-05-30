@@ -12,6 +12,7 @@ import * as invitesApi from '@/api/invites';
 
 const mockFetchInvites = vi.mocked(invitesApi.fetchInvites);
 const mockCreateInvite = vi.mocked(invitesApi.createInvite);
+const mockResendInvite = vi.mocked(invitesApi.resendInvite);
 
 describe('invitesStore', () => {
   beforeEach(() => {
@@ -21,6 +22,17 @@ describe('invitesStore', () => {
       error: null,
     });
     vi.clearAllMocks();
+  });
+
+  describe('resend', () => {
+    it('triggers resend API for the invite', async () => {
+      mockResendInvite.mockResolvedValue({ inviteUrl: 'http://test/register?token=newtoken' });
+
+      const result = await useInvitesStore.getState().resendInvite('inv1');
+
+      expect(invitesApi.resendInvite).toHaveBeenCalledWith('inv1');
+      expect(result.inviteUrl).toBe('http://test/register?token=newtoken');
+    });
   });
 
   describe('createInvite', () => {

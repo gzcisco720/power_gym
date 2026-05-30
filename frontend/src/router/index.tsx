@@ -33,6 +33,8 @@ import { OwnerBillingPage } from '@/pages/owner/billing';
 import { OwnerCalendarPage } from '@/pages/owner/calendar';
 import { TrainerMembersPage } from '@/pages/trainer/members';
 import { TrainerMemberHubPage } from '@/pages/trainer/member-hub';
+import { TrainerInvitesPage } from '@/pages/trainer/invites';
+import { TrainerSettingsPage } from '@/pages/trainer/settings';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -101,6 +103,28 @@ export const router = createBrowserRouter([
               { path: '/trainer/members/:id/check-ins', element: <TrainerMemberHubPage /> },
               { path: '/trainer/members/:id/progress', element: <TrainerMemberHubPage /> },
               { path: '/trainer/members/:id/photos', element: <TrainerMemberHubPage /> },
+              // Stage 2: Plans + Nutrition + Foods (reuse owner page components)
+              { path: '/trainer/plans', element: <OwnerPlansPage /> },
+              { path: '/trainer/plans/new', element: <OwnerPlanNewPage /> },
+              { path: '/trainer/plans/:id', element: <OwnerPlanDetailPage /> },
+              { path: '/trainer/plans/:id/edit', element: <OwnerPlanEditPage /> },
+              { path: '/trainer/nutrition-templates', element: <OwnerNutritionTemplatesPage /> },
+              { path: '/trainer/nutrition-templates/new', element: <OwnerNutritionNewPage /> },
+              { path: '/trainer/nutrition-templates/:id/edit', element: <OwnerNutritionEditPage /> },
+              { path: '/trainer/foods', element: <OwnerFoodsPage /> },
+              { path: '/trainer/foods/new', element: <OwnerFoodNewPage /> },
+              { path: '/trainer/foods/:foodId/edit', element: <OwnerFoodEditPage /> },
+              // Stage 3: My Training + My Nutrition (reuse owner pages)
+              { path: '/trainer/my-training', element: <OwnerMyTrainingPage /> },
+              { path: '/trainer/my-training/session/:id', element: <SelfSessionPage basePath="/trainer/my-training" /> },
+              { path: '/trainer/my-training/calendar', element: <TrainingCalendarPage basePath="/trainer/my-training" /> },
+              { path: '/trainer/my-nutrition', element: <OwnerMyNutritionPage /> },
+              { path: '/trainer/my-nutrition/day', element: <NutritionDayPage basePath="/trainer/my-nutrition" /> },
+              // Stage 4: Settings + Calendar + Invites + Billing
+              { path: '/trainer/settings', element: <TrainerSettingsPage /> },
+              { path: '/trainer/calendar', element: <OwnerCalendarPage /> },
+              { path: '/trainer/invites', element: <TrainerInvitesPage /> },
+              { path: '/trainer/billing', element: <OwnerBillingPage /> },
               { path: '/trainer/*', element: <div>Trainer (placeholder)</div> },
             ],
           },

@@ -20,6 +20,31 @@ describe('settingsStore', () => {
     vi.clearAllMocks();
   });
 
+  describe('saveProfile (trainer)', () => {
+    it('patches and updates store', async () => {
+      const updated = {
+        mobile: '+61 400 000 000',
+        address: null,
+        dateOfBirth: null,
+        avatarUrl: null,
+        certifications: ['NSCA-CPT'],
+        gymInfo: null,
+      };
+      vi.mocked(settingsApi.saveProfile).mockResolvedValue(updated);
+
+      await useSettingsStore.getState().patchProfile({
+        mobile: '+61 400 000 000',
+        certifications: ['NSCA-CPT'],
+      });
+
+      expect(settingsApi.saveProfile).toHaveBeenCalledWith({
+        mobile: '+61 400 000 000',
+        certifications: ['NSCA-CPT'],
+      });
+      expect(useSettingsStore.getState().profile).toEqual(updated);
+    });
+  });
+
   describe('saveProfile', () => {
     it('patches profile and updates store', async () => {
       const updated = {
