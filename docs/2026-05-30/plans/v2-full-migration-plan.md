@@ -1163,7 +1163,24 @@ Goal: member's Dashboard, My Training (+ live session + calendar), Check-ins (da
 - [ ] Member on `/member/health` adds an injury → appears in list
 - [ ] Member on `/member/settings` edits profile, saves → persisted on reload; `/member/schedule` shows seeded upcoming session
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 4 Checkpoint
+- [x] `frontend/src/stores/memberJourneyStore.ts` (new)
+- [x] `frontend/src/stores/memberJourneyStore.spec.ts` (new)
+- [x] `frontend/src/stores/memberHealthStore.ts` (new)
+- [x] `frontend/src/stores/memberHealthStore.spec.ts` (new)
+- [x] `frontend/src/api/schedule.ts` (add `fetchMemberSessions` + `MemberScheduleItem`)
+- [x] `frontend/src/pages/member/journey.tsx` (new)
+- [x] `frontend/src/pages/member/health.tsx` (new)
+- [x] `frontend/src/pages/member/schedule.tsx` (new)
+- [x] `frontend/src/pages/member/settings.tsx` (new — `MemberSettingsPage` + `MemberProfileTab`)
+- [x] `frontend/src/pages/member/settings.spec.tsx` (new — `ProfileTab > Save disabled when not dirty`)
+- [x] `frontend/src/pages/member/billing.tsx` (new)
+- [x] `frontend/src/router/index.tsx` (replace Stage 4 placeholders with real pages)
+- [x] `frontend/e2e/member/member-journey.spec.ts` (new)
+- [x] `frontend/e2e/member/member-health.spec.ts` (new)
+- [x] `frontend/e2e/member/member-settings.spec.ts` (new — includes `/member/schedule` test)
 
 ---
 

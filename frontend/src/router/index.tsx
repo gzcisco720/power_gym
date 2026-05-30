@@ -43,6 +43,11 @@ import { MemberCheckInHistoryPage } from '@/pages/member/check-in-history';
 import { MemberCheckInDetailPage } from '@/pages/member/check-in-detail';
 import { MemberNutritionPage } from '@/pages/member/member-nutrition';
 import { MemberBodyTestsPage } from '@/pages/member/member-body-tests';
+import { MemberJourneyPage } from '@/pages/member/journey';
+import { MemberHealthPage } from '@/pages/member/health';
+import { MemberSchedulePage } from '@/pages/member/schedule';
+import { MemberSettingsPage } from '@/pages/member/settings';
+import { MemberBillingPage } from '@/pages/member/billing';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -156,12 +161,12 @@ export const router = createBrowserRouter([
               { path: '/member/nutrition', element: <MemberNutritionPage /> },
               { path: '/member/nutrition/day', element: <NutritionDayPage basePath="/member/nutrition/day" /> },
               { path: '/member/body-tests', element: <MemberBodyTestsPage /> },
-              // Stage 4 placeholders
-              { path: '/member/journey', element: <div>Journey (placeholder)</div> },
-              { path: '/member/health', element: <div>Health (placeholder)</div> },
-              { path: '/member/schedule', element: <div>Schedule (placeholder)</div> },
-              { path: '/member/settings', element: <div>Settings (placeholder)</div> },
-              { path: '/member/billing', element: <div>Billing (placeholder)</div> },
+              // Stage 4: Journey + Health + Schedule + Settings + Billing
+              { path: '/member/journey', element: <MemberJourneyPage /> },
+              { path: '/member/health', element: <MemberHealthPage /> },
+              { path: '/member/schedule', element: <MemberSchedulePage /> },
+              { path: '/member/settings', element: <MemberSettingsPage /> },
+              { path: '/member/billing', element: <MemberBillingPage /> },
               { path: '/member/*', element: <div>Member (placeholder)</div> },
             ],
           },
