@@ -18,19 +18,22 @@ export const router = createBrowserRouter([
       {
         element: <RequireRole roles={['owner']} />,
         children: [
-          { path: '/owner/*', element: <Navigate to="/login" replace /> },
+          { path: '/owner', element: <div>Owner home (placeholder)</div> },
+          { path: '/owner/*', element: <div>Owner (placeholder)</div> },
         ],
       },
       {
         element: <RequireRole roles={['trainer']} />,
         children: [
-          { path: '/trainer/*', element: <Navigate to="/login" replace /> },
+          { path: '/trainer', element: <div>Trainer home (placeholder)</div> },
+          { path: '/trainer/*', element: <div>Trainer (placeholder)</div> },
         ],
       },
       {
         element: <RequireRole roles={['member']} />,
         children: [
-          { path: '/member/*', element: <Navigate to="/login" replace /> },
+          { path: '/member', element: <div>Member home (placeholder)</div> },
+          { path: '/member/*', element: <div>Member (placeholder)</div> },
         ],
       },
     ],

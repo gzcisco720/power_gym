@@ -39,6 +39,14 @@ import {
 } from './scheduled-session.model';
 import { MEMBER_INJURY_MODEL, MemberInjurySchema } from './member-injury.model';
 import {
+  MEMBER_MEDICATION_MODEL,
+  MemberMedicationSchema,
+} from './member-medication.model';
+import {
+  MEMBER_MEDICAL_HISTORY_MODEL,
+  MemberMedicalHistorySchema,
+} from './member-medical-history.model';
+import {
   CHECK_IN_CONFIG_MODEL,
   CheckInConfigSchema,
 } from './check-in-config.model';
@@ -92,6 +100,14 @@ export const ScheduledSessionModel = m(
   ScheduledSessionSchema,
 );
 export const MemberInjuryModel = m(MEMBER_INJURY_MODEL, MemberInjurySchema);
+export const MemberMedicationModel = m(
+  MEMBER_MEDICATION_MODEL,
+  MemberMedicationSchema,
+);
+export const MemberMedicalHistoryModel = m(
+  MEMBER_MEDICAL_HISTORY_MODEL,
+  MemberMedicalHistorySchema,
+);
 export const CheckInConfigModel = m(CHECK_IN_CONFIG_MODEL, CheckInConfigSchema);
 export const CheckInModel = m(CHECK_IN_MODEL, CheckInSchema);
 export const FoodModel = m(FOOD_MODEL, FoodSchema);

@@ -113,7 +113,19 @@ Goal: a seeded v2 database and a runnable Playwright harness so every later spri
 
 **TDD sequence**: Write a smoke spec that loads each role's protected root and asserts no redirect → build config/global-setup/seed until it passes against the real backend.
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 2 Checkpoint
+- [x] `frontend/playwright.config.ts` (updated — backend+frontend webServers, per-role projects)
+- [x] `frontend/e2e/global-setup.ts` (new — seeds DB, saves auth storage states per role)
+- [x] `frontend/e2e/seed.ts` (new — wraps backend seed script)
+- [x] `frontend/e2e/helpers/api.ts` (new — `loginAs` helper)
+- [x] `frontend/e2e/.auth/.gitkeep`
+- [x] `backend/scripts/seed-e2e.ts` (new — E2E fixture seed with 3 test users + data)
+- [x] `backend/src/database/models/index.ts` (MemberMedication + MemberMedicalHistory exports)
+- [x] `backend/package.json` (seed:e2e / seed:e2e:reset scripts)
+- [x] `frontend/e2e/smoke.spec.ts` (Sprint Contract criteria verified — both PASS)
+- [x] `frontend/src/router/index.tsx` (placeholder routes changed from redirect-to-login to actual placeholders)
 
 ## Stage 3: Port auth + access-control E2E specs
 
