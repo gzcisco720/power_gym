@@ -17,6 +17,8 @@ import { UserRepository } from '../repositories/user.repository';
 import { InviteRepository } from '../repositories/invite.repository';
 import { WorkoutSessionRepository } from '../repositories/workout-session.repository';
 import { EquipmentRepository } from '../repositories/equipment.repository';
+import { CheckInRepository } from '../repositories/check-in.repository';
+import { CHECK_IN_MODEL, CheckInSchema } from '../database/models/check-in.model';
 import { OwnerDashboardController } from './owner-dashboard.controller';
 import { OwnerDashboardService } from './owner-dashboard.service';
 
@@ -27,6 +29,7 @@ import { OwnerDashboardService } from './owner-dashboard.service';
       { name: INVITE_TOKEN_MODEL, schema: InviteTokenSchema },
       { name: WORKOUT_SESSION_MODEL, schema: WorkoutSessionSchema },
       { name: EQUIPMENT_MODEL, schema: EquipmentSchema },
+      { name: CHECK_IN_MODEL, schema: CheckInSchema },
     ]),
   ],
   controllers: [OwnerDashboardController],
@@ -36,6 +39,7 @@ import { OwnerDashboardService } from './owner-dashboard.service';
     InviteRepository,
     WorkoutSessionRepository,
     EquipmentRepository,
+    CheckInRepository,
   ],
 })
 export class OwnerDashboardModule {}

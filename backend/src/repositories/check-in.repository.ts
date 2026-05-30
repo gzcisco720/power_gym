@@ -49,6 +49,10 @@ export class CheckInRepository {
       .sort({ submittedAt: -1 });
   }
 
+  async countSince(since: Date): Promise<number> {
+    return this.model.countDocuments({ submittedAt: { $gte: since } });
+  }
+
   async existsForDay(
     memberId: string,
     dayStart: Date,

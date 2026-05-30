@@ -14,7 +14,13 @@ const mockStats = {
   trainerCount: 1,
   memberCount: 2,
   pendingInviteCount: 0,
+  expiringSoonCount: 0,
   sessionsThisMonth: 5,
+  sessionsLastMonth: 4,
+  sessionsToday: 1,
+  membersThisMonth: 1,
+  checkInsThisWeek: 3,
+  checkInsLastWeek: 6,
 };
 
 const mockEquipmentStatus = {

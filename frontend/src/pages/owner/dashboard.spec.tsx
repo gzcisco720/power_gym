@@ -13,7 +13,13 @@ const mockStats = {
   trainerCount: 3,
   memberCount: 7,
   pendingInviteCount: 2,
+  expiringSoonCount: 0,
   sessionsThisMonth: 15,
+  sessionsLastMonth: 10,
+  sessionsToday: 2,
+  membersThisMonth: 1,
+  checkInsThisWeek: 4,
+  checkInsLastWeek: 8,
 };
 
 // The store is used with selectors: useOwnerDashboardStore((s) => s.stats)
@@ -35,7 +41,7 @@ beforeEach(() => {
 });
 
 describe('DashboardStats', () => {
-  it('renders four stat values from store data', () => {
+  it('renders six stat values from store data', () => {
     mockStoreWith({ stats: mockStats, isLoading: false, error: null });
 
     render(
@@ -50,13 +56,15 @@ describe('DashboardStats', () => {
     expect(screen.getByText('7')).toBeInTheDocument();
     // Sessions / Month
     expect(screen.getByText('15')).toBeInTheDocument();
-    // Pending Invites
-    expect(screen.getByText('2')).toBeInTheDocument();
+    // Active Today (sessionsToday = 2, pendingInviteCount = 2 — use getAllByText)
+    expect(screen.getAllByText('2').length).toBeGreaterThanOrEqual(1);
 
-    // Labels
+    // Labels (all 6)
     expect(screen.getByText('Trainers')).toBeInTheDocument();
     expect(screen.getByText('Members')).toBeInTheDocument();
     expect(screen.getByText('Sessions / Month')).toBeInTheDocument();
+    expect(screen.getByText('Active Today')).toBeInTheDocument();
+    expect(screen.getByText('Check-in Rate')).toBeInTheDocument();
     expect(screen.getByText('Pending Invites')).toBeInTheDocument();
   });
 

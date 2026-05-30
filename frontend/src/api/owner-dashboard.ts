@@ -4,7 +4,13 @@ export interface DashboardStats {
   trainerCount: number;
   memberCount: number;
   pendingInviteCount: number;
+  expiringSoonCount: number;
   sessionsThisMonth: number;
+  sessionsLastMonth: number;
+  sessionsToday: number;
+  membersThisMonth: number;
+  checkInsThisWeek: number;
+  checkInsLastWeek: number;
 }
 
 export type EquipmentStatus = 'active' | 'maintenance' | 'retired';

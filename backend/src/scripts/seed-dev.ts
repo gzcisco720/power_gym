@@ -2,7 +2,6 @@
  * Dev seed logic — exported for testing.
  * Entry point: backend/scripts/seed-dev.ts
  */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 
 import path from 'path';
 import fs from 'fs';
