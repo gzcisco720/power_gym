@@ -13,6 +13,8 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { OwnerDashboardModule } from './owner-dashboard/owner-dashboard.module';
 import { OwnerPeopleModule } from './owner-people/owner-people.module';
 import { OwnerInvitesModule } from './owner-invites/owner-invites.module';
+import { PlanTemplatesModule } from './plan-templates/plan-templates.module';
+import { NutritionTemplatesModule } from './nutrition-templates/nutrition-templates.module';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { OwnerInvitesModule } from './owner-invites/owner-invites.module';
     OwnerDashboardModule,
     OwnerPeopleModule,
     OwnerInvitesModule,
+    PlanTemplatesModule,
+    NutritionTemplatesModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ConditionalThrottlerGuard },

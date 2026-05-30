@@ -433,7 +433,18 @@ Goal: owner manages training-plan templates (CRUD), nutrition templates (CRUD), 
 - [ ] `POST /plan-templates` → 201; `GET /plan-templates` lists it; `GET /plan-templates/:id` returns nested days
 - [ ] `DELETE /plan-templates/:id` → subsequent GET 404
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 1 Checkpoint
+- [x] `backend/src/plan-templates/plan-templates.service.spec.ts`
+- [x] `backend/src/plan-templates/plan-templates.service.ts`
+- [x] `backend/src/plan-templates/plan-templates.controller.ts`
+- [x] `backend/src/plan-templates/plan-templates.module.ts`
+- [x] `backend/src/nutrition-templates/nutrition-templates.service.spec.ts`
+- [x] `backend/src/nutrition-templates/nutrition-templates.service.ts`
+- [x] `backend/src/nutrition-templates/nutrition-templates.controller.ts`
+- [x] `backend/src/nutrition-templates/nutrition-templates.module.ts`
+- [x] `backend/src/app.module.ts` (register both modules)
 
 ## Stage 2: Backend — foods + equipment CRUD (+ condition reports)
 
