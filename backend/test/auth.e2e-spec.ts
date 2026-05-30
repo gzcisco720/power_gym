@@ -25,8 +25,13 @@ import {
 import {
   PasswordResetToken,
   PasswordResetTokenSchema,
+  PasswordResetTokenDocument,
 } from '../src/common/models/password-reset-token.model';
 import { EmailModule } from '../src/common/email/email.module';
+import {
+  EMAIL_SERVICE,
+  IEmailService,
+} from '../src/common/email/email.service';
 
 const TEST_EMAIL = 'e2e@example.com';
 const TEST_PASSWORD = 'password123';
@@ -34,8 +39,9 @@ const TEST_PASSWORD = 'password123';
 async function buildApp(
   uri: string,
   throttleLimit: number,
+  mockEmail?: IEmailService,
 ): Promise<{ app: INestApplication<App>; module: TestingModule }> {
-  const moduleFixture = await Test.createTestingModule({
+  const builder = Test.createTestingModule({
     imports: [
       ConfigModule.forRoot({ isGlobal: true }),
       MongooseModule.forRoot(uri),
@@ -55,7 +61,13 @@ async function buildApp(
         useClass: ThrottlerGuard,
       },
     ],
-  }).compile();
+  });
+
+  if (mockEmail) {
+    builder.overrideProvider(EMAIL_SERVICE).useValue(mockEmail);
+  }
+
+  const moduleFixture = await builder.compile();
 
   const app = moduleFixture.createNestApplication<INestApplication<App>>();
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
@@ -70,18 +82,25 @@ describe('Auth (e2e)', () => {
   let mongod: MongoMemoryServer;
   let userModel: Model<UserDocument>;
   let refreshTokenModel: Model<RefreshTokenDocument>;
+  let passwordResetTokenModel: Model<PasswordResetTokenDocument>;
+  let mockEmailService: IEmailService;
   let seededUserId: string;
 
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
     const uri = mongod.getUri();
 
+    mockEmailService = { sendPasswordReset: jest.fn() };
+
     // High limit so regular tests never hit rate limit
-    ({ app, module } = await buildApp(uri, 1000));
+    ({ app, module } = await buildApp(uri, 1000, mockEmailService));
 
     userModel = module.get<Model<UserDocument>>(getModelToken(User.name));
     refreshTokenModel = module.get<Model<RefreshTokenDocument>>(
       getModelToken(RefreshToken.name),
+    );
+    passwordResetTokenModel = module.get<Model<PasswordResetTokenDocument>>(
+      getModelToken(PasswordResetToken.name),
     );
 
     const passwordHash = await bcrypt.hash(TEST_PASSWORD, 10);
@@ -104,6 +123,8 @@ describe('Auth (e2e)', () => {
 
   afterEach(async () => {
     await refreshTokenModel.deleteMany({});
+    await passwordResetTokenModel.deleteMany({});
+    (mockEmailService.sendPasswordReset as jest.Mock).mockClear();
   });
 
   // ─── POST /auth/login ───────────────────────────────────────────────────────
@@ -237,6 +258,132 @@ describe('Auth (e2e)', () => {
 
     it('no Bearer token → 401', async () => {
       await request(app.getHttpServer()).post('/auth/logout').expect(401);
+    });
+  });
+
+  // ─── POST /auth/forgot-password ─────────────────────────────────────────────
+
+  describe('POST /auth/forgot-password', () => {
+    it('known email → 200 and a PasswordResetToken document is created', async () => {
+      const countBefore = await passwordResetTokenModel.countDocuments();
+
+      await request(app.getHttpServer())
+        .post('/auth/forgot-password')
+        .send({ email: TEST_EMAIL })
+        .expect(200);
+
+      const countAfter = await passwordResetTokenModel.countDocuments();
+      expect(countAfter).toBe(countBefore + 1);
+    });
+
+    it('unknown email → 200 and no token created (no existence leak)', async () => {
+      const countBefore = await passwordResetTokenModel.countDocuments();
+
+      await request(app.getHttpServer())
+        .post('/auth/forgot-password')
+        .send({ email: 'nobody@example.com' })
+        .expect(200);
+
+      const countAfter = await passwordResetTokenModel.countDocuments();
+      expect(countAfter).toBe(countBefore);
+    });
+
+    it('missing email → 400', async () => {
+      await request(app.getHttpServer())
+        .post('/auth/forgot-password')
+        .send({})
+        .expect(400);
+    });
+  });
+
+  // ─── POST /auth/reset-password ──────────────────────────────────────────────
+
+  describe('POST /auth/reset-password', () => {
+    it('valid token + matching passwords → 200, user can log in with new password, pre-existing refresh tokens revoked', async () => {
+      // Seed a pre-existing refresh token so we can verify it gets revoked
+      const loginResponse = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ email: TEST_EMAIL, password: TEST_PASSWORD })
+        .expect(201);
+      const { refreshToken: existingRefreshToken } = loginResponse.body as {
+        refreshToken: string;
+      };
+
+      // Trigger forgot-password to get a reset token
+      await request(app.getHttpServer())
+        .post('/auth/forgot-password')
+        .send({ email: TEST_EMAIL })
+        .expect(200);
+
+      // Extract the raw token from the email service mock call
+      const sendSpy = mockEmailService.sendPasswordReset as jest.Mock;
+      const firstCall = sendSpy.mock.calls[0] as [string, string];
+      const deepLink = firstCall[1];
+      const rawToken = new URL(
+        deepLink.replace('powergym://', 'http://host/'),
+      ).searchParams.get('token');
+      expect(rawToken).toBeTruthy();
+
+      const NEW_PASSWORD = 'newpassword456';
+      await request(app.getHttpServer())
+        .post('/auth/reset-password')
+        .send({ token: rawToken, newPassword: NEW_PASSWORD })
+        .expect(200);
+
+      // User can now log in with the new password
+      await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ email: TEST_EMAIL, password: NEW_PASSWORD })
+        .expect(201);
+
+      // The old refresh token is revoked
+      await request(app.getHttpServer())
+        .post('/auth/refresh')
+        .send({ userId: seededUserId, refreshToken: existingRefreshToken })
+        .expect(401);
+
+      // Reset the user's password back to TEST_PASSWORD for other tests
+      const user = await userModel.findById(seededUserId);
+      if (user) {
+        user.passwordHash = await bcrypt.hash(TEST_PASSWORD, 10);
+        await user.save();
+      }
+    });
+
+    it('expired token → 400/401', async () => {
+      // Create an already-expired token directly in the DB
+      const rawToken = '00000000-0000-0000-0000-000000000001';
+      const tokenHash = await bcrypt.hash(rawToken, 10);
+      await passwordResetTokenModel.create({
+        userId: new Types.ObjectId(seededUserId),
+        tokenHash,
+        expiresAt: new Date(Date.now() - 1000),
+        usedAt: null,
+      });
+
+      const res = await request(app.getHttpServer())
+        .post('/auth/reset-password')
+        .send({ token: rawToken, newPassword: 'newpassword456' });
+
+      expect([400, 401]).toContain(res.status);
+    });
+
+    it('already-used token → 400/401', async () => {
+      // Create a token that has already been used
+      const rawToken = '00000000-0000-0000-0000-000000000002';
+      const tokenHash = await bcrypt.hash(rawToken, 10);
+      await passwordResetTokenModel.create({
+        userId: new Types.ObjectId(seededUserId),
+        tokenHash,
+        expiresAt: new Date(Date.now() + 3600000),
+        usedAt: new Date(),
+      });
+
+      const res = await request(app.getHttpServer())
+        .post('/auth/reset-password')
+        .send({ token: rawToken, newPassword: 'newpassword456' });
+
+      expect([400, 401]).toContain(res.status);
     });
   });
 });

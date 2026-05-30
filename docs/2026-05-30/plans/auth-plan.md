@@ -200,7 +200,15 @@ Modified:
 2. Implement service methods, DTOs, controller routes (email mocked in unit tests) → Green
 3. Extend `auth.e2e-spec.ts` for both endpoints against the real stack with the email service mocked at the module boundary → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 3 Checkpoint
+- [x] `src/modules/auth/dto/forgot-password.dto.ts` — ForgotPasswordDto with @IsEmail
+- [x] `src/modules/auth/dto/reset-password.dto.ts` — ResetPasswordDto with token + newPassword
+- [x] `src/modules/auth/auth.service.ts` — forgotPassword + resetPassword methods added
+- [x] `src/modules/auth/auth.controller.ts` — POST /auth/forgot-password + POST /auth/reset-password routes
+- [x] `src/modules/auth/auth.service.spec.ts` — 5 new unit tests for forgotPassword + resetPassword
+- [x] `test/auth.e2e-spec.ts` — forgot-password and reset-password integration test sections
 
 ---
 
