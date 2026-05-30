@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { AuthUser } from '../common/interfaces/auth-user.interface';
+import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import { SelfTrainingService } from './self-training.service';
 import type { ISelfWorkoutSet } from '../database/models/self-workout-log.model';
 
