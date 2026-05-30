@@ -284,7 +284,21 @@ Modified:
 2. Implement screens, SVG Face ID icon, bottom sheet, navigator split, deep-link `linking` config, `hydrate()` on launch → Green
 3. `/simplify` → re-run unit tests green. Run `design-reviewer` after the Evaluator passes.
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 5 Checkpoint
+- [x] `src/screens/LoginScreen.tsx` — Email + Password inputs, Sign In button, Face ID button (conditional), error state, BiometricsPrompt trigger
+- [x] `src/screens/ForgotPasswordScreen.tsx` — Email input, Send Reset Link button, "Check your email" success state
+- [x] `src/screens/ResetPasswordScreen.tsx` — New Password + Confirm Password inputs, validation error, Reset Password submit, navigate to Login on success
+- [x] `src/screens/HomeScreen.tsx` — Dummy home screen with "Power Gym" text
+- [x] `src/components/BiometricsPrompt.tsx` — Enable/Skip bottom sheet modal
+- [x] `src/components/FaceIdIcon.tsx` — SVG corner-bracket Face ID icon
+- [x] `src/navigation/index.tsx` — RootNavigator with AuthStack/AppStack split + linking config
+- [x] `mobile/App.tsx` — linking prop on NavigationContainer, hydrate() on mount
+- [x] `mobile/app.json` — "scheme": "powergym" added
+- [x] `mobile/package.json` — react-native-svg, @testing-library/react-native added
+- [x] `src/screens/__tests__/screens.spec.tsx` — 8 RNTL unit tests (all passing)
+- [x] `mobile/__mocks__/react-native-svg.js` — Jest mock for react-native-svg
 
 ---
 

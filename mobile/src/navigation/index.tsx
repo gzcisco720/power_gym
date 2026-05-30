@@ -1,34 +1,61 @@
-import { View, Text } from 'react-native';
+import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useAuthStore } from '../stores/auth.store';
+import { LoginScreen } from '../screens/LoginScreen';
+import { ForgotPasswordScreen } from '../screens/ForgotPasswordScreen';
+import { ResetPasswordScreen } from '../screens/ResetPasswordScreen';
+import { HomeScreen } from '../screens/HomeScreen';
 
-export type RootStackParamList = {
-  Init: undefined;
+export type AuthStackParamList = {
+  Login: undefined;
+  ForgotPassword: undefined;
+  ResetPassword: { token: string };
 };
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+export type AppStackParamList = {
+  Home: undefined;
+};
 
-function InitScreen() {
+const AuthStack = createNativeStackNavigator<AuthStackParamList>();
+const AppStack = createNativeStackNavigator<AppStackParamList>();
+
+const screenOptions = {
+  headerShown: false,
+  contentStyle: { backgroundColor: '#0a0a0a' },
+} as const;
+
+function AuthNavigator() {
   return (
-    <View className="flex-1 items-center justify-center bg-background">
-      <Text className="text-[18px] font-semibold tracking-[-0.3px] text-foreground">
-        Hello World
-      </Text>
-      <Text className="mt-0.5 text-[12px] text-foreground/65">
-        Power Gym mobile is running
-      </Text>
-    </View>
+    <AuthStack.Navigator screenOptions={screenOptions}>
+      <AuthStack.Screen name="Login" component={LoginScreen} />
+      <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+      <AuthStack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+    </AuthStack.Navigator>
+  );
+}
+
+function AppNavigator() {
+  return (
+    <AppStack.Navigator screenOptions={screenOptions}>
+      <AppStack.Screen name="Home" component={HomeScreen} />
+    </AppStack.Navigator>
   );
 }
 
 export function RootNavigator() {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: '#0a0a0a' },
-      }}
-    >
-      <Stack.Screen name="Init" component={InitScreen} />
-    </Stack.Navigator>
-  );
+  const { accessToken } = useAuthStore();
+  return accessToken ? <AppNavigator /> : <AuthNavigator />;
 }
+
+export const linking = {
+  prefixes: ['powergym://', 'https://app.powergym.com'],
+  config: {
+    screens: {
+      Auth: {
+        screens: {
+          ResetPassword: 'reset-password',
+        },
+      },
+    },
+  },
+};
