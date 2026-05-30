@@ -19,6 +19,12 @@ export class OwnerDashboardController {
     return this.service.getTrainerBreakdown();
   }
 
+  @Get('member-growth')
+  @HttpCode(HttpStatus.OK)
+  getMemberGrowth() {
+    return this.service.getMemberGrowth();
+  }
+
   @Get('equipment-status')
   @HttpCode(HttpStatus.OK)
   getEquipmentStatus() {

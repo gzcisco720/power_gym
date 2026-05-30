@@ -31,6 +31,20 @@ export interface EquipmentStatusResult {
   items: EquipmentItem[];
 }
 
+export interface TrainerBreakdownRow {
+  _id: string;
+  name: string;
+  email: string;
+  createdAt: string;
+  memberCount: number;
+  sessionsThisMonth: number;
+}
+
+export interface MemberGrowthBucket {
+  label: string;
+  newCount: number;
+}
+
 const BASE = `${import.meta.env.VITE_API_BASE_URL ?? ''}/api/v1`;
 
 export function fetchStats(): Promise<DashboardStats> {
@@ -39,4 +53,12 @@ export function fetchStats(): Promise<DashboardStats> {
 
 export function fetchEquipmentStatus(): Promise<EquipmentStatusResult> {
   return request<EquipmentStatusResult>(`${BASE}/owner/equipment-status`);
+}
+
+export function fetchTrainerBreakdown(): Promise<TrainerBreakdownRow[]> {
+  return request<TrainerBreakdownRow[]>(`${BASE}/owner/trainer-breakdown`);
+}
+
+export function fetchMemberGrowth(): Promise<MemberGrowthBucket[]> {
+  return request<MemberGrowthBucket[]>(`${BASE}/owner/member-growth`);
 }

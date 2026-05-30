@@ -240,15 +240,29 @@ Goal: owner sees the dashboard with stat cards, member-growth chart, trainer per
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `ownerDashboardStore > fetchTrainerBreakdown > populates rows array`
-- [ ] `TrainerBreakdownTable > renders a row per trainer with member count`
-- [ ] `MemberGrowthChart > renders a data point per month bucket returned`
+- [x] `ownerDashboardStore > fetchTrainerBreakdown > populates rows array`
+- [x] `TrainerBreakdownTable > renders a row per trainer with member count`
+- [x] `MemberGrowthChart > renders a data point per month bucket returned`
 
 *Integration / E2E:*
 - [ ] Owner on `/owner` → trainer-breakdown table shows the seeded trainer "Dev Trainer" with its assigned-member count
 - [ ] Member-growth chart container is visible with a rendered series (chart svg/canvas present)
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] `backend/src/owner-dashboard/owner-dashboard.service.ts` (add `getMemberGrowth`)
+- [x] `backend/src/owner-dashboard/owner-dashboard.controller.ts` (add `GET owner/member-growth`)
+- [x] `backend/src/owner-dashboard/owner-dashboard.service.spec.ts` (add `getMemberGrowth` test)
+- [x] `frontend/src/api/owner-dashboard.ts` (add `fetchTrainerBreakdown` + `fetchMemberGrowth`)
+- [x] `frontend/src/stores/ownerDashboardStore.ts` (add `trainerBreakdown` + `memberGrowth` state + actions)
+- [x] `frontend/src/stores/ownerDashboardStore.spec.ts` (add `fetchTrainerBreakdown` test)
+- [x] `frontend/src/components/owner/member-growth-chart.tsx` (new)
+- [x] `frontend/src/components/owner/member-growth-chart.spec.tsx` (new)
+- [x] `frontend/src/components/owner/trainer-breakdown-table.tsx` (new)
+- [x] `frontend/src/components/owner/trainer-breakdown-table.spec.tsx` (new)
+- [x] `frontend/src/pages/owner/dashboard.tsx` (integrate both panels)
+- [ ] `frontend/e2e/owner/dashboard.spec.ts` (add E2E tests — pending evaluator run)
 
 ---
 

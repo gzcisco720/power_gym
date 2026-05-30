@@ -30,4 +30,24 @@ test.describe('Owner Dashboard', () => {
     // The seed has maintenance equipment items
     await expect(page.getByText('Maintenance').first()).toBeVisible({ timeout: 15000 });
   });
+
+  test('trainer-breakdown table shows seeded trainer with assigned-member count', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 10000 });
+
+    // Wait for the Trainer Breakdown section label
+    await expect(page.getByText('Trainer Breakdown')).toBeVisible({ timeout: 15000 });
+
+    // The seed creates "Dev Trainer" assigned to members
+    await expect(page.getByText('Dev Trainer')).toBeVisible({ timeout: 15000 });
+  });
+
+  test('member-growth chart container is visible with a rendered series', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 10000 });
+
+    // Wait for the Member Growth section label
+    await expect(page.getByText('Member Growth')).toBeVisible({ timeout: 15000 });
+
+    // recharts renders an SVG for the bar chart
+    await expect(page.locator('svg').first()).toBeVisible({ timeout: 15000 });
+  });
 });

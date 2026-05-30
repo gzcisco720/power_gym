@@ -182,6 +182,37 @@ describe('OwnerDashboardService > getTrainerBreakdown', () => {
   });
 });
 
+// ── getMemberGrowth ────────────────────────────────────────────────────────────
+
+describe('OwnerDashboardService > getMemberGrowth', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('returns monthly buckets from user repository', async () => {
+    const monthlyData = [
+      { label: 'Dec', newCount: 0 },
+      { label: 'Jan', newCount: 1 },
+      { label: 'Feb', newCount: 2 },
+      { label: 'Mar', newCount: 0 },
+      { label: 'Apr', newCount: 3 },
+      { label: 'May', newCount: 1 },
+    ];
+    const findMembersJoinedByMonth = jest.fn().mockResolvedValue(monthlyData);
+    const { service } = makeService({
+      userRepo: {
+        findByRole: jest.fn().mockResolvedValue([]),
+        findAllMembers: jest.fn().mockResolvedValue([]),
+        findMembersJoinedByMonth,
+      },
+    });
+
+    const result = await service.getMemberGrowth(6);
+
+    expect(findMembersJoinedByMonth).toHaveBeenCalledWith(6);
+    expect(result).toHaveLength(6);
+    expect(result[0]).toMatchObject({ label: 'Dec', newCount: 0 });
+  });
+});
+
 // ── getEquipmentStatus ────────────────────────────────────────────────────────
 
 describe('OwnerDashboardService > getEquipmentStatus', () => {

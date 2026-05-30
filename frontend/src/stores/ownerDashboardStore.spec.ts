@@ -5,6 +5,8 @@ import { act } from '@testing-library/react';
 vi.mock('@/api/owner-dashboard', () => ({
   fetchStats: vi.fn(),
   fetchEquipmentStatus: vi.fn(),
+  fetchTrainerBreakdown: vi.fn(),
+  fetchMemberGrowth: vi.fn(),
 }));
 
 import { useOwnerDashboardStore } from './ownerDashboardStore';
@@ -33,11 +35,17 @@ const mockEquipmentStatus = {
   ],
 };
 
+const mockTrainerBreakdown = [
+  { _id: 't1', name: 'Dev Trainer', email: 'trainer@dev.com', createdAt: new Date().toISOString(), memberCount: 2, sessionsThisMonth: 5 },
+];
+
 beforeEach(() => {
   // Reset the store state between tests
   useOwnerDashboardStore.setState({
     stats: null,
     equipmentStatus: null,
+    trainerBreakdown: [],
+    memberGrowth: [],
     isLoading: false,
     error: null,
   });
@@ -70,6 +78,21 @@ describe('ownerDashboardStore', () => {
       expect(state.stats).toBeNull();
       expect(state.isLoading).toBe(false);
       expect(state.error).toBe('Network error');
+    });
+  });
+
+  describe('fetchTrainerBreakdown', () => {
+    it('populates rows array', async () => {
+      vi.mocked(ownerDashboardApi.fetchTrainerBreakdown).mockResolvedValueOnce(mockTrainerBreakdown);
+
+      await act(async () => {
+        await useOwnerDashboardStore.getState().fetchTrainerBreakdown();
+      });
+
+      const state = useOwnerDashboardStore.getState();
+      expect(state.trainerBreakdown).toEqual(mockTrainerBreakdown);
+      expect(state.isLoading).toBe(false);
+      expect(state.error).toBeNull();
     });
   });
 
