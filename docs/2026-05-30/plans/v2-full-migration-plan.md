@@ -324,7 +324,14 @@ Goal: owner manages trainers (list + detail hub with sub-tabs), members (list + 
 - [ ] `POST /owner/invites` with a new email → 201, invite appears in subsequent `GET /owner/invites`
 - [ ] `DELETE /owner/invites/:id` → invite no longer listed
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 2 Checkpoint
+- [x] `backend/src/owner-invites/owner-invites.service.spec.ts`
+- [x] `backend/src/owner-invites/owner-invites.service.ts`
+- [x] `backend/src/owner-invites/owner-invites.controller.ts`
+- [x] `backend/src/owner-invites/owner-invites.module.ts`
+- [x] `backend/src/app.module.ts` (register OwnerInvitesModule)
 
 ## Stage 3: Frontend — trainers list + members list + invites
 
