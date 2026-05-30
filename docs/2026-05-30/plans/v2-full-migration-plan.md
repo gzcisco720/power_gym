@@ -208,15 +208,28 @@ Goal: owner sees the dashboard with stat cards, member-growth chart, trainer per
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `ownerDashboardStore > fetchStats > populates stats and clears isLoading on success`
-- [ ] `ownerDashboardStore > fetchStats > sets error and clears isLoading on failure`
-- [ ] `DashboardStats > renders four stat values from store data`
+- [x] `ownerDashboardStore > fetchStats > populates stats and clears isLoading on success`
+- [x] `ownerDashboardStore > fetchStats > sets error and clears isLoading on failure`
+- [x] `DashboardStats > renders four stat values from store data`
 
 *Integration / E2E:*
-- [ ] Owner navigates to `/owner` → four stat cards show seeded numbers (Trainers 1, Members 2)
-- [ ] `/owner` equipment panel lists at least one item under a status group → text "maintenance" visible (seed has a maintenance item)
+- [x] Owner navigates to `/owner` → four stat cards show seeded numbers (Trainers 1, Members 2)
+- [x] `/owner` equipment panel lists at least one item under a status group → text "maintenance" visible (seed has a maintenance item)
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 2 Checkpoint
+- [x] `frontend/src/api/owner-dashboard.ts`
+- [x] `frontend/src/stores/ownerDashboardStore.ts`
+- [x] `frontend/src/stores/ownerDashboardStore.spec.ts`
+- [x] `frontend/src/components/owner/dashboard-stats.tsx`
+- [x] `frontend/src/components/owner/equipment-status-section.tsx`
+- [x] `frontend/src/pages/owner/dashboard.tsx`
+- [x] `frontend/src/pages/owner/dashboard.spec.tsx`
+- [x] `frontend/src/router/index.tsx` (register `/owner` route with DashboardLayout)
+- [x] `frontend/src/components/shared/dashboard-layout.tsx` (add LazyMotion wrapper)
+- [x] `frontend/tsconfig.app.json` (exclude spec files from production build)
+- [x] `frontend/e2e/owner/dashboard.spec.ts`
 
 ## Stage 3: Frontend — member-growth chart + trainer performance breakdown
 

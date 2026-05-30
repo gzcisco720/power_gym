@@ -4,6 +4,8 @@ import { LoginPage } from '@/pages/auth/login';
 import { RegisterPage } from '@/pages/auth/register';
 import { ForgotPasswordPage } from '@/pages/auth/forgot-password';
 import { ResetPasswordPage } from '@/pages/auth/reset-password';
+import { DashboardLayout } from '@/components/shared/dashboard-layout';
+import { OwnerDashboardPage } from '@/pages/owner/dashboard';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -18,8 +20,13 @@ export const router = createBrowserRouter([
       {
         element: <RequireRole roles={['owner']} />,
         children: [
-          { path: '/owner', element: <div>Owner home (placeholder)</div> },
-          { path: '/owner/*', element: <div>Owner (placeholder)</div> },
+          {
+            element: <DashboardLayout />,
+            children: [
+              { path: '/owner', element: <OwnerDashboardPage /> },
+              { path: '/owner/*', element: <div>Owner (placeholder)</div> },
+            ],
+          },
         ],
       },
       {

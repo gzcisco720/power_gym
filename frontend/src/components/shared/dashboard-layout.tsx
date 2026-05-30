@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom';
+import { LazyMotion, domAnimation } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
 import { AppShell } from './app-shell';
 
@@ -10,8 +11,10 @@ export function DashboardLayout() {
   if (status === 'loading' || status === 'idle' || !user) return null;
 
   return (
-    <AppShell userRole={user.role} userName={user.name} userEmail={user.email}>
-      <Outlet />
-    </AppShell>
+    <LazyMotion features={domAnimation}>
+      <AppShell userRole={user.role} userName={user.name} userEmail={user.email}>
+        <Outlet />
+      </AppShell>
+    </LazyMotion>
   );
 }
