@@ -23,6 +23,7 @@ import { BodyTestsModule } from './body-tests/body-tests.module';
 import { ServiceTypesModule } from './service-types/service-types.module';
 import { BillingModule } from './billing/billing.module';
 import { ScheduleModule } from './schedule/schedule.module';
+import { MembersModule } from './members/members.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { ScheduleModule } from './schedule/schedule.module';
     ServiceTypesModule,
     BillingModule,
     ScheduleModule,
+    MembersModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ConditionalThrottlerGuard },

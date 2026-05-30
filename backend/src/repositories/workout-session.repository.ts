@@ -1,6 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { estimatedOneRM } from '../common/epley';
+
+export interface ExerciseHistoryPoint {
+  date: Date;
+  estimatedOneRM: number;
+  bestWeight: number;
+  bestReps: number;
+}
+
+export interface LastWeightHint {
+  exerciseId: string;
+  lastWeight: number;
+  lastReps: number;
+  lastDate: Date;
+  consecutiveMaxHits: number;
+}
 import {
   IWorkoutSession,
   ISessionSet,
@@ -172,5 +188,141 @@ export class WorkoutSessionRepository {
         startedAt: { $gte: start, $lt: end },
       })
       .sort({ startedAt: 1 });
+  }
+
+  async findExerciseHistory(
+    memberId: string,
+    exerciseId: string,
+  ): Promise<ExerciseHistoryPoint[]> {
+    const sessions = await this.model
+      .find(
+        {
+          memberId: new Types.ObjectId(memberId),
+          completedAt: { $ne: null },
+          'sets.exerciseId': new Types.ObjectId(exerciseId),
+        },
+        { completedAt: 1, sets: 1 },
+      )
+      .sort({ completedAt: 1 });
+
+    return sessions.flatMap((session) => {
+      const matchingSets = session.sets.filter(
+        (s) =>
+          s.exerciseId.toString() === exerciseId &&
+          s.actualWeight !== null &&
+          s.actualReps !== null,
+      );
+      if (matchingSets.length === 0) return [];
+
+      let bestSet = matchingSets[0];
+      let bestEstimated = estimatedOneRM(
+        bestSet.actualWeight!,
+        bestSet.actualReps!,
+      );
+      for (const s of matchingSets.slice(1)) {
+        const e = estimatedOneRM(s.actualWeight!, s.actualReps!);
+        if (e > bestEstimated) {
+          bestEstimated = e;
+          bestSet = s;
+        }
+      }
+
+      return [
+        {
+          date: session.completedAt!,
+          estimatedOneRM: Math.round(bestEstimated * 10) / 10,
+          bestWeight: bestSet.actualWeight!,
+          bestReps: bestSet.actualReps!,
+        },
+      ];
+    });
+  }
+
+  async findLastWeightsForExercises(
+    memberId: string,
+    exerciseIds: string[],
+  ): Promise<LastWeightHint[]> {
+    if (exerciseIds.length === 0) return [];
+
+    const objectIds = exerciseIds.map((id) => new Types.ObjectId(id));
+
+    type SessionGroup = {
+      sessionDate: Date;
+      sets: {
+        actualWeight: number;
+        actualReps: number;
+        prescribedRepsMax: number;
+      }[];
+    };
+    type AggResult = { _id: Types.ObjectId; sessions: SessionGroup[] };
+
+    const results = await this.model.aggregate<AggResult>([
+      {
+        $match: {
+          memberId: new Types.ObjectId(memberId),
+          completedAt: { $ne: null },
+          'sets.exerciseId': { $in: objectIds },
+        },
+      },
+      { $sort: { completedAt: -1 } },
+      { $unwind: '$sets' },
+      {
+        $match: {
+          'sets.exerciseId': { $in: objectIds },
+          'sets.actualWeight': { $ne: null, $gt: 0 },
+          'sets.actualReps': { $ne: null },
+        },
+      },
+      {
+        $group: {
+          _id: { exId: '$sets.exerciseId', sessionId: '$_id' },
+          sessionDate: { $first: '$completedAt' },
+          sets: {
+            $push: {
+              actualWeight: '$sets.actualWeight',
+              actualReps: '$sets.actualReps',
+              prescribedRepsMax: '$sets.prescribedRepsMax',
+            },
+          },
+        },
+      },
+      { $sort: { '_id.exId': 1, sessionDate: -1 } },
+      {
+        $group: {
+          _id: '$_id.exId',
+          sessions: {
+            $push: { sessionDate: '$sessionDate', sets: '$sets' },
+          },
+        },
+      },
+      { $project: { sessions: { $slice: ['$sessions', 2] } } },
+    ]);
+
+    return results.map((result) => {
+      const latest = result.sessions[0];
+      const prev = result.sessions[1];
+
+      const maxWeightSet = latest.sets.reduce(
+        (best, s) => (s.actualWeight > best.actualWeight ? s : best),
+        latest.sets[0],
+      );
+
+      const lastAllHitMax = latest.sets.every(
+        (s) => s.actualReps >= s.prescribedRepsMax,
+      );
+      const prevAllHitMax = prev
+        ? prev.sets.every((s) => s.actualReps >= s.prescribedRepsMax)
+        : false;
+      const consecutiveMaxHits =
+        lastAllHitMax && prevAllHitMax ? 2 : lastAllHitMax ? 1 : 0;
+
+      return {
+        exerciseId: result._id.toString(),
+        lastWeight: maxWeightSet.actualWeight,
+        lastReps: maxWeightSet.actualReps,
+        lastDate: latest.sessionDate,
+        consecutiveMaxHits,
+      };
+    });
   }
 }

@@ -8,6 +8,8 @@ import {
 } from '../database/models/member-nutrition-plan.model';
 import type { IDayType } from '../database/models/nutrition-template.model';
 
+export type { ISchedule };
+
 export interface CreateMemberNutritionPlanData {
   memberId: string;
   assignedById: string;
@@ -42,6 +44,17 @@ export class MemberNutritionPlanRepository {
     await this.model.updateMany(
       { memberId: new Types.ObjectId(memberId), isActive: true },
       { $set: { isActive: false, deactivatedAt: new Date() } },
+    );
+  }
+
+  async updateSchedule(
+    memberId: string,
+    schedule: ISchedule,
+  ): Promise<IMemberNutritionPlan | null> {
+    return this.model.findOneAndUpdate(
+      { memberId: new Types.ObjectId(memberId), isActive: true },
+      { $set: { schedule } },
+      { returnDocument: 'after' },
     );
   }
 

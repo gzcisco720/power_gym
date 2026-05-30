@@ -792,7 +792,17 @@ Goal: trainer's Members list and the full Member Hub: overview + Plan, Nutrition
 - [ ] `GET /members/:id/profile` as the member's trainer → 200; as a different trainer → 403
 - [ ] `GET /progress/:memberId` as trainer → 200 with seeded bench/deadlift/squat series
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 1 Checkpoint
+- [x] `backend/src/repositories/member-nutrition-plan.repository.ts` (add `updateSchedule`)
+- [x] `backend/src/repositories/workout-session.repository.ts` (add `findExerciseHistory` + `findLastWeightsForExercises`)
+- [x] `backend/src/members/members.service.spec.ts`
+- [x] `backend/src/members/members.service.ts`
+- [x] `backend/src/members/members.controller.ts`
+- [x] `backend/src/members/progress.controller.ts`
+- [x] `backend/src/members/members.module.ts`
+- [x] `backend/src/app.module.ts` (register MembersModule)
 
 ## Stage 2: Backend — body tests + health (injuries, medical history, medications) + check-ins + config
 
