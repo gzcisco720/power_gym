@@ -17,6 +17,10 @@ import { OwnerPlanEditPage } from '@/pages/owner/plan-edit';
 import { OwnerNutritionTemplatesPage } from '@/pages/owner/nutrition';
 import { OwnerNutritionNewPage } from '@/pages/owner/nutrition-new';
 import { OwnerNutritionEditPage } from '@/pages/owner/nutrition-edit';
+import { OwnerFoodsPage } from '@/pages/owner/foods';
+import { OwnerFoodNewPage } from '@/pages/owner/food-new';
+import { OwnerFoodEditPage } from '@/pages/owner/food-edit';
+import { OwnerEquipmentPage } from '@/pages/owner/equipment';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -50,6 +54,10 @@ export const router = createBrowserRouter([
               { path: '/owner/nutrition-templates', element: <OwnerNutritionTemplatesPage /> },
               { path: '/owner/nutrition-templates/new', element: <OwnerNutritionNewPage /> },
               { path: '/owner/nutrition-templates/:id/edit', element: <OwnerNutritionEditPage /> },
+              { path: '/owner/foods', element: <OwnerFoodsPage /> },
+              { path: '/owner/foods/new', element: <OwnerFoodNewPage /> },
+              { path: '/owner/foods/:foodId/edit', element: <OwnerFoodEditPage /> },
+              { path: '/owner/equipment', element: <OwnerEquipmentPage /> },
               { path: '/owner/*', element: <div>Owner (placeholder)</div> },
             ],
           },

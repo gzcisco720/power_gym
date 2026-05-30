@@ -543,16 +543,37 @@ Goal: owner manages training-plan templates (CRUD), nutrition templates (CRUD), 
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `foodsStore > deleteFood > removes item and shows it gone from list`
-- [ ] `equipmentStore > updateStatus > reflects new status in list`
-- [ ] `AddEquipmentDialog > submit calls store.create with form values`
+- [x] `foodsStore > deleteFood > removes item and shows it gone from list`
+- [x] `equipmentStore > updateStatus > reflects new status in list`
+- [x] `AddEquipmentDialog > submit calls store.create with form values`
 
 *Integration / E2E:*
 - [ ] Owner on `/owner/equipment` adds equipment via dialog → appears in list
 - [ ] Owner opens an item, adds a condition report → report shows in its history
 - [ ] Owner on `/owner/foods` creates a food → appears in list; deletes it → removed (toast)
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 4 Checkpoint
+- [x] `frontend/src/api/foods.ts`
+- [x] `frontend/src/stores/foodsStore.ts`
+- [x] `frontend/src/stores/foodsStore.spec.ts`
+- [x] `frontend/src/api/equipment.ts`
+- [x] `frontend/src/stores/equipmentStore.ts`
+- [x] `frontend/src/stores/equipmentStore.spec.ts`
+- [x] `frontend/src/components/nutrition/food-form.tsx`
+- [x] `frontend/src/components/owner/add-equipment-dialog.tsx`
+- [x] `frontend/src/components/owner/add-equipment-dialog.spec.tsx`
+- [x] `frontend/src/components/owner/edit-equipment-dialog.tsx`
+- [x] `frontend/src/components/owner/equipment.types.ts`
+- [x] `frontend/src/pages/owner/foods.tsx`
+- [x] `frontend/src/pages/owner/food-new.tsx`
+- [x] `frontend/src/pages/owner/food-edit.tsx`
+- [x] `frontend/src/pages/owner/equipment.tsx`
+- [x] `frontend/src/data/gym_equipment.json`
+- [x] `frontend/src/router/index.tsx` (add foods + equipment routes)
+- [x] `frontend/e2e/owner/foods.spec.ts`
+- [x] `frontend/e2e/owner/equipment.spec.ts`
 
 ---
 
