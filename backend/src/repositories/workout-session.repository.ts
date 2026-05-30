@@ -133,6 +133,17 @@ export class WorkoutSessionRepository {
     return result !== null;
   }
 
+  async countByMemberIdsSince(
+    memberIds: string[],
+    since: Date,
+  ): Promise<number> {
+    if (memberIds.length === 0) return 0;
+    return this.model.countDocuments({
+      memberId: { $in: memberIds.map((id) => new Types.ObjectId(id)) },
+      completedAt: { $gte: since },
+    });
+  }
+
   async findStaleActive(staleAfterHours: number): Promise<IWorkoutSession[]> {
     const cutoff = new Date(Date.now() - staleAfterHours * 60 * 60 * 1000);
     return this.model.find({

@@ -10,6 +10,7 @@ import { AccountModule } from './account/account.module';
 import { EmailModule } from './email/email.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import { OwnerDashboardModule } from './owner-dashboard/owner-dashboard.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     AuthModule,
     AccountModule,
     EmailModule,
+    OwnerDashboardModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ConditionalThrottlerGuard },

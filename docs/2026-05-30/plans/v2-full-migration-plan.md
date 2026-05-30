@@ -189,7 +189,15 @@ Goal: owner sees the dashboard with stat cards, member-growth chart, trainer per
 
 **TDD sequence**: Red specs against seeded repo → implement service/controller → green; verify 403 guard.
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 1 Checkpoint
+- [x] `backend/src/repositories/workout-session.repository.ts` (add `countByMemberIdsSince`)
+- [x] `backend/src/owner-dashboard/owner-dashboard.service.spec.ts`
+- [x] `backend/src/owner-dashboard/owner-dashboard.service.ts`
+- [x] `backend/src/owner-dashboard/owner-dashboard.controller.ts`
+- [x] `backend/src/owner-dashboard/owner-dashboard.module.ts`
+- [x] `backend/src/app.module.ts` (register module)
 
 ## Stage 2: Frontend — dashboard stat cards + equipment status panel
 
