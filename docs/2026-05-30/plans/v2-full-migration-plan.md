@@ -1121,16 +1121,29 @@ Goal: member's Dashboard, My Training (+ live session + calendar), Check-ins (da
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `memberCheckInStore > submit > posts a check-in and adds it to history`
-- [ ] `memberNutritionStore > fetchDay > populates the day's plan + logged items`
-- [ ] `CheckInForm > validates required fields before submit`
+- [x] `memberCheckInStore > submit > posts a check-in and adds it to history`
+- [x] `memberNutritionStore > fetchDay > populates the day's plan + logged items`
+- [x] `CheckInForm > validates required fields before submit`
 
 *Integration / E2E:*
 - [ ] Member completes a new check-in via the form → it appears in history and the dashboard "this week" card updates
 - [ ] Member on `/member/nutrition` opens today → assigned day-type meals render; freestyle restriction matches v1
 - [ ] Member on `/member/body-tests` sees seeded test history + chart
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] `frontend/src/stores/memberNutritionStore.ts`
+- [x] `frontend/src/stores/memberNutritionStore.spec.ts`
+- [x] `frontend/src/api/member-hub.ts` (add `fetchMemberNutritionPlan`)
+- [x] `frontend/src/pages/member/check-in-dashboard.tsx`
+- [x] `frontend/src/pages/member/check-in-history.tsx`
+- [x] `frontend/src/pages/member/check-in-detail.tsx`
+- [x] `frontend/src/pages/member/member-nutrition.tsx`
+- [x] `frontend/src/pages/member/member-body-tests.tsx`
+- [x] `frontend/src/router/index.tsx` (wire real member pages)
+- [x] `frontend/e2e/member/member-check-in.spec.ts`
+- [x] `frontend/e2e/member/member-body-tests.spec.ts`
 
 ## Stage 4: Frontend — member Journey + Health + Schedule + Settings + Billing
 

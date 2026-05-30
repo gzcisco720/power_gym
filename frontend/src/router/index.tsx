@@ -37,6 +37,12 @@ import { TrainerInvitesPage } from '@/pages/trainer/invites';
 import { TrainerSettingsPage } from '@/pages/trainer/settings';
 import { MemberDashboardPage } from '@/pages/member/dashboard';
 import { MemberMyTrainingPage } from '@/pages/member/my-training';
+import { MemberCheckInDashboardPage } from '@/pages/member/check-in-dashboard';
+import { MemberCheckInNewPage } from '@/pages/member/check-in-new';
+import { MemberCheckInHistoryPage } from '@/pages/member/check-in-history';
+import { MemberCheckInDetailPage } from '@/pages/member/check-in-detail';
+import { MemberNutritionPage } from '@/pages/member/member-nutrition';
+import { MemberBodyTestsPage } from '@/pages/member/member-body-tests';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -142,14 +148,14 @@ export const router = createBrowserRouter([
               { path: '/member/my-training', element: <MemberMyTrainingPage /> },
               { path: '/member/my-training/session/:id', element: <SelfSessionPage basePath="/member/my-training" /> },
               { path: '/member/my-training/calendar', element: <TrainingCalendarPage basePath="/member/my-training" /> },
-              // Stage 3 placeholders
-              { path: '/member/check-in', element: <div>Check-In (placeholder)</div> },
-              { path: '/member/check-in/new', element: <div>Check-In New (placeholder)</div> },
-              { path: '/member/check-in/history', element: <div>Check-In History (placeholder)</div> },
-              { path: '/member/check-in/:id', element: <div>Check-In Detail (placeholder)</div> },
-              { path: '/member/nutrition', element: <div>Nutrition (placeholder)</div> },
-              { path: '/member/nutrition/:date', element: <div>Nutrition Day (placeholder)</div> },
-              { path: '/member/body-tests', element: <div>Body Tests (placeholder)</div> },
+              // Stage 3: Check-ins + Nutrition + Body Tests
+              { path: '/member/check-in', element: <MemberCheckInDashboardPage /> },
+              { path: '/member/check-in/new', element: <MemberCheckInNewPage /> },
+              { path: '/member/check-in/history', element: <MemberCheckInHistoryPage /> },
+              { path: '/member/check-in/:id', element: <MemberCheckInDetailPage /> },
+              { path: '/member/nutrition', element: <MemberNutritionPage /> },
+              { path: '/member/nutrition/day', element: <NutritionDayPage basePath="/member/nutrition/day" /> },
+              { path: '/member/body-tests', element: <MemberBodyTestsPage /> },
               // Stage 4 placeholders
               { path: '/member/journey', element: <div>Journey (placeholder)</div> },
               { path: '/member/health', element: <div>Health (placeholder)</div> },

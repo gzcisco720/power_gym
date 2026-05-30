@@ -11,7 +11,7 @@ import { request } from '@/api/client';
 import type { SelfNutritionLog, SelfMeal, SelfMealItem } from '@/api/self-nutrition';
 import type { MacroSnapshot } from '@/lib/nutrition/macros';
 
-type BasePath = '/owner/my-nutrition' | '/trainer/my-nutrition';
+type BasePath = '/owner/my-nutrition' | '/trainer/my-nutrition' | '/member/nutrition/day';
 
 interface Props {
   basePath?: BasePath;

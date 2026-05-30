@@ -333,6 +333,10 @@ export async function fetchMemberNutrition(memberId: string): Promise<MemberNutr
   };
 }
 
+export function fetchMemberNutritionPlan(memberId: string): Promise<ActiveNutritionPlan | null> {
+  return safeRequest<ActiveNutritionPlan>(`${BASE}/members/${memberId}/nutrition`);
+}
+
 // ─── Body Tests ───────────────────────────────────────────────────────────────
 
 export interface BodyTestRecord {
