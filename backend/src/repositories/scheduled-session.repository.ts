@@ -13,6 +13,19 @@ export interface CreateScheduledSessionData {
   startTime: string;
   endTime: string;
   seriesId?: string | null;
+  serviceTypeId?: string | null;
+  customServiceName?: string | null;
+  customFee?: number | null;
+}
+
+export interface UpdateScheduledSessionData {
+  trainerId?: string;
+  memberIds?: string[];
+  startTime?: string;
+  endTime?: string;
+  serviceTypeId?: string | null;
+  customServiceName?: string | null;
+  customFee?: number | null;
 }
 
 @Injectable()
@@ -106,6 +119,22 @@ export class ScheduledSessionRepository {
       .lean();
   }
 
+  async findSessionsForBillingRange(
+    from: Date,
+    to: Date,
+    trainerId?: string,
+  ): Promise<IScheduledSession[]> {
+    const query: Record<string, unknown> = {
+      date: { $gte: from, $lte: to },
+      status: 'scheduled',
+      serviceTypeId: { $ne: null },
+    };
+    if (trainerId) {
+      query.trainerId = new Types.ObjectId(trainerId);
+    }
+    return this.model.find(query).lean();
+  }
+
   async createMany(
     sessions: CreateScheduledSessionData[],
   ): Promise<IScheduledSession[]> {
@@ -116,7 +145,114 @@ export class ScheduledSessionRepository {
       startTime: s.startTime,
       endTime: s.endTime,
       seriesId: s.seriesId ? new Types.ObjectId(s.seriesId) : null,
+      serviceTypeId: s.serviceTypeId
+        ? new Types.ObjectId(s.serviceTypeId)
+        : null,
     }));
     return this.model.insertMany(docs);
+  }
+
+  async findByDateRange(
+    start: Date,
+    end: Date,
+    filter: { trainerId?: string; memberId?: string } = {},
+  ): Promise<IScheduledSession[]> {
+    const query: Record<string, unknown> = {
+      date: { $gte: start, $lte: end },
+      status: 'scheduled',
+    };
+    if (filter.trainerId) {
+      query.trainerId = new Types.ObjectId(filter.trainerId);
+    }
+    if (filter.memberId) {
+      query.memberIds = new Types.ObjectId(filter.memberId);
+    }
+    return this.model.find(query).sort({ date: 1, startTime: 1 });
+  }
+
+  async findById(id: string): Promise<IScheduledSession | null> {
+    return this.model.findById(id);
+  }
+
+  async updateOne(id: string, data: UpdateScheduledSessionData): Promise<void> {
+    const set: Record<string, unknown> = {};
+    if (data.trainerId) set.trainerId = new Types.ObjectId(data.trainerId);
+    if (data.memberIds)
+      set.memberIds = data.memberIds.map((mid) => new Types.ObjectId(mid));
+    if (data.startTime) set.startTime = data.startTime;
+    if (data.endTime) set.endTime = data.endTime;
+    if ('serviceTypeId' in data)
+      set.serviceTypeId = data.serviceTypeId
+        ? new Types.ObjectId(data.serviceTypeId)
+        : null;
+    if ('customServiceName' in data)
+      set.customServiceName = data.customServiceName;
+    if ('customFee' in data) set.customFee = data.customFee;
+    await this.model.findByIdAndUpdate(id, { $set: set });
+  }
+
+  async updateFuture(
+    seriesId: string,
+    fromDate: Date,
+    data: UpdateScheduledSessionData,
+  ): Promise<void> {
+    const set: Record<string, unknown> = {};
+    if (data.trainerId) set.trainerId = new Types.ObjectId(data.trainerId);
+    if (data.memberIds)
+      set.memberIds = data.memberIds.map((mid) => new Types.ObjectId(mid));
+    if (data.startTime) set.startTime = data.startTime;
+    if (data.endTime) set.endTime = data.endTime;
+    if ('serviceTypeId' in data)
+      set.serviceTypeId = data.serviceTypeId
+        ? new Types.ObjectId(data.serviceTypeId)
+        : null;
+    if ('customServiceName' in data)
+      set.customServiceName = data.customServiceName;
+    if ('customFee' in data) set.customFee = data.customFee;
+    await this.model.updateMany(
+      { seriesId: new Types.ObjectId(seriesId), date: { $gte: fromDate } },
+      { $set: set },
+    );
+  }
+
+  async updateAll(
+    seriesId: string,
+    data: UpdateScheduledSessionData,
+  ): Promise<void> {
+    const set: Record<string, unknown> = {};
+    if (data.trainerId) set.trainerId = new Types.ObjectId(data.trainerId);
+    if (data.memberIds)
+      set.memberIds = data.memberIds.map((mid) => new Types.ObjectId(mid));
+    if (data.startTime) set.startTime = data.startTime;
+    if (data.endTime) set.endTime = data.endTime;
+    if ('serviceTypeId' in data)
+      set.serviceTypeId = data.serviceTypeId
+        ? new Types.ObjectId(data.serviceTypeId)
+        : null;
+    if ('customServiceName' in data)
+      set.customServiceName = data.customServiceName;
+    if ('customFee' in data) set.customFee = data.customFee;
+    await this.model.updateMany(
+      { seriesId: new Types.ObjectId(seriesId) },
+      { $set: set },
+    );
+  }
+
+  async cancelOne(id: string): Promise<void> {
+    await this.model.findByIdAndUpdate(id, { $set: { status: 'cancelled' } });
+  }
+
+  async cancelFuture(seriesId: string, fromDate: Date): Promise<void> {
+    await this.model.updateMany(
+      { seriesId: new Types.ObjectId(seriesId), date: { $gte: fromDate } },
+      { $set: { status: 'cancelled' } },
+    );
+  }
+
+  async cancelAll(seriesId: string): Promise<void> {
+    await this.model.updateMany(
+      { seriesId: new Types.ObjectId(seriesId) },
+      { $set: { status: 'cancelled' } },
+    );
   }
 }

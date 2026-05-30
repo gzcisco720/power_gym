@@ -18,6 +18,11 @@ import { NutritionTemplatesModule } from './nutrition-templates/nutrition-templa
 import { FoodsModule } from './foods/foods.module';
 import { EquipmentModule } from './equipment/equipment.module';
 import { SelfTrainingModule } from './self-training/self-training.module';
+import { SelfNutritionModule } from './self-nutrition/self-nutrition.module';
+import { BodyTestsModule } from './body-tests/body-tests.module';
+import { ServiceTypesModule } from './service-types/service-types.module';
+import { BillingModule } from './billing/billing.module';
+import { ScheduleModule } from './schedule/schedule.module';
 
 @Module({
   imports: [
@@ -41,6 +46,11 @@ import { SelfTrainingModule } from './self-training/self-training.module';
     FoodsModule,
     EquipmentModule,
     SelfTrainingModule,
+    SelfNutritionModule,
+    BodyTestsModule,
+    ServiceTypesModule,
+    BillingModule,
+    ScheduleModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ConditionalThrottlerGuard },

@@ -51,6 +51,23 @@ export class ServiceTypeRepository {
     });
   }
 
+  async update(
+    id: string,
+    data: Partial<{
+      name: string;
+      durationMin: number;
+      pricePerSession: number;
+      note: string | null;
+      isActive: boolean;
+    }>,
+  ): Promise<IServiceType | null> {
+    return this.model.findByIdAndUpdate(
+      id,
+      { $set: data },
+      { returnDocument: 'after' },
+    );
+  }
+
   async delete(id: string): Promise<void> {
     await this.model.findByIdAndDelete(id);
   }

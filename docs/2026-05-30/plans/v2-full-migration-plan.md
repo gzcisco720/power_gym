@@ -635,7 +635,33 @@ Goal: owner's self-tracking (My Training incl. live session, My Nutrition, My Bo
 - [ ] `POST /service-types` then `GET /service-types/active` → new active type listed
 - [ ] `GET /me/body-tests/export` → returns export payload (CSV/JSON) for seeded owner tests
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 2 Checkpoint
+- [x] `backend/src/self-nutrition/self-nutrition.service.ts`
+- [x] `backend/src/self-nutrition/self-nutrition.service.spec.ts`
+- [x] `backend/src/self-nutrition/self-nutrition.controller.ts`
+- [x] `backend/src/self-nutrition/self-nutrition.module.ts`
+- [x] `backend/src/body-tests/body-tests.service.ts`
+- [x] `backend/src/body-tests/body-tests.service.spec.ts`
+- [x] `backend/src/body-tests/body-tests.controller.ts`
+- [x] `backend/src/body-tests/body-tests.module.ts`
+- [x] `backend/src/common/body-test-formulas.ts` (Jackson-Pollock port from v1)
+- [x] `backend/src/service-types/service-types.service.ts`
+- [x] `backend/src/service-types/service-types.service.spec.ts`
+- [x] `backend/src/service-types/service-types.controller.ts`
+- [x] `backend/src/service-types/service-types.module.ts`
+- [x] `backend/src/repositories/service-type.repository.ts` (add `update` method)
+- [x] `backend/src/billing/billing.service.ts`
+- [x] `backend/src/billing/billing.service.spec.ts`
+- [x] `backend/src/billing/billing.controller.ts`
+- [x] `backend/src/billing/billing.module.ts`
+- [x] `backend/src/schedule/schedule.service.ts`
+- [x] `backend/src/schedule/schedule.service.spec.ts`
+- [x] `backend/src/schedule/schedule.controller.ts`
+- [x] `backend/src/schedule/schedule.module.ts`
+- [x] `backend/src/repositories/scheduled-session.repository.ts` (add findByDateRange, findById, updateOne/Future/All, cancelOne/Future/All, findSessionsForBillingRange)
+- [x] `backend/src/app.module.ts` (register all new modules)
 
 ## Stage 3: Frontend — My Training (landing + live session + calendar) + My Nutrition
 
