@@ -20,6 +20,10 @@ export class CheckInConfigRepository {
     private readonly model: Model<ICheckInConfig>,
   ) {}
 
+  async findByMember(memberId: string): Promise<ICheckInConfig | null> {
+    return this.model.findOne({ memberId: new Types.ObjectId(memberId) });
+  }
+
   async upsert(
     memberId: string,
     trainerId: string,

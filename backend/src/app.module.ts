@@ -24,6 +24,9 @@ import { ServiceTypesModule } from './service-types/service-types.module';
 import { BillingModule } from './billing/billing.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { MembersModule } from './members/members.module';
+import { MemberHealthModule } from './member-health/member-health.module';
+import { CheckInsModule } from './check-ins/check-ins.module';
+import { CheckInConfigModule } from './check-in-config/check-in-config.module';
 
 @Module({
   imports: [
@@ -53,6 +56,9 @@ import { MembersModule } from './members/members.module';
     BillingModule,
     ScheduleModule,
     MembersModule,
+    MemberHealthModule,
+    CheckInsModule,
+    CheckInConfigModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ConditionalThrottlerGuard },

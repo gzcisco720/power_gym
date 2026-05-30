@@ -43,6 +43,10 @@ export class CheckInRepository {
     return doc.save();
   }
 
+  async findById(id: string): Promise<ICheckIn | null> {
+    return this.model.findById(id);
+  }
+
   async findByMember(memberId: string): Promise<ICheckIn[]> {
     return this.model
       .find({ memberId: new Types.ObjectId(memberId) })

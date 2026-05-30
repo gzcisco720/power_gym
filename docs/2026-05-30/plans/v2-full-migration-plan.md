@@ -823,7 +823,28 @@ Goal: trainer's Members list and the full Member Hub: overview + Plan, Nutrition
 - [ ] `POST /members/:id/body-tests` as trainer → test retrievable; `GET .../export` returns export
 - [ ] `GET /check-ins?memberId=:id` as the member's trainer → 200 with seeded check-ins
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 2 Checkpoint
+- [x] `backend/src/body-tests/body-tests.service.ts` (add `createForMember`, `exportCsvForMember`, `assertMemberAccess`)
+- [x] `backend/src/body-tests/body-tests.service.spec.ts` (add `createForMember` + `exportCsvForMember` tests)
+- [x] `backend/src/body-tests/body-tests.controller.ts` (use `createForMember`; add `GET export` endpoint)
+- [x] `backend/src/body-tests/body-tests.module.ts` (add `UserRepository` + `UserModel`)
+- [x] `backend/src/member-health/member-health.service.ts` (new)
+- [x] `backend/src/member-health/member-health.service.spec.ts` (new)
+- [x] `backend/src/member-health/member-health.controller.ts` (new)
+- [x] `backend/src/member-health/member-health.module.ts` (new)
+- [x] `backend/src/check-ins/check-ins.service.ts` (new)
+- [x] `backend/src/check-ins/check-ins.service.spec.ts` (new)
+- [x] `backend/src/check-ins/check-ins.controller.ts` (new)
+- [x] `backend/src/check-ins/check-ins.module.ts` (new)
+- [x] `backend/src/check-in-config/check-in-config.service.ts` (new)
+- [x] `backend/src/check-in-config/check-in-config.service.spec.ts` (new)
+- [x] `backend/src/check-in-config/check-in-config.controller.ts` (new)
+- [x] `backend/src/check-in-config/check-in-config.module.ts` (new)
+- [x] `backend/src/repositories/check-in.repository.ts` (add `findById`)
+- [x] `backend/src/repositories/check-in-config.repository.ts` (add `findByMember`)
+- [x] `backend/src/app.module.ts` (register `MemberHealthModule`, `CheckInsModule`, `CheckInConfigModule`)
 
 ## Stage 3: Frontend — Members list + Member Hub overview + Plan + Nutrition tabs
 

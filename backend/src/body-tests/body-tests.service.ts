@@ -1,6 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { BodyTestRepository } from '../repositories/body-test.repository';
+import { UserRepository } from '../repositories/user.repository';
 import type { IBodyTest } from '../database/models/body-test.model';
+import type { UserRole } from '../common/interfaces/auth-user.interface';
 import {
   calculateBodyFat,
   calculateComposition,
@@ -91,7 +97,10 @@ function buildBodyFatInput(input: CreateBodyTestInput): BodyFatInput {
 
 @Injectable()
 export class BodyTestsService {
-  constructor(private readonly repo: BodyTestRepository) {}
+  constructor(
+    private readonly repo: BodyTestRepository,
+    private readonly userRepo?: UserRepository,
+  ) {}
 
   async create(input: CreateBodyTestInput): Promise<IBodyTest> {
     const bodyFatInput = buildBodyFatInput(input);
@@ -124,6 +133,38 @@ export class BodyTestsService {
       targetWeight: input.targetWeight,
       targetBodyFatPct: input.targetBodyFatPct,
     });
+  }
+
+  private async assertMemberAccess(
+    memberId: string,
+    requesterId: string,
+    requesterRole: UserRole,
+  ): Promise<void> {
+    if (requesterRole === 'owner') return;
+    if (!this.userRepo) return;
+    const member = await this.userRepo.findById(memberId);
+    if (!member) throw new NotFoundException('Member not found');
+    if (member.trainerId?.toString() !== requesterId) {
+      throw new ForbiddenException();
+    }
+  }
+
+  async createForMember(
+    input: CreateBodyTestInput,
+    requesterId: string,
+    requesterRole: UserRole,
+  ): Promise<IBodyTest> {
+    await this.assertMemberAccess(input.memberId, requesterId, requesterRole);
+    return this.create(input);
+  }
+
+  async exportCsvForMember(
+    memberId: string,
+    requesterId: string,
+    requesterRole: UserRole,
+  ): Promise<string> {
+    await this.assertMemberAccess(memberId, requesterId, requesterRole);
+    return this.exportCsv(memberId);
   }
 
   async list(memberId: string): Promise<IBodyTest[]> {

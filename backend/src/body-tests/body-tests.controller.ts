@@ -60,8 +60,28 @@ export class BodyTestsController {
     return this.svc.list(memberId);
   }
 
+  @Get('export')
+  @Roles('owner', 'trainer')
+  async exportCsv(
+    @CurrentUser() user: JwtPayload,
+    @Param('memberId') memberId: string,
+    @Res() res: Response,
+  ) {
+    const csv = await this.svc.exportCsvForMember(
+      memberId,
+      user.sub,
+      user.role as 'owner' | 'trainer',
+    );
+    res.set({
+      'Content-Type': 'text/csv; charset=utf-8',
+      'Content-Disposition': `attachment; filename="body-tests-${memberId}.csv"`,
+    });
+    res.send(csv);
+  }
+
   @Post()
   @Roles('owner', 'trainer')
+  @HttpCode(201)
   async create(
     @CurrentUser() user: JwtPayload,
     @Param('memberId') memberId: string,
@@ -94,8 +114,11 @@ export class BodyTestsController {
       targetBodyFatPct: body.targetBodyFatPct ?? null,
     };
 
-    const test = await this.svc.create(input);
-    return { status: 201, body: test };
+    return this.svc.createForMember(
+      input,
+      user.sub,
+      user.role as 'owner' | 'trainer',
+    );
   }
 
   @Delete(':testId')

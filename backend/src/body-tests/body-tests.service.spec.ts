@@ -1,7 +1,10 @@
 import 'reflect-metadata';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { BodyTestsService } from './body-tests.service';
 import type { BodyTestRepository } from '../repositories/body-test.repository';
+import type { UserRepository } from '../repositories/user.repository';
 import type { IBodyTest } from '../database/models/body-test.model';
+import type { IUser } from '../database/models/user.model';
 import { Types } from 'mongoose';
 
 function makeTest(overrides: Partial<IBodyTest> = {}): IBodyTest {
@@ -43,6 +46,22 @@ function makeRepo(
     deleteById: jest.fn(),
     ...overrides,
   } as unknown as BodyTestRepository;
+}
+
+function makeUserRepo(
+  overrides: Record<string, jest.Mock> = {},
+): UserRepository {
+  return {
+    findById: jest.fn(),
+    ...overrides,
+  } as unknown as UserRepository;
+}
+
+function makeMember(trainerId: string): IUser {
+  return {
+    _id: new Types.ObjectId(),
+    trainerId: new Types.ObjectId(trainerId),
+  } as unknown as IUser;
 }
 
 describe('BodyTestsService', () => {
@@ -138,6 +157,159 @@ describe('BodyTestsService', () => {
 
       expect(result).toBe(tests);
       expect(findByMember).toHaveBeenCalledWith('member1');
+    });
+  });
+
+  describe('createForMember', () => {
+    it('stores test and computes body-fat % matching v1', async () => {
+      const trainerId = new Types.ObjectId().toString();
+      const memberId = new Types.ObjectId().toString();
+      const member = makeMember(trainerId);
+      const created = makeTest({ bodyFatPct: 11.19 });
+      const createMock = jest.fn().mockResolvedValue(created);
+      const repo = makeRepo({ create: createMock });
+      const userRepo = makeUserRepo({
+        findById: jest.fn().mockResolvedValue(member),
+      });
+      const svc = new BodyTestsService(repo, userRepo);
+
+      const result = await svc.createForMember(
+        {
+          memberId,
+          trainerId,
+          date: new Date('2024-01-15'),
+          age: 30,
+          sex: 'male',
+          weight: 80,
+          protocol: '3site',
+          chest: 10,
+          abdominal: 15,
+          thigh: 12,
+          tricep: null,
+          subscapular: null,
+          suprailiac: null,
+          midaxillary: null,
+          bicep: null,
+          lumbar: null,
+          targetWeight: null,
+          targetBodyFatPct: null,
+        },
+        trainerId,
+        'trainer',
+      );
+
+      expect(result).toBe(created);
+      type CreateCallArg = { bodyFatPct: number };
+      const calls = createMock.mock.calls as [CreateCallArg][];
+      expect(calls[0][0].bodyFatPct).toBeCloseTo(11.19, 1);
+    });
+
+    it('throws ForbiddenException when trainer does not own member', async () => {
+      const trainerId = new Types.ObjectId().toString();
+      const otherTrainerId = new Types.ObjectId().toString();
+      const memberId = new Types.ObjectId().toString();
+      const member = makeMember(otherTrainerId);
+      const repo = makeRepo();
+      const userRepo = makeUserRepo({
+        findById: jest.fn().mockResolvedValue(member),
+      });
+      const svc = new BodyTestsService(repo, userRepo);
+
+      await expect(
+        svc.createForMember(
+          {
+            memberId,
+            trainerId,
+            date: new Date(),
+            age: 30,
+            sex: 'male',
+            weight: 80,
+            protocol: 'other',
+            bodyFatPct: 20,
+            chest: null,
+            abdominal: null,
+            thigh: null,
+            tricep: null,
+            subscapular: null,
+            suprailiac: null,
+            midaxillary: null,
+            bicep: null,
+            lumbar: null,
+            targetWeight: null,
+            targetBodyFatPct: null,
+          },
+          trainerId,
+          'trainer',
+        ),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('throws NotFoundException when member does not exist', async () => {
+      const trainerId = new Types.ObjectId().toString();
+      const memberId = new Types.ObjectId().toString();
+      const repo = makeRepo();
+      const userRepo = makeUserRepo({
+        findById: jest.fn().mockResolvedValue(null),
+      });
+      const svc = new BodyTestsService(repo, userRepo);
+
+      await expect(
+        svc.createForMember(
+          {
+            memberId,
+            trainerId,
+            date: new Date(),
+            age: 30,
+            sex: 'male',
+            weight: 80,
+            protocol: 'other',
+            bodyFatPct: 20,
+            chest: null,
+            abdominal: null,
+            thigh: null,
+            tricep: null,
+            subscapular: null,
+            suprailiac: null,
+            midaxillary: null,
+            bicep: null,
+            lumbar: null,
+            targetWeight: null,
+            targetBodyFatPct: null,
+          },
+          trainerId,
+          'trainer',
+        ),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('exportCsvForMember', () => {
+    it('returns CSV for a member with ownership check', async () => {
+      const trainerId = new Types.ObjectId().toString();
+      const memberId = new Types.ObjectId().toString();
+      const member = makeMember(trainerId);
+      const test = makeTest({
+        date: new Date('2024-01-15'),
+        weight: 80,
+        bodyFatPct: 15.5,
+        fatMassKg: 12.4,
+        leanMassKg: 67.6,
+        protocol: '3site',
+      });
+      const repo = makeRepo({
+        findByMember: jest.fn().mockResolvedValue([test]),
+      });
+      const userRepo = makeUserRepo({
+        findById: jest.fn().mockResolvedValue(member),
+      });
+      const svc = new BodyTestsService(repo, userRepo);
+
+      const csv = await svc.exportCsvForMember(memberId, trainerId, 'trainer');
+
+      expect(csv).toContain(
+        'Date,Weight (kg),Body Fat (%),Fat Mass (kg),Lean Mass (kg),Protocol',
+      );
+      expect(csv).toContain('2024-01-15');
     });
   });
 
