@@ -672,16 +672,51 @@ Goal: owner's self-tracking (My Training incl. live session, My Nutrition, My Bo
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `selfTrainingStore > startSession > creates log and navigates state to active`
-- [ ] `selfTrainingStore > logSet > appends set without resetting timer state`
-- [ ] `selfNutritionStore > fetchDay > populates meals for the date`
+- [x] `selfTrainingStore > startSession > creates log and navigates state to active`
+- [x] `selfTrainingStore > logSet > appends set without resetting timer state`
+- [x] `selfNutritionStore > fetchDay > populates meals for the date`
 
 *Integration / E2E:*
-- [ ] Owner starts a freestyle session, logs a set → set appears; rest timer continues across a set log (no reset)
-- [ ] Owner completes the session → marked complete and read-only on revisit
-- [ ] Owner on `/owner/my-nutrition` opens a day → logged macros render
+- [x] Owner starts a freestyle session, logs a set → set appears; rest timer continues across a set log (no reset)
+- [x] Owner completes the session → marked complete and read-only on revisit
+- [x] Owner on `/owner/my-nutrition` opens a day → logged macros render
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] `frontend/src/api/self-training.ts`
+- [x] `frontend/src/api/self-nutrition.ts`
+- [x] `frontend/src/stores/selfTrainingStore.ts`
+- [x] `frontend/src/stores/selfTrainingStore.spec.ts`
+- [x] `frontend/src/stores/selfNutritionStore.ts`
+- [x] `frontend/src/stores/selfNutritionStore.spec.ts`
+- [x] `frontend/src/components/training/exercise-row.tsx` (add logging mode)
+- [x] `frontend/src/components/training/superset-block.tsx` (add logging mode)
+- [x] `frontend/src/components/self-tracking/activity-strip.tsx`
+- [x] `frontend/src/components/self-tracking/path-cards-grid.tsx`
+- [x] `frontend/src/components/self-tracking/build-planned-sets.ts`
+- [x] `frontend/src/components/self-tracking/active-session-conflict-dialog.tsx`
+- [x] `frontend/src/components/self-tracking/day-already-logged-dialog.tsx`
+- [x] `frontend/src/components/self-tracking/freestyle-path-card.tsx`
+- [x] `frontend/src/components/self-tracking/template-path-card.tsx`
+- [x] `frontend/src/components/self-tracking/active-session-prompt.tsx`
+- [x] `frontend/src/components/self-tracking/complete-workout-dialog.tsx`
+- [x] `frontend/src/components/self-tracking/self-workout-calendar.tsx`
+- [x] `frontend/src/components/self-tracking/mini-workout-calendar.tsx`
+- [x] `frontend/src/components/self-tracking/week-calendar-grid.tsx`
+- [x] `frontend/src/components/self-tracking/nutrition-activity-strip.tsx`
+- [x] `frontend/src/components/self-tracking/nutrition-template-path-card.tsx`
+- [x] `frontend/src/components/self-tracking/nutrition-freestyle-path-card.tsx`
+- [x] `frontend/src/components/self-tracking/self-nutrition-calendar.tsx`
+- [x] `frontend/src/components/self-tracking/mini-nutrition-calendar.tsx`
+- [x] `frontend/src/components/nutrition/meal-section.tsx`
+- [x] `frontend/src/pages/owner/my-training.tsx`
+- [x] `frontend/src/pages/owner/session.tsx` (live session with isolated RestTimer)
+- [x] `frontend/src/pages/owner/training-calendar.tsx`
+- [x] `frontend/src/pages/owner/my-nutrition.tsx`
+- [x] `frontend/src/pages/owner/nutrition-day.tsx`
+- [x] `frontend/src/router/index.tsx` (add my-training, session, calendar, my-nutrition, day routes)
+- [x] `frontend/e2e/self-tracking/owner-training.spec.ts`
 
 ## Stage 4: Frontend — My Body Tests + Settings + Services + Billing + Calendar
 

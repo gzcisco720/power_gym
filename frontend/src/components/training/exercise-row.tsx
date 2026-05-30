@@ -1,4 +1,4 @@
-import { ChevronUp, ChevronDown, X } from 'lucide-react';
+import { ChevronUp, ChevronDown, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ExerciseBadge } from '@/components/training/exercise-badge';
 import { ExerciseThumbnail } from '@/components/training/exercise-thumbnail';
@@ -16,8 +16,18 @@ export interface ExerciseRowData {
   restSeconds: number | null;
 }
 
-export type RowMode = 'edit' | 'view';
+export type RowMode = 'edit' | 'logging' | 'view';
 export type RowPosition = 'first' | 'middle' | 'last' | 'only';
+
+export interface LoggingSetInput {
+  setNumber: number;
+  prescribedRepsMin: number;
+  prescribedRepsMax: number;
+  actualWeight: number | null;
+  actualReps: number | null;
+  completedAt: string | null;
+  globalIndex: number;
+}
 
 interface BaseProps {
   row: ExerciseRowData;
@@ -35,11 +45,25 @@ interface EditProps extends BaseProps {
   hasError?: boolean;
 }
 
+interface LoggingProps extends BaseProps {
+  mode: 'logging';
+  loggingSets: LoggingSetInput[];
+  inputs: { weight: string; reps: string }[];
+  onInputChange: (globalIndex: number, field: 'weight' | 'reps', value: string) => void;
+  onDeleteSet: (globalIndex: number) => void;
+  onAddSet: () => void;
+  onBwToggle: (next: boolean) => void;
+  bwOverride?: boolean;
+  readOnly?: boolean;
+  inputErrors?: Record<number, { weight?: boolean; reps?: boolean }>;
+  isAddingSet?: boolean;
+}
+
 interface ViewProps extends BaseProps {
   mode: 'view';
 }
 
-type Props = EditProps | ViewProps;
+type Props = EditProps | LoggingProps | ViewProps;
 
 function NumberField({
   label,
@@ -189,6 +213,154 @@ export function ExerciseRow(props: Props) {
             </label>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (mode === 'logging') {
+    const { loggingSets, inputs, onInputChange, onDeleteSet, onAddSet, onBwToggle, bwOverride, readOnly, inputErrors, isAddingSet } = props;
+    const isBw = bwOverride ?? row.isBodyweight;
+    const completedCount = loggingSets.length;
+    const repsLabelLog =
+      row.repsMin === row.repsMax ? `${row.repsMin}` : `${row.repsMin}–${row.repsMax}`;
+    const hasPrescribedReps = row.repsMin > 0 || row.repsMax > 0;
+
+    if (readOnly) {
+      const doneSets = loggingSets.filter((s) => s.completedAt !== null);
+      return (
+        <div className="p-3" data-testid="exercise-row">
+          <div className="flex items-center gap-2.5 mb-2.5">
+            <ExerciseBadge label={label} />
+            <ExerciseThumbnail imageUrl={row.imageUrl} name={row.exerciseName} size={36} />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate">{row.exerciseName}</p>
+              <div className="flex gap-1.5 mt-1">
+                <span className="text-[10px] text-foreground/65 bg-muted rounded px-1.5 py-0.5">
+                  Sets: {doneSets.length}
+                </span>
+                {hasPrescribedReps && (
+                  <span className="text-[10px] text-foreground/65 bg-muted rounded px-1.5 py-0.5">
+                    Reps: {repsLabelLog}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            {doneSets.map((s) => (
+              <div key={s.globalIndex} className="flex items-center gap-2 opacity-60">
+                <span className="text-[11px] text-foreground/65 w-5 shrink-0 font-mono">
+                  {String(s.setNumber).padStart(2, '0')}
+                </span>
+                <span className="flex-1 text-xs text-foreground/65">
+                  {!isBw && s.actualWeight !== null ? `${s.actualWeight} kg × ` : ''}
+                  {s.actualReps !== null ? `${s.actualReps} reps` : '–'}
+                </span>
+                <span
+                  className="size-7 shrink-0 inline-flex items-center justify-center rounded-md bg-foreground/10 text-foreground text-[10px]"
+                  aria-label={`Set ${s.setNumber} completed`}
+                >
+                  ✓
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="p-3" data-testid="exercise-row">
+        <div className="flex items-center gap-2.5 mb-2">
+          <ExerciseBadge label={label} />
+          <ExerciseThumbnail imageUrl={row.imageUrl} name={row.exerciseName} size={36} />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground truncate">{row.exerciseName}</p>
+            <div className="flex gap-1.5 mt-1">
+              <span className="text-[10px] text-foreground/65 bg-muted rounded px-1.5 py-0.5">
+                Sets: {completedCount}
+              </span>
+              {hasPrescribedReps && (
+                <span className="text-[10px] text-foreground/65 bg-muted rounded px-1.5 py-0.5">
+                  Reps: {repsLabelLog}
+                </span>
+              )}
+            </div>
+          </div>
+          <label className="inline-flex items-center gap-1.5 text-xs text-foreground/65 cursor-pointer select-none shrink-0">
+            <input
+              type="checkbox"
+              aria-label="BW"
+              checked={isBw}
+              onChange={(e) => onBwToggle(e.target.checked)}
+              className="accent-foreground"
+            />
+            BW
+          </label>
+        </div>
+
+        <div className="space-y-1.5">
+          {loggingSets.map((s) => {
+            const weightError = inputErrors?.[s.globalIndex]?.weight;
+            const repsError = inputErrors?.[s.globalIndex]?.reps;
+            return (
+              <div key={s.globalIndex} className="flex items-center gap-2">
+                <span className="text-[11px] text-foreground/65 w-5 shrink-0 font-mono">
+                  {String(s.setNumber).padStart(2, '0')}
+                </span>
+                {!isBw ? (
+                  <input
+                    aria-label={`Set ${s.setNumber} weight`}
+                    type="text"
+                    inputMode="decimal"
+                    pattern="[0-9]*\.?[0-9]*"
+                    placeholder="kg"
+                    value={inputs[s.globalIndex]?.weight ?? ''}
+                    onChange={(e) => onInputChange(s.globalIndex, 'weight', e.target.value)}
+                    className={cn(
+                      'h-7 w-16 text-xs bg-card ring-1 rounded-md text-foreground px-2 placeholder:text-foreground/40',
+                      weightError ? 'ring-destructive' : 'ring-foreground/10',
+                    )}
+                  />
+                ) : (
+                  <span className="h-7 w-16 shrink-0 inline-flex items-center justify-center rounded-md ring-1 ring-foreground/10 text-[10px] text-foreground/50">
+                    BW
+                  </span>
+                )}
+                <input
+                  aria-label={`Set ${s.setNumber} reps`}
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*"
+                  placeholder="reps"
+                  value={inputs[s.globalIndex]?.reps ?? ''}
+                  onChange={(e) => onInputChange(s.globalIndex, 'reps', e.target.value)}
+                  className={cn(
+                    'h-7 flex-1 text-xs bg-card ring-1 rounded-md text-foreground px-2 placeholder:text-foreground/40',
+                    repsError ? 'ring-destructive' : 'ring-foreground/10',
+                  )}
+                />
+                <button
+                  type="button"
+                  onClick={() => onDeleteSet(s.globalIndex)}
+                  className="size-7 shrink-0 inline-flex items-center justify-center rounded-md ring-1 ring-foreground/25 text-foreground/65 hover:text-destructive hover:ring-destructive/50 cursor-pointer"
+                  aria-label={`Delete set ${s.setNumber}`}
+                >
+                  <X className="size-3" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        <button
+          type="button"
+          onClick={onAddSet}
+          disabled={isAddingSet}
+          className="mt-2 text-xs text-foreground/65 hover:text-foreground transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isAddingSet ? <Loader2 className="size-3 animate-spin inline" /> : '+ Add Set'}
+        </button>
       </div>
     );
   }

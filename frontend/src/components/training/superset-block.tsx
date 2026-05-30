@@ -2,6 +2,7 @@ import { Fragment, useState } from 'react';
 import {
   ExerciseRow,
   type ExerciseRowData,
+  type LoggingSetInput,
 } from '@/components/training/exercise-row';
 import {
   Dialog,
@@ -16,6 +17,16 @@ import { Button } from '@/components/ui/button';
 export interface SupersetMember {
   row: ExerciseRowData;
   label: string;
+}
+
+export interface SupersetLoggingMember {
+  row: ExerciseRowData;
+  label: string;
+  loggingSets: LoggingSetInput[];
+  inputs: { weight: string; reps: string }[];
+  bwOverride?: boolean;
+  inputErrors?: Record<number, { weight?: boolean; reps?: boolean }>;
+  isAddingSet?: boolean;
 }
 
 interface BaseProps {
@@ -38,12 +49,27 @@ interface EditProps extends BaseProps {
   errorRowIds?: Set<string>;
 }
 
+interface LoggingProps extends BaseProps {
+  mode: 'logging';
+  loggingMembers: SupersetLoggingMember[];
+  onInputChange: (
+    memberExerciseId: string,
+    globalIndex: number,
+    field: 'weight' | 'reps',
+    value: string,
+  ) => void;
+  onDeleteSet: (memberExerciseId: string, globalIndex: number) => void;
+  onAddSet: (memberExerciseId: string) => void;
+  onBwToggle: (memberExerciseId: string, next: boolean) => void;
+  readOnly?: boolean;
+}
+
 interface ViewProps extends BaseProps {
   mode: 'view';
   viewMembers: SupersetMember[];
 }
 
-type Props = EditProps | ViewProps;
+type Props = EditProps | LoggingProps | ViewProps;
 
 export function SupersetBlock(props: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -145,6 +171,41 @@ export function SupersetBlock(props: Props) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      </div>
+    );
+  }
+
+  if (props.mode === 'logging') {
+    const { loggingMembers, onInputChange, onDeleteSet, onAddSet, onBwToggle, readOnly } = props;
+    return (
+      <div className="rounded-lg bg-card ring-1 ring-foreground/25 overflow-hidden">
+        <div className="px-3 py-1.5 bg-muted/40 flex items-center justify-center">
+          <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-foreground">
+            Superset
+          </span>
+        </div>
+        {loggingMembers.map((m, i) => (
+          <Fragment key={m.row.exerciseId}>
+            {i > 0 && <div className="h-px bg-foreground/10" />}
+            <ExerciseRow
+              mode="logging"
+              row={m.row}
+              label={m.label}
+              loggingSets={m.loggingSets}
+              inputs={m.inputs}
+              bwOverride={m.bwOverride}
+              onInputChange={(idx, field, value) =>
+                onInputChange(m.row.exerciseId, idx, field, value)
+              }
+              onDeleteSet={(idx) => onDeleteSet(m.row.exerciseId, idx)}
+              onAddSet={() => onAddSet(m.row.exerciseId)}
+              onBwToggle={(next) => onBwToggle(m.row.exerciseId, next)}
+              readOnly={readOnly}
+              inputErrors={m.inputErrors}
+              isAddingSet={m.isAddingSet}
+            />
+          </Fragment>
+        ))}
       </div>
     );
   }

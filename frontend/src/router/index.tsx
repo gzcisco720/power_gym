@@ -21,6 +21,11 @@ import { OwnerFoodsPage } from '@/pages/owner/foods';
 import { OwnerFoodNewPage } from '@/pages/owner/food-new';
 import { OwnerFoodEditPage } from '@/pages/owner/food-edit';
 import { OwnerEquipmentPage } from '@/pages/owner/equipment';
+import { OwnerMyTrainingPage } from '@/pages/owner/my-training';
+import { SelfSessionPage } from '@/pages/owner/session';
+import { TrainingCalendarPage } from '@/pages/owner/training-calendar';
+import { OwnerMyNutritionPage } from '@/pages/owner/my-nutrition';
+import { NutritionDayPage } from '@/pages/owner/nutrition-day';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -58,6 +63,11 @@ export const router = createBrowserRouter([
               { path: '/owner/foods/new', element: <OwnerFoodNewPage /> },
               { path: '/owner/foods/:foodId/edit', element: <OwnerFoodEditPage /> },
               { path: '/owner/equipment', element: <OwnerEquipmentPage /> },
+              { path: '/owner/my-training', element: <OwnerMyTrainingPage /> },
+              { path: '/owner/my-training/session/:id', element: <SelfSessionPage basePath="/owner/my-training" /> },
+              { path: '/owner/my-training/calendar', element: <TrainingCalendarPage basePath="/owner/my-training" /> },
+              { path: '/owner/my-nutrition', element: <OwnerMyNutritionPage /> },
+              { path: '/owner/my-nutrition/day', element: <NutritionDayPage basePath="/owner/my-nutrition" /> },
               { path: '/owner/*', element: <div>Owner (placeholder)</div> },
             ],
           },
