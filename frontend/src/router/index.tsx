@@ -6,6 +6,9 @@ import { ForgotPasswordPage } from '@/pages/auth/forgot-password';
 import { ResetPasswordPage } from '@/pages/auth/reset-password';
 import { DashboardLayout } from '@/components/shared/dashboard-layout';
 import { OwnerDashboardPage } from '@/pages/owner/dashboard';
+import { OwnerTrainersPage } from '@/pages/owner/trainers';
+import { OwnerMembersPage } from '@/pages/owner/members';
+import { OwnerInvitesPage } from '@/pages/owner/invites';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -24,6 +27,10 @@ export const router = createBrowserRouter([
             element: <DashboardLayout />,
             children: [
               { path: '/owner', element: <OwnerDashboardPage /> },
+              { path: '/owner/trainers', element: <OwnerTrainersPage /> },
+              { path: '/owner/trainers/:id', element: <div>Trainer Detail (placeholder — Stage 4)</div> },
+              { path: '/owner/members', element: <OwnerMembersPage /> },
+              { path: '/owner/invites', element: <OwnerInvitesPage /> },
               { path: '/owner/*', element: <div>Owner (placeholder)</div> },
             ],
           },

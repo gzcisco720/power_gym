@@ -351,7 +351,26 @@ Goal: owner manages trainers (list + detail hub with sub-tabs), members (list + 
 - [ ] Owner on `/owner/invites` creates an invite for a new email → it appears in the list
 - [ ] Owner on `/owner/trainers` clicks a trainer → URL changes to `/owner/trainers/:id`
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] `frontend/src/api/trainers.ts`
+- [x] `frontend/src/api/members.ts`
+- [x] `frontend/src/api/invites.ts`
+- [x] `frontend/src/stores/trainersStore.ts`
+- [x] `frontend/src/stores/membersStore.ts`
+- [x] `frontend/src/stores/membersStore.spec.ts`
+- [x] `frontend/src/stores/invitesStore.ts`
+- [x] `frontend/src/stores/invitesStore.spec.ts`
+- [x] `frontend/src/components/owner/reassign-modal.tsx`
+- [x] `frontend/src/components/owner/reassign-modal.spec.tsx`
+- [x] `frontend/src/pages/owner/trainers.tsx`
+- [x] `frontend/src/pages/owner/members.tsx`
+- [x] `frontend/src/pages/owner/invites.tsx`
+- [x] `frontend/src/router/index.tsx` (add /owner/trainers, /owner/members, /owner/invites, /owner/trainers/:id placeholder)
+- [x] `frontend/e2e/owner/trainers.spec.ts`
+- [x] `frontend/e2e/owner/members.spec.ts`
+- [x] `frontend/e2e/owner/invites.spec.ts`
 
 ## Stage 4: Frontend — trainer detail hub + sub-tabs
 
