@@ -10,6 +10,13 @@ import { OwnerTrainersPage } from '@/pages/owner/trainers';
 import { OwnerTrainerDetailPage } from '@/pages/owner/trainer-detail';
 import { OwnerMembersPage } from '@/pages/owner/members';
 import { OwnerInvitesPage } from '@/pages/owner/invites';
+import { OwnerPlansPage } from '@/pages/owner/plans';
+import { OwnerPlanNewPage } from '@/pages/owner/plan-new';
+import { OwnerPlanDetailPage } from '@/pages/owner/plan-detail';
+import { OwnerPlanEditPage } from '@/pages/owner/plan-edit';
+import { OwnerNutritionTemplatesPage } from '@/pages/owner/nutrition';
+import { OwnerNutritionNewPage } from '@/pages/owner/nutrition-new';
+import { OwnerNutritionEditPage } from '@/pages/owner/nutrition-edit';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -36,6 +43,13 @@ export const router = createBrowserRouter([
               { path: '/owner/trainers/:id/calendar', element: <OwnerTrainerDetailPage /> },
               { path: '/owner/members', element: <OwnerMembersPage /> },
               { path: '/owner/invites', element: <OwnerInvitesPage /> },
+              { path: '/owner/plans', element: <OwnerPlansPage /> },
+              { path: '/owner/plans/new', element: <OwnerPlanNewPage /> },
+              { path: '/owner/plans/:id', element: <OwnerPlanDetailPage /> },
+              { path: '/owner/plans/:id/edit', element: <OwnerPlanEditPage /> },
+              { path: '/owner/nutrition-templates', element: <OwnerNutritionTemplatesPage /> },
+              { path: '/owner/nutrition-templates/new', element: <OwnerNutritionNewPage /> },
+              { path: '/owner/nutrition-templates/:id/edit', element: <OwnerNutritionEditPage /> },
               { path: '/owner/*', element: <div>Owner (placeholder)</div> },
             ],
           },

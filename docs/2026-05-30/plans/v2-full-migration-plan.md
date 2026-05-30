@@ -496,7 +496,43 @@ Goal: owner manages training-plan templates (CRUD), nutrition templates (CRUD), 
 - [ ] Owner creates a plan template at `/owner/plans/new`, adds a day + exercise, saves → redirected to list, new template visible
 - [ ] Owner edits the template, changes name, saves → list shows new name; Cancel while dirty shows discard dialog
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] `frontend/src/api/plans.ts`
+- [x] `frontend/src/api/nutrition-templates.ts`
+- [x] `frontend/src/stores/plansStore.ts`
+- [x] `frontend/src/stores/plansStore.spec.ts`
+- [x] `frontend/src/stores/nutritionTemplatesStore.ts`
+- [x] `frontend/src/stores/nutritionTemplatesStore.spec.ts`
+- [x] `frontend/src/lib/training/label-exercises.ts`
+- [x] `frontend/src/lib/nutrition/macros.ts`
+- [x] `frontend/src/components/training/exercise-badge.tsx`
+- [x] `frontend/src/components/training/exercise-thumbnail.tsx`
+- [x] `frontend/src/components/training/exercise-row.tsx`
+- [x] `frontend/src/components/training/day-tabs.tsx`
+- [x] `frontend/src/components/training/superset-block.tsx`
+- [x] `frontend/src/components/training/exercise-search-sheet.tsx`
+- [x] `frontend/src/components/training/plan-template-form.tsx`
+- [x] `frontend/src/components/training/plan-template-form.spec.tsx`
+- [x] `frontend/src/components/training/plan-template-list.tsx`
+- [x] `frontend/src/components/training/template-preview.tsx`
+- [x] `frontend/src/components/nutrition/macro-pill.tsx`
+- [x] `frontend/src/components/nutrition/macro-ring.tsx`
+- [x] `frontend/src/components/nutrition/macro-summary-card.tsx`
+- [x] `frontend/src/components/nutrition/food-picker.types.ts`
+- [x] `frontend/src/components/nutrition/food-picker-dialog.tsx`
+- [x] `frontend/src/components/nutrition/nutrition-template-form.tsx`
+- [x] `frontend/src/components/nutrition/nutrition-template-list.tsx`
+- [x] `frontend/src/pages/owner/plans.tsx`
+- [x] `frontend/src/pages/owner/plan-new.tsx`
+- [x] `frontend/src/pages/owner/plan-detail.tsx`
+- [x] `frontend/src/pages/owner/plan-edit.tsx`
+- [x] `frontend/src/pages/owner/nutrition.tsx`
+- [x] `frontend/src/pages/owner/nutrition-new.tsx`
+- [x] `frontend/src/pages/owner/nutrition-edit.tsx`
+- [x] `frontend/src/router/index.tsx` (add plan + nutrition template routes)
+- [x] `frontend/e2e/owner/plans.spec.ts`
 
 ## Stage 4: Frontend — foods + equipment pages
 
