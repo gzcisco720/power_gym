@@ -1,3 +1,4 @@
+// Run `npx expo prebuild --platform ios` first if ios/ directory does not exist.
 /** @type {Detox.DetoxConfig} */
 module.exports = {
   testRunner: {
@@ -14,14 +15,14 @@ module.exports = {
       type: 'ios.app',
       binaryPath: 'ios/build/Build/Products/Debug-iphonesimulator/PowerGym.app',
       build:
-        'xcodebuild -workspace ios/PowerGym.xcworkspace -scheme PowerGym -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build | xcbeautify',
+        'xcodebuild -workspace ios/PowerGym.xcworkspace -scheme PowerGym -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build',
     },
   },
   devices: {
     simulator: {
       type: 'ios.simulator',
       device: {
-        type: 'iPhone 15',
+        type: 'iPhone 16e',
       },
     },
   },

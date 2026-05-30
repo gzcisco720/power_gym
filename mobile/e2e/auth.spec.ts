@@ -1,17 +1,20 @@
 /**
  * Auth E2E Suite — Detox on iOS Simulator
  *
- * Prerequisites:
- *   1. A native build must exist before running:
- *        pnpm detox build --configuration ios.sim.debug
- *   2. Run the suite:
- *        pnpm detox test --configuration ios.sim.debug
+ * SETUP REQUIRED BEFORE RUNNING:
+ * 1. Generate native iOS project (first time only):
+ *    cd mobile && npx expo prebuild --platform ios
  *
- * Test user (must be seeded in the database before running):
- *   Email:    test@powergym.com
- *   Password: TestPass123!
+ * 2. Build the Detox app:
+ *    cd mobile && pnpm detox:build
+ *    (Note: xcbeautify must be installed: brew install xcbeautify)
  *
- * The backend must be running on http://localhost:3001 (cd backend && pnpm start:dev).
+ * 3. Start the backend:
+ *    cd backend && pnpm start:dev
+ *    Seed a test user: test@powergym.com / TestPass123!
+ *
+ * 4. Run the E2E tests:
+ *    cd mobile && pnpm detox:test
  *
  * Biometrics tests use Detox simulator APIs:
  *   device.setBiometricEnrollment(true)   — enroll a biometric identity
