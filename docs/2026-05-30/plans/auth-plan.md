@@ -241,7 +241,17 @@ Modified:
 2. Implement secure-store wrapper, axios client + interceptor, Zustand store → Green
 3. `/simplify` the store/client → re-run unit tests green
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 4 Checkpoint
+- [x] `src/lib/secure-store.ts` — typed wrapper over expo-secure-store
+- [x] `src/lib/api/client.ts` — Axios instance + single-flight 401 interceptor
+- [x] `src/lib/api/client.spec.ts` — 2 interceptor unit tests (concurrent 401 queue + refresh failure)
+- [x] `src/stores/auth.store.ts` — Zustand store: login, loginWithBiometrics, refresh, logout, setBiometricsEnabled, hydrate
+- [x] `src/stores/auth.store.spec.ts` — 7 store unit tests
+- [x] `mobile/app.json` — expo-local-authentication plugin added
+- [x] `mobile/package.json` — axios, expo-local-authentication, jwt-decode added
+- [x] `mobile/eslint.config.js` — ESLint v9 config (required for lint to run)
 
 ---
 
