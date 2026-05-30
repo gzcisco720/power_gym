@@ -18,7 +18,7 @@ import mongoose from 'mongoose';
 
 dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
-import { UserModel } from '../src/database/models/user.model';
+import { UserModel } from '../src/database/models/index';
 import { seedCatalogs, seedDevData } from '../src/scripts/seed-dev';
 
 const RESET = process.argv.includes('--reset');

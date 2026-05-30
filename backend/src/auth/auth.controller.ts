@@ -93,7 +93,11 @@ export class AuthController {
     if (token) {
       await this.authService.logout(token);
     }
-    res.clearCookie(COOKIE_NAME, { httpOnly: true, sameSite: COOKIE_OPTIONS.sameSite, secure: COOKIE_OPTIONS.secure });
+    res.clearCookie(COOKIE_NAME, {
+      httpOnly: true,
+      sameSite: COOKIE_OPTIONS.sameSite,
+      secure: COOKIE_OPTIONS.secure,
+    });
     return { success: true };
   }
 

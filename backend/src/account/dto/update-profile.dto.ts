@@ -8,8 +8,17 @@ export class UpdateProfileDto {
   @IsOptional() @IsString() avatarUrl?: string | null;
   @IsOptional() @IsString() sex?: 'male' | 'female' | null;
   @IsOptional() @IsNumber() height?: number | null;
-  @IsOptional() @IsString() fitnessGoal?: 'lose_fat' | 'build_muscle' | 'maintain' | 'improve_performance' | null;
-  @IsOptional() @IsString() fitnessLevel?: 'beginner' | 'intermediate' | 'advanced' | null;
+  @IsOptional() @IsString() fitnessGoal?:
+    | 'lose_fat'
+    | 'build_muscle'
+    | 'maintain'
+    | 'improve_performance'
+    | null;
+  @IsOptional() @IsString() fitnessLevel?:
+    | 'beginner'
+    | 'intermediate'
+    | 'advanced'
+    | null;
   @IsOptional() certifications?: string[];
   @IsOptional() @IsString() bio?: string | null;
   @IsOptional() specializations?: string[];

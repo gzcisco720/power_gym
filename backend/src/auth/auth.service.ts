@@ -139,10 +139,7 @@ export class AuthService {
     return this.issueTokens(user);
   }
 
-  async refresh(
-    userId: string,
-    oldRefreshToken: string,
-  ): Promise<AuthResult> {
+  async refresh(userId: string, oldRefreshToken: string): Promise<AuthResult> {
     // Token validity was already confirmed by RefreshTokenStrategy — no second DB lookup needed.
     const user = await this.userRepo.findById(userId);
     if (!user) {
