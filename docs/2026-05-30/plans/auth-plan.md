@@ -139,26 +139,38 @@ Modified:
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `AuthService > login > returns access + refresh tokens and user payload when email and password are valid`
-- [ ] `AuthService > login > throws UnauthorizedException when password does not match passwordHash`
-- [ ] `AuthService > login > throws UnauthorizedException when email is unknown`
-- [ ] `AuthService > refresh > deletes the old refresh token and issues a new access+refresh pair when the presented token hash matches a stored token`
-- [ ] `AuthService > refresh > revokes all of the user's refresh tokens and throws Unauthorized when a replayed (already-deleted) token is presented`
-- [ ] `AuthService > logout > deletes the matching refresh token document for the user`
-- [ ] `JwtStrategy > validate > returns { sub, firstName, lastName, role, trainerId } from a decoded access-token payload`
+- [x] `AuthService > login > returns access + refresh tokens and user payload when email and password are valid`
+- [x] `AuthService > login > throws UnauthorizedException when password does not match passwordHash`
+- [x] `AuthService > login > throws UnauthorizedException when email is unknown`
+- [x] `AuthService > refresh > deletes the old refresh token and issues a new access+refresh pair when the presented token hash matches a stored token`
+- [x] `AuthService > refresh > revokes all of the user's refresh tokens and throws Unauthorized when a replayed (already-deleted) token is presented`
+- [x] `AuthService > logout > deletes the matching refresh token document for the user`
+- [x] `JwtStrategy > validate > returns { sub, firstName, lastName, role, trainerId } from a decoded access-token payload`
 
 *Integration (`test/auth.e2e-spec.ts`):*
-- [ ] `POST /auth/login` with valid seeded credentials → 201 with `accessToken`, `refreshToken`, and `user` in the body; wrong password → 401; unknown email → 401; malformed body (missing email) → 400.
-- [ ] `POST /auth/refresh` with a valid refresh token → 200/201 with a new `accessToken` + `refreshToken`; replaying the now-deleted token → 401 and a subsequent valid refresh for that user also fails (all revoked).
-- [ ] `POST /auth/logout` with a valid `Authorization: Bearer` access token → 200/201 and the refresh token is gone; no token → 401.
-- [ ] `POST /auth/login` exceeding the rate limit returns 429.
+- [x] `POST /auth/login` with valid seeded credentials → 201 with `accessToken`, `refreshToken`, and `user` in the body; wrong password → 401; unknown email → 401; malformed body (missing email) → 400.
+- [x] `POST /auth/refresh` with a valid refresh token → 200/201 with a new `accessToken` + `refreshToken`; replaying the now-deleted token → 401 and a subsequent valid refresh for that user also fails (all revoked).
+- [x] `POST /auth/logout` with a valid `Authorization: Bearer` access token → 200/201 and the refresh token is gone; no token → 401.
+- [x] `POST /auth/login` exceeding the rate limit returns 429.
 
 **TDD sequence**:
 1. Write failing service unit tests (login/refresh/logout/strategy) → Red
 2. Implement service, DTOs, strategy, controller, guard wiring → Green
 3. Write/extend `auth.e2e-spec.ts` for login/refresh/logout/rate-limit against the real Nest stack → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 2 Checkpoint
+- [x] `src/modules/auth/auth.service.spec.ts` — unit tests for login/refresh/logout
+- [x] `src/modules/auth/strategies/jwt.strategy.ts` — JwtStrategy validate
+- [x] `src/modules/auth/strategies/jwt.strategy.spec.ts` — JwtStrategy unit test
+- [x] `src/modules/auth/dto/login.dto.ts` — LoginDto with validation
+- [x] `src/modules/auth/dto/refresh.dto.ts` — RefreshDto with validation
+- [x] `src/modules/auth/auth.service.ts` — login, refresh, logout implementation
+- [x] `src/modules/auth/auth.controller.ts` — login, refresh, logout routes
+- [x] `src/modules/auth/auth.module.ts` — PassportModule + JwtStrategy added
+- [x] `src/app.module.ts` — ThrottlerGuard as APP_GUARD
+- [x] `test/auth.e2e-spec.ts` — integration tests for all endpoints + rate limit
 
 ---
 
