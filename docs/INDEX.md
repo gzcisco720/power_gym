@@ -6,7 +6,6 @@ Sprint Contract plans only. One row per active plan.
 
 | Feature | Plan File | Status |
 |---|---|---|
-| v2 Visual Gaps | [2026-05-30/plans/v2-visual-gaps-plan.md](2026-05-30/plans/v2-visual-gaps-plan.md) | In Progress |
 
 ## Management Files
 

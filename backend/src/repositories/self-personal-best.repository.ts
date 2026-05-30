@@ -5,7 +5,7 @@ import {
   ISelfPersonalBest,
   SELF_PERSONAL_BEST_MODEL,
 } from '../database/models/self-personal-best.model';
-import { estimatedOneRM } from '../training/epley';
+import { estimatedOneRM } from '../common/epley';
 
 export interface UpsertSelfPBData {
   userId: string;

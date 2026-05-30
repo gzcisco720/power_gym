@@ -11,7 +11,7 @@ import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import { AccountService } from './account.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ChangeEmailDto } from './dto/change-email.dto';
-import { UpdateProfileDto } from '../users/dto/update-profile.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller()
 export class AccountController {
