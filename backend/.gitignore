@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+
+# build
+dist/
+
+# env files — keep example, ignore actual
+.env
+!.env.example
+
+# testing
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+
+# debug
+npm-debug.log*
+pnpm-debug.log*
