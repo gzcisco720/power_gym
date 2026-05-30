@@ -22,6 +22,10 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import { PlanTemplatesService } from './plan-templates.service';
+import type {
+  CreatePlanTemplateDto as ICreatePlanTemplateDto,
+  UpdatePlanTemplateDto as IUpdatePlanTemplateDto,
+} from './plan-templates.service';
 
 class PlanDayExerciseDto {
   @IsString()
@@ -115,7 +119,7 @@ export class PlanTemplatesController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(@Body() dto: CreatePlanTemplateDto, @CurrentUser() user: AuthUser) {
-    return this.service.create(dto, user.userId);
+    return this.service.create(dto as ICreatePlanTemplateDto, user.userId);
   }
 
   @Get(':id')
@@ -131,7 +135,7 @@ export class PlanTemplatesController {
     @Body() dto: UpdatePlanTemplateDto,
     @CurrentUser() user: AuthUser,
   ) {
-    return this.service.update(id, dto, user.userId);
+    return this.service.update(id, dto as IUpdatePlanTemplateDto, user.userId);
   }
 
   @Delete(':id')

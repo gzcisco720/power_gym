@@ -1,7 +1,10 @@
 import 'reflect-metadata';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PlanTemplatesService } from './plan-templates.service';
-import type { IPlanTemplate } from '../database/models/plan-template.model';
+import type {
+  IPlanTemplate,
+  IPlanDay,
+} from '../database/models/plan-template.model';
 
 function makePlanTemplate(
   overrides: Partial<Record<string, unknown>> = {},
@@ -34,7 +37,7 @@ describe('PlanTemplatesService > create', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('persists template with nested days/exercises and createdBy = requester', async () => {
-    const days = [
+    const days: IPlanDay[] = [
       {
         dayNumber: 1,
         name: 'Day 1',
@@ -42,7 +45,7 @@ describe('PlanTemplatesService > create', () => {
           {
             groupId: 'g1',
             isSuperset: false,
-            exerciseId: 'eid1',
+            exerciseId: 'eid1' as never,
             exerciseName: 'Squat',
             imageUrl: null,
             isBodyweight: false,
