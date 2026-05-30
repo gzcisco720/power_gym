@@ -11,6 +11,7 @@ import { EmailModule } from './email/email.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { OwnerDashboardModule } from './owner-dashboard/owner-dashboard.module';
+import { OwnerPeopleModule } from './owner-people/owner-people.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { OwnerDashboardModule } from './owner-dashboard/owner-dashboard.module';
     AccountModule,
     EmailModule,
     OwnerDashboardModule,
+    OwnerPeopleModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ConditionalThrottlerGuard },

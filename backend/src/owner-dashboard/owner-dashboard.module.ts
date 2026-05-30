@@ -18,7 +18,10 @@ import { InviteRepository } from '../repositories/invite.repository';
 import { WorkoutSessionRepository } from '../repositories/workout-session.repository';
 import { EquipmentRepository } from '../repositories/equipment.repository';
 import { CheckInRepository } from '../repositories/check-in.repository';
-import { CHECK_IN_MODEL, CheckInSchema } from '../database/models/check-in.model';
+import {
+  CHECK_IN_MODEL,
+  CheckInSchema,
+} from '../database/models/check-in.model';
 import { OwnerDashboardController } from './owner-dashboard.controller';
 import { OwnerDashboardService } from './owner-dashboard.service';
 

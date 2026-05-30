@@ -298,7 +298,14 @@ Goal: owner manages trainers (list + detail hub with sub-tabs), members (list + 
 - [ ] `PATCH /owner/members/:id/trainer` reassigning member to owner → member.trainerId equals owner id on re-fetch
 - [ ] Same endpoints as trainer/member token → 403
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 1 Checkpoint
+- [x] `backend/src/owner-people/owner-people.service.ts`
+- [x] `backend/src/owner-people/owner-people.service.spec.ts`
+- [x] `backend/src/owner-people/owner-people.controller.ts`
+- [x] `backend/src/owner-people/owner-people.module.ts`
+- [x] `backend/src/app.module.ts` (register OwnerPeopleModule)
 
 ## Stage 2: Backend — invites endpoints
 

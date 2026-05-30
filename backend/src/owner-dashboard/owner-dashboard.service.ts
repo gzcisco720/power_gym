@@ -130,7 +130,9 @@ export class OwnerDashboardService {
     );
   }
 
-  async getMemberGrowth(months = 6): Promise<{ label: string; newCount: number }[]> {
+  async getMemberGrowth(
+    months = 6,
+  ): Promise<{ label: string; newCount: number }[]> {
     return this.userRepo.findMembersJoinedByMonth(months);
   }
 

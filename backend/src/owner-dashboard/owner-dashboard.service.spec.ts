@@ -18,7 +18,9 @@ function makeUser(overrides: Partial<Record<string, unknown>> = {}): IUser {
   } as unknown as IUser;
 }
 
-function makeEquipment(overrides: Partial<Record<string, unknown>> = {}): IEquipment {
+function makeEquipment(
+  overrides: Partial<Record<string, unknown>> = {},
+): IEquipment {
   return {
     _id: { toString: () => 'equip1' },
     name: 'Barbell',
@@ -82,7 +84,14 @@ function makeService(
     equipmentRepo as never,
     checkInRepo as never,
   );
-  return { service, userRepo, inviteRepo, sessionRepo, equipmentRepo, checkInRepo };
+  return {
+    service,
+    userRepo,
+    inviteRepo,
+    sessionRepo,
+    equipmentRepo,
+    checkInRepo,
+  };
 }
 
 // ── getStats ──────────────────────────────────────────────────────────────────
@@ -92,15 +101,23 @@ describe('OwnerDashboardService > getStats', () => {
 
   it('returns { trainerCount, memberCount, pendingInviteCount, sessionsThisMonth } counting only this-month sessions', async () => {
     const trainer = makeUser({ role: 'trainer' });
-    const member1 = makeUser({ _id: { toString: () => 'mem1' }, role: 'member' });
-    const member2 = makeUser({ _id: { toString: () => 'mem2' }, role: 'member' });
+    const member1 = makeUser({
+      _id: { toString: () => 'mem1' },
+      role: 'member',
+    });
+    const member2 = makeUser({
+      _id: { toString: () => 'mem2' },
+      role: 'member',
+    });
     const pendingInvite = makeInvite();
 
     const { service, sessionRepo } = makeService({
       userRepo: {
         findByRole: jest.fn().mockResolvedValue([trainer]),
         findAllMembers: jest.fn().mockResolvedValue([member1, member2]),
-        findMembersJoinedByMonth: jest.fn().mockResolvedValue([{ newCount: 2 }]),
+        findMembersJoinedByMonth: jest
+          .fn()
+          .mockResolvedValue([{ newCount: 2 }]),
       },
       inviteRepo: {
         findAll: jest.fn().mockResolvedValue([pendingInvite]),
@@ -121,7 +138,8 @@ describe('OwnerDashboardService > getStats', () => {
     expect(result.sessionsThisMonth).toBe(7);
     // sessions counted 3× (thisMonth, lastMonth, today)
     expect(sessionRepo.countByMemberIdsSince).toHaveBeenCalledTimes(3);
-    const [memberIds, since] = sessionRepo.countByMemberIdsSince.mock.calls[0] as [string[], Date];
+    const [memberIds, since] = sessionRepo.countByMemberIdsSince.mock
+      .calls[0] as [string[], Date];
     expect(memberIds).toEqual(['mem1', 'mem2']);
     const now = new Date();
     expect(since.getFullYear()).toBe(now.getFullYear());
@@ -155,8 +173,16 @@ describe('OwnerDashboardService > getTrainerBreakdown', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('returns one row per trainer with assigned member count', async () => {
-    const trainer1 = makeUser({ _id: { toString: () => 't1' }, name: 'Alice T', email: 'alice@t.com' });
-    const trainer2 = makeUser({ _id: { toString: () => 't2' }, name: 'Bob T', email: 'bob@t.com' });
+    const trainer1 = makeUser({
+      _id: { toString: () => 't1' },
+      name: 'Alice T',
+      email: 'alice@t.com',
+    });
+    const trainer2 = makeUser({
+      _id: { toString: () => 't2' },
+      name: 'Bob T',
+      email: 'bob@t.com',
+    });
     const member1 = makeUser({ _id: { toString: () => 'm1' }, role: 'member' });
 
     const findByRole = jest.fn().mockResolvedValue([trainer1, trainer2]);
@@ -170,15 +196,29 @@ describe('OwnerDashboardService > getTrainerBreakdown', () => {
       .mockResolvedValueOnce(0);
 
     const { service } = makeService({
-      userRepo: { findByRole, findAllMembers, findMembersJoinedByMonth: jest.fn().mockResolvedValue([]) },
+      userRepo: {
+        findByRole,
+        findAllMembers,
+        findMembersJoinedByMonth: jest.fn().mockResolvedValue([]),
+      },
       sessionRepo: { countByMemberIdsSince },
     });
 
     const result = await service.getTrainerBreakdown();
 
     expect(result).toHaveLength(2);
-    expect(result[0]).toMatchObject({ _id: 't1', name: 'Alice T', memberCount: 1, sessionsThisMonth: 4 });
-    expect(result[1]).toMatchObject({ _id: 't2', name: 'Bob T', memberCount: 0, sessionsThisMonth: 0 });
+    expect(result[0]).toMatchObject({
+      _id: 't1',
+      name: 'Alice T',
+      memberCount: 1,
+      sessionsThisMonth: 4,
+    });
+    expect(result[1]).toMatchObject({
+      _id: 't2',
+      name: 'Bob T',
+      memberCount: 0,
+      sessionsThisMonth: 0,
+    });
   });
 });
 
@@ -220,11 +260,21 @@ describe('OwnerDashboardService > getEquipmentStatus', () => {
 
   it('groups equipment by status (active/maintenance/retired) with counts', async () => {
     const active = makeEquipment({ status: 'active' });
-    const maintenance = makeEquipment({ _id: { toString: () => 'eq2' }, name: 'Treadmill', status: 'maintenance' });
-    const retired = makeEquipment({ _id: { toString: () => 'eq3' }, name: 'Old bike', status: 'retired' });
+    const maintenance = makeEquipment({
+      _id: { toString: () => 'eq2' },
+      name: 'Treadmill',
+      status: 'maintenance',
+    });
+    const retired = makeEquipment({
+      _id: { toString: () => 'eq3' },
+      name: 'Old bike',
+      status: 'retired',
+    });
 
     const { service } = makeService({
-      equipmentRepo: { findAll: jest.fn().mockResolvedValue([active, maintenance, retired]) },
+      equipmentRepo: {
+        findAll: jest.fn().mockResolvedValue([active, maintenance, retired]),
+      },
     });
 
     const result = await service.getEquipmentStatus();
