@@ -1098,7 +1098,19 @@ Goal: member's Dashboard, My Training (+ live session + calendar), Check-ins (da
 - [ ] Member starts a plan session, logs prescribed sets, completes → session read-only on revisit
 - [ ] Progressive-overload hint shows last session's weight for a repeated exercise
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 2 Checkpoint
+- [x] `backend/src/member-portal/member-portal.service.ts` (add `getActivePlan`)
+- [x] `backend/src/member-portal/member-portal.service.spec.ts` (add `getActivePlan` tests)
+- [x] `backend/src/member-portal/member-portal.controller.ts` (add `GET /me/member-plan`)
+- [x] `frontend/src/api/member-portal.ts` (add `fetchMemberActivePlan` + `MemberActivePlan` types)
+- [x] `frontend/src/components/self-tracking/member-plan-path-card.tsx` (new)
+- [x] `frontend/src/pages/member/my-training.tsx` (new)
+- [x] `frontend/src/pages/member/check-in-new.tsx` (new — minimal, required by pre-existing spec)
+- [x] `frontend/src/stores/memberDashboardStore.spec.ts` (add `isLoading` test)
+- [x] `frontend/src/router/index.tsx` (wire all member routes)
+- [x] `frontend/e2e/member/member-dashboard.spec.ts` (new)
 
 ## Stage 3: Frontend — member Check-ins + Nutrition + Body Tests
 

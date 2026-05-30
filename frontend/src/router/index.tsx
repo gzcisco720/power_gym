@@ -35,6 +35,8 @@ import { TrainerMembersPage } from '@/pages/trainer/members';
 import { TrainerMemberHubPage } from '@/pages/trainer/member-hub';
 import { TrainerInvitesPage } from '@/pages/trainer/invites';
 import { TrainerSettingsPage } from '@/pages/trainer/settings';
+import { MemberDashboardPage } from '@/pages/member/dashboard';
+import { MemberMyTrainingPage } from '@/pages/member/my-training';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -133,8 +135,30 @@ export const router = createBrowserRouter([
       {
         element: <RequireRole roles={['member']} />,
         children: [
-          { path: '/member', element: <div>Member home (placeholder)</div> },
-          { path: '/member/*', element: <div>Member (placeholder)</div> },
+          {
+            element: <DashboardLayout />,
+            children: [
+              { path: '/member', element: <MemberDashboardPage /> },
+              { path: '/member/my-training', element: <MemberMyTrainingPage /> },
+              { path: '/member/my-training/session/:id', element: <SelfSessionPage basePath="/member/my-training" /> },
+              { path: '/member/my-training/calendar', element: <TrainingCalendarPage basePath="/member/my-training" /> },
+              // Stage 3 placeholders
+              { path: '/member/check-in', element: <div>Check-In (placeholder)</div> },
+              { path: '/member/check-in/new', element: <div>Check-In New (placeholder)</div> },
+              { path: '/member/check-in/history', element: <div>Check-In History (placeholder)</div> },
+              { path: '/member/check-in/:id', element: <div>Check-In Detail (placeholder)</div> },
+              { path: '/member/nutrition', element: <div>Nutrition (placeholder)</div> },
+              { path: '/member/nutrition/:date', element: <div>Nutrition Day (placeholder)</div> },
+              { path: '/member/body-tests', element: <div>Body Tests (placeholder)</div> },
+              // Stage 4 placeholders
+              { path: '/member/journey', element: <div>Journey (placeholder)</div> },
+              { path: '/member/health', element: <div>Health (placeholder)</div> },
+              { path: '/member/schedule', element: <div>Schedule (placeholder)</div> },
+              { path: '/member/settings', element: <div>Settings (placeholder)</div> },
+              { path: '/member/billing', element: <div>Billing (placeholder)</div> },
+              { path: '/member/*', element: <div>Member (placeholder)</div> },
+            ],
+          },
         ],
       },
     ],

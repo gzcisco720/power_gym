@@ -288,6 +288,63 @@ describe('MemberPortalService', () => {
     });
   });
 
+  describe('getActivePlan', () => {
+    it('returns serialized plan when one is active', async () => {
+      const planId = new Types.ObjectId();
+      const templateId = new Types.ObjectId();
+      const exerciseId = new Types.ObjectId();
+      const activePlan = {
+        _id: planId,
+        memberId: new Types.ObjectId(memberId),
+        trainerId: new Types.ObjectId(),
+        templateId,
+        name: 'Push-Pull-Legs',
+        isActive: true,
+        assignedAt: new Date('2024-01-01'),
+        days: [
+          {
+            dayNumber: 1,
+            name: 'Push',
+            exercises: [
+              {
+                groupId: 'g1',
+                isSuperset: false,
+                exerciseId,
+                exerciseName: 'Bench Press',
+                imageUrl: null,
+                isBodyweight: false,
+                sets: 3,
+                repsMin: 8,
+                repsMax: 12,
+                restSeconds: 90,
+              },
+            ],
+          },
+        ],
+      };
+
+      const svc = makeService({
+        memberPlanRepo: makeMemberPlanRepo({
+          findActive: jest.fn().mockResolvedValue(activePlan),
+        }),
+      });
+
+      const result = await svc.getActivePlan(memberId);
+      expect(result).not.toBeNull();
+      expect(result!._id).toBe(planId.toString());
+      expect(result!.templateId).toBe(templateId.toString());
+      expect(result!.name).toBe('Push-Pull-Legs');
+      expect(result!.days).toHaveLength(1);
+      expect(result!.days[0].exercises[0].exerciseId).toBe(exerciseId.toString());
+    });
+
+    it('returns null when no plan is active', async () => {
+      const svc = makeService();
+      const result = await svc.getActivePlan(memberId);
+      expect(result).toBeNull();
+    });
+  });
+
   describe('guards', () => {
     it('a member cannot read another member data via getJourney', async () => {
       const otherMemberId = new Types.ObjectId().toString();

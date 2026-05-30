@@ -21,6 +21,12 @@ export class MemberPortalController {
     return this.svc.getDashboard(user.userId);
   }
 
+  /** GET /me/member-plan — returns the member's active training plan (days + exercises) */
+  @Get('me/member-plan')
+  async getActivePlan(@CurrentUser() user: AuthUser) {
+    return this.svc.getActivePlan(user.userId);
+  }
+
   /** GET /members/:id/journey — member can only read own journey */
   @Get('members/:id/journey')
   async getJourney(

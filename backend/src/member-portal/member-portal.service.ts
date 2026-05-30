@@ -523,6 +523,48 @@ export class MemberPortalService {
     };
   }
 
+  async getActivePlan(memberId: string): Promise<{
+    _id: string;
+    templateId: string;
+    name: string;
+    days: {
+      dayNumber: number;
+      name: string;
+      exercises: {
+        groupId: string;
+        isSuperset: boolean;
+        exerciseId: string;
+        exerciseName: string;
+        isBodyweight: boolean;
+        sets: number;
+        repsMin: number;
+        repsMax: number;
+      }[];
+    }[];
+  } | null> {
+    const plan = await this.memberPlanRepo.findActive(memberId);
+    if (!plan) return null;
+    return {
+      _id: plan._id.toString(),
+      templateId: plan.templateId.toString(),
+      name: plan.name,
+      days: plan.days.map((d) => ({
+        dayNumber: d.dayNumber,
+        name: d.name,
+        exercises: d.exercises.map((ex) => ({
+          groupId: ex.groupId,
+          isSuperset: ex.isSuperset,
+          exerciseId: ex.exerciseId.toString(),
+          exerciseName: ex.exerciseName,
+          isBodyweight: ex.isBodyweight,
+          sets: ex.sets,
+          repsMin: ex.repsMin,
+          repsMax: ex.repsMax,
+        })),
+      })),
+    };
+  }
+
   async getJourney(
     memberId: string,
     requesterId: string,
