@@ -209,7 +209,7 @@ describe('BiometricsPrompt', () => {
     );
 
     await act(async () => {
-      fireEvent.press(getByText('Enable'));
+      fireEvent.press(getByText('Enable Face ID'));
     });
     expect(mockSetBiometricsEnabled).toHaveBeenCalledWith(true);
     expect(mockOnDismiss).toHaveBeenCalled();

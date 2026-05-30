@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { apiClient } from '../lib/api/client';
+import { colors } from '../lib/theme';
 
 export function ForgotPasswordScreen() {
   const navigation = useNavigation();
@@ -37,8 +38,9 @@ export function ForgotPasswordScreen() {
     <View className="flex-1 bg-background px-6 pt-12">
       <Pressable
         accessibilityLabel="Go back"
+        accessibilityRole="button"
         onPress={() => navigation.goBack()}
-        className="mb-8"
+        className="mb-8 py-3"
       >
         <Text className="text-[14px] text-foreground/65">Back</Text>
       </Pressable>
@@ -58,7 +60,7 @@ export function ForgotPasswordScreen() {
           value={email}
           onChangeText={setEmail}
           placeholder="your@email.com"
-          placeholderTextColor="rgba(255,255,255,0.4)"
+          placeholderTextColor={colors.placeholderText}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
@@ -69,6 +71,7 @@ export function ForgotPasswordScreen() {
 
       <Pressable
         accessibilityLabel="Send Reset Link"
+        accessibilityRole="button"
         onPress={handleSubmit}
         disabled={isLoading || !email}
         className="h-12 items-center justify-center rounded-xl bg-white"

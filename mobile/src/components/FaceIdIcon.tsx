@@ -1,12 +1,13 @@
 import React from 'react';
 import Svg, { Path, Rect } from 'react-native-svg';
+import { colors } from '../lib/theme';
 
 interface FaceIdIconProps {
   size?: number;
   color?: string;
 }
 
-export function FaceIdIcon({ size = 24, color = '#ffffff' }: FaceIdIconProps) {
+export function FaceIdIcon({ size = 24, color = colors.foreground }: FaceIdIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       {/* Top-left bracket */}

@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../stores/auth.store';
 import { FaceIdIcon } from '../components/FaceIdIcon';
 import { BiometricsPrompt } from '../components/BiometricsPrompt';
+import { colors } from '../lib/theme';
 
 export function LoginScreen() {
   const navigation = useNavigation<{ navigate: (screen: string) => void }>();
@@ -63,7 +64,7 @@ export function LoginScreen() {
           value={email}
           onChangeText={setEmail}
           placeholder="your@email.com"
-          placeholderTextColor="rgba(255,255,255,0.4)"
+          placeholderTextColor={colors.placeholderText}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
@@ -80,7 +81,7 @@ export function LoginScreen() {
           value={password}
           onChangeText={setPassword}
           placeholder="••••••••"
-          placeholderTextColor="rgba(255,255,255,0.4)"
+          placeholderTextColor={colors.placeholderText}
           secureTextEntry
           accessibilityLabel="Password"
           className="h-12 rounded-xl border border-border bg-input px-4 text-[14px] text-foreground"
@@ -89,6 +90,7 @@ export function LoginScreen() {
 
       <Pressable
         accessibilityLabel="Forgot password"
+        accessibilityRole="button"
         onPress={() => navigation.navigate('ForgotPassword')}
         className="mb-6 self-end"
       >
@@ -101,6 +103,7 @@ export function LoginScreen() {
 
       <Pressable
         accessibilityLabel="Sign In"
+        accessibilityRole="button"
         onPress={handleSignIn}
         disabled={isLoading}
         className="mb-3 h-12 items-center justify-center rounded-xl bg-white"
@@ -109,16 +112,25 @@ export function LoginScreen() {
       </Pressable>
 
       {biometricsEnabled ? (
-        <Pressable
-          accessibilityLabel="Sign in with Face ID"
-          onPress={handleBiometricSignIn}
-          className="h-12 flex-row items-center justify-center gap-2 rounded-xl border border-border bg-muted"
-        >
-          <FaceIdIcon size={20} color="#ffffff" />
-          <Text className="text-[15px] font-medium text-foreground">
-            Sign in with Face ID
-          </Text>
-        </Pressable>
+        <>
+          <View className="my-1 flex-row items-center gap-2">
+            <View className="h-px flex-1 bg-border" />
+            <Text className="text-[11px] text-foreground/40">or</Text>
+            <View className="h-px flex-1 bg-border" />
+          </View>
+
+          <Pressable
+            accessibilityLabel="Sign in with Face ID"
+            accessibilityRole="button"
+            onPress={handleBiometricSignIn}
+            className="h-12 flex-row items-center justify-center gap-2 rounded-xl border border-border bg-muted"
+          >
+            <FaceIdIcon size={20} />
+            <Text className="text-[15px] font-medium text-foreground">
+              Sign in with Face ID
+            </Text>
+          </Pressable>
+        </>
       ) : null}
 
       <BiometricsPrompt
