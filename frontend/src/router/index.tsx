@@ -7,6 +7,7 @@ import { ResetPasswordPage } from '@/pages/auth/reset-password';
 import { DashboardLayout } from '@/components/shared/dashboard-layout';
 import { OwnerDashboardPage } from '@/pages/owner/dashboard';
 import { OwnerTrainersPage } from '@/pages/owner/trainers';
+import { OwnerTrainerDetailPage } from '@/pages/owner/trainer-detail';
 import { OwnerMembersPage } from '@/pages/owner/members';
 import { OwnerInvitesPage } from '@/pages/owner/invites';
 
@@ -28,7 +29,11 @@ export const router = createBrowserRouter([
             children: [
               { path: '/owner', element: <OwnerDashboardPage /> },
               { path: '/owner/trainers', element: <OwnerTrainersPage /> },
-              { path: '/owner/trainers/:id', element: <div>Trainer Detail (placeholder — Stage 4)</div> },
+              { path: '/owner/trainers/:id', element: <OwnerTrainerDetailPage /> },
+              { path: '/owner/trainers/:id/members', element: <OwnerTrainerDetailPage /> },
+              { path: '/owner/trainers/:id/training-plans', element: <OwnerTrainerDetailPage /> },
+              { path: '/owner/trainers/:id/nutrition-plans', element: <OwnerTrainerDetailPage /> },
+              { path: '/owner/trainers/:id/calendar', element: <OwnerTrainerDetailPage /> },
               { path: '/owner/members', element: <OwnerMembersPage /> },
               { path: '/owner/invites', element: <OwnerInvitesPage /> },
               { path: '/owner/*', element: <div>Owner (placeholder)</div> },

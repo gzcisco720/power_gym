@@ -381,15 +381,25 @@ Goal: owner manages trainers (list + detail hub with sub-tabs), members (list + 
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `trainersStore > fetchTrainerDetail > populates trainer + members + plans`
-- [ ] `TrainerDetailLayout > renders a tab per sub-route`
-- [ ] `TrainerHubMembers > renders a row per assigned member`
+- [x] `trainersStore > fetchTrainerDetail > populates trainer + members + plans`
+- [x] `TrainerDetailLayout > renders a tab per sub-route`
+- [x] `TrainerHubMembers > renders a row per assigned member`
 
 *Integration / E2E:*
-- [ ] Owner on `/owner/trainers/:id` clicks "Members" tab → URL is `/owner/trainers/:id/members` and seeded assigned member(s) listed
-- [ ] Clicks "Training Plans" tab → URL changes and the trainer's plan templates render
+- [x] Owner on `/owner/trainers/:id` clicks "Members" tab → URL is `/owner/trainers/:id/members` and seeded assigned member(s) listed
+- [x] Clicks "Training Plans" tab → URL changes and the trainer's plan templates render
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 4 Checkpoint
+- [x] `frontend/src/api/trainers.ts` (add `fetchTrainerMembers`, `fetchTrainerPlans`, `fetchTrainerNutritionPlans` + interfaces)
+- [x] `frontend/src/stores/trainersStore.ts` (add `trainerMembers`, `trainerPlans`, `trainerNutritionPlans` state; fetch all in parallel in `fetchTrainerDetail`)
+- [x] `frontend/src/stores/trainersStore.spec.ts` (new — `fetchTrainerDetail > populates trainer + members + plans`)
+- [x] `frontend/src/pages/owner/trainer-detail.tsx` (new — tabbed layout + all 5 sub-tabs)
+- [x] `frontend/src/pages/owner/trainer-detail.spec.tsx` (new — `TrainerDetailLayout > renders a tab per sub-route`, `TrainerHubMembers > renders a row per assigned member`)
+- [x] `frontend/src/router/index.tsx` (replace placeholder with `OwnerTrainerDetailPage`; add sub-routes)
+- [x] `frontend/e2e/owner/trainer-detail.spec.ts` (new — Sprint Contract E2E criteria)
+- [x] `backend/src/owner-invites/owner-invites.controller.ts` (fix pre-existing TS1272 error that blocked backend startup)
 
 ---
 

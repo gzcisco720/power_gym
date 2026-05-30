@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { AuthUser } from '../common/interfaces/auth-user.interface';
+import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import { OwnerInvitesService, CreateInviteDto } from './owner-invites.service';
 
 @Roles('owner')
