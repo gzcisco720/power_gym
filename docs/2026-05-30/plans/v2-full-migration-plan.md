@@ -727,16 +727,37 @@ Goal: owner's self-tracking (My Training incl. live session, My Nutrition, My Bo
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `settingsStore > saveProfile > patches profile and updates store`
-- [ ] `serviceTypesStore > create > adds a service type to the list`
-- [ ] `GymInfoTab > Save disabled when not dirty`
+- [x] `settingsStore > saveProfile > patches profile and updates store`
+- [x] `serviceTypesStore > create > adds a service type to the list`
+- [x] `GymInfoTab > Save disabled when not dirty`
 
 *Integration / E2E:*
 - [ ] Owner on `/owner/settings` edits gym name, saves → reload shows persisted value
 - [ ] Owner on `/owner/services` adds a service type → appears in list
 - [ ] Owner on `/owner/calendar` sees a seeded scheduled session rendered
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 4 Checkpoint
+- [x] `frontend/src/api/body-tests.ts`
+- [x] `frontend/src/api/settings.ts`
+- [x] `frontend/src/api/service-types.ts`
+- [x] `frontend/src/api/billing.ts`
+- [x] `frontend/src/api/schedule.ts`
+- [x] `frontend/src/lib/body-test/formulas.ts`
+- [x] `frontend/src/lib/time.ts`
+- [x] `frontend/src/stores/settingsStore.ts`
+- [x] `frontend/src/stores/settingsStore.spec.ts`
+- [x] `frontend/src/stores/serviceTypesStore.ts`
+- [x] `frontend/src/stores/serviceTypesStore.spec.ts`
+- [x] `frontend/src/pages/owner/my-body-tests.tsx`
+- [x] `frontend/src/pages/owner/settings.tsx`
+- [x] `frontend/src/pages/owner/settings.spec.tsx`
+- [x] `frontend/src/pages/owner/services.tsx`
+- [x] `frontend/src/pages/owner/billing.tsx`
+- [x] `frontend/src/pages/owner/calendar.tsx`
+- [x] `frontend/src/router/index.tsx` (add all 5 new routes)
+- [x] `frontend/e2e/owner/settings.spec.ts`
 
 ---
 

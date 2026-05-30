@@ -26,6 +26,11 @@ import { SelfSessionPage } from '@/pages/owner/session';
 import { TrainingCalendarPage } from '@/pages/owner/training-calendar';
 import { OwnerMyNutritionPage } from '@/pages/owner/my-nutrition';
 import { NutritionDayPage } from '@/pages/owner/nutrition-day';
+import { OwnerMyBodyTestsPage } from '@/pages/owner/my-body-tests';
+import { OwnerSettingsPage } from '@/pages/owner/settings';
+import { OwnerServicesPage } from '@/pages/owner/services';
+import { OwnerBillingPage } from '@/pages/owner/billing';
+import { OwnerCalendarPage } from '@/pages/owner/calendar';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -68,6 +73,11 @@ export const router = createBrowserRouter([
               { path: '/owner/my-training/calendar', element: <TrainingCalendarPage basePath="/owner/my-training" /> },
               { path: '/owner/my-nutrition', element: <OwnerMyNutritionPage /> },
               { path: '/owner/my-nutrition/day', element: <NutritionDayPage basePath="/owner/my-nutrition" /> },
+              { path: '/owner/my-body-tests', element: <OwnerMyBodyTestsPage /> },
+              { path: '/owner/settings', element: <OwnerSettingsPage /> },
+              { path: '/owner/services', element: <OwnerServicesPage /> },
+              { path: '/owner/billing', element: <OwnerBillingPage /> },
+              { path: '/owner/calendar', element: <OwnerCalendarPage /> },
               { path: '/owner/*', element: <div>Owner (placeholder)</div> },
             ],
           },
