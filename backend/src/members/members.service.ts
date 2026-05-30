@@ -44,9 +44,15 @@ export class MembersService {
     }
   }
 
-  async listForTrainer(
-    trainerId: string,
-  ): Promise<{ _id: string; name: string; email: string; trainerId: string | null; createdAt: Date }[]> {
+  async listForTrainer(trainerId: string): Promise<
+    {
+      _id: string;
+      name: string;
+      email: string;
+      trainerId: string | null;
+      createdAt: Date;
+    }[]
+  > {
     const members = await this.userRepo.findAllMembers(trainerId);
     return members.map((m) => ({
       _id: m._id.toString(),
@@ -61,7 +67,13 @@ export class MembersService {
     memberId: string,
     requesterId: string,
     requesterRole: UserRole,
-  ): Promise<{ _id: string; name: string; email: string; createdAt: Date; profile: IUserProfile | null }> {
+  ): Promise<{
+    _id: string;
+    name: string;
+    email: string;
+    createdAt: Date;
+    profile: IUserProfile | null;
+  }> {
     const member = await this.userRepo.findById(memberId);
     if (!member) throw new NotFoundException('Member not found');
     if (
