@@ -71,6 +71,54 @@ export class SelfWorkoutLogRepository {
       .sort({ completedAt: -1 });
   }
 
+  async findByUserMonth(
+    userId: string,
+    year: number,
+    month: number,
+  ): Promise<ISelfWorkoutLog[]> {
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 1);
+    return this.model
+      .find({
+        userId: oid(userId),
+        completedAt: { $gte: start, $lt: end },
+      })
+      .sort({ completedAt: 1 });
+  }
+
+  async findByUserDateRange(
+    userId: string,
+    start: Date,
+    end: Date,
+  ): Promise<ISelfWorkoutLog[]> {
+    return this.model
+      .find({
+        userId: oid(userId),
+        startedAt: { $gte: start, $lt: end },
+      })
+      .sort({ startedAt: 1 });
+  }
+
+  async appendSet(
+    id: string,
+    userId: string,
+    set: ISelfWorkoutSet,
+  ): Promise<ISelfWorkoutLog | null> {
+    return this.model.findOneAndUpdate(
+      { _id: oid(id), userId: oid(userId) },
+      { $push: { sets: set }, $set: { lastActivityAt: new Date() } },
+      { returnDocument: 'after' },
+    );
+  }
+
+  async seal(id: string, userId: string): Promise<ISelfWorkoutLog | null> {
+    const log = await this.model.findOne({ _id: oid(id), userId: oid(userId) });
+    if (!log || log.completedAt) return log;
+    if (!log.lastActivityAt) log.lastActivityAt = log.startedAt;
+    log.completedAt = log.lastActivityAt;
+    return log.save();
+  }
+
   async updateSet(
     id: string,
     userId: string,

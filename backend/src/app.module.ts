@@ -17,6 +17,7 @@ import { PlanTemplatesModule } from './plan-templates/plan-templates.module';
 import { NutritionTemplatesModule } from './nutrition-templates/nutrition-templates.module';
 import { FoodsModule } from './foods/foods.module';
 import { EquipmentModule } from './equipment/equipment.module';
+import { SelfTrainingModule } from './self-training/self-training.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { EquipmentModule } from './equipment/equipment.module';
     NutritionTemplatesModule,
     FoodsModule,
     EquipmentModule,
+    SelfTrainingModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ConditionalThrottlerGuard },

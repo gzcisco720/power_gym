@@ -607,7 +607,15 @@ Goal: owner's self-tracking (My Training incl. live session, My Nutrition, My Bo
 - [ ] `POST /me/workout-logs` (start) → `GET /me/workout-logs/active` returns it; add a set → set persisted
 - [ ] `POST /me/workout-logs/:id/complete` → completedAt set; further set edit rejected after seal
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 1 Checkpoint
+- [x] `backend/src/repositories/self-workout-log.repository.ts` (add missing methods: appendSet, findByUserMonth, findByUserDateRange, seal)
+- [x] `backend/src/self-training/self-training.service.spec.ts`
+- [x] `backend/src/self-training/self-training.service.ts`
+- [x] `backend/src/self-training/self-training.controller.ts`
+- [x] `backend/src/self-training/self-training.module.ts`
+- [x] `backend/src/app.module.ts` (register SelfTrainingModule)
 
 ## Stage 2: Backend — self nutrition logs + body tests + service-types + billing + schedule
 
