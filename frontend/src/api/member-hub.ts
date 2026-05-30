@@ -333,6 +333,196 @@ export async function fetchMemberNutrition(memberId: string): Promise<MemberNutr
   };
 }
 
+// ─── Body Tests ───────────────────────────────────────────────────────────────
+
+export interface BodyTestRecord {
+  _id: string;
+  date: string;
+  protocol: '3site' | '7site' | '9site' | 'other';
+  weight: number;
+  bodyFatPct: number;
+  leanMassKg: number;
+  fatMassKg: number;
+  targetWeight: number | null;
+  targetBodyFatPct: number | null;
+}
+
+export function fetchMemberBodyTests(memberId: string): Promise<BodyTestRecord[]> {
+  return request<BodyTestRecord[]>(`${BASE}/members/${memberId}/body-tests`);
+}
+
+export function createBodyTest(memberId: string, payload: Record<string, number | string | null>): Promise<BodyTestRecord> {
+  return request<BodyTestRecord>(`${BASE}/members/${memberId}/body-tests`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteBodyTest(memberId: string, testId: string): Promise<void> {
+  return requestVoid(`${BASE}/members/${memberId}/body-tests/${testId}`, { method: 'DELETE' });
+}
+
+// ─── Health ───────────────────────────────────────────────────────────────────
+
+export interface SerializedInjury {
+  _id: string;
+  title: string;
+  status: 'active' | 'resolved';
+  recordedAt: string;
+  resolvedAt: string | null;
+  trainerNotes: string | null;
+  memberNotes: string | null;
+  affectedMovements: string | null;
+  injuryType: 'acute' | 'chronic' | 'post_surgery' | null;
+  bodyPart: 'knee' | 'shoulder' | 'lower_back' | 'hip' | 'ankle' | 'wrist' | 'neck' | 'other' | null;
+  bodySide: 'left' | 'right' | 'bilateral' | null;
+  painAtRest: number | null;
+  painDuringExercise: number | null;
+  mechanism: string | null;
+  aggravatingFactors: string | null;
+  relievingFactors: string | null;
+  doctorRestrictions: string | null;
+  rehabilitationStatus: 'not_started' | 'in_progress' | 'cleared' | null;
+  seenDoctor: boolean;
+  createdByRole: 'trainer' | 'member';
+}
+
+export interface SerializedMedication {
+  _id: string;
+  name: string;
+  purpose: string;
+  duration: 'long_term' | 'short_term';
+  startDate: string;
+  endDate: string | null;
+  notes: string | null;
+  status: 'active' | 'ended';
+  createdAt: string;
+}
+
+export interface SerializedMedicalHistory {
+  _id: string;
+  chronicConditions: string[];
+  surgeries: string | null;
+  allergies: string | null;
+  familyHistory: string | null;
+  currentDoctor: string | null;
+  emergencyContact: string | null;
+  pregnancyStatus: 'n/a' | 'not_pregnant' | 'pregnant' | 'postpartum' | null;
+  updatedAt: string;
+}
+
+export interface MemberHealthData {
+  injuries: SerializedInjury[];
+  medications: SerializedMedication[];
+  medicalHistory: SerializedMedicalHistory | null;
+}
+
+export async function fetchMemberHealth(memberId: string): Promise<MemberHealthData> {
+  const [injuries, medications, medicalHistory] = await Promise.all([
+    request<SerializedInjury[]>(`${BASE}/members/${memberId}/injuries`),
+    request<SerializedMedication[]>(`${BASE}/members/${memberId}/medications`),
+    safeRequest<SerializedMedicalHistory>(`${BASE}/members/${memberId}/medical-history`),
+  ]);
+  return { injuries, medications, medicalHistory: medicalHistory ?? null };
+}
+
+export type InjuryPayload = {
+  title: string;
+  injuryType?: string | null;
+  bodyPart?: string | null;
+  bodySide?: string | null;
+  affectedMovements?: string | null;
+  doctorRestrictions?: string | null;
+  rehabilitationStatus?: string | null;
+  trainerNotes?: string | null;
+};
+
+export function createInjury(memberId: string, payload: InjuryPayload): Promise<SerializedInjury> {
+  return request<SerializedInjury>(`${BASE}/members/${memberId}/injuries`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateInjury(memberId: string, injuryId: string, payload: Partial<InjuryPayload> & { status?: 'active' | 'resolved'; memberNotes?: string | null }): Promise<SerializedInjury> {
+  return request<SerializedInjury>(`${BASE}/members/${memberId}/injuries/${injuryId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteInjury(memberId: string, injuryId: string): Promise<void> {
+  return requestVoid(`${BASE}/members/${memberId}/injuries/${injuryId}`, { method: 'DELETE' });
+}
+
+// ─── Check-ins ────────────────────────────────────────────────────────────────
+
+export interface CheckInRecord {
+  _id: string;
+  submittedAt: string;
+  sleepQuality: number;
+  stress: number;
+  fatigue: number;
+  hunger: number;
+  recovery: number;
+  energy: number;
+  digestion: number;
+  weight: number | null;
+  stuckToDiet: 'yes' | 'no' | 'partial';
+  photos: string[];
+}
+
+export interface CheckInConfig {
+  dayOfWeek: number;
+  hour: number;
+  minute: number;
+  active: boolean;
+}
+
+export async function fetchMemberCheckIns(memberId: string): Promise<{ checkIns: CheckInRecord[]; config: CheckInConfig | null }> {
+  const [checkIns, config] = await Promise.all([
+    request<CheckInRecord[]>(`${BASE}/check-ins?memberId=${memberId}`),
+    safeRequest<CheckInConfig>(`${BASE}/check-in-config?memberId=${memberId}`),
+  ]);
+  return { checkIns, config: config ?? null };
+}
+
+export function upsertCheckInConfig(memberId: string, data: CheckInConfig): Promise<void> {
+  return requestVoid(`${BASE}/check-in-config`, {
+    method: 'PUT',
+    body: JSON.stringify({ memberId, ...data }),
+  });
+}
+
+// ─── Progress ─────────────────────────────────────────────────────────────────
+
+export interface ExerciseOption {
+  exerciseId: string;
+  exerciseName: string;
+}
+
+export interface ProgressPoint {
+  date: string;
+  estimatedOneRM: number;
+}
+
+export interface MemberProgressData {
+  exercises: ExerciseOption[];
+  heatmapData: { date: string }[];
+}
+
+export async function fetchMemberProgress(memberId: string): Promise<MemberProgressData> {
+  const data = await safeRequest<{ exercises: ExerciseOption[]; heatmapData: { date: string }[] }>(`${BASE}/progress/${memberId}`);
+  return {
+    exercises: data?.exercises ?? [],
+    heatmapData: data?.heatmapData ?? [],
+  };
+}
+
+export function fetchExerciseHistory(memberId: string, exerciseId: string): Promise<{ history: ProgressPoint[] }> {
+  return request<{ history: ProgressPoint[] }>(`${BASE}/progress/${memberId}?exerciseId=${exerciseId}`);
+}
+
 // ─── Mutations ────────────────────────────────────────────────────────────────
 
 export function assignPlan(memberId: string, templateId: string): Promise<void> {

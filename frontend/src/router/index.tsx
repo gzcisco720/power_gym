@@ -99,6 +99,7 @@ export const router = createBrowserRouter([
               { path: '/trainer/members/:id/body-tests', element: <TrainerMemberHubPage /> },
               { path: '/trainer/members/:id/health', element: <TrainerMemberHubPage /> },
               { path: '/trainer/members/:id/check-ins', element: <TrainerMemberHubPage /> },
+              { path: '/trainer/members/:id/progress', element: <TrainerMemberHubPage /> },
               { path: '/trainer/members/:id/photos', element: <TrainerMemberHubPage /> },
               { path: '/trainer/*', element: <div>Trainer (placeholder)</div> },
             ],

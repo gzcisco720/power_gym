@@ -893,16 +893,32 @@ Goal: trainer's Members list and the full Member Hub: overview + Plan, Nutrition
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `memberHubStore > fetchBodyTests > populates test history`
-- [ ] `memberHubStore > addInjury > prepends injury to health list`
-- [ ] `CheckInTrends > renders a series from check-in data`
+- [x] `memberHubStore > fetchBodyTests > populates test history`
+- [x] `memberHubStore > addInjury > prepends injury to health list`
+- [x] `CheckInTrends > renders a series from check-in data`
 
 *Integration / E2E:*
 - [ ] Trainer on member Health tab adds an injury via sheet → it appears in the list
 - [ ] Trainer on Body Tests tab opens "New body test" dialog, submits skinfolds → body-fat % computed and test listed
 - [ ] Trainer on Progress tab → strength chart renders seeded 1RM trend; Check-ins tab lists seeded check-ins
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 4 Checkpoint
+- [x] `frontend/src/api/member-hub.ts` (add body-tests, health, check-ins, progress API functions)
+- [x] `frontend/src/stores/memberHubStore.ts` (add bodyTests, injuries, medicalHistory, medications, checkIns, progress state + actions)
+- [x] `frontend/src/stores/memberHubStore.spec.ts` (fetchBodyTests + addInjury tests)
+- [x] `frontend/src/lib/health/drug-warnings.ts` (new — port from v1)
+- [x] `frontend/src/components/member-hub/body-tests-tab.tsx` (new)
+- [x] `frontend/src/components/member-hub/health-tab.tsx` (new)
+- [x] `frontend/src/components/member-hub/check-ins-tab.tsx` (new — includes CheckInTrends)
+- [x] `frontend/src/components/member-hub/check-ins-tab.spec.tsx` (CheckInTrends unit test)
+- [x] `frontend/src/components/member-hub/progress-tab.tsx` (new)
+- [x] `frontend/src/components/member-hub/photos-tab.tsx` (new — placeholder)
+- [x] `frontend/src/components/member-hub/member-hub-tab-nav.tsx` (add Progress tab)
+- [x] `frontend/src/pages/trainer/member-hub.tsx` (replace TabPlaceholders with real tab wrappers)
+- [x] `frontend/src/router/index.tsx` (add /progress route)
+- [x] `frontend/e2e/trainer/member-hub.spec.ts` (add Stage 4 E2E specs)
 
 ---
 

@@ -7,6 +7,11 @@ import { PlanCardSection } from '@/components/member-hub/plan-card-section';
 import { HealthPanelSection } from '@/components/member-hub/health-panel-section';
 import { PlanTab } from '@/components/member-hub/plan-tab';
 import { NutritionTab } from '@/components/member-hub/nutrition-tab';
+import { BodyTestsTab } from '@/components/member-hub/body-tests-tab';
+import { HealthTab } from '@/components/member-hub/health-tab';
+import { CheckInsTab } from '@/components/member-hub/check-ins-tab';
+import { ProgressTab } from '@/components/member-hub/progress-tab';
+import { PhotosTab } from '@/components/member-hub/photos-tab';
 import { useMemberHubStore } from '@/stores/memberHubStore';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -139,16 +144,97 @@ function NutritionTabWrapper() {
   );
 }
 
-// ─── Placeholder for not-yet-built tabs ──────────────────────────────────────
+// ─── Body Tests Tab wrapper ───────────────────────────────────────────────────
 
-function TabPlaceholder({ label }: { label: string }) {
-  return (
-    <div className="px-4 sm:px-8 py-7">
-      <div className="rounded-xl bg-card ring-1 ring-foreground/10 p-8 text-center">
-        <p className="text-sm text-foreground/40">{label} (coming soon)</p>
+function BodyTestsTabWrapper() {
+  const { id: memberId } = useParams<{ id: string }>();
+  const fetchBodyTests = useMemberHubStore((s) => s.fetchBodyTests);
+  const isLoading = useMemberHubStore((s) => s.isLoadingBodyTests);
+
+  useEffect(() => {
+    if (memberId) void fetchBodyTests(memberId);
+  }, [memberId, fetchBodyTests]);
+
+  if (!memberId) return null;
+
+  if (isLoading) {
+    return (
+      <div className="px-4 sm:px-8 py-7 space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-[80px] rounded-xl" />
+        ))}
       </div>
-    </div>
-  );
+    );
+  }
+
+  return <BodyTestsTab />;
+}
+
+// ─── Health Tab wrapper ───────────────────────────────────────────────────────
+
+function HealthTabWrapper() {
+  const { id: memberId } = useParams<{ id: string }>();
+  const fetchHealth = useMemberHubStore((s) => s.fetchHealth);
+  const isLoading = useMemberHubStore((s) => s.isLoadingHealth);
+
+  useEffect(() => {
+    if (memberId) void fetchHealth(memberId);
+  }, [memberId, fetchHealth]);
+
+  if (!memberId) return null;
+
+  if (isLoading) {
+    return (
+      <div className="px-4 sm:px-8 py-7 space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-[80px] rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  return <HealthTab />;
+}
+
+// ─── Check-ins Tab wrapper ────────────────────────────────────────────────────
+
+function CheckInsTabWrapper() {
+  const { id: memberId } = useParams<{ id: string }>();
+  const fetchCheckIns = useMemberHubStore((s) => s.fetchCheckIns);
+  const isLoading = useMemberHubStore((s) => s.isLoadingCheckIns);
+
+  useEffect(() => {
+    if (memberId) void fetchCheckIns(memberId);
+  }, [memberId, fetchCheckIns]);
+
+  if (!memberId) return null;
+
+  if (isLoading) {
+    return (
+      <div className="px-4 sm:px-8 py-7 space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-[80px] rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  return <CheckInsTab />;
+}
+
+// ─── Progress Tab wrapper ─────────────────────────────────────────────────────
+
+function ProgressTabWrapper() {
+  const { id: memberId } = useParams<{ id: string }>();
+  const fetchProgress = useMemberHubStore((s) => s.fetchProgress);
+
+  useEffect(() => {
+    if (memberId) void fetchProgress(memberId);
+  }, [memberId, fetchProgress]);
+
+  if (!memberId) return null;
+
+  return <ProgressTab />;
 }
 
 // ─── Hub Layout ───────────────────────────────────────────────────────────────
@@ -181,6 +267,7 @@ export function TrainerMemberHubPage() {
   const isBodyTests = pathname.startsWith(`${basePath}/body-tests`);
   const isHealth = pathname.startsWith(`${basePath}/health`);
   const isCheckIns = pathname.startsWith(`${basePath}/check-ins`);
+  const isProgress = pathname.startsWith(`${basePath}/progress`);
   const isPhotos = pathname.startsWith(`${basePath}/photos`);
 
   return (
@@ -242,12 +329,13 @@ export function TrainerMemberHubPage() {
         {isOverview && <OverviewTab />}
         {isPlan && <PlanTabWrapper />}
         {isNutrition && <NutritionTabWrapper />}
-        {isBodyTests && <TabPlaceholder label="Body Tests" />}
-        {isHealth && <TabPlaceholder label="Health" />}
-        {isCheckIns && <TabPlaceholder label="Check-ins" />}
-        {isPhotos && <TabPlaceholder label="Photos" />}
+        {isBodyTests && <BodyTestsTabWrapper />}
+        {isHealth && <HealthTabWrapper />}
+        {isCheckIns && <CheckInsTabWrapper />}
+        {isProgress && <ProgressTabWrapper />}
+        {isPhotos && <PhotosTab />}
         {/* Outlet for any sub-routes not covered above */}
-        {!isOverview && !isPlan && !isNutrition && !isBodyTests && !isHealth && !isCheckIns && !isPhotos && <Outlet />}
+        {!isOverview && !isPlan && !isNutrition && !isBodyTests && !isHealth && !isCheckIns && !isProgress && !isPhotos && <Outlet />}
       </main>
     </div>
   );

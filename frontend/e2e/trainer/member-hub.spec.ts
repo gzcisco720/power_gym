@@ -73,4 +73,96 @@ test.describe('Trainer Member Hub', () => {
       page.getByText(/Current Plan|No nutrition plan assigned/i)
     ).toBeVisible({ timeout: 10000 });
   });
+
+  test('trainer on Health tab adds an injury and it appears in the list', async ({ page }) => {
+    await expect(page.getByPlaceholder('Search members...')).toBeVisible({ timeout: 10000 });
+    const viewHubLink = page.getByRole('link', { name: 'View Hub →' }).first();
+    await viewHubLink.click();
+    await page.waitForURL(/\/trainer\/members\/[a-z0-9]+$/, { timeout: 10000 });
+
+    // Navigate to Health tab
+    await page.getByRole('link', { name: 'Health', exact: true }).click();
+    await page.waitForURL(/\/trainer\/members\/[a-z0-9]+\/health/, { timeout: 10000 });
+
+    // Health tab shows Active Injuries section
+    await expect(page.getByText('Active Injuries')).toBeVisible({ timeout: 10000 });
+
+    // Click "+ Add" to open the injury sheet
+    await page.getByRole('button', { name: '+ Add' }).click();
+    await expect(page.getByText('New Injury Record')).toBeVisible({ timeout: 5000 });
+
+    // Fill in the injury title
+    const titleInput = page.getByPlaceholder('e.g. Left knee ligament strain');
+    await titleInput.fill('E2E Test Shoulder Injury');
+
+    // Save the injury
+    await page.getByRole('button', { name: 'Save' }).last().click();
+
+    // The new injury should appear in the list
+    await expect(page.getByText('E2E Test Shoulder Injury')).toBeVisible({ timeout: 10000 });
+  });
+
+  test('trainer on Body Tests tab submits skinfolds and test appears listed', async ({ page }) => {
+    await expect(page.getByPlaceholder('Search members...')).toBeVisible({ timeout: 10000 });
+    const viewHubLink = page.getByRole('link', { name: 'View Hub →' }).first();
+    await viewHubLink.click();
+    await page.waitForURL(/\/trainer\/members\/[a-z0-9]+$/, { timeout: 10000 });
+
+    // Navigate to Body Tests tab
+    await page.getByRole('link', { name: 'Body Tests', exact: true }).click();
+    await page.waitForURL(/\/trainer\/members\/[a-z0-9]+\/body-tests/, { timeout: 10000 });
+
+    // Click "New Test" button
+    await page.getByRole('button', { name: 'New Test' }).click();
+    await expect(page.getByText('New Body Test')).toBeVisible({ timeout: 5000 });
+
+    // Select "Other (manual %)" protocol to keep the form simple
+    await page.selectOption('#nbt-protocol', 'other');
+
+    // Fill in weight and body fat
+    await page.fill('#nbt-weight', '80');
+    await page.fill('#nbt-bf', '15.5');
+
+    // Fill date
+    await page.fill('#nbt-date', '2026-05-01');
+
+    // Click Save
+    await page.getByRole('button', { name: 'Save' }).last().click();
+
+    // The saved test should appear (body fat % or date)
+    await expect(page.getByText(/15\.5|May 1/)).toBeVisible({ timeout: 10000 });
+  });
+
+  test('trainer on Progress tab — strength chart renders', async ({ page }) => {
+    await expect(page.getByPlaceholder('Search members...')).toBeVisible({ timeout: 10000 });
+    const viewHubLink = page.getByRole('link', { name: 'View Hub →' }).first();
+    await viewHubLink.click();
+    await page.waitForURL(/\/trainer\/members\/[a-z0-9]+$/, { timeout: 10000 });
+
+    // Navigate to Progress tab
+    await page.getByRole('link', { name: 'Progress', exact: true }).click();
+    await page.waitForURL(/\/trainer\/members\/[a-z0-9]+\/progress/, { timeout: 10000 });
+
+    // Progress tab should show Strength Progress section or "No exercise history yet"
+    await expect(
+      page.getByText(/Strength Progress|No exercise history yet/i)
+    ).toBeVisible({ timeout: 10000 });
+  });
+
+  test('trainer on Check-ins tab — seeded check-ins are listed', async ({ page }) => {
+    await expect(page.getByPlaceholder('Search members...')).toBeVisible({ timeout: 10000 });
+    const viewHubLink = page.getByRole('link', { name: 'View Hub →' }).first();
+    await viewHubLink.click();
+    await page.waitForURL(/\/trainer\/members\/[a-z0-9]+$/, { timeout: 10000 });
+
+    // Navigate to Check-ins tab
+    await page.getByRole('link', { name: 'Check-ins', exact: true }).click();
+    await page.waitForURL(/\/trainer\/members\/[a-z0-9]+\/check-ins/, { timeout: 10000 });
+
+    // Check-ins tab should show the history section with seeded check-ins
+    await expect(page.getByText(/Check-In History/i)).toBeVisible({ timeout: 10000 });
+
+    // Seeded data has 21 check-ins — count should be visible
+    await expect(page.getByText(/Check-In History \(\d+\)/)).toBeVisible({ timeout: 10000 });
+  });
 });

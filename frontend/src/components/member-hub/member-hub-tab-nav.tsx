@@ -8,6 +8,7 @@ const TABS = [
   { label: 'Nutrition', segment: '/nutrition' },
   { label: 'Health', segment: '/health' },
   { label: 'Check-ins', segment: '/check-ins' },
+  { label: 'Progress', segment: '/progress' },
   { label: 'Photos', segment: '/photos' },
   { label: 'Billing', segment: '/billing' },
 ] as const;

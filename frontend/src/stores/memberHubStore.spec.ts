@@ -7,6 +7,14 @@ vi.mock('@/api/member-hub', () => ({
   fetchMemberNutrition: vi.fn(),
   assignPlan: vi.fn(),
   assignNutrition: vi.fn(),
+  fetchMemberBodyTests: vi.fn(),
+  createBodyTest: vi.fn(),
+  fetchMemberHealth: vi.fn(),
+  createInjury: vi.fn(),
+  updateInjury: vi.fn(),
+  deleteInjury: vi.fn(),
+  fetchMemberCheckIns: vi.fn(),
+  fetchMemberProgress: vi.fn(),
 }));
 
 import { useMemberHubStore } from './memberHubStore';
@@ -70,9 +78,19 @@ beforeEach(() => {
     healthSummary: null,
     plan: null,
     nutrition: null,
+    bodyTests: [],
+    injuries: [],
+    medicalHistory: null,
+    medications: [],
+    checkIns: [],
+    progress: null,
     isLoadingOverview: false,
     isLoadingPlan: false,
     isLoadingNutrition: false,
+    isLoadingBodyTests: false,
+    isLoadingHealth: false,
+    isLoadingCheckIns: false,
+    isLoadingProgress: false,
     error: null,
   });
   vi.clearAllMocks();
@@ -122,6 +140,44 @@ describe('memberHubStore', () => {
       expect(state.plan?.active?.days).toHaveLength(1);
       expect(state.plan?.active?.days[0].name).toBe('Push Day');
       expect(state.isLoadingPlan).toBe(false);
+    });
+  });
+
+  describe('fetchBodyTests', () => {
+    it('populates test history', async () => {
+      const mockTests = [
+        { _id: 'bt1', date: '2024-01-01T00:00:00.000Z', protocol: '3site' as const, weight: 80, bodyFatPct: 15, leanMassKg: 68, fatMassKg: 12, targetWeight: null, targetBodyFatPct: null },
+        { _id: 'bt2', date: '2024-02-01T00:00:00.000Z', protocol: '3site' as const, weight: 78, bodyFatPct: 14, leanMassKg: 67, fatMassKg: 11, targetWeight: null, targetBodyFatPct: null },
+      ];
+      vi.mocked(api.fetchMemberBodyTests).mockResolvedValueOnce(mockTests);
+
+      await act(async () => {
+        await useMemberHubStore.getState().fetchBodyTests('mem1');
+      });
+
+      const state = useMemberHubStore.getState();
+      expect(state.bodyTests).toHaveLength(2);
+      expect(state.bodyTests[0]._id).toBe('bt1');
+      expect(state.isLoadingBodyTests).toBe(false);
+    });
+  });
+
+  describe('addInjury', () => {
+    it('prepends injury to health list', async () => {
+      const existing = { _id: 'inj1', title: 'Existing', status: 'active' as const, recordedAt: '2024-01-01T00:00:00.000Z', resolvedAt: null, trainerNotes: null, memberNotes: null, affectedMovements: null, injuryType: null, bodyPart: null, bodySide: null, painAtRest: null, painDuringExercise: null, mechanism: null, aggravatingFactors: null, relievingFactors: null, doctorRestrictions: null, rehabilitationStatus: null, seenDoctor: false, createdByRole: 'trainer' as const };
+      const newInjury = { _id: 'inj2', title: 'New Knee Strain', status: 'active' as const, recordedAt: '2024-02-01T00:00:00.000Z', resolvedAt: null, trainerNotes: null, memberNotes: null, affectedMovements: null, injuryType: null, bodyPart: null, bodySide: null, painAtRest: null, painDuringExercise: null, mechanism: null, aggravatingFactors: null, relievingFactors: null, doctorRestrictions: null, rehabilitationStatus: null, seenDoctor: false, createdByRole: 'trainer' as const };
+
+      useMemberHubStore.setState({ injuries: [existing] });
+      vi.mocked(api.createInjury).mockResolvedValueOnce(newInjury);
+
+      await act(async () => {
+        await useMemberHubStore.getState().addInjury('mem1', { title: 'New Knee Strain' });
+      });
+
+      const state = useMemberHubStore.getState();
+      expect(state.injuries).toHaveLength(2);
+      expect(state.injuries[0]._id).toBe('inj2');
+      expect(state.injuries[0].title).toBe('New Knee Strain');
     });
   });
 });
