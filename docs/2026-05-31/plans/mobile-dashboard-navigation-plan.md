@@ -277,25 +277,37 @@ cross-app — `backend/` (new `users` + `gym` modules) and `mobile/` (drawer nav
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `validateProfile > returns a firstName error when firstName is empty`
-- [ ] `validatePassword > returns an error when newPassword has no uppercase letter`
-- [ ] `validatePassword > returns an error when confirmPassword does not match newPassword`
-- [ ] `validatePassword > returns no errors for "GoodPass1" matching confirm`
-- [ ] `SettingsScreen > renders 3 tabs (Profile, Security, Gym Info) when role is owner`
-- [ ] `SettingsScreen > renders exactly 2 tabs (Profile, Security) when role is member`
-- [ ] `ProfileTab > populates first/last name inputs from the loaded profile`
-- [ ] `ProfileTab > Save is disabled until a field changes`
+- [x] `validateProfile > returns a firstName error when firstName is empty`
+- [x] `validatePassword > returns an error when newPassword has no uppercase letter`
+- [x] `validatePassword > returns an error when confirmPassword does not match newPassword`
+- [x] `validatePassword > returns no errors for "GoodPass1" matching confirm`
+- [x] `SettingsScreen > renders 3 tabs (Profile, Security, Gym Info) when role is owner`
+- [x] `SettingsScreen > renders exactly 2 tabs (Profile, Security) when role is member`
+- [x] `ProfileTab > populates first/last name inputs from the loaded profile`
+- [x] `ProfileTab > Save is disabled until a field changes`
 
 *E2E (full flows in Stage 6; this stage adds the Settings golden spec):*
-- [ ] `Owner: open Settings → Profile tab → change First Name → tap Save Profile → settings-save-success is visible`
-- [ ] `Owner: Security tab → wrong current password → submit → an error message is visible`
+- [x] `Owner: open Settings → Profile tab → change First Name → tap Save Profile → settings-save-success is visible`
+- [x] `Owner: Security tab → wrong current password → submit → an error message is visible`
 
 **TDD sequence**:
 1. Write failing `validation/profile.spec.ts` + `SettingsScreen.spec.tsx` + `ProfileTab.spec.tsx` → Red
 2. Implement validation, API layer, store, Settings screen + tabs → Green
 3. Add `mobile/e2e/owner/settings.spec.ts` golden + error specs → passes
 
-**Status**: Not Started
+### Stage 5 Checkpoint
+- [x] `lib/validation/profile.ts` + `profile.spec.ts` — validateProfile + validatePassword
+- [x] `lib/api/profile.api.ts` — getProfile, updateProfile, uploadAvatar
+- [x] `lib/api/gym.api.ts` — getGymInfo, updateGymInfo, uploadLogo
+- [x] `stores/profile.store.ts` — fetchProfile, saveProfile, changePassword
+- [x] `screens/settings/tabs/ProfileTab.tsx` — role-specific fields, dirty detection, save success
+- [x] `screens/settings/tabs/SecurityTab.tsx` — password change with validation and error states
+- [x] `screens/settings/tabs/GymInfoTab.tsx` — owner gym info + logo upload
+- [x] `screens/settings/SettingsScreen.tsx` — back header + role-based tab bar
+- [x] `navigation/index.tsx` — SettingsPlaceholder replaced with real SettingsScreen
+- [x] `e2e/owner/settings.spec.ts` — golden path + error case Detox specs
+
+**Status**: Complete
 
 ---
 

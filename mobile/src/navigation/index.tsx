@@ -1,5 +1,4 @@
 import React from 'react';
-import { View, Text } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { useAuthStore } from '../stores/auth.store';
@@ -29,6 +28,7 @@ import {
 import { AppDrawerContent } from '../components/drawer/AppDrawerContent';
 import { DrawerHeader } from '../components/drawer/DrawerHeader';
 import { NAV_CONFIG } from './nav-config';
+import { SettingsScreen } from '../screens/settings/SettingsScreen';
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -49,14 +49,6 @@ const authScreenOptions = {
   headerShown: false,
   contentStyle: { backgroundColor: '#0a0a0a' },
 } as const;
-
-function SettingsPlaceholder() {
-  return (
-    <View className="flex-1 items-center justify-center bg-background">
-      <Text className="text-[18px] font-semibold text-foreground">Settings</Text>
-    </View>
-  );
-}
 
 const SCREEN_REGISTRY: Record<string, () => React.JSX.Element> = {
   Dashboard: DashboardScreen,
@@ -115,7 +107,7 @@ function AppNavigator() {
   return (
     <AppStack.Navigator screenOptions={{ headerShown: false }}>
       <AppStack.Screen name="Drawer" component={DrawerNavigator} />
-      <AppStack.Screen name="Settings" component={SettingsPlaceholder} />
+      <AppStack.Screen name="Settings" component={SettingsScreen} />
     </AppStack.Navigator>
   );
 }

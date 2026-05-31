@@ -24,7 +24,9 @@ jest.mock('../../stores/auth.store', () => ({
 
 jest.mock('../../lib/api/client', () => ({
   apiClient: {
+    get: jest.fn().mockResolvedValue({ data: {} }),
     post: jest.fn().mockResolvedValue({ data: {} }),
+    patch: jest.fn().mockResolvedValue({ data: {} }),
     defaults: { headers: { common: {} } },
   },
 }));
