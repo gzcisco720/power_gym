@@ -4,6 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
+import { AuthDevController } from './auth.dev.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshToken, RefreshTokenSchema } from './models/refresh-token.model';
@@ -33,7 +34,11 @@ import { EmailModule } from '../../common/email/email.module';
     ]),
     EmailModule,
   ],
-  controllers: [AuthController],
+  controllers: [
+    AuthController,
+    // Dev/test endpoints are excluded from the production binary entirely.
+    ...(process.env.NODE_ENV !== 'production' ? [AuthDevController] : []),
+  ],
   providers: [AuthService, JwtStrategy],
   exports: [AuthService, JwtModule],
 })

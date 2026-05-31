@@ -236,11 +236,23 @@ export class AuthService {
   }
 
   /** Dev/test only — never call in production. (Re)creates a test user with a known password. */
-  async seedTestUser(email: string, password: string, role: string): Promise<void> {
+  async seedTestUser(
+    email: string,
+    password: string,
+    role: string,
+  ): Promise<void> {
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
     await this.userModel.findOneAndUpdate(
       { email: email.toLowerCase() },
-      { $set: { firstName: 'Test', lastName: 'User', role, passwordHash, trainerId: null } },
+      {
+        $set: {
+          firstName: 'Test',
+          lastName: 'User',
+          role,
+          passwordHash,
+          trainerId: null,
+        },
+      },
       { upsert: true },
     );
   }

@@ -63,26 +63,4 @@ export class AuthController {
     await this.authService.resetPassword(dto.token, dto.newPassword);
     return { message: 'Password reset successfully.' };
   }
-
-  /** Dev/test only — disabled in production. */
-  @HttpCode(200)
-  @Post('dev/reset-token')
-  async devCreateResetToken(@Body() body: { email: string }) {
-    if (process.env.NODE_ENV === 'production') {
-      return { error: 'Not available in production' };
-    }
-    const token = await this.authService.createDevResetToken(body.email);
-    return { token };
-  }
-
-  /** Dev/test only — disabled in production. Recreates a test user with a known password. */
-  @HttpCode(200)
-  @Post('dev/seed-user')
-  async devSeedUser(@Body() body: { email: string; password: string; role?: string }) {
-    if (process.env.NODE_ENV === 'production') {
-      return { error: 'Not available in production' };
-    }
-    await this.authService.seedTestUser(body.email, body.password, body.role ?? 'member');
-    return { ok: true };
-  }
 }
