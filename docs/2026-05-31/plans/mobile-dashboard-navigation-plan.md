@@ -236,10 +236,10 @@ cross-app — `backend/` (new `users` + `gym` modules) and `mobile/` (drawer nav
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `placeholders > Dashboard screen > renders its page title and keeps testID "home-screen" for biometrics E2E compatibility`
-- [ ] `placeholders > Equipment screen > renders a header and the "Equipment" title`
-- [ ] `placeholders > Journey screen (member) > renders the "Journey" title`
-- [ ] `placeholders > makePlaceholder > produces a component rendering the standard DrawerHeader (hamburger present)`
+- [x] `placeholders > Dashboard screen > renders its page title and keeps testID "home-screen" for biometrics E2E compatibility`
+- [x] `placeholders > Equipment screen > renders a header and the "Equipment" title`
+- [x] `placeholders > Journey screen (member) > renders the "Journey" title`
+- [x] `placeholders > makePlaceholder > produces a component rendering the standard DrawerHeader (hamburger present)`
 
 *E2E (covered within Stage 6 flows; this stage asserts via the Stage 3 spec extension):*
 - [ ] `Owner: navigate drawer-item-Services → screen-Services title "Services" is visible`
@@ -250,7 +250,14 @@ cross-app — `backend/` (new `users` + `gym` modules) and `mobile/` (drawer nav
 2. Implement `PlaceholderScreen` + factory, migrate biometrics prompt into Dashboard, wire registry → Green
 3. Extend Detox specs to assert two placeholder titles render → passes
 
-**Status**: Not Started
+### Stage 4 Checkpoint
+- [x] `placeholders/PlaceholderScreen.tsx` — shared component with DrawerHeader + title
+- [x] `placeholders/index.ts` — `makePlaceholder` factory + all 18 named exports + `DashboardScreen` with biometrics
+- [x] `screens/__tests__/placeholders.spec.tsx` — 4 unit tests passing
+- [x] `navigation/index.tsx` — updated to import and register all screens via `SCREEN_REGISTRY`
+- [x] `HomeScreen.tsx` — removed (biometrics logic migrated into `DashboardScreen`)
+
+**Status**: Complete
 
 ---
 

@@ -6,7 +6,26 @@ import { useAuthStore } from '../stores/auth.store';
 import { LoginScreen } from '../screens/LoginScreen';
 import { ForgotPasswordScreen } from '../screens/ForgotPasswordScreen';
 import { ResetPasswordScreen } from '../screens/ResetPasswordScreen';
-import { HomeScreen } from '../screens/HomeScreen';
+import {
+  DashboardScreen,
+  TrainersScreen,
+  MembersScreen,
+  InvitesScreen,
+  CalendarScreen,
+  EquipmentScreen,
+  ServicesScreen,
+  BillingScreen,
+  TrainingTemplatesScreen,
+  NutritionTemplatesScreen,
+  MyTrainingScreen,
+  MyNutritionScreen,
+  MyBodyTestsScreen,
+  MyScheduleScreen,
+  MyHealthScreen,
+  BodyTestsScreen,
+  CheckInScreen,
+  JourneyScreen,
+} from '../screens/placeholders';
 import { AppDrawerContent } from '../components/drawer/AppDrawerContent';
 import { DrawerHeader } from '../components/drawer/DrawerHeader';
 import { NAV_CONFIG } from './nav-config';
@@ -39,12 +58,32 @@ function SettingsPlaceholder() {
   );
 }
 
+const SCREEN_REGISTRY: Record<string, () => React.JSX.Element> = {
+  Dashboard: DashboardScreen,
+  Trainers: TrainersScreen,
+  Members: MembersScreen,
+  Invites: InvitesScreen,
+  Calendar: CalendarScreen,
+  Equipment: EquipmentScreen,
+  Services: ServicesScreen,
+  Billing: BillingScreen,
+  TrainingTemplates: TrainingTemplatesScreen,
+  NutritionTemplates: NutritionTemplatesScreen,
+  MyTraining: MyTrainingScreen,
+  MyNutrition: MyNutritionScreen,
+  MyBodyTests: MyBodyTestsScreen,
+  MySchedule: MyScheduleScreen,
+  MyHealth: MyHealthScreen,
+  BodyTests: BodyTestsScreen,
+  CheckIn: CheckInScreen,
+  Journey: JourneyScreen,
+};
+
 function DrawerNavigator() {
   const user = useAuthStore((s) => s.user);
   const role = user?.role ?? 'member';
   const navGroups = NAV_CONFIG[role];
 
-  // Collect all screens for this role in order, with Dashboard first
   const allItems = navGroups.flatMap((g) => g.items);
 
   return (
@@ -57,37 +96,19 @@ function DrawerNavigator() {
         drawerStyle: { width: '78%', backgroundColor: '#0a0a0a' },
       })}
     >
-      {/* Always include Dashboard first to satisfy initialRouteName */}
-      <Drawer.Screen name="Dashboard" component={HomeScreen} />
-      {allItems
-        .filter((item) => item.screen !== 'Dashboard')
-        .map((item) => (
+      {allItems.map((item) => {
+        const ScreenComponent = SCREEN_REGISTRY[item.screen];
+        if (!ScreenComponent) return null;
+        return (
           <Drawer.Screen
             key={item.screen}
             name={item.screen}
-            component={ScreenPlaceholder(item.label)}
+            component={ScreenComponent}
           />
-        ))}
+        );
+      })}
     </Drawer.Navigator>
   );
-}
-
-// Memoized map so each call with the same label returns the same component reference
-const placeholderCache = new Map<string, () => React.JSX.Element>();
-
-function ScreenPlaceholder(label: string): () => React.JSX.Element {
-  if (!placeholderCache.has(label)) {
-    const Component = function PlaceholderScreen() {
-      return (
-        <View className="flex-1 items-center justify-center bg-background">
-          <Text className="text-[18px] font-semibold text-foreground">{label}</Text>
-        </View>
-      );
-    };
-    Component.displayName = `PlaceholderScreen(${label})`;
-    placeholderCache.set(label, Component);
-  }
-  return placeholderCache.get(label)!;
 }
 
 function AppNavigator() {

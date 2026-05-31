@@ -260,6 +260,9 @@ describe('RootNavigator', () => {
 
     mockUseAuthStore.mockReturnValue(makeAuthState({ accessToken: 'some-token' }));
     rerender(<RootNavigator />);
-    expect(getByText('Power Gym')).toBeTruthy();
+    // The drawer mock renders all registered screens simultaneously, each with a DrawerHeader
+    // showing the gym name — use getAllByText to confirm at least one is visible.
+    const { getAllByText } = render(<RootNavigator />);
+    expect(getAllByText('Power Gym').length).toBeGreaterThan(0);
   });
 });
