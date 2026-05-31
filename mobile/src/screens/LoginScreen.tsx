@@ -7,8 +7,7 @@ import { colors } from '../lib/theme';
 
 export function LoginScreen() {
   const navigation = useNavigation<{ navigate: (screen: string) => void }>();
-  const { login, loginWithBiometrics, biometricsEnabled, setBiometricsEnabled } =
-    useAuthStore();
+  const { login, loginWithBiometrics, biometricsEnabled } = useAuthStore();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

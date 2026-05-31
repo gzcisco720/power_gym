@@ -11,6 +11,12 @@ import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 jest.mock('expo-secure-store');
 jest.mock('expo-local-authentication');
 jest.mock('react-native-svg');
+jest.mock('../../stores/branding.store', () => ({
+  useBrandingStore: (selector?: (s: { gymName: string | null; logoUrl: string | null; fetchBranding: () => void }) => unknown) => {
+    const state = { gymName: 'Power Gym', logoUrl: null, fetchBranding: jest.fn() };
+    return selector ? selector(state) : state;
+  },
+}));
 
 jest.mock('../../stores/auth.store', () => ({
   useAuthStore: jest.fn(),
@@ -47,6 +53,20 @@ jest.mock('@react-navigation/native-stack', () => {
   const mockNavigatorObj = { Navigator: mockNavigator, Screen: mockScreen };
   return {
     createNativeStackNavigator: () => mockNavigatorObj,
+  };
+});
+
+jest.mock('@react-navigation/drawer', () => {
+  const mockReact = require('react');
+  const mockScreen = ({ component: MockComponent }: { component: () => null }) =>
+    mockReact.createElement(MockComponent);
+  function mockNavigator({ children }: { children: unknown }) {
+    return mockReact.createElement(mockReact.Fragment, null, children);
+  }
+  const mockNavigatorObj = { Navigator: mockNavigator, Screen: mockScreen };
+  return {
+    createDrawerNavigator: () => mockNavigatorObj,
+    DrawerContentScrollView: ({ children }: { children: unknown }) => children,
   };
 });
 

@@ -203,12 +203,12 @@ cross-app — `backend/` (new `users` + `gym` modules) and `mobile/` (drawer nav
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `nav-config > NAV_CONFIG.owner > contains a GYM group whose items include Equipment, Services, and Billing`
-- [ ] `nav-config > NAV_CONFIG.member > does not contain a Trainers or Equipment item`
-- [ ] `nav-config > NAV_CONFIG.trainer > Dashboard is the first item under the OVERVIEW group`
-- [ ] `AppDrawerContent > renders the Owner nav groups when auth role is owner (e.g. a "TEMPLATES" group label is visible)`
-- [ ] `AppDrawerContent > renders gym name from the branding store in the branding header`
-- [ ] `AppDrawerContent > tapping the user footer calls navigation.navigate with "Settings"`
+- [x] `nav-config > NAV_CONFIG.owner > contains a GYM group whose items include Equipment, Services, and Billing`
+- [x] `nav-config > NAV_CONFIG.member > does not contain a Trainers or Equipment item`
+- [x] `nav-config > NAV_CONFIG.trainer > Dashboard is the first item under the OVERVIEW group`
+- [x] `AppDrawerContent > renders the Owner nav groups when auth role is owner (e.g. a "TEMPLATES" group label is visible)`
+- [x] `AppDrawerContent > renders gym name from the branding store in the branding header`
+- [x] `AppDrawerContent > tapping the user footer calls navigation.navigate with "Settings"`
 
 *E2E (deferred full flow to Stage 6 — this stage adds one focused spec):*
 - [ ] `Owner: launch app logged in → drawer-hamburger is visible in the header → tap it → drawer-user-footer becomes visible`
@@ -219,7 +219,7 @@ cross-app — `backend/` (new `users` + `gym` modules) and `mobile/` (drawer nav
 2. Implement config + drawer components + navigator wiring → Green
 3. Add the focused Detox spec (`mobile/e2e/owner/dashboard-navigation.spec.ts`, golden subset) → passes on simulator
 
-**Status**: Not Started
+**Status**: Complete
 
 ---
 
