@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { Transporter } from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 import { IEmailService } from './email.service';
 
 export const NODEMAILER_TRANSPORTER = 'NODEMAILER_TRANSPORTER';

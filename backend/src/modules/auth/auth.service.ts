@@ -18,14 +18,15 @@ import {
   PasswordResetToken,
   PasswordResetTokenDocument,
 } from '../../common/models/password-reset-token.model';
-import { EMAIL_SERVICE, IEmailService } from '../../common/email/email.service';
+import { EMAIL_SERVICE } from '../../common/email/email.service';
+import type { IEmailService } from '../../common/email/email.service';
 
 const REFRESH_TOKEN_BYTES = 40;
 const REFRESH_TOKEN_DAYS = 30;
 const BCRYPT_ROUNDS = 10;
 const RESET_TOKEN_HOURS = 1;
 
-interface LoginResult {
+export interface LoginResult {
   accessToken: string;
   refreshToken: string;
   user: {
@@ -37,7 +38,7 @@ interface LoginResult {
   };
 }
 
-interface RefreshResult {
+export interface RefreshResult {
   accessToken: string;
   refreshToken: string;
 }

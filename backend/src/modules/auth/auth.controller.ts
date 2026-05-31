@@ -6,6 +6,7 @@ import {
   Request,
   HttpCode,
 } from '@nestjs/common';
+import type { Request as ExpressRequest } from 'express';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -15,9 +16,8 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { JwtUser } from './strategies/jwt.strategy';
 
-interface RequestWithUser extends Request {
+interface RequestWithUser extends ExpressRequest {
   user: JwtUser;
-  body: Record<string, string>;
 }
 
 @Controller('auth')
