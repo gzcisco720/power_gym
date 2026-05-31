@@ -17,3 +17,6 @@ coverage/
 # debug
 npm-debug.log*
 pnpm-debug.log*
+
+# uploaded files (generated at runtime / test)
+public/uploads/

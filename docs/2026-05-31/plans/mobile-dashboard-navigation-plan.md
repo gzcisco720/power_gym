@@ -168,23 +168,23 @@ cross-app — `backend/` (new `users` + `gym` modules) and `mobile/` (drawer nav
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `GymService > getBranding > returns owner gymInfo name and logoUrl as gymName/logoUrl`
-- [ ] `GymService > getBranding > returns { gymName: null, logoUrl: null } when no owner exists`
-- [ ] `GymService > updateInfo > upserts provided gymInfo fields onto the owner UserProfile and returns them`
-- [ ] `GymService > setLogo > with kind "login" sets loginLogoUrl and leaves logoUrl unchanged`
+- [x] `GymService > getBranding > returns owner gymInfo name and logoUrl as gymName/logoUrl`
+- [x] `GymService > getBranding > returns { gymName: null, logoUrl: null } when no owner exists`
+- [x] `GymService > updateInfo > upserts provided gymInfo fields onto the owner UserProfile and returns them`
+- [x] `GymService > setLogo > with kind "login" sets loginLogoUrl and leaves logoUrl unchanged`
 
 *Integration tests (`backend/test/gym.e2e-spec.ts`):*
-- [ ] `GET /gym/branding` with a member token → 200 and body has `gymName` + `logoUrl` keys
-- [ ] `GET /gym/info` with a member token → 403 (role guard)
-- [ ] `PATCH /gym/info` with an owner token `{ name: "Iron Gym", phone: "555" }` → 200, then `GET /gym/branding` returns `gymName: "Iron Gym"`
-- [ ] `POST /gym/logo` with an owner token + PNG buffer + `kind=sidebar` → 200 and `logoUrl` matches `/^/uploads/`
+- [x] `GET /gym/branding` with a member token → 200 and body has `gymName` + `logoUrl` keys
+- [x] `GET /gym/info` with a member token → 403 (role guard)
+- [x] `PATCH /gym/info` with an owner token `{ name: "Iron Gym", phone: "555" }` → 200, then `GET /gym/branding` returns `gymName: "Iron Gym"`
+- [x] `POST /gym/logo` with an owner token + PNG buffer + `kind=sidebar` → 200 and `logoUrl` matches `/^/uploads/`
 
 **TDD sequence**:
 1. Write failing `gym.service.spec.ts` → Red
 2. Implement service + controller + module → Green
 3. Write `gym.e2e-spec.ts` integration tests → passes
 
-**Status**: Not Started
+**Status**: Complete
 
 ---
 
