@@ -20,7 +20,7 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 describe('Owner: Settings screen', () => {
   beforeAll(async () => {
-    await fetch(`${API_URL}/auth/dev/seed-user`, {
+    await fetch(`${API_URL}/auth/dev/seed-user-role`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: OWNER_EMAIL, password: OWNER_PASSWORD, role: 'owner' }),
