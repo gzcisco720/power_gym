@@ -25,7 +25,7 @@ export function BiometricsPrompt({
   }
 
   return (
-    <View style={StyleSheet.absoluteFillObject} className="z-50 items-center justify-center bg-black/60 px-6">
+    <View style={StyleSheet.absoluteFill} className="z-50 items-center justify-center bg-black/60 px-6">
       <View className="w-full rounded-2xl bg-card px-6 pb-6 pt-6">
         <View className="mb-4 items-center">
           <View className="mb-4 h-16 w-16 items-center justify-center rounded-2xl bg-muted">
