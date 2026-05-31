@@ -10,4 +10,7 @@ module.exports = {
   testEnvironment: 'detox/runners/jest/testEnvironment',
   verbose: true,
   testRunner: 'jest-circus/runner',
+  transform: {
+    '^.+\\.[jt]sx?$': ['babel-jest', { configFile: './e2e/babel.config.js' }],
+  },
 };

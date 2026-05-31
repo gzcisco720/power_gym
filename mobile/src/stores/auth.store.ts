@@ -50,6 +50,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { accessToken, refreshToken, user } = response.data;
 
     await ExpoSecureStore.setItemAsync('refresh_token', refreshToken);
+    await ExpoSecureStore.setItemAsync('user_id', user.id);
 
     set({ accessToken, user });
   },
@@ -74,13 +75,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     try {
-      // Get userId from in-memory access token if available, otherwise skip userId
-      // The server will accept a refresh even without userId when the token is valid
+      // Get userId: prefer in-memory access token, fall back to SecureStore.
       const currentAccessToken = get().accessToken;
       let userId: string | undefined;
       if (currentAccessToken) {
-        const payload = jwtDecode<AccessTokenPayload>(currentAccessToken);
-        userId = payload.sub;
+        userId = jwtDecode<AccessTokenPayload>(currentAccessToken).sub;
+      } else {
+        userId = (await ExpoSecureStore.getItemAsync('user_id')) ?? undefined;
       }
 
       const response = await apiClient.post<{
@@ -122,6 +123,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     await ExpoSecureStore.deleteItemAsync('refresh_token');
+    await ExpoSecureStore.deleteItemAsync('user_id');
     set({ accessToken: null, user: null });
   },
 
@@ -133,19 +135,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   async hydrate(): Promise<void> {
     const biometricsValue = await ExpoSecureStore.getItemAsync('biometrics_enabled');
     const biometricsEnabled = biometricsValue === 'true';
-
-    if (!biometricsEnabled) {
-      set({ biometricsEnabled: false });
-      return;
-    }
-
-    set({ biometricsEnabled: true });
-
-    const result = await LocalAuthentication.authenticateAsync();
-    if (!result.success) {
-      return;
-    }
-
-    await get().refresh();
+    // Only read the stored flag — do NOT call authenticateAsync() here.
+    // Biometric auth is user-triggered: the user taps the Face ID button on
+    // LoginScreen, which calls loginWithBiometrics(). Auto-prompting on startup
+    // blocks Detox's waitForActive and creates a poor UX on cold launch.
+    set({ biometricsEnabled });
   },
 }));

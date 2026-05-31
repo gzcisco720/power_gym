@@ -21,7 +21,24 @@ Read only the specified Stage from the plan file. Extract every acceptance crite
 
 **2. Run precondition checks first**
 
-Before verifying any criterion, run this check. A failure here is an immediate FAIL — do not proceed to criterion verification.
+Before verifying any criterion, run these checks. A failure here is an immediate FAIL — do not proceed to criterion verification.
+
+**Build check (mandatory for every Stage, every application):**
+
+Run the production build for the affected application before touching any Sprint Contract criterion. A stage that breaks the build is an automatic FAIL regardless of test results — tests can pass while the build is broken.
+
+```bash
+# backend/
+cd backend && pnpm build          # tsc compilation — catches type errors Jest skips
+
+# web/
+cd web && pnpm build              # Next.js production build
+
+# mobile/
+cd mobile && npx tsc --noEmit     # type-check (no native build needed for this gate)
+```
+
+**Why this is non-negotiable:** Jest runs with `isolatedModules: true` (ts-jest default), which transpiles files individually and skips cross-file type errors — TS1272, TS2430, TS4053 and similar errors pass Jest silently but fail `tsc`. ESLint does not run the TypeScript compiler. The only gate that catches compilation errors is `pnpm build` / `tsc --noEmit`.
 
 *Inventory check (migration/port work only):*
 If the Sprint Contract lists a set of pages, routes, or endpoints, verify each one has a real implementation:

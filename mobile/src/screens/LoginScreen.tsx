@@ -3,7 +3,6 @@ import { View, Text, TextInput, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../stores/auth.store';
 import { FaceIdIcon } from '../components/FaceIdIcon';
-import { BiometricsPrompt } from '../components/BiometricsPrompt';
 import { colors } from '../lib/theme';
 
 export function LoginScreen() {
@@ -15,14 +14,12 @@ export function LoginScreen() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showBiometricsPrompt, setShowBiometricsPrompt] = useState(false);
 
   async function handleSignIn() {
     setError('');
     setIsLoading(true);
     try {
       await login(email, password);
-      setShowBiometricsPrompt(true);
     } catch (err) {
       const axiosError = err as { response?: { status?: number } };
       if (axiosError?.response?.status === 401) {
@@ -85,6 +82,8 @@ export function LoginScreen() {
           placeholder="••••••••"
           placeholderTextColor={colors.placeholderText}
           secureTextEntry
+          textContentType="none"
+          autoComplete="off"
           accessibilityLabel="Password"
           className="h-12 rounded-xl border border-border bg-input px-4 text-[14px] text-foreground"
         />
@@ -138,11 +137,6 @@ export function LoginScreen() {
         </>
       ) : null}
 
-      <BiometricsPrompt
-        visible={showBiometricsPrompt}
-        onDismiss={() => setShowBiometricsPrompt(false)}
-        setBiometricsEnabled={setBiometricsEnabled}
-      />
     </View>
   );
 }

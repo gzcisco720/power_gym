@@ -234,4 +234,33 @@ export class AuthService {
 
     await this.refreshTokenModel.deleteMany({ userId: matchedDoc.userId });
   }
+
+  /** Dev/test only — never call in production. (Re)creates a test user with a known password. */
+  async seedTestUser(email: string, password: string, role: string): Promise<void> {
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    await this.userModel.findOneAndUpdate(
+      { email: email.toLowerCase() },
+      { $set: { firstName: 'Test', lastName: 'User', role, passwordHash, trainerId: null } },
+      { upsert: true },
+    );
+  }
+
+  /** Dev/test only — never call in production. Creates and returns a raw reset token. */
+  async createDevResetToken(email: string): Promise<string> {
+    const user = await this.userModel.findOne({ email: email.toLowerCase() });
+    if (!user) throw new BadRequestException('User not found');
+
+    const rawToken = randomUUID();
+    const tokenHash = await bcrypt.hash(rawToken, BCRYPT_ROUNDS);
+    const expiresAt = new Date(Date.now() + RESET_TOKEN_HOURS * 60 * 60 * 1000);
+
+    await this.passwordResetTokenModel.create({
+      userId: user._id,
+      tokenHash,
+      expiresAt,
+      usedAt: null,
+    });
+
+    return rawToken;
+  }
 }

@@ -48,7 +48,24 @@ After completing each unit, update the Stage status in the plan file:
 - [ ] /remaining-unit
 ```
 
-**4. Commit**
+**4. Verify build before committing**
+
+Before committing, run the production build for the affected application. A commit that breaks the build violates `quality.md` — fix before committing.
+
+```bash
+# backend/ — catches type errors that Jest (isolatedModules: true) silently ignores
+cd backend && pnpm build
+
+# web/
+cd web && pnpm build
+
+# mobile/ — type-check only, no native build required
+cd mobile && npx tsc --noEmit
+```
+
+If the build fails, fix all errors before proceeding. Never commit a broken build.
+
+**5. Commit**
 
 Stage complete → commit all changes using **Conventional Commits** format:
 
