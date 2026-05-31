@@ -96,7 +96,7 @@ export const NAV_CONFIG: Record<UserRole, NavGroup[]> = {
       items: [
         { key: 'MyTraining', label: 'My Training', screen: 'MyTraining' },
         { key: 'MySchedule', label: 'My Schedule', screen: 'MySchedule' },
-        { key: 'Billing', label: 'Billing', screen: 'Billing' },
+        { key: 'Billing', label: 'My Billing', screen: 'Billing' },
       ],
     },
     {
