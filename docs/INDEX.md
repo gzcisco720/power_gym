@@ -6,6 +6,7 @@ Sprint Contract plans only. One row per active plan.
 
 | Feature | Plan File | Status |
 |---|---|---|
+| Mobile Dashboard & Navigation | [2026-05-31/plans/mobile-dashboard-navigation-plan.md](2026-05-31/plans/mobile-dashboard-navigation-plan.md) | In Progress |
 
 ## Management Files
 

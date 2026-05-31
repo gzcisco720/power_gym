@@ -5,7 +5,21 @@ import {
   ForbiddenException,
   HttpCode,
 } from '@nestjs/common';
+import { IsIn, IsNotEmpty, IsString } from 'class-validator';
 import { AuthService } from './auth.service';
+
+class SeedUserRoleDto {
+  @IsString()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @IsIn(['owner', 'trainer', 'member'])
+  role: 'owner' | 'trainer' | 'member';
+}
 
 /**
  * Dev/test-only routes for E2E test setup.
@@ -34,6 +48,16 @@ export class AuthDevController {
     }
     // role is never accepted from the request body — always seeds as 'member'
     await this.authService.seedTestUser(body.email, body.password, 'member');
+    return { ok: true };
+  }
+
+  @HttpCode(200)
+  @Post('seed-user-role')
+  async seedUserRole(@Body() dto: SeedUserRoleDto) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new ForbiddenException();
+    }
+    await this.authService.seedTestUser(dto.email, dto.password, dto.role);
     return { ok: true };
   }
 }
