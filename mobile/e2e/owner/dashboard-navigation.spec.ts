@@ -7,7 +7,6 @@
  *
  * 2. Start the backend:
  *    cd backend && pnpm start:dev
- *    Seed an owner: POST /auth/dev/seed-user with { email, password, role: 'owner' }
  *
  * 3. Run the E2E tests:
  *    cd mobile && pnpm detox:test --testPathPattern=dashboard-navigation
@@ -21,7 +20,8 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 describe('Owner: drawer navigation', () => {
   beforeAll(async () => {
-    await fetch(`${API_URL}/auth/dev/seed-user`, {
+    // seed-user-role is used so the account is seeded as 'owner', not 'member'
+    await fetch(`${API_URL}/auth/dev/seed-user-role`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: OWNER_EMAIL, password: OWNER_PASSWORD, role: 'owner' }),
@@ -59,6 +59,40 @@ describe('Owner: drawer navigation', () => {
     await waitFor(element(by.id('drawer-item-Equipment'))).toBeVisible().withTimeout(10000);
     await element(by.id('drawer-item-Equipment')).tap();
 
+    // The Equipment placeholder screen also has a DrawerHeader with the hamburger
     await waitFor(element(by.id('drawer-hamburger'))).toBeVisible().withTimeout(10000);
+  });
+
+  it('golden path: open Settings via user footer → edit Profile First Name → Save → success visible → drawer footer shows updated name', async () => {
+    await waitFor(element(by.id('drawer-hamburger'))).toBeVisible().withTimeout(15000);
+    await element(by.id('drawer-hamburger')).tap();
+
+    // Navigate to Settings via the user footer
+    await waitFor(element(by.id('drawer-user-footer'))).toBeVisible().withTimeout(10000);
+    await element(by.id('drawer-user-footer')).tap();
+
+    // Verify Settings screen opened
+    await waitFor(element(by.id('settings-back'))).toBeVisible().withTimeout(5000);
+
+    // Profile tab is the default — wait for form to load
+    await waitFor(element(by.id('settings-tab-profile'))).toBeVisible().withTimeout(5000);
+
+    // Clear first name and type new value — uses placeholder text to find the input
+    const firstNameInput = element(by.text('First name').and(by.type('RCTSinglelineTextInputView')));
+    await firstNameInput.clearText();
+    await firstNameInput.typeText('GoldenOwner');
+
+    // Tap Save Profile
+    await element(by.text('Save Profile')).tap();
+
+    // Success message must appear
+    await waitFor(element(by.id('settings-save-success'))).toBeVisible().withTimeout(10000);
+
+    // Go back to drawer and verify footer reflects the updated name
+    await element(by.id('settings-back')).tap();
+    await waitFor(element(by.id('drawer-hamburger'))).toBeVisible().withTimeout(5000);
+    await element(by.id('drawer-hamburger')).tap();
+    await waitFor(element(by.id('drawer-user-footer'))).toBeVisible().withTimeout(5000);
+    await detoxExpect(element(by.id('drawer-user-footer'))).toBeVisible();
   });
 });

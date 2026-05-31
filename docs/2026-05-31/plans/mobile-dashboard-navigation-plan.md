@@ -332,7 +332,13 @@ cross-app — `backend/` (new `users` + `gym` modules) and `mobile/` (drawer nav
 2. Run against simulator + `backend pnpm start:dev` → iterate testIDs/waits until Green
 3. Confirm the existing `mobile/e2e/auth.spec.ts` still passes (no regression on `home-screen`)
 
-**Status**: Not Started
+### Stage 6 Checkpoint
+- [x] `e2e/owner/dashboard-navigation.spec.ts` — fixed seed-user → seed-user-role; added golden path (Settings nav + profile save + drawer footer name verification)
+- [x] `e2e/owner/settings.spec.ts` — verified correct (seed-user-role, all testIDs match source)
+- [x] `e2e/member/drawer.spec.ts` — new spec: member login → drawer → OVERVIEW visible, Trainers/Equipment absent, Journey/MyTraining visible
+- [x] `e2e/auth.spec.ts` — verified: home-screen testID still matches DashboardScreen, no changes needed
+
+**Status**: Complete
 
 ---
 
