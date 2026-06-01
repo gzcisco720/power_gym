@@ -47,8 +47,8 @@ jest.mock('@react-navigation/native', () => ({
 
 // ── Imports ───────────────────────────────────────────────────────────────────
 
+import { DashboardScreen } from '../DashboardScreen';
 import {
-  DashboardScreen,
   EquipmentScreen,
   JourneyScreen,
   makePlaceholder,
@@ -58,10 +58,11 @@ import {
 
 describe('placeholders', () => {
   describe('Dashboard screen', () => {
-    it('renders its page title and keeps testID "home-screen" for biometrics E2E compatibility', () => {
-      const { getByTestId, getByText } = render(<DashboardScreen />);
+    it('renders testID "home-screen" and the role-based branch for biometrics E2E compatibility', () => {
+      const { getByTestId } = render(<DashboardScreen />);
       expect(getByTestId('home-screen')).toBeTruthy();
-      expect(getByText('Dashboard')).toBeTruthy();
+      // Auth mock sets role: 'member', so the member-dashboard branch is rendered
+      expect(getByTestId('member-dashboard')).toBeTruthy();
     });
   });
 

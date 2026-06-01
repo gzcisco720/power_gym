@@ -5,8 +5,8 @@ import { useAuthStore } from '../stores/auth.store';
 import { LoginScreen } from '../screens/LoginScreen';
 import { ForgotPasswordScreen } from '../screens/ForgotPasswordScreen';
 import { ResetPasswordScreen } from '../screens/ResetPasswordScreen';
+import { DashboardScreen } from '../screens/DashboardScreen';
 import {
-  DashboardScreen,
   TrainersScreen,
   MembersScreen,
   InvitesScreen,

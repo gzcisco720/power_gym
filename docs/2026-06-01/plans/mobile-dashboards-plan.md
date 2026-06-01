@@ -206,7 +206,22 @@ mobile/package.json                              ← add react-native-gifted-cha
 3. Implement `StatCard`, `TrainingHeatmap`, `DashboardSkeleton`, role-switch `DashboardScreen` (move biometrics logic from placeholder), update `navigation/index.tsx` import and remove old `DashboardScreen` from placeholders → Green.
 4. Run the existing auth Detox spec + add the role-render Detox checks → pass on simulator.
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 3 Checkpoint
+- [x] pnpm add react-native-gifted-charts expo-linear-gradient
+- [x] mobile/src/components/dashboard/StatCard.tsx
+- [x] mobile/src/components/dashboard/TrainingHeatmap.tsx
+- [x] mobile/src/components/dashboard/DashboardSkeleton.tsx
+- [x] mobile/src/screens/dashboard/OwnerDashboard.tsx (skeleton stub)
+- [x] mobile/src/screens/dashboard/TrainerDashboard.tsx (skeleton stub)
+- [x] mobile/src/screens/dashboard/MemberDashboard.tsx (skeleton stub)
+- [x] mobile/src/screens/DashboardScreen.tsx (role switch + biometrics prompt)
+- [x] mobile/src/navigation/index.tsx updated to import from new path
+- [x] mobile/src/screens/placeholders/index.ts DashboardScreen removed
+- [x] mobile/src/components/dashboard/__tests__/StatCard.test.tsx (7 tests)
+- [x] mobile/src/components/dashboard/__tests__/TrainingHeatmap.test.tsx (4 tests)
+- [x] mobile/src/screens/__tests__/DashboardScreen.test.tsx (5 tests)
 
 ---
 

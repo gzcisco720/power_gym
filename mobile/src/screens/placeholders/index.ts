@@ -1,9 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text } from 'react-native';
-import * as LocalAuthentication from 'expo-local-authentication';
 import { Screen } from '../../components/Screen';
-import { BiometricsPrompt } from '../../components/BiometricsPrompt';
-import { useAuthStore } from '../../stores/auth.store';
 
 /**
  * Factory that creates a named placeholder screen component.
@@ -33,45 +30,6 @@ export function makePlaceholder(title: string, testID: string): () => React.JSX.
     cache.set(testID, Component);
   }
   return cache.get(testID)!;
-}
-
-/**
- * Dashboard — hosts the biometrics enrollment prompt.
- * Uses testID="home-screen" to keep the existing E2E auth spec passing.
- */
-export function DashboardScreen(): React.JSX.Element {
-  const { biometricsEnabled, setBiometricsEnabled } = useAuthStore();
-  const [showPrompt, setShowPrompt] = useState(false);
-
-  useEffect(() => {
-    if (biometricsEnabled) return;
-    LocalAuthentication.hasHardwareAsync().then((hasHardware) => {
-      if (hasHardware) {
-        LocalAuthentication.isEnrolledAsync().then((isEnrolled) => {
-          if (isEnrolled) setShowPrompt(true);
-        });
-      }
-    });
-  }, [biometricsEnabled]);
-
-  return React.createElement(
-    Screen,
-    { testID: 'home-screen' },
-    React.createElement(
-      View,
-      { className: 'flex-1 px-4 py-6' },
-      React.createElement(
-        Text,
-        { className: 'text-[18px] font-semibold tracking-[-0.3px] text-foreground' },
-        'Dashboard',
-      ),
-    ),
-    React.createElement(BiometricsPrompt, {
-      visible: showPrompt,
-      onDismiss: () => setShowPrompt(false),
-      setBiometricsEnabled,
-    }),
-  );
 }
 
 // Owner screens
