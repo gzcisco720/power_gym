@@ -38,6 +38,21 @@ import {
   InviteTokenDocument,
 } from '../src/common/models/invite-token.model';
 import {
+  ScheduledSession,
+  ScheduledSessionSchema,
+  ScheduledSessionDocument,
+} from '../src/common/models/scheduled-session.model';
+import {
+  PersonalBest,
+  PersonalBestSchema,
+  PersonalBestDocument,
+} from '../src/common/models/personal-best.model';
+import {
+  MemberPlan,
+  MemberPlanSchema,
+  MemberPlanDocument,
+} from '../src/common/models/member-plan.model';
+import {
   IEmailService,
   EMAIL_SERVICE,
 } from '../src/common/email/email.service';
@@ -45,6 +60,7 @@ import {
 const OWNER_EMAIL = 'dash-e2e-owner@example.com';
 const TRAINER_EMAIL = 'dash-e2e-trainer@example.com';
 const MEMBER_EMAIL = 'dash-e2e-member@example.com';
+const MEMBER2_EMAIL = 'dash-e2e-member2@example.com';
 const TEST_PASSWORD = 'Password1';
 
 async function buildApp(
@@ -60,6 +76,9 @@ async function buildApp(
         { name: WorkoutSession.name, schema: WorkoutSessionSchema },
         { name: Equipment.name, schema: EquipmentSchema },
         { name: InviteToken.name, schema: InviteTokenSchema },
+        { name: ScheduledSession.name, schema: ScheduledSessionSchema },
+        { name: PersonalBest.name, schema: PersonalBestSchema },
+        { name: MemberPlan.name, schema: MemberPlanSchema },
       ]),
       ServeStaticModule.forRoot({
         rootPath: join(process.cwd(), 'public'),
@@ -95,11 +114,15 @@ describe('Dashboard (e2e)', () => {
   let sessionModel: Model<WorkoutSessionDocument>;
   let equipmentModel: Model<EquipmentDocument>;
   let inviteModel: Model<InviteTokenDocument>;
+  let scheduledSessionModel: Model<ScheduledSessionDocument>;
+  let personalBestModel: Model<PersonalBestDocument>;
+  let memberPlanModel: Model<MemberPlanDocument>;
   let ownerToken: string;
   let trainerToken: string;
   let memberToken: string;
   let trainerId: Types.ObjectId;
   let memberId: Types.ObjectId;
+  let member2Id: Types.ObjectId;
 
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
@@ -117,6 +140,15 @@ describe('Dashboard (e2e)', () => {
     );
     inviteModel = module.get<Model<InviteTokenDocument>>(
       getModelToken(InviteToken.name),
+    );
+    scheduledSessionModel = module.get<Model<ScheduledSessionDocument>>(
+      getModelToken(ScheduledSession.name),
+    );
+    personalBestModel = module.get<Model<PersonalBestDocument>>(
+      getModelToken(PersonalBest.name),
+    );
+    memberPlanModel = module.get<Model<MemberPlanDocument>>(
+      getModelToken(MemberPlan.name),
     );
 
     const passwordHash = await bcrypt.hash(TEST_PASSWORD, 10);
@@ -153,7 +185,18 @@ describe('Dashboard (e2e)', () => {
       trainerId,
     });
 
-    // Seed a completed workout session for the member
+    member2Id = new Types.ObjectId();
+    await userModel.create({
+      _id: member2Id,
+      firstName: 'Idle',
+      lastName: 'Member',
+      email: MEMBER2_EMAIL,
+      passwordHash,
+      role: 'member',
+      trainerId,
+    });
+
+    // Seed a completed workout session for the member (today)
     const memberPlanId = new Types.ObjectId();
     await sessionModel.create({
       _id: new Types.ObjectId(),
@@ -166,6 +209,66 @@ describe('Dashboard (e2e)', () => {
       lastActivityAt: new Date(),
       autoSealed: false,
       sets: [],
+    });
+
+    // Member2 has NO recent session (idle)
+
+    // Seed a scheduled session today for member (scoped to this trainer)
+    const todayStart = new Date();
+    todayStart.setHours(9, 0, 0, 0);
+    await scheduledSessionModel.create({
+      _id: new Types.ObjectId(),
+      trainerId,
+      memberIds: [memberId],
+      date: todayStart,
+      startTime: '09:00',
+      endTime: '10:00',
+      status: 'scheduled',
+    });
+
+    // Seed a personal best for the member (Squat)
+    const exerciseId = new Types.ObjectId();
+    await personalBestModel.create({
+      _id: new Types.ObjectId(),
+      memberId,
+      exerciseId,
+      exerciseName: 'Squat',
+      bestWeight: 100,
+      bestReps: 5,
+      estimatedOneRM: 117,
+      achievedAt: new Date(),
+      sessionId: new Types.ObjectId(),
+    });
+
+    // Seed a member plan
+    await memberPlanModel.create({
+      _id: new Types.ObjectId(),
+      memberId,
+      trainerId,
+      templateId: new Types.ObjectId(),
+      name: 'Test Plan',
+      days: [
+        {
+          dayNumber: 1,
+          name: 'Push',
+          exercises: [
+            {
+              groupId: 'g1',
+              isSuperset: false,
+              exerciseId: exerciseId,
+              exerciseName: 'Bench Press',
+              imageUrl: null,
+              isBodyweight: false,
+              sets: 3,
+              repsMin: 8,
+              repsMax: 12,
+              restSeconds: 90,
+            },
+          ],
+        },
+      ],
+      isActive: true,
+      assignedAt: new Date(),
     });
 
     // Seed equipment
@@ -249,7 +352,7 @@ describe('Dashboard (e2e)', () => {
 
       // Verify values from seeded data
       expect(stats.trainerCount).toBe(1);
-      expect(stats.memberCount).toBe(1);
+      expect(stats.memberCount).toBe(2);
     });
 
     it('trainer token → 403', async () => {
@@ -268,6 +371,112 @@ describe('Dashboard (e2e)', () => {
 
     it('no token → 401', async () => {
       await request(app.getHttpServer()).get('/dashboard/owner').expect(401);
+    });
+  });
+
+  // ─── GET /dashboard/trainer ───────────────────────────────────────────────
+
+  describe('GET /dashboard/trainer', () => {
+    it('trainer token → 200, body contains required keys and todaysSessions scoped to this trainer', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/dashboard/trainer')
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(200);
+
+      const body = res.body as Record<string, unknown>;
+      expect(body).toHaveProperty('stats');
+      expect(body).toHaveProperty('todaysSessions');
+      expect(body).toHaveProperty('needsAttention');
+      expect(body).toHaveProperty('pendingCheckins');
+      expect(body).toHaveProperty('compliance');
+      expect(body).toHaveProperty('recentPRs');
+      expect(body).toHaveProperty('myTraining');
+      expect(body).toHaveProperty('thisWeek');
+
+      const stats = body.stats as Record<string, unknown>;
+      expect(stats).toHaveProperty('memberCount');
+      expect(stats).toHaveProperty('sessionsTodayCount');
+      expect(stats).toHaveProperty('checkinsLast7Days');
+      expect(stats).toHaveProperty('needsAttentionCount');
+
+      // We seeded 2 members for this trainer
+      expect(stats.memberCount).toBe(2);
+
+      // todaysSessions should only contain sessions for this trainer's members
+      const sessions = body.todaysSessions as Array<{ memberId: string }>;
+      expect(Array.isArray(sessions)).toBe(true);
+      sessions.forEach((s) => {
+        // Each session member must be one of this trainer's members
+        expect([memberId.toString(), member2Id.toString()]).toContain(
+          s.memberId,
+        );
+      });
+
+      // thisWeek should have 7 entries
+      const thisWeek = body.thisWeek as Array<unknown>;
+      expect(thisWeek).toHaveLength(7);
+    });
+
+    it('member token → 403', async () => {
+      await request(app.getHttpServer())
+        .get('/dashboard/trainer')
+        .set('Authorization', `Bearer ${memberToken}`)
+        .expect(403);
+    });
+
+    it('no token → 401', async () => {
+      await request(app.getHttpServer()).get('/dashboard/trainer').expect(401);
+    });
+  });
+
+  // ─── GET /dashboard/member ────────────────────────────────────────────────
+
+  describe('GET /dashboard/member', () => {
+    it('member token → 200, trainingHeatmap.length === 90', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/dashboard/member')
+        .set('Authorization', `Bearer ${memberToken}`)
+        .expect(200);
+
+      const body = res.body as Record<string, unknown>;
+      expect(body).toHaveProperty('greeting');
+      expect(body).toHaveProperty('todaysPlan');
+      expect(body).toHaveProperty('stats');
+      expect(body).toHaveProperty('trainingHeatmap');
+      expect(body).toHaveProperty('bodyComposition');
+      expect(body).toHaveProperty('strengthProgress');
+      expect(body).toHaveProperty('nutritionToday');
+      expect(body).toHaveProperty('upcomingSessions');
+
+      const heatmap = body.trainingHeatmap as boolean[];
+      expect(heatmap).toHaveLength(90);
+      // Today (index 89) should be true because we seeded a session today
+      expect(heatmap[89]).toBe(true);
+    });
+
+    it('with ?exercise=Squat → 200 and strengthProgress.exercises includes Squat', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/dashboard/member?exercise=Squat')
+        .set('Authorization', `Bearer ${memberToken}`)
+        .expect(200);
+
+      const body = res.body as Record<string, unknown>;
+      const sp = body.strengthProgress as {
+        exercises: string[];
+        data: unknown[];
+      };
+      expect(sp.exercises).toContain('Squat');
+    });
+
+    it('no token → 401', async () => {
+      await request(app.getHttpServer()).get('/dashboard/member').expect(401);
+    });
+
+    it('trainer token → 403', async () => {
+      await request(app.getHttpServer())
+        .get('/dashboard/member')
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(403);
     });
   });
 });

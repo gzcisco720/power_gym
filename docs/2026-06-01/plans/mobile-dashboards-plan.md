@@ -165,7 +165,13 @@ mobile/package.json                              ← add react-native-gifted-cha
 2. Implement both services → Green.
 3. Extend `dashboard.e2e-spec.ts` with trainer + member cases (seed trainer with 2 members, one idle; seed sessions, body tests, PRs, nutrition plan) → Green.
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 2 Checkpoint
+- [x] TrainerDashboardService.getTrainerDashboard (unit tests)
+- [x] MemberDashboardService.getMemberDashboard (unit tests)
+- [x] DashboardController trainer + member endpoints wired
+- [x] dashboard.e2e-spec.ts extended with trainer + member integration cases
 
 ---
 
