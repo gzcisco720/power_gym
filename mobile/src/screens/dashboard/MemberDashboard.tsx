@@ -18,6 +18,17 @@ import {
 
 type DrawerNav = DrawerNavigationProp<Record<string, undefined>>;
 
+// Hex equivalents of NativeWind tokens — used only in chart library props which don't accept className
+const CHART_COLORS = {
+  emerald: '#10b981',
+  pink: '#ec4899',
+  primaryLight: '#818cf8',
+  axisLabelMuted: 'rgba(255,255,255,0.4)',
+} as const;
+
+// LinearGradient doesn't accept NativeWind classes — use token hex equivalents
+const GRADIENT_INDIGO = ['#1e1b4b', '#312e81'] as const;
+
 // ─── Greeting helpers ─────────────────────────────────────────────────────────
 
 function getTimeOfDay(hour: number): { period: string; emoji: string } {
@@ -40,7 +51,7 @@ function WorkoutHeroCard({
 
   return (
     <LinearGradient
-      colors={['#1e1b4b', '#312e81']}
+      colors={GRADIENT_INDIGO}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={{ borderRadius: 12, padding: 16 }}
@@ -48,7 +59,7 @@ function WorkoutHeroCard({
       <View testID="workout-hero-card">
       {/* Day type badge */}
       <View className="mb-2">
-        <Text className="text-[8px] font-semibold uppercase tracking-[1.5px] text-primary-light">
+        <Text className="text-[10px] font-semibold uppercase tracking-[1.5px] text-primary-light">
           {plan.dayType}
         </Text>
       </View>
@@ -72,12 +83,13 @@ function WorkoutHeroCard({
 
       {/* Metadata + Start button */}
       <View className="flex-row items-center justify-between">
-        <Text className="text-[11px] text-foreground/50">
+        <Text className="text-[11px] text-foreground/65">
           {plan.exerciseCount} exercises · {plan.setCount} sets · ~{plan.estimatedMinutes} min
         </Text>
         <Pressable
           onPress={onStart}
           accessibilityLabel="Start workout"
+          accessibilityRole="button"
           className="bg-primary rounded-lg px-3 py-1.5"
         >
           <Text className="text-[13px] font-semibold text-foreground">Start →</Text>
@@ -114,11 +126,11 @@ function BodyCompositionChart({ entries }: { entries: BodyCompositionEntry[] }) 
   const weightData = entries.map((e) => ({
     value: e.weight,
     label: e.date.slice(5),
-    dataPointColor: '#10b981',
+    dataPointColor: CHART_COLORS.emerald,
   }));
   const bodyFatData = entries.map((e) => ({
     value: e.bodyFat,
-    dataPointColor: '#ec4899',
+    dataPointColor: CHART_COLORS.pink,
   }));
 
   return (
@@ -126,13 +138,13 @@ function BodyCompositionChart({ entries }: { entries: BodyCompositionEntry[] }) 
       <LineChart
         data={weightData}
         data2={bodyFatData}
-        color1="#10b981"
-        color2="#ec4899"
-        dataPointsColor1="#10b981"
-        dataPointsColor2="#ec4899"
+        color1={CHART_COLORS.emerald}
+        color2={CHART_COLORS.pink}
+        dataPointsColor1={CHART_COLORS.emerald}
+        dataPointsColor2={CHART_COLORS.pink}
         hideRules
-        xAxisLabelTextStyle={{ color: 'rgba(255,255,255,0.4)', fontSize: 9 }}
-        yAxisTextStyle={{ color: 'rgba(255,255,255,0.4)', fontSize: 9 }}
+        xAxisLabelTextStyle={{ color: CHART_COLORS.axisLabelMuted, fontSize: 10 }}
+        yAxisTextStyle={{ color: CHART_COLORS.axisLabelMuted, fontSize: 10 }}
         height={100}
       />
       {/* Legend */}
@@ -166,7 +178,7 @@ function StrengthProgressChart({
   const lineData = progress.data.map((d) => ({
     value: d.estimatedOneRM,
     label: d.date.slice(5),
-    dataPointColor: '#818cf8',
+    dataPointColor: CHART_COLORS.primaryLight,
   }));
 
   return (
@@ -183,6 +195,7 @@ function StrengthProgressChart({
             }
           }}
           accessibilityLabel="Select exercise"
+          accessibilityRole="button"
           className="flex-row items-center bg-muted rounded-full px-3 py-1 gap-1"
         >
           <Text className="text-[12px] font-medium text-foreground">{current}</Text>
@@ -197,11 +210,11 @@ function StrengthProgressChart({
       ) : (
         <LineChart
           data={lineData}
-          color="#818cf8"
-          dataPointsColor="#818cf8"
+          color={CHART_COLORS.primaryLight}
+          dataPointsColor={CHART_COLORS.primaryLight}
           hideRules
-          xAxisLabelTextStyle={{ color: 'rgba(255,255,255,0.4)', fontSize: 9 }}
-          yAxisTextStyle={{ color: 'rgba(255,255,255,0.4)', fontSize: 9 }}
+          xAxisLabelTextStyle={{ color: CHART_COLORS.axisLabelMuted, fontSize: 10 }}
+          yAxisTextStyle={{ color: CHART_COLORS.axisLabelMuted, fontSize: 10 }}
           height={100}
         />
       )}
@@ -212,9 +225,9 @@ function StrengthProgressChart({
 // ─── Nutrition Today ──────────────────────────────────────────────────────────
 
 const MACRO_ROW_CLASSES = {
-  protein: { dot: 'bg-emerald-500', value: 'text-emerald-400' },
-  carbs: { dot: 'bg-amber-500', value: 'text-amber-400' },
-  fat: { dot: 'bg-pink-500', value: 'text-pink-400' },
+  protein: { dot: 'bg-emerald-500', value: 'text-emerald-300' },
+  carbs: { dot: 'bg-amber-500', value: 'text-amber-300' },
+  fat: { dot: 'bg-pink-500', value: 'text-pink-300' },
   calories: { dot: 'bg-foreground/40', value: 'text-foreground' },
 };
 
@@ -243,7 +256,7 @@ function NutritionTodayCard({ nutrition }: { nutrition: NutritionToday }) {
           <Text className="text-[11px] text-foreground/65">{label}</Text>
           <Text className={`text-[12px] font-bold tabular-nums ${MACRO_ROW_CLASSES[key].value}`}>
             {value}
-            <Text className="text-[9px] font-normal text-foreground/40"> {unit}</Text>
+            <Text className="text-[10px] font-normal text-foreground/40"> {unit}</Text>
           </Text>
         </View>
       ))}
@@ -254,7 +267,7 @@ function NutritionTodayCard({ nutrition }: { nutrition: NutritionToday }) {
           <Text className="text-[11px] text-foreground/65">Calories</Text>
           <Text className="text-[12px] font-bold tabular-nums text-foreground">
             {nutrition.calories}
-            <Text className="text-[9px] font-normal text-foreground/40"> kcal</Text>
+            <Text className="text-[10px] font-normal text-foreground/40"> kcal</Text>
           </Text>
         </View>
       </View>
@@ -280,7 +293,7 @@ function UpcomingSessionRow({ session }: { session: UpcomingSession }) {
     badgeClass = 'bg-primary/20 text-primary-light';
   } else if (session.daysFromNow === 1) {
     badgeText = 'Tomorrow';
-    badgeClass = 'bg-amber-500/20 text-amber-400';
+    badgeClass = 'bg-amber-500/20 text-amber-300';
   } else {
     badgeText = `${session.daysFromNow} days`;
     badgeClass = 'text-foreground/40';
@@ -290,7 +303,7 @@ function UpcomingSessionRow({ session }: { session: UpcomingSession }) {
     <View className="flex-row items-start justify-between py-1">
       <View className="flex-1">
         <Text className="text-[12px] font-semibold text-foreground">{timeStr}</Text>
-        <Text className="text-[10px] text-foreground/50">{dayStr} · {session.type}</Text>
+        <Text className="text-[10px] text-foreground/65">{dayStr} · {session.type}</Text>
       </View>
       <View className={`rounded-full px-2 py-0.5 ${badgeClass.split(' ')[0] ?? ''}`}>
         <Text className={`text-[9px] font-medium ${badgeClass.split(' ')[1] ?? 'text-foreground/40'}`}>
@@ -365,7 +378,7 @@ export function MemberDashboard() {
             <Text className="mt-0.5 text-[12px] text-foreground/65">{dateStr}</Text>
             {/* Streak */}
             <View className="flex-row items-baseline gap-1.5 mt-3">
-              <Text className="text-[28px] font-bold text-amber-400 tabular-nums">
+              <Text className="text-2xl font-bold text-amber-400 tabular-nums">
                 {greeting.streakDays}
               </Text>
               <Text className="text-[11px] text-foreground/65">day streak 🔥</Text>
@@ -437,7 +450,7 @@ export function MemberDashboard() {
             </Text>
             <HeatmapMonthLabels activeDays={trainingHeatmap} />
             <TrainingHeatmap variant="90-day" activeDays={trainingHeatmap} />
-            <Text className="text-[9px] text-foreground/40 mt-2">
+            <Text className="text-[10px] text-foreground/40 mt-2">
               {sessionsLast90} sessions · last 90 days
             </Text>
           </View>

@@ -50,7 +50,7 @@ const SESSION_BADGE_LABEL: Record<TrainerSession['status'], string> = {
 };
 
 const SESSION_BADGE_CLASSES: Record<TrainerSession['status'], string> = {
-  completed: 'text-emerald-400',
+  completed: 'text-emerald-300',
   active: 'text-primary-light',
   upcoming: 'text-foreground/30',
 };
@@ -63,12 +63,12 @@ function SessionRow({ session }: { session: TrainerSession }) {
         <View className="flex-row items-center gap-1.5">
           <Text className="text-[13px] font-semibold text-foreground">{session.memberName}</Text>
           {session.planName && (
-            <Text className="text-[11px] text-foreground/50" numberOfLines={1}>
+            <Text className="text-[11px] text-foreground/65" numberOfLines={1}>
               {session.planName}
             </Text>
           )}
         </View>
-        <Text className="text-[8px] text-foreground/40 mt-0.5">
+        <Text className="text-[10px] text-foreground/40 mt-0.5">
           {formatTimeRange(session.startTime, session.endTime)}
         </Text>
       </View>
@@ -92,7 +92,7 @@ function AttentionRow({ item }: { item: NeedsAttentionItem }) {
       <View className={`w-1.5 h-1.5 rounded-full mt-1 ${ALERT_DOT_CLASSES[item.alertType]}`} />
       <View className="flex-1">
         <Text className="text-[12px] font-medium text-foreground">{item.memberName}</Text>
-        <Text className="text-[8px] text-foreground/65 mt-0.5">{item.detail}</Text>
+        <Text className="text-[10px] text-foreground/65 mt-0.5">{item.detail}</Text>
       </View>
     </View>
   );
@@ -102,7 +102,7 @@ function ComplianceBar({ percentage }: { percentage: number }) {
   const colorClass =
     percentage >= 80 ? 'bg-emerald-500' : percentage >= 50 ? 'bg-amber-500' : 'bg-red-500';
   const textClass =
-    percentage >= 80 ? 'text-emerald-400' : percentage >= 50 ? 'text-amber-400' : 'text-red-400';
+    percentage >= 80 ? 'text-emerald-300' : percentage >= 50 ? 'text-amber-300' : 'text-red-300';
   return (
     <View className="flex-row items-center gap-1.5">
       <View className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
@@ -155,7 +155,7 @@ function WeekBar({ entry }: { entry: ThisWeekEntry }) {
         className={`w-full rounded-sm ${barClass}`}
         style={{ height: barHeight }}
       />
-      <Text className="text-[6px] text-foreground/65">{entry.day}</Text>
+      <Text className="text-[10px] text-foreground/65">{entry.day}</Text>
     </View>
   );
 }
@@ -255,6 +255,7 @@ export function TrainerDashboard() {
                   <Pressable
                     onPress={() => navigation.navigate('Calendar')}
                     accessibilityLabel="View in calendar"
+                    accessibilityRole="button"
                   >
                     <Text className="text-[12px] text-primary mt-1">View in calendar →</Text>
                   </Pressable>
@@ -271,13 +272,13 @@ export function TrainerDashboard() {
                 NEEDS ATTENTION
               </Text>
               {needsAttention.length === 0 ? (
-                <Text className="text-[12px] text-emerald-400 py-1">All members on track ✓</Text>
+                <Text className="text-[12px] text-emerald-300 py-1">All members on track ✓</Text>
               ) : (
                 needsAttention.slice(0, 3).map((item) => (
                   <AttentionRow key={item.memberId} item={item} />
                 ))
               )}
-              <Pressable accessibilityLabel="View all needs attention">
+              <Pressable accessibilityLabel="View all needs attention" accessibilityRole="button">
                 <Text className="text-[12px] text-primary mt-1">View all →</Text>
               </Pressable>
             </View>
@@ -288,7 +289,7 @@ export function TrainerDashboard() {
                 PENDING CHECK-INS
               </Text>
               {pendingCheckins.length === 0 ? (
-                <Text className="text-[12px] text-emerald-400 py-1">All caught up ✓</Text>
+                <Text className="text-[12px] text-emerald-300 py-1">All caught up ✓</Text>
               ) : (
                 pendingCheckins.slice(0, 3).map((ci) => (
                   <View key={ci.checkinId} className="flex-row items-center justify-between py-1">
@@ -296,11 +297,13 @@ export function TrainerDashboard() {
                       <Text className="text-[12px] font-medium text-foreground" numberOfLines={1}>
                         {ci.memberName}
                       </Text>
-                      <Text className="text-[8px] text-foreground/65">
+                      <Text className="text-[10px] text-foreground/65">
                         {formatRelativeTime(ci.createdAt)}
                       </Text>
                     </View>
-                    <Text className="text-[11px] text-primary ml-1">Review →</Text>
+                    <Pressable accessibilityLabel={`Review check-in for ${ci.memberName}`} accessibilityRole="button">
+                      <Text className="text-[11px] text-primary ml-1">Review →</Text>
+                    </Pressable>
                   </View>
                 ))
               )}
@@ -352,13 +355,13 @@ export function TrainerDashboard() {
                 <Text className="text-[11px] text-foreground/65">day streak 🔥</Text>
               </View>
               {myTraining.lastSessionDate && (
-                <Text className="text-[8px] text-foreground/40 mb-2">
+                <Text className="text-[10px] text-foreground/40 mb-2">
                   Last: {myTraining.lastSessionType ?? 'session'} &middot;{' '}
                   {formatRelativeTime(myTraining.lastSessionDate)}
                 </Text>
               )}
               <TrainingHeatmap variant="14-day" activeDays={myTraining.last14Days} />
-              <Text className="text-[8px] text-foreground/40 mt-2">
+              <Text className="text-[10px] text-foreground/40 mt-2">
                 {myTraining.sessionsThisMonth} sessions this month
               </Text>
             </View>
@@ -374,12 +377,13 @@ export function TrainerDashboard() {
                 ))}
               </View>
               <View className="flex-row items-center justify-between mt-2">
-                <Text className="text-[8px] text-foreground/40">
+                <Text className="text-[10px] text-foreground/40">
                   {sessionsThisWeek} sessions this week
                 </Text>
                 <Pressable
                   onPress={() => navigation.navigate('Calendar')}
                   accessibilityLabel="View calendar"
+                  accessibilityRole="button"
                 >
                   <Text className="text-[10px] text-primary">View calendar →</Text>
                 </Pressable>

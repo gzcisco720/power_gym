@@ -4,9 +4,9 @@ import { View, Text } from 'react-native';
 type DeltaVariant = 'success' | 'danger' | 'warning' | 'muted';
 
 const DELTA_CLASSES: Record<DeltaVariant, string> = {
-  success: 'text-emerald-400',
-  danger: 'text-red-400',
-  warning: 'text-amber-400',
+  success: 'text-emerald-300',
+  danger: 'text-red-300',
+  warning: 'text-amber-300',
   muted: 'text-foreground/40',
 };
 
@@ -27,13 +27,13 @@ export function StatCard({ label, value, delta, deltaVariant = 'muted', testID }
       <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
         {label}
       </Text>
-      <Text className="mt-1.5 text-[22px] font-bold leading-none text-foreground tabular-nums">
+      <Text className="mt-1.5 text-2xl font-bold leading-none text-foreground tabular-nums">
         {value}
       </Text>
       {delta !== undefined && (
         <Text
           testID={testID ? `${testID}-delta` : 'stat-card-delta'}
-          className={`mt-1 text-[9px] ${DELTA_CLASSES[deltaVariant]}`}
+          className={`mt-1 text-[10px] ${DELTA_CLASSES[deltaVariant]}`}
         >
           {delta}
         </Text>

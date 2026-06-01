@@ -34,7 +34,7 @@ describe('StatCard', () => {
       />,
     );
     const deltaEl = getByTestId('stat-card-delta');
-    expect(deltaEl.props.className).toContain('text-emerald-400');
+    expect(deltaEl.props.className).toContain('text-emerald-300');
   });
 
   it('applies danger delta color class when deltaVariant is danger', () => {
@@ -48,7 +48,7 @@ describe('StatCard', () => {
       />,
     );
     const deltaEl = getByTestId('stat-card-delta');
-    expect(deltaEl.props.className).toContain('text-red-400');
+    expect(deltaEl.props.className).toContain('text-red-300');
   });
 
   it('applies muted delta color class when deltaVariant is muted', () => {
@@ -76,7 +76,7 @@ describe('StatCard', () => {
       />,
     );
     const deltaEl = getByTestId('stat-card-delta');
-    expect(deltaEl.props.className).toContain('text-amber-400');
+    expect(deltaEl.props.className).toContain('text-amber-300');
   });
 
   it('does not render delta element when delta is not provided', () => {

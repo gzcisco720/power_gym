@@ -155,7 +155,7 @@ export function HeatmapMonthLabels({ activeDays }: MonthLabelRowProps) {
     <View className="flex-row gap-0.5 mb-0.5">
       {labels.map((label, i) => (
         <View key={i} className="flex-1">
-          <Text className="text-[8px] text-foreground/40">{label}</Text>
+          <Text className="text-[10px] text-foreground/40">{label}</Text>
         </View>
       ))}
     </View>

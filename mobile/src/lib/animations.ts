@@ -6,4 +6,5 @@ export const springs = {
 
 export const timings = {
   fade: { duration: 200 },
+  skeleton: { duration: 800 },
 } as const;

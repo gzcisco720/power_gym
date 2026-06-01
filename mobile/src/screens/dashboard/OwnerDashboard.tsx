@@ -10,10 +10,18 @@ import { EquipmentStatusItem } from '../../types/dashboard';
 
 type DrawerNav = DrawerNavigationProp<Record<string, undefined>>;
 
+// Hex equivalents of NativeWind tokens — used only in chart library props which don't accept className
+const CHART_COLORS = {
+  primaryLight: '#818cf8',
+  primary: '#4f46e5',
+  axisLabel: 'rgba(255,255,255,0.65)',
+  axisLabelMuted: 'rgba(255,255,255,0.4)',
+} as const;
+
 const STATUS_BADGE_CLASSES: Record<EquipmentStatusItem['status'], string> = {
-  maintenance: 'text-amber-400',
-  retired: 'text-red-400',
-  overdue: 'text-red-400',
+  maintenance: 'text-amber-300',
+  retired: 'text-red-300',
+  overdue: 'text-red-300',
 };
 
 const STATUS_LABELS: Record<EquipmentStatusItem['status'], string> = {
@@ -68,7 +76,7 @@ export function OwnerDashboard() {
   const barData = memberGrowth.map((entry, index) => ({
     value: entry.count,
     label: entry.month,
-    frontColor: index === memberGrowth.length - 1 ? '#818cf8' : '#4f46e5',
+    frontColor: index === memberGrowth.length - 1 ? CHART_COLORS.primaryLight : CHART_COLORS.primary,
   }));
 
   return (
@@ -145,9 +153,9 @@ export function OwnerDashboard() {
                 spacing={12}
                 hideRules
                 hideAxesAndRules
-                xAxisLabelTextStyle={{ color: 'rgba(255,255,255,0.65)', fontSize: 10 }}
+                xAxisLabelTextStyle={{ color: CHART_COLORS.axisLabel, fontSize: 10 }}
                 noOfSections={4}
-                yAxisTextStyle={{ color: 'rgba(255,255,255,0.4)', fontSize: 10 }}
+                yAxisTextStyle={{ color: CHART_COLORS.axisLabelMuted, fontSize: 10 }}
                 height={120}
               />
             ) : (
@@ -189,6 +197,7 @@ export function OwnerDashboard() {
               <Pressable
                 onPress={() => navigation.navigate('Trainers')}
                 accessibilityLabel="View all trainers"
+                accessibilityRole="button"
               >
                 <Text className="text-[12px] text-primary mt-1">View all →</Text>
               </Pressable>
@@ -203,24 +212,24 @@ export function OwnerDashboard() {
               <View className="gap-1 mb-2">
                 <View className="flex-row gap-1">
                   <View className="flex-1 items-center py-1">
-                    <Text className="text-[14px] font-bold text-emerald-400">{equipment.activeCount}</Text>
-                    <Text className="text-[9px] text-foreground/65">Active</Text>
+                    <Text className="text-[18px] font-bold text-emerald-300">{equipment.activeCount}</Text>
+                    <Text className="text-[10px] text-foreground/65">Active</Text>
                   </View>
                   <View className="flex-1 items-center py-1">
-                    <Text className="text-[14px] font-bold text-amber-400">{equipment.maintenanceCount}</Text>
-                    <Text className="text-[9px] text-foreground/65">Maint.</Text>
+                    <Text className="text-[18px] font-bold text-amber-300">{equipment.maintenanceCount}</Text>
+                    <Text className="text-[10px] text-foreground/65">Maint.</Text>
                   </View>
                 </View>
                 <View className="flex-row gap-1">
                   <View className="flex-1 items-center py-1">
-                    <Text className="text-[14px] font-bold text-red-400">{equipment.retiredCount}</Text>
-                    <Text className="text-[9px] text-foreground/65">Retired</Text>
+                    <Text className="text-[18px] font-bold text-red-300">{equipment.retiredCount}</Text>
+                    <Text className="text-[10px] text-foreground/65">Retired</Text>
                   </View>
                   <View className="flex-1 items-center py-1">
-                    <Text className={`text-[14px] font-bold ${equipment.overdueCount > 0 ? 'text-red-400' : 'text-foreground/40'}`}>
+                    <Text className={`text-[18px] font-bold ${equipment.overdueCount > 0 ? 'text-red-300' : 'text-foreground/40'}`}>
                       {equipment.overdueCount}
                     </Text>
-                    <Text className="text-[9px] text-foreground/65">Overdue</Text>
+                    <Text className="text-[10px] text-foreground/65">Overdue</Text>
                   </View>
                 </View>
               </View>
@@ -230,7 +239,7 @@ export function OwnerDashboard() {
                   <Text className="text-[11px] text-foreground flex-1" numberOfLines={1}>
                     {item.name}
                   </Text>
-                  <Text className={`text-[9px] font-medium ${STATUS_BADGE_CLASSES[item.status]}`}>
+                  <Text className={`text-[10px] font-medium ${STATUS_BADGE_CLASSES[item.status]}`}>
                     {STATUS_LABELS[item.status]}
                   </Text>
                 </View>
