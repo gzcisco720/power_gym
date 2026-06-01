@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../stores/auth.store';
+import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { ProfileTab } from './tabs/ProfileTab';
 import { SecurityTab } from './tabs/SecurityTab';
@@ -31,7 +32,7 @@ export function SettingsScreen() {
   const [activeTab, setActiveTab] = useState<TabId>('profile');
 
   return (
-    <View className="flex-1 bg-background">
+    <Screen>
       <ScreenHeader title="Settings" onBack={() => navigation.goBack()} />
 
       {/* Horizontal tab bar */}
@@ -66,6 +67,6 @@ export function SettingsScreen() {
       {activeTab === 'profile' ? <ProfileTab role={role} /> : null}
       {activeTab === 'security' ? <SecurityTab /> : null}
       {activeTab === 'gym' && role === 'owner' ? <GymInfoTab /> : null}
-    </View>
+    </Screen>
   );
 }
