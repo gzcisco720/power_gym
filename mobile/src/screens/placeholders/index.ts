@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { Screen } from '../../components/Screen';
 import { BiometricsPrompt } from '../../components/BiometricsPrompt';
 import { useAuthStore } from '../../stores/auth.store';
 
@@ -15,8 +16,8 @@ export function makePlaceholder(title: string, testID: string): () => React.JSX.
   if (!cache.has(testID)) {
     const Component = function PlaceholderComponent() {
       return React.createElement(
-        View,
-        { testID, className: 'flex-1 bg-background' },
+        Screen,
+        { testID },
         React.createElement(
           View,
           { className: 'flex-1 px-4 py-6' },
@@ -54,8 +55,8 @@ export function DashboardScreen(): React.JSX.Element {
   }, [biometricsEnabled]);
 
   return React.createElement(
-    View,
-    { testID: 'home-screen', className: 'flex-1 bg-background' },
+    Screen,
+    { testID: 'home-screen' },
     React.createElement(
       View,
       { className: 'flex-1 px-4 py-6' },

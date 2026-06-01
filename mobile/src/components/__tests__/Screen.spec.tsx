@@ -59,4 +59,13 @@ describe('Screen', () => {
       expect.objectContaining({ paddingBottom: 34 }),
     );
   });
+
+  it('forwards testID to the outer container', () => {
+    const { getByTestId } = render(
+      <Screen testID="my-screen">
+        <Text>content</Text>
+      </Screen>,
+    );
+    expect(getByTestId('my-screen')).toBeTruthy();
+  });
 });

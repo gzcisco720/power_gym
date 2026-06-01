@@ -5,14 +5,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 interface ScreenProps {
   children: React.ReactNode;
   scrollable?: boolean;
+  testID?: string;
 }
 
-export function Screen({ children, scrollable = false }: ScreenProps) {
+export function Screen({ children, scrollable = false, testID = 'screen-container' }: ScreenProps) {
   const insets = useSafeAreaInsets();
 
   if (scrollable) {
     return (
-      <View testID="screen-container" className="flex-1 bg-background">
+      <View testID={testID} className="flex-1 bg-background">
         <ScrollView
           className="flex-1"
           contentContainerStyle={{ paddingBottom: insets.bottom }}
@@ -26,7 +27,7 @@ export function Screen({ children, scrollable = false }: ScreenProps) {
 
   return (
     <View
-      testID="screen-container"
+      testID={testID}
       className="flex-1 bg-background"
       style={{ paddingBottom: insets.bottom }}
     >

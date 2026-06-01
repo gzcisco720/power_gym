@@ -11,6 +11,9 @@ import { render } from '@testing-library/react-native';
 jest.mock('expo-secure-store');
 jest.mock('expo-local-authentication');
 jest.mock('react-native-svg');
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 59, bottom: 34, left: 0, right: 0 }),
+}));
 
 jest.mock('../../stores/branding.store', () => ({
   useBrandingStore: (
