@@ -93,10 +93,7 @@ export class TrainerDashboardService {
 
     // Build member lookup maps
     const memberMap = new Map(
-      members.map((m) => [
-        m._id.toString(),
-        `${m.firstName} ${m.lastName}`,
-      ]),
+      members.map((m) => [m._id.toString(), `${m.firstName} ${m.lastName}`]),
     );
 
     // Today's scheduled sessions for this trainer
@@ -128,7 +125,9 @@ export class TrainerDashboardService {
     const todaysSessions: TodaySession[] = scheduledToday.map((s) => {
       const memberId =
         s.memberIds.length > 0 ? s.memberIds[0].toString() : null;
-      const memberName = memberId ? (memberMap.get(memberId) ?? 'Member') : 'Member';
+      const memberName = memberId
+        ? (memberMap.get(memberId) ?? 'Member')
+        : 'Member';
 
       const [startH, startM] = s.startTime.split(':').map(Number);
       const [endH, endM] = s.endTime.split(':').map(Number);
@@ -171,12 +170,20 @@ export class TrainerDashboardService {
     if (memberIds.length > 0) {
       // Get active plans and nutrition plans for all members in bulk
       const [activePlans, activeNutritionPlans] = await Promise.all([
-        this.memberPlanModel.find({ memberId: { $in: memberIds }, isActive: true }).lean(),
-        this.memberNutritionPlanModel.find({ memberId: { $in: memberIds }, isActive: true }).lean(),
+        this.memberPlanModel
+          .find({ memberId: { $in: memberIds }, isActive: true })
+          .lean(),
+        this.memberNutritionPlanModel
+          .find({ memberId: { $in: memberIds }, isActive: true })
+          .lean(),
       ]);
 
-      const planMemberIds = new Set(activePlans.map((p) => p.memberId.toString()));
-      const nutritionMemberIds = new Set(activeNutritionPlans.map((p) => p.memberId.toString()));
+      const planMemberIds = new Set(
+        activePlans.map((p) => p.memberId.toString()),
+      );
+      const nutritionMemberIds = new Set(
+        activeNutritionPlans.map((p) => p.memberId.toString()),
+      );
 
       await Promise.all(
         members.map(async (member) => {
@@ -222,7 +229,9 @@ export class TrainerDashboardService {
     }
 
     const needsAttentionCount = new Set(
-      needsAttention.filter((a) => a.alertType === 'idle').map((a) => a.memberId),
+      needsAttention
+        .filter((a) => a.alertType === 'idle')
+        .map((a) => a.memberId),
     ).size;
 
     // Pending check-ins (recent, for this trainer)
@@ -308,7 +317,6 @@ export class TrainerDashboardService {
     now: Date,
   ): Promise<MyTraining> {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const fourteenDaysAgo = new Date(now.getTime() - 14 * 86400000);
     const ninetyDaysAgo = new Date(now.getTime() - 90 * 86400000);
 
     // The trainer logs sessions with loggedBy = their own id, or memberId = their own id

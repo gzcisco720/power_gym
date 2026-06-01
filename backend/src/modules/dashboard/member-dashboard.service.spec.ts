@@ -118,17 +118,19 @@ describe('MemberDashboardService', () => {
       // Seed a completed session today to verify index 89 = true
       const todayDate = new Date();
       todayDate.setHours(12, 0, 0, 0);
-      sessionModelMock.find.mockImplementation((query: { completedAt?: { $gte: Date } }) => {
-        if (query.completedAt) {
+      sessionModelMock.find.mockImplementation(
+        (query: { completedAt?: { $gte: Date } }) => {
+          if (query.completedAt) {
+            return {
+              lean: () => Promise.resolve([{ completedAt: todayDate }]),
+            };
+          }
           return {
-            lean: () => Promise.resolve([{ completedAt: todayDate }]),
+            sort: () => ({ lean: () => Promise.resolve([]) }),
+            lean: () => Promise.resolve([]),
           };
-        }
-        return {
-          sort: () => ({ lean: () => Promise.resolve([]) }),
-          lean: () => Promise.resolve([]),
-        };
-      });
+        },
+      );
 
       const result = await service.getMemberDashboard(memberId.toString());
 
@@ -222,11 +224,25 @@ describe('MemberDashboardService', () => {
         { date: squatDate, estimatedOneRM: 120 },
       ]);
 
-      const result = await service.getMemberDashboard(memberId.toString(), 'Squat');
+      const result = await service.getMemberDashboard(
+        memberId.toString(),
+        'Squat',
+      );
 
       // The data array should be for Squat
       expect(result.strengthProgress.data.length).toBeGreaterThan(0);
       expect(result.strengthProgress.data[0].estimatedOneRM).toBe(120);
+
+      // Verify the aggregate pipeline was called with a Squat-scoped $match
+      const aggregateCalls = sessionModelMock.aggregate.mock.calls as Array<
+        [Array<Record<string, unknown>>]
+      >;
+      const aggregateCall = aggregateCalls[0][0];
+      const matchStage = aggregateCall.find((stage) => '$match' in stage) as
+        | { $match: Record<string, unknown> }
+        | undefined;
+      expect(matchStage).toBeDefined();
+      expect(matchStage!.$match['sets.exerciseName']).toBe('Squat');
     });
 
     it('todaysPlan is null when the member has no active member-plan', async () => {

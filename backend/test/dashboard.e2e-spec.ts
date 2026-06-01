@@ -211,6 +211,37 @@ describe('Dashboard (e2e)', () => {
       sets: [],
     });
 
+    // Seed a Squat session so ?exercise=Squat returns non-empty data
+    const squatCompletedAt = new Date();
+    const squatExerciseId = new Types.ObjectId();
+    await sessionModel.create({
+      _id: new Types.ObjectId(),
+      memberId,
+      memberPlanId,
+      dayNumber: 2,
+      dayName: 'Leg Day',
+      startedAt: squatCompletedAt,
+      completedAt: squatCompletedAt,
+      lastActivityAt: squatCompletedAt,
+      autoSealed: false,
+      sets: [
+        {
+          exerciseId: squatExerciseId,
+          exerciseName: 'Squat',
+          groupId: 'g-squat',
+          isSuperset: false,
+          isBodyweight: false,
+          setNumber: 1,
+          prescribedRepsMin: 5,
+          prescribedRepsMax: 8,
+          isExtraSet: false,
+          actualWeight: 100,
+          actualReps: 5,
+          completedAt: squatCompletedAt,
+        },
+      ],
+    });
+
     // Member2 has NO recent session (idle)
 
     // Seed a scheduled session today for member (scoped to this trainer)
@@ -454,7 +485,7 @@ describe('Dashboard (e2e)', () => {
       expect(heatmap[89]).toBe(true);
     });
 
-    it('with ?exercise=Squat → 200 and strengthProgress.exercises includes Squat', async () => {
+    it('with ?exercise=Squat → 200 and strengthProgress.data is non-empty Squat-scoped 1RM series', async () => {
       const res = await request(app.getHttpServer())
         .get('/dashboard/member?exercise=Squat')
         .set('Authorization', `Bearer ${memberToken}`)
@@ -463,9 +494,17 @@ describe('Dashboard (e2e)', () => {
       const body = res.body as Record<string, unknown>;
       const sp = body.strengthProgress as {
         exercises: string[];
-        data: unknown[];
+        data: Array<{ date: string; estimatedOneRM: number }>;
       };
       expect(sp.exercises).toContain('Squat');
+      // data must be a non-empty array — proves the aggregate scoped to Squat
+      expect(Array.isArray(sp.data)).toBe(true);
+      expect(sp.data.length).toBeGreaterThan(0);
+      // each entry must have a date string and a numeric estimatedOneRM
+      sp.data.forEach((entry) => {
+        expect(typeof entry.date).toBe('string');
+        expect(typeof entry.estimatedOneRM).toBe('number');
+      });
     });
 
     it('no token → 401', async () => {

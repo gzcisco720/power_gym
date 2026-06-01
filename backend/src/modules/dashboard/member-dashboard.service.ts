@@ -10,7 +10,10 @@ import {
   ScheduledSession,
   ScheduledSessionDocument,
 } from '../../common/models/scheduled-session.model';
-import { BodyTest, BodyTestDocument } from '../../common/models/body-test.model';
+import {
+  BodyTest,
+  BodyTestDocument,
+} from '../../common/models/body-test.model';
 import {
   PersonalBest,
   PersonalBestDocument,
@@ -64,8 +67,12 @@ export class MemberDashboardService {
     const [user, activePlan, activeNutritionPlan, bodyTests, personalBests] =
       await Promise.all([
         this.userModel.findById(memberObjId).lean(),
-        this.memberPlanModel.findOne({ memberId: memberObjId, isActive: true }).lean(),
-        this.memberNutritionPlanModel.findOne({ memberId: memberObjId, isActive: true }).lean(),
+        this.memberPlanModel
+          .findOne({ memberId: memberObjId, isActive: true })
+          .lean(),
+        this.memberNutritionPlanModel
+          .findOne({ memberId: memberObjId, isActive: true })
+          .lean(),
         this.bodyTestModel
           .find({ memberId: memberObjId })
           .sort({ date: -1 })
@@ -81,7 +88,7 @@ export class MemberDashboardService {
     };
 
     // Today's plan
-    const todaysPlan = this.buildTodaysPlan(activePlan, now);
+    const todaysPlan = this.buildTodaysPlan(activePlan);
 
     // Stats
     const sessionsThisMonth = await this.sessionModel.countDocuments({
@@ -117,7 +124,11 @@ export class MemberDashboardService {
     };
 
     // Training heatmap: 90 booleans, index 0 = 90 days ago, index 89 = today
-    const trainingHeatmap = await this.buildHeatmap(memberObjId, ninetyDaysAgo, now);
+    const trainingHeatmap = await this.buildHeatmap(
+      memberObjId,
+      ninetyDaysAgo,
+      now,
+    );
 
     // Body composition: last 8 body tests oldest first
     const bodyComposition: BodyCompositionEntry[] = [...bodyTests]
@@ -186,18 +197,19 @@ export class MemberDashboardService {
   }
 
   private buildTodaysPlan(
-    activePlan: (MemberPlanDocument & {
-      name: string;
-      days: Array<{
-        dayNumber: number;
-        name: string;
-        exercises: Array<{
-          exerciseName: string;
-          sets: number;
-        }>;
-      }>;
-    }) | null,
-    now: Date,
+    activePlan:
+      | (MemberPlanDocument & {
+          name: string;
+          days: Array<{
+            dayNumber: number;
+            name: string;
+            exercises: Array<{
+              exerciseName: string;
+              sets: number;
+            }>;
+          }>;
+        })
+      | null,
   ): TodaysPlan | null {
     if (!activePlan) return null;
 
@@ -316,23 +328,25 @@ export class MemberDashboardService {
   }
 
   private buildNutritionToday(
-    nutritionPlan: (MemberNutritionPlanDocument & {
-      dayTypes: Array<{
-        name: string;
-        meals: Array<{
-          items: Array<{
-            protein: number;
-            carbs: number;
-            fat: number;
-            kcal: number;
+    nutritionPlan:
+      | (MemberNutritionPlanDocument & {
+          dayTypes: Array<{
+            name: string;
+            meals: Array<{
+              items: Array<{
+                protein: number;
+                carbs: number;
+                fat: number;
+                kcal: number;
+              }>;
+            }>;
           }>;
-        }>;
-      }>;
-      schedule: {
-        weeklyPattern: Array<{ dayOfWeek: number; dayTypeName: string }>;
-        calendarOverrides: Array<{ date: string; dayTypeName: string }>;
-      };
-    }) | null,
+          schedule: {
+            weeklyPattern: Array<{ dayOfWeek: number; dayTypeName: string }>;
+            calendarOverrides: Array<{ date: string; dayTypeName: string }>;
+          };
+        })
+      | null,
     now: Date,
   ): NutritionToday | null {
     if (!nutritionPlan) return null;
