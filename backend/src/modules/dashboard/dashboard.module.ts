@@ -34,10 +34,7 @@ import {
   MemberNutritionPlan,
   MemberNutritionPlanSchema,
 } from '../../common/models/member-nutrition-plan.model';
-import {
-  BodyTest,
-  BodyTestSchema,
-} from '../../common/models/body-test.model';
+import { BodyTest, BodyTestSchema } from '../../common/models/body-test.model';
 
 @Module({
   imports: [

@@ -74,22 +74,36 @@ describe('TrainerDashboardService', () => {
 
   describe('getTrainerDashboard', () => {
     const trainerId = new Types.ObjectId();
-    const member1 = { ...makeUser('member', trainerId), firstName: 'Alice', lastName: 'A' };
-    const member2 = { ...makeUser('member', trainerId), firstName: 'Bob', lastName: 'B' };
+    const member1 = {
+      ...makeUser('member', trainerId),
+      firstName: 'Alice',
+      lastName: 'A',
+    };
+    const member2 = {
+      ...makeUser('member', trainerId),
+      firstName: 'Bob',
+      lastName: 'B',
+    };
     // member belonging to a different trainer
     const otherTrainerId = new Types.ObjectId();
-    const member3 = { ...makeUser('member', otherTrainerId), firstName: 'Carol', lastName: 'C' };
+    const member3 = {
+      ...makeUser('member', otherTrainerId),
+      firstName: 'Carol',
+      lastName: 'C',
+    };
 
     function setupBaseState() {
       // Only members whose trainerId === this trainer
-      userModelMock.find.mockImplementation((query: { trainerId?: Types.ObjectId }) => ({
-        lean: () =>
-          Promise.resolve(
-            query.trainerId?.toString() === trainerId.toString()
-              ? [member1, member2]
-              : [],
-          ),
-      }));
+      userModelMock.find.mockImplementation(
+        (query: { trainerId?: Types.ObjectId }) => ({
+          lean: () =>
+            Promise.resolve(
+              query.trainerId?.toString() === trainerId.toString()
+                ? [member1, member2]
+                : [],
+            ),
+        }),
+      );
 
       // No scheduled sessions today by default
       scheduledSessionModelMock.find.mockImplementation(() => ({
@@ -124,18 +138,20 @@ describe('TrainerDashboardService', () => {
 
       // Active plans for all members
       memberPlanModelMock.find.mockImplementation(() => ({
-        lean: () => Promise.resolve([
-          { memberId: member1._id, isActive: true, name: 'Plan A' },
-          { memberId: member2._id, isActive: true, name: 'Plan B' },
-        ]),
+        lean: () =>
+          Promise.resolve([
+            { memberId: member1._id, isActive: true, name: 'Plan A' },
+            { memberId: member2._id, isActive: true, name: 'Plan B' },
+          ]),
       }));
 
       // Nutrition plans for all members
       memberNutritionPlanModelMock.find.mockImplementation(() => ({
-        lean: () => Promise.resolve([
-          { memberId: member1._id, isActive: true },
-          { memberId: member2._id, isActive: true },
-        ]),
+        lean: () =>
+          Promise.resolve([
+            { memberId: member1._id, isActive: true },
+            { memberId: member2._id, isActive: true },
+          ]),
       }));
     }
 
@@ -145,7 +161,14 @@ describe('TrainerDashboardService', () => {
       const now = new Date();
       const startTime = '09:00';
       const endTime = '10:00';
-      const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0);
+      const todayDate = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        9,
+        0,
+        0,
+      );
 
       // Session for trainer's member (member1)
       const sessionForMember1 = {
@@ -191,7 +214,10 @@ describe('TrainerDashboardService', () => {
 
       // member1 is active (recent session), member2 is idle (no recent session)
       sessionModelMock.countDocuments.mockImplementation(
-        (query: { memberId?: Types.ObjectId; completedAt?: { $gte: Date } }) => {
+        (query: {
+          memberId?: Types.ObjectId;
+          completedAt?: { $gte: Date };
+        }) => {
           if (query.memberId && query.completedAt?.$gte) {
             if (query.memberId.toString() === member1._id.toString()) {
               return Promise.resolve(1); // member1 has a recent session
@@ -207,9 +233,15 @@ describe('TrainerDashboardService', () => {
       const result = await service.getTrainerDashboard(trainerId.toString());
 
       // Only member2 should be in needsAttention with alertType 'idle'
-      const idleAlerts = result.needsAttention.filter((a) => a.alertType === 'idle');
-      expect(idleAlerts.some((a) => a.memberId === member2._id.toString())).toBe(true);
-      expect(idleAlerts.some((a) => a.memberId === member1._id.toString())).toBe(false);
+      const idleAlerts = result.needsAttention.filter(
+        (a) => a.alertType === 'idle',
+      );
+      expect(
+        idleAlerts.some((a) => a.memberId === member2._id.toString()),
+      ).toBe(true);
+      expect(
+        idleAlerts.some((a) => a.memberId === member1._id.toString()),
+      ).toBe(false);
     });
 
     it('thisWeek has 7 entries Mon..Sun with exactly one isToday=true', async () => {
