@@ -290,7 +290,16 @@ mobile/package.json                              ← add react-native-gifted-cha
 2. Implement api, store, `TrainerDashboard`; wire trainer branch in `DashboardScreen` → Green.
 3. `/simplify`. 4. Write `mobile/e2e/trainer/dashboard.spec.ts` golden path + empty case → pass on simulator.
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 5 Checkpoint
+- [x] mobile/src/types/dashboard.ts (TrainerDashboardResponse and related types added)
+- [x] mobile/src/lib/api/trainer-dashboard.api.ts
+- [x] mobile/src/stores/trainer-dashboard.store.ts
+- [x] mobile/src/stores/trainer-dashboard.store.spec.ts (1 test — Red then Green)
+- [x] mobile/src/screens/dashboard/TrainerDashboard.tsx (full implementation)
+- [x] mobile/src/screens/dashboard/__tests__/TrainerDashboard.test.tsx (4 tests — Red then Green)
+- [x] mobile/e2e/trainer/dashboard.spec.ts (Detox spec — file written, not run)
 
 ---
 
