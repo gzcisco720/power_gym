@@ -249,7 +249,18 @@ mobile/package.json                              ← add react-native-gifted-cha
 2. Implement `owner-dashboard.api.ts`, `owner-dashboard.store.ts`, `OwnerDashboard.tsx`; wire into `DashboardScreen` owner branch → Green.
 3. `/simplify`. 4. Write `mobile/e2e/owner/dashboard.spec.ts` golden path + the nav case → pass on simulator.
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 4 Checkpoint
+- [x] mobile/src/types/dashboard.ts (OwnerDashboardResponse and related types)
+- [x] mobile/src/lib/api/owner-dashboard.api.ts
+- [x] mobile/src/stores/owner-dashboard.store.ts
+- [x] mobile/src/stores/owner-dashboard.store.spec.ts (2 tests — Red then Green)
+- [x] mobile/src/screens/dashboard/OwnerDashboard.tsx (full implementation)
+- [x] mobile/src/screens/dashboard/__tests__/OwnerDashboard.test.tsx (3 tests — Red then Green)
+- [x] mobile/src/components/dashboard/DashboardSkeleton.tsx (added testID)
+- [x] mobile/package.json (added gifted-charts-core to transformIgnorePatterns)
+- [x] mobile/e2e/owner/dashboard.spec.ts (Detox spec — file written, not run)
 
 ---
 

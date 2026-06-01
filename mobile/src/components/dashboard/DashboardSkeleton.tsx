@@ -7,7 +7,7 @@ function SkeletonBlock({ className }: { className: string }) {
 
 export function DashboardSkeleton() {
   return (
-    <ScrollView className="flex-1 bg-background" showsVerticalScrollIndicator={false}>
+    <ScrollView testID="dashboard-skeleton" className="flex-1 bg-background" showsVerticalScrollIndicator={false}>
       <View className="px-4 py-6 gap-4">
         {/* Title skeleton */}
         <View className="gap-1.5">

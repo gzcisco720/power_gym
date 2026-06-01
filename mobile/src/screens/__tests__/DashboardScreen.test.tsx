@@ -8,6 +8,17 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('expo-local-authentication');
 jest.mock('expo-secure-store');
 
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: () => ({ navigate: jest.fn() }),
+}));
+
+jest.mock('@react-navigation/drawer', () => ({}));
+
+jest.mock('react-native-gifted-charts', () => ({
+  BarChart: () => null,
+  LineChart: () => null,
+}));
+
 jest.mock('../../stores/auth.store', () => ({
   useAuthStore: jest.fn(),
 }));

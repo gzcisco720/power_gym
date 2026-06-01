@@ -68,7 +68,7 @@
       "/e2e/"
     ],
     "transformIgnorePatterns": [
-      "node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|@rn-primitives|react-native-gesture-handler|react-native-gifted-charts))"
+      "node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|@rn-primitives|react-native-gesture-handler|react-native-gifted-charts|gifted-charts-core))"
     ]
   },
   "private": true
