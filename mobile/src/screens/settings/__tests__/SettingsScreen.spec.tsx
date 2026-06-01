@@ -35,6 +35,10 @@ jest.mock('@react-navigation/native', () => ({
   NavigationContainer: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 59, bottom: 34, left: 0, right: 0 }),
+}));
+
 // ── Imports ───────────────────────────────────────────────────────────────────
 
 import { useAuthStore } from '../../../stores/auth.store';
@@ -104,10 +108,10 @@ describe('SettingsScreen', () => {
     expect(queryByTestId('settings-tab-gym')).toBeNull();
   });
 
-  it('renders the back button with testID settings-back', () => {
+  it('renders the back button', () => {
     makeAuthState('member');
 
     const { getByTestId } = render(<SettingsScreen />);
-    expect(getByTestId('settings-back')).toBeTruthy();
+    expect(getByTestId('screen-header-back')).toBeTruthy();
   });
 });

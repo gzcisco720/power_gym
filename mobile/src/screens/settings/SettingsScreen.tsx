@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../stores/auth.store';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { ProfileTab } from './tabs/ProfileTab';
 import { SecurityTab } from './tabs/SecurityTab';
 import { GymInfoTab } from './tabs/GymInfoTab';
@@ -31,20 +32,7 @@ export function SettingsScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      {/* Header */}
-      <View className="flex-row items-center border-b border-foreground/[.06] bg-background px-4 py-4">
-        <Pressable
-          testID="settings-back"
-          onPress={() => navigation.goBack()}
-          accessibilityLabel="Go back"
-          className="mr-3 p-1"
-        >
-          <Text className="text-[18px] text-foreground">←</Text>
-        </Pressable>
-        <Text className="text-[18px] font-semibold tracking-[-0.3px] text-foreground">
-          Settings
-        </Text>
-      </View>
+      <ScreenHeader title="Settings" onBack={() => navigation.goBack()} />
 
       {/* Horizontal tab bar */}
       <View className="flex-row border-b border-foreground/[.06] bg-background">
