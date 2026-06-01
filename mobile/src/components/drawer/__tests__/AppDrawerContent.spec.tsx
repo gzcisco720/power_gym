@@ -6,7 +6,6 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 59, bottom: 34, left: 0, right: 0 }),
 }));
 
-// Mock the branding store
 jest.mock('../../../stores/branding.store', () => ({
   useBrandingStore: (selector?: (s: { gymName: string | null; logoUrl: string | null; fetchBranding: () => void }) => unknown) => {
     const state = {
@@ -18,9 +17,14 @@ jest.mock('../../../stores/branding.store', () => ({
   },
 }));
 
-// Mock the auth store — component calls useAuthStore((s) => s.user) with selector
+const mockLogout = jest.fn().mockResolvedValue(undefined);
+
 jest.mock('../../../stores/auth.store', () => ({
-  useAuthStore: (selector?: (s: { user: { id: string; firstName: string; lastName: string; role: 'owner' | 'trainer' | 'member'; trainerId: string | null }; accessToken: string }) => unknown) => {
+  useAuthStore: (selector?: (s: {
+    user: { id: string; firstName: string; lastName: string; role: 'owner' | 'trainer' | 'member'; trainerId: string | null };
+    accessToken: string;
+    logout: () => Promise<void>;
+  }) => unknown) => {
     const state = {
       user: {
         id: 'u1',
@@ -30,12 +34,12 @@ jest.mock('../../../stores/auth.store', () => ({
         trainerId: null,
       },
       accessToken: 'tok',
+      logout: mockLogout,
     };
     return selector ? selector(state) : state;
   },
 }));
 
-// Mock navigation
 const mockNavigate = jest.fn();
 const mockNavigation = {
   navigate: mockNavigate,
@@ -69,45 +73,54 @@ const mockState = {
   preloadedRouteKeys: [],
 } as unknown as DrawerState;
 
+const renderDrawer = () =>
+  render(
+    <AppDrawerContent
+      navigation={mockNavigation as Parameters<typeof AppDrawerContent>[0]['navigation']}
+      descriptors={{}}
+      state={mockState}
+    />,
+  );
+
 describe('AppDrawerContent', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('renders the Owner nav groups when auth role is owner (e.g. a "TEMPLATES" group label is visible)', () => {
-    const { getByText } = render(
-      <AppDrawerContent
-        navigation={mockNavigation as Parameters<typeof AppDrawerContent>[0]['navigation']}
-        descriptors={{}}
-        state={mockState}
-      />,
-    );
+    const { getByText } = renderDrawer();
     expect(getByText('TEMPLATES')).toBeTruthy();
   });
 
   it('renders gym name from the branding store in the branding header', () => {
-    const { getAllByText } = render(
-      <AppDrawerContent
-        navigation={mockNavigation as Parameters<typeof AppDrawerContent>[0]['navigation']}
-        descriptors={{}}
-        state={mockState}
-      />,
-    );
-    // gym name appears in both branding header and drawer header
+    const { getAllByText } = renderDrawer();
     const matches = getAllByText('Iron Gym');
     expect(matches.length).toBeGreaterThan(0);
   });
 
-  it('tapping the user footer calls navigation.navigate with "Settings"', () => {
-    const { getByTestId } = render(
-      <AppDrawerContent
-        navigation={mockNavigation as Parameters<typeof AppDrawerContent>[0]['navigation']}
-        descriptors={{}}
-        state={mockState}
-      />,
-    );
-    const footer = getByTestId('drawer-user-footer');
-    fireEvent.press(footer);
+  it('tapping the user footer opens the user menu', () => {
+    const { getByTestId } = renderDrawer();
+    fireEvent.press(getByTestId('drawer-user-footer'));
+    expect(getByTestId('drawer-menu-settings')).toBeTruthy();
+    expect(getByTestId('drawer-menu-logout')).toBeTruthy();
+  });
+
+  it('tapping Settings in the menu navigates to Settings', () => {
+    const { getByTestId } = renderDrawer();
+    fireEvent.press(getByTestId('drawer-user-footer'));
+    fireEvent.press(getByTestId('drawer-menu-settings'));
     expect(mockNavigate).toHaveBeenCalledWith('Settings');
+  });
+
+  it('tapping Log Out in the menu calls logout', () => {
+    const { getByTestId } = renderDrawer();
+    fireEvent.press(getByTestId('drawer-user-footer'));
+    fireEvent.press(getByTestId('drawer-menu-logout'));
+    expect(mockLogout).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not show the gear icon', () => {
+    const { queryByText } = renderDrawer();
+    expect(queryByText('⚙')).toBeNull();
   });
 });

@@ -26,7 +26,6 @@ const GYM_TAB: Tab = { id: 'gym', label: 'Gym Info', testID: 'settings-tab-gym' 
 export function SettingsScreen() {
   const navigation = useNavigation();
   const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
   const role = user?.role ?? 'member';
 
   const tabs = role === 'owner' ? [...TABS_BASE, GYM_TAB] : TABS_BASE;
@@ -65,24 +64,9 @@ export function SettingsScreen() {
       </View>
 
       {/* Tab content */}
-      <View className="flex-1">
-        {activeTab === 'profile' ? <ProfileTab role={role} /> : null}
-        {activeTab === 'security' ? <SecurityTab /> : null}
-        {activeTab === 'gym' && role === 'owner' ? <GymInfoTab /> : null}
-      </View>
-
-      {/* Sign Out */}
-      <View className="px-4 py-3 border-t border-foreground/10">
-        <Pressable
-          testID="settings-logout-button"
-          onPress={() => void logout()}
-          accessibilityLabel="Sign out"
-          accessibilityRole="button"
-          className="py-3 rounded-xl items-center bg-destructive/10"
-        >
-          <Text className="text-sm font-semibold text-destructive">Sign Out</Text>
-        </Pressable>
-      </View>
+      {activeTab === 'profile' ? <ProfileTab role={role} /> : null}
+      {activeTab === 'security' ? <SecurityTab /> : null}
+      {activeTab === 'gym' && role === 'owner' ? <GymInfoTab /> : null}
     </Screen>
   );
 }

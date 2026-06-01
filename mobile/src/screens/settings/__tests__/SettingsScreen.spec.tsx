@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -113,36 +113,5 @@ describe('SettingsScreen', () => {
 
     const { getByTestId } = render(<SettingsScreen />);
     expect(getByTestId('screen-header-back')).toBeTruthy();
-  });
-
-  it('renders the Sign Out button', () => {
-    makeAuthState('member');
-
-    const { getByTestId } = render(<SettingsScreen />);
-    expect(getByTestId('settings-logout-button')).toBeTruthy();
-  });
-
-  it('calls logout when Sign Out is pressed', () => {
-    const logoutMock = jest.fn().mockResolvedValue(undefined);
-    const state = {
-      user: { id: '1', firstName: 'Alice', lastName: 'Smith', role: 'member' as const, trainerId: null },
-      accessToken: 'token',
-      biometricsEnabled: false,
-      isLoading: false,
-      login: jest.fn(),
-      loginWithBiometrics: jest.fn(),
-      refresh: jest.fn(),
-      logout: logoutMock,
-      setBiometricsEnabled: jest.fn(),
-      hydrate: jest.fn(),
-    };
-    mockUseAuthStore.mockImplementation((selector?: (s: typeof state) => unknown) => {
-      if (typeof selector === 'function') return selector(state);
-      return state;
-    });
-
-    const { getByTestId } = render(<SettingsScreen />);
-    fireEvent.press(getByTestId('settings-logout-button'));
-    expect(logoutMock).toHaveBeenCalledTimes(1);
   });
 });
