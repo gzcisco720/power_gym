@@ -330,5 +330,14 @@ mobile/package.json                              ← add react-native-gifted-cha
 2. Implement api, store, `MemberDashboard` (hero gradient, both line charts, selector); wire member branch in `DashboardScreen` → Green.
 3. `/simplify`. 4. Write `mobile/e2e/member/dashboard.spec.ts` golden path + the selector-refetch case → pass on simulator.
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 6 Checkpoint
+- [x] mobile/src/types/dashboard.ts (MemberDashboardResponse and related types)
+- [x] mobile/src/lib/api/member-dashboard.api.ts
+- [x] mobile/src/stores/member-dashboard.store.ts
+- [x] mobile/src/stores/member-dashboard.store.spec.ts
+- [x] mobile/src/screens/dashboard/MemberDashboard.tsx (full implementation)
+- [x] mobile/src/screens/dashboard/__tests__/MemberDashboard.test.tsx
+- [x] mobile/e2e/member/dashboard.spec.ts
 

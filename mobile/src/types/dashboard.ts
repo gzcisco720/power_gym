@@ -70,6 +70,70 @@ export interface TrainerDashboardResponse {
   thisWeek: ThisWeekEntry[];
 }
 
+// ─── Member Dashboard ────────────────────────────────────────────────────────
+
+export interface MemberGreeting {
+  firstName: string;
+  streakDays: number;
+}
+
+export interface MemberTodaysPlan {
+  planName: string;
+  dayType: string;
+  exercises: { name: string }[];
+  exerciseCount: number;
+  setCount: number;
+  estimatedMinutes: number;
+  scheduledTime: string | null;
+}
+
+export interface MemberStats {
+  sessionsThisMonth: number;
+  latestWeight: number | null;
+  previousWeight: number | null;
+  latestBodyFat: number | null;
+  previousBodyFat: number | null;
+  topPR: { exercise: string; estimatedOneRM: number } | null;
+  newPRThisMonth: boolean;
+}
+
+export interface BodyCompositionEntry {
+  date: string;
+  weight: number;
+  bodyFat: number;
+}
+
+export interface StrengthProgressData {
+  exercises: string[];
+  data: { date: string; estimatedOneRM: number }[];
+}
+
+export interface NutritionToday {
+  dayType: string;
+  protein: number;
+  carbs: number;
+  fat: number;
+  calories: number;
+}
+
+export interface UpcomingSession {
+  datetime: string;
+  type: 'individual' | 'group';
+  groupSize: number | null;
+  daysFromNow: number;
+}
+
+export interface MemberDashboardResponse {
+  greeting: MemberGreeting;
+  todaysPlan: MemberTodaysPlan | null;
+  stats: MemberStats;
+  trainingHeatmap: boolean[];
+  bodyComposition: BodyCompositionEntry[];
+  strengthProgress: StrengthProgressData;
+  nutritionToday: NutritionToday | null;
+  upcomingSessions: UpcomingSession[];
+}
+
 // ─── Owner Dashboard ─────────────────────────────────────────────────────────
 
 export interface OwnerDashboardStats {
