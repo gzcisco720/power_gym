@@ -11,6 +11,7 @@ import {
   SpaceGrotesk_700Bold,
 } from '@expo-google-fonts/space-grotesk';
 import { View, ActivityIndicator } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { RootNavigator, linking } from './src/navigation';
 import { useAuthStore } from './src/stores/auth.store';
 
@@ -37,11 +38,13 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <NavigationContainer linking={linking}>
-        <RootNavigator />
-      </NavigationContainer>
-      <StatusBar style="light" />
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <NavigationContainer linking={linking}>
+          <RootNavigator />
+        </NavigationContainer>
+        <StatusBar style="light" />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
