@@ -77,11 +77,11 @@ describe('placeholders', () => {
   });
 
   describe('makePlaceholder', () => {
-    it('produces a component rendering the standard DrawerHeader (hamburger present)', () => {
+    it('produces a component rendering its title', () => {
       const TestScreen = makePlaceholder('Test Screen', 'screen-Test');
-      const { getByTestId } = render(<TestScreen />);
-      // DrawerHeader renders the hamburger button
-      expect(getByTestId('drawer-hamburger')).toBeTruthy();
+      const { getByTestId, getByText } = render(<TestScreen />);
+      expect(getByTestId('screen-Test')).toBeTruthy();
+      expect(getByText('Test Screen')).toBeTruthy();
     });
   });
 });

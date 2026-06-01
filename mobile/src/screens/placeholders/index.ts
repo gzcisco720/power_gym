@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { DrawerNavigationProp } from '@react-navigation/drawer';
-import type { ParamListBase } from '@react-navigation/native';
 import * as LocalAuthentication from 'expo-local-authentication';
-import { DrawerHeader } from '../../components/drawer/DrawerHeader';
 import { BiometricsPrompt } from '../../components/BiometricsPrompt';
 import { useAuthStore } from '../../stores/auth.store';
 
@@ -18,11 +14,9 @@ const cache = new Map<string, () => React.JSX.Element>();
 export function makePlaceholder(title: string, testID: string): () => React.JSX.Element {
   if (!cache.has(testID)) {
     const Component = function PlaceholderComponent() {
-      const navigation = useNavigation<DrawerNavigationProp<ParamListBase>>();
       return React.createElement(
         View,
         { testID, className: 'flex-1 bg-background' },
-        React.createElement(DrawerHeader, { navigation }),
         React.createElement(
           View,
           { className: 'flex-1 px-4 py-6' },
@@ -45,7 +39,6 @@ export function makePlaceholder(title: string, testID: string): () => React.JSX.
  * Uses testID="home-screen" to keep the existing E2E auth spec passing.
  */
 export function DashboardScreen(): React.JSX.Element {
-  const navigation = useNavigation<DrawerNavigationProp<ParamListBase>>();
   const { biometricsEnabled, setBiometricsEnabled } = useAuthStore();
   const [showPrompt, setShowPrompt] = useState(false);
 
@@ -63,7 +56,6 @@ export function DashboardScreen(): React.JSX.Element {
   return React.createElement(
     View,
     { testID: 'home-screen', className: 'flex-1 bg-background' },
-    React.createElement(DrawerHeader, { navigation }),
     React.createElement(
       View,
       { className: 'flex-1 px-4 py-6' },

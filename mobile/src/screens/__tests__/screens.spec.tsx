@@ -256,15 +256,12 @@ describe('BiometricsPrompt', () => {
 describe('RootNavigator', () => {
   it('renders AuthStack when unauthenticated and AppStack (HomeScreen) when accessToken present', () => {
     mockUseAuthStore.mockReturnValue(makeAuthState({ accessToken: null }));
-    const { getByText, rerender, queryByText } = render(<RootNavigator />);
+    const { getByText, rerender, queryByTestId } = render(<RootNavigator />);
     expect(getByText('Sign In')).toBeTruthy();
-    expect(queryByText('Power Gym')).toBeNull();
+    expect(queryByTestId('home-screen')).toBeNull();
 
     mockUseAuthStore.mockReturnValue(makeAuthState({ accessToken: 'some-token' }));
     rerender(<RootNavigator />);
-    // The drawer mock renders all registered screens simultaneously, each with a DrawerHeader
-    // showing the gym name — use getAllByText to confirm at least one is visible.
-    const { getAllByText } = render(<RootNavigator />);
-    expect(getAllByText('Power Gym').length).toBeGreaterThan(0);
+    expect(queryByTestId('home-screen')).toBeTruthy();
   });
 });

@@ -2,6 +2,10 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { AppDrawerContent } from '../AppDrawerContent';
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 59, bottom: 34, left: 0, right: 0 }),
+}));
+
 // Mock the branding store
 jest.mock('../../../stores/branding.store', () => ({
   useBrandingStore: (selector?: (s: { gymName: string | null; logoUrl: string | null; fetchBranding: () => void }) => unknown) => {
