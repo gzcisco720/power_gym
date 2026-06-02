@@ -10,6 +10,7 @@ import { UsersModule } from './modules/users/users.module';
 import { GymModule } from './modules/gym/gym.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { EquipmentModule } from './modules/equipment/equipment.module';
+import { ServiceTypesModule } from './modules/service-types/service-types.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { EquipmentModule } from './modules/equipment/equipment.module';
     GymModule,
     DashboardModule,
     EquipmentModule,
+    ServiceTypesModule,
   ],
 })
 export class AppModule {}

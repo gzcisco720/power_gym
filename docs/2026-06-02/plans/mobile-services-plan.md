@@ -105,7 +105,12 @@ cross-app — `backend/` (new `service-types` module + model) and `mobile/` (typ
 - `cd backend && pnpm test:e2e -- --testPathPattern=service-types`
 - `cd backend && pnpm lint && pnpm build`
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 1 Checkpoint
+- [x] `service-types.service.spec.ts` + `service-types.controller.spec.ts` — unit tests
+- [x] Model, DTOs, service, controller, module implemented
+- [x] `service-types.e2e-spec.ts` — integration tests
 
 ---
 
