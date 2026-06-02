@@ -218,7 +218,12 @@ cross-app: `backend/` (new equipment module) + `mobile/` (API layer, Zustand sto
 1. Write failing api unit tests (mock `apiClient`) → Red; implement api → Green
 2. Write failing store unit tests (mock api module) → Red; implement store → Green
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 3 Checkpoint
+- [x] `mobile/src/types/equipment.ts`
+- [x] `mobile/src/lib/api/equipment.api.ts` (unit tests)
+- [x] `mobile/src/stores/equipment.store.ts` (unit tests)
 
 ---
 
