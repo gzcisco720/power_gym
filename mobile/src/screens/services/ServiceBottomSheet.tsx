@@ -35,6 +35,7 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
   const [note, setNote] = useState(service?.note ?? '');
   const [isActive, setIsActive] = useState(service?.isActive ?? true);
   const [isSaving, setIsSaving] = useState(false);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // JSON snapshot for dirty detection in Edit mode
@@ -62,6 +63,7 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
     setPrice(service ? String(service.pricePerSession) : '');
     setNote(service?.note ?? '');
     setIsActive(service?.isActive ?? true);
+    setSuccessMsg(null);
     setErrorMsg(null);
     onClose();
   }
@@ -80,6 +82,7 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
           isActive,
         });
         updateItem(updated);
+        setSuccessMsg('Changes saved');
       } else {
         const created = await createServiceType({
           name: name.trim(),
@@ -88,8 +91,9 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
           note: note.trim() || undefined,
         });
         addItem(created);
+        setSuccessMsg('Service added');
       }
-      handleClose();
+      setTimeout(() => handleClose(), 800);
     } catch {
       setErrorMsg('Failed to save. Please try again.');
     } finally {
@@ -215,7 +219,9 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
               )}
 
               {/* Feedback */}
-              {errorMsg ? (
+              {successMsg ? (
+                <Text className="text-xs text-foreground/65 text-center">{successMsg}</Text>
+              ) : errorMsg ? (
                 <Text className="text-xs text-destructive text-center">{errorMsg}</Text>
               ) : null}
             </View>
