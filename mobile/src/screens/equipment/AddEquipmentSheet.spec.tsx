@@ -32,6 +32,7 @@ jest.mock('../../lib/equipment-catalog', () => ({
 import { useEquipmentStore } from '../../stores/equipment.store';
 import * as equipmentApi from '../../lib/api/equipment.api';
 import { searchCatalog } from '../../lib/equipment-catalog';
+import * as imageUpload from '../../lib/image-upload';
 import { EquipmentItem } from '../../types/equipment';
 import { AddEquipmentSheet } from './AddEquipmentSheet';
 
@@ -40,6 +41,9 @@ const mockCreateEquipment = equipmentApi.createEquipment as jest.MockedFunction<
   typeof equipmentApi.createEquipment
 >;
 const mockSearchCatalog = searchCatalog as jest.MockedFunction<typeof searchCatalog>;
+const mockPickAndUploadImage = imageUpload.pickAndUploadImage as jest.MockedFunction<
+  typeof imageUpload.pickAndUploadImage
+>;
 
 function makeStoreState(overrides: Partial<ReturnType<typeof useEquipmentStore>> = {}) {
   return {
@@ -140,5 +144,18 @@ describe('AddEquipmentSheet', () => {
       expect(addItem).toHaveBeenCalledWith(createdItem);
     });
     expect(await findByText('Equipment added')).toBeTruthy();
+  });
+
+  it('tapping Add Image calls pickAndUploadImage and adds returned URL to imageUrls', async () => {
+    setupStoreMock();
+    mockPickAndUploadImage.mockResolvedValueOnce('https://cdn.example.com/image.jpg');
+
+    const { getByLabelText } = render(<AddEquipmentSheet visible onClose={jest.fn()} />);
+
+    fireEvent.press(getByLabelText('Add image'));
+
+    await waitFor(() => {
+      expect(mockPickAndUploadImage).toHaveBeenCalled();
+    });
   });
 });

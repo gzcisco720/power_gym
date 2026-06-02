@@ -315,7 +315,19 @@ cross-app: `backend/` (new equipment module) + `mobile/` (API layer, Zustand sto
 3. Register stack screen + wire card navigation
 4. Write the Detox golden-path + error spec → run against booted simulator + running backend → passes
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 5 Checkpoint
+- [x] `mobile/src/screens/equipment/components/ConditionReportsTab.tsx` + spec
+- [x] `mobile/src/screens/equipment/components/EquipmentDetailsTab.tsx`
+- [x] `mobile/src/screens/equipment/EquipmentDetailScreen.tsx` + spec
+- [x] Navigation — `EquipmentDetail` registered in `AppStackParamList` + `AppNavigator`
+- [x] `EquipmentScreen.tsx` — card `onPress` wires to `navigation.navigate('EquipmentDetail', ...)`
+- [x] Evaluator fix: Overdue subtitle in `EquipmentCard.tsx`
+- [x] Evaluator fix: Image upload wired into `AddEquipmentSheet.tsx` + spec updated
+- [x] Evaluator fix: Skeleton loading in `EquipmentScreen.tsx`
+- [x] `mobile/e2e/owner/equipment.spec.ts` — Detox golden-path + error case
+- [x] All 127 Jest tests pass, lint clean
 
 ---
 

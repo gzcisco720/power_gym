@@ -47,6 +47,11 @@ export function EquipmentCard({ item, onPress }: EquipmentCardProps) {
       {item.brand ? (
         <Text className="mt-0.5 text-xs text-foreground/65">{item.brand}</Text>
       ) : null}
+      {isOverdue && item.nextServiceDate ? (
+        <Text className="mt-0.5 text-[10px] text-amber-300/70">
+          Was due {new Date(item.nextServiceDate).toLocaleDateString()}
+        </Text>
+      ) : null}
     </Pressable>
   );
 }

@@ -12,7 +12,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEquipmentStore } from '../../stores/equipment.store';
 import { createEquipment } from '../../lib/api/equipment.api';
 import { searchCatalog } from '../../lib/equipment-catalog';
+import { pickAndUploadImage } from '../../lib/image-upload';
 import { EquipmentStatus } from '../../types/equipment';
+import { EquipmentImagePicker } from './components/EquipmentImagePicker';
+
+const MAX_IMAGES = 5;
 
 interface AddEquipmentSheetProps {
   visible: boolean;
@@ -37,6 +41,8 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   const canSave = name.trim().length > 0;
 
@@ -50,12 +56,31 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
     setSuggestions([]);
   }
 
+  async function handleAddImage() {
+    if (imageUrls.length >= MAX_IMAGES) {
+      setErrorMsg(`Maximum ${MAX_IMAGES} images allowed.`);
+      return;
+    }
+    setIsUploading(true);
+    try {
+      const url = await pickAndUploadImage();
+      if (url) setImageUrls((prev) => [...prev, url]);
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
+  function handleRemoveImage(index: number) {
+    setImageUrls((prev) => prev.filter((_, i) => i !== index));
+  }
+
   function handleClose() {
     setName('');
     setBrand('');
     setQuantity('1');
     setStatus('active');
     setSuggestions([]);
+    setImageUrls([]);
     setSuccessMsg(null);
     setErrorMsg(null);
     onClose();
@@ -72,6 +97,7 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
         brand: brand.trim() || undefined,
         quantity: isNaN(qty) || qty < 1 ? 1 : qty,
         status,
+        imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
       });
       addItem(item);
       setSuccessMsg('Equipment added');
@@ -196,6 +222,14 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
                   ))}
                 </View>
               </View>
+
+              {/* Images */}
+              <EquipmentImagePicker
+                imageUrls={imageUrls}
+                onAdd={handleAddImage}
+                onRemove={handleRemoveImage}
+                isUploading={isUploading}
+              />
 
               {/* Feedback */}
               {successMsg ? (

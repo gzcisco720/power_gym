@@ -25,10 +25,12 @@ import {
   JourneyScreen,
 } from '../screens/placeholders';
 import { EquipmentScreen } from '../screens/equipment/EquipmentScreen';
+import { EquipmentDetailScreen } from '../screens/equipment/EquipmentDetailScreen';
 import { AppDrawerContent } from '../components/drawer/AppDrawerContent';
 import { DrawerHeader } from '../components/drawer/DrawerHeader';
 import { NAV_CONFIG } from './nav-config';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
+import { EquipmentItem } from '../types/equipment';
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -39,6 +41,7 @@ export type AuthStackParamList = {
 export type AppStackParamList = {
   Drawer: undefined;
   Settings: undefined;
+  EquipmentDetail: { equipment: EquipmentItem };
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -108,6 +111,7 @@ function AppNavigator() {
     <AppStack.Navigator screenOptions={{ headerShown: false }}>
       <AppStack.Screen name="Drawer" component={DrawerNavigator} />
       <AppStack.Screen name="Settings" component={SettingsScreen} />
+      <AppStack.Screen name="EquipmentDetail" component={EquipmentDetailScreen} />
     </AppStack.Navigator>
   );
 }
