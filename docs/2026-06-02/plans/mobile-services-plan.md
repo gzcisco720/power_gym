@@ -151,7 +151,14 @@ cross-app — `backend/` (new `service-types` module + model) and `mobile/` (typ
 - `cd mobile && pnpm test` (no regressions)
 - `cd mobile && pnpm lint`
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 2 Checkpoint
+- [x] `mobile/src/types/service-types.ts` — types defined
+- [x] `mobile/src/lib/api/service-types.api.ts` — API layer implemented
+- [x] `mobile/src/lib/api/service-types.api.spec.ts` — API tests (3 tests, all pass)
+- [x] `mobile/src/stores/service-types.store.ts` — Zustand store implemented
+- [x] `mobile/src/stores/service-types.store.spec.ts` — store tests (7 tests, all pass)
 
 ---
 
