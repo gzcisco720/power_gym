@@ -60,6 +60,8 @@ describe('Owner: Equipment management', () => {
     await element(by.id('equipment-add-button')).tap();
     await waitFor(element(by.id('add-name-input'))).toBeVisible().withTimeout(5000);
     await element(by.id('add-name-input')).typeText(equipmentName);
+    // Enable condition tracking so the Condition Reports tab is accessible
+    await element(by.id('add-track-condition-toggle')).tap();
     await element(by.id('add-save-button')).tap();
 
     // Wait for the sheet to show success and new card to appear in the list

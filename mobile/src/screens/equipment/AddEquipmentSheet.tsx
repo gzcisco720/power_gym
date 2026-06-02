@@ -7,6 +7,7 @@ import {
   Pressable,
   Modal,
   ActivityIndicator,
+  Switch,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEquipmentStore } from '../../stores/equipment.store';
@@ -41,6 +42,7 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [trackCondition, setTrackCondition] = useState(false);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -79,6 +81,7 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
     setBrand('');
     setQuantity('1');
     setStatus('active');
+    setTrackCondition(false);
     setSuggestions([]);
     setImageUrls([]);
     setSuccessMsg(null);
@@ -97,6 +100,7 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
         brand: brand.trim() || undefined,
         quantity: isNaN(qty) || qty < 1 ? 1 : qty,
         status,
+        trackCondition,
         imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
       });
       addItem(item);
@@ -221,6 +225,25 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
                     </Pressable>
                   ))}
                 </View>
+              </View>
+
+              {/* Track Condition */}
+              <View className="flex-row items-center justify-between">
+                <View className="flex-1 gap-0.5">
+                  <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
+                    Track Condition
+                  </Text>
+                  <Text className="text-xs text-foreground/65">
+                    Enable condition report logging
+                  </Text>
+                </View>
+                <Switch
+                  testID="add-track-condition-toggle"
+                  value={trackCondition}
+                  onValueChange={setTrackCondition}
+                  accessibilityLabel="Track condition"
+                  accessibilityRole="switch"
+                />
               </View>
 
               {/* Images */}
