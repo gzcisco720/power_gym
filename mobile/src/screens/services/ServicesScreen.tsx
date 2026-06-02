@@ -141,6 +141,7 @@ export function ServicesScreen() {
       />
 
       <ServiceBottomSheet
+        key={editService?._id ?? 'new-edit'}
         visible={editService !== undefined}
         onClose={() => setEditService(undefined)}
         service={editService}

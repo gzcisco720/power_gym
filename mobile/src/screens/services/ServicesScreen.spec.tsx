@@ -118,4 +118,18 @@ describe('ServicesScreen', () => {
       expect(getByText('Add Service')).toBeTruthy();
     });
   });
+
+  it('tapping a service card opens the Edit sheet with the card values pre-filled in the inputs', async () => {
+    const service = makeService({ _id: 'svc1', name: 'PT Session', durationMin: 60, pricePerSession: 80 });
+    mockUseServiceTypesStore.mockReturnValue(makeStoreState({ items: [service] }));
+    const { getByTestId } = render(<ServicesScreen />);
+
+    fireEvent.press(getByTestId('service-card-svc1'));
+
+    await waitFor(() => {
+      expect(getByTestId('service-name-input').props.value).toBe('PT Session');
+      expect(getByTestId('service-duration-input').props.value).toBe('60');
+      expect(getByTestId('service-price-input').props.value).toBe('80');
+    });
+  });
 });
