@@ -234,4 +234,7 @@ cross-app — `backend/` (new `service-types` module + model) and `mobile/` (typ
 - `cd mobile && pnpm detox build --configuration <config>`
 - `cd mobile && pnpm detox test --configuration <config> --testPathPattern=services`
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 4 Checkpoint
+- [x] `mobile/e2e/owner/services.spec.ts` — Detox E2E spec (golden path + error case)
