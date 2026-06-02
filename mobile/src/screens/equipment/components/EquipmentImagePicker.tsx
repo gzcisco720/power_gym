@@ -3,6 +3,8 @@ import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native';
 
 const MAX_IMAGES = 5;
 
+const COLORS = { white: '#ffffff', primary: '#4f46e5', destructive: '#ef4444' } as const;
+
 interface EquipmentImagePickerProps {
   imageUrls: string[];
   onAdd: () => Promise<void>;
@@ -35,6 +37,7 @@ export function EquipmentImagePicker({
               onPress={() => onRemove(index)}
               accessibilityLabel={`Remove image ${index + 1}`}
               accessibilityRole="button"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               className="absolute -right-1 -top-1 h-5 w-5 items-center justify-center rounded-full bg-destructive"
             >
               <Text className="text-xs text-foreground font-bold">×</Text>
@@ -50,7 +53,7 @@ export function EquipmentImagePicker({
             className="h-16 w-16 items-center justify-center rounded-xl bg-input border border-foreground/10"
           >
             {isUploading ? (
-              <ActivityIndicator size="small" color="#4f46e5" />
+              <ActivityIndicator size="small" color={COLORS.primary} />
             ) : (
               <Text className="text-2xl text-foreground/40">+</Text>
             )}

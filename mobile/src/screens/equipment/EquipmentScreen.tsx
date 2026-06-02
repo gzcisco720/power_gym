@@ -56,7 +56,7 @@ export function EquipmentScreen() {
           <Text className="text-[18px] font-semibold tracking-[-0.3px] text-foreground">
             Equipment
           </Text>
-          <Text className="mt-0.5 text-[12px] text-foreground/65">Gym equipment inventory</Text>
+          <Text className="mt-0.5 text-[12px] text-foreground/65">Manage gym equipment</Text>
         </View>
         <Pressable
           testID="equipment-add-button"

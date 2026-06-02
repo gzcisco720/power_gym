@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+
+const COLORS = { white: '#ffffff', primary: '#4f46e5', destructive: '#ef4444' } as const;
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ConditionReport, EquipmentItem } from '../../../types/equipment';
 import { fetchConditionReports, createConditionReport } from '../../../lib/api/equipment.api';
@@ -56,9 +58,9 @@ export function ConditionReportsTab({ item }: ConditionReportsTabProps) {
   return (
     <View className="flex-1">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="px-4 py-4 gap-3">
+        <View className="px-4 py-4 gap-2">
           {loading ? (
-            <ActivityIndicator color="#4f46e5" />
+            <ActivityIndicator color={COLORS.primary} />
           ) : reports.length === 0 ? (
             <Text className="text-[13px] text-foreground/65 text-center mt-4">
               No reports yet.
@@ -97,7 +99,7 @@ export function ConditionReportsTab({ item }: ConditionReportsTabProps) {
           value={note}
           onChangeText={setNote}
           placeholder="Add a condition note…"
-          placeholderTextColor="#616161"
+          placeholderTextColor="rgba(255,255,255,0.4)"
           className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
           multiline
         />
@@ -113,7 +115,7 @@ export function ConditionReportsTab({ item }: ConditionReportsTabProps) {
           }`}
         >
           {isSubmitting ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={COLORS.white} />
           ) : (
             <Text className="text-sm font-semibold text-foreground">Submit Report</Text>
           )}

@@ -13,6 +13,8 @@ import { EquipmentItem, EquipmentStatus, UpdateEquipmentDto } from '../../../typ
 import { EquipmentImagePicker } from './EquipmentImagePicker';
 import { pickAndUploadImage } from '../../../lib/image-upload';
 
+const COLORS = { white: '#ffffff', primary: '#4f46e5', destructive: '#ef4444' } as const;
+
 const STATUS_OPTIONS: { value: EquipmentStatus; label: string }[] = [
   { value: 'active', label: 'Active' },
   { value: 'maintenance', label: 'Maintenance' },
@@ -116,7 +118,7 @@ export function EquipmentDetailsTab({
               value={name}
               onChangeText={setName}
               placeholder="e.g. Treadmill"
-              placeholderTextColor="#616161"
+              placeholderTextColor="rgba(255,255,255,0.4)"
               className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
               autoCapitalize="words"
             />
@@ -131,7 +133,7 @@ export function EquipmentDetailsTab({
               value={brand}
               onChangeText={setBrand}
               placeholder="e.g. Life Fitness"
-              placeholderTextColor="#616161"
+              placeholderTextColor="rgba(255,255,255,0.4)"
               className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
             />
           </View>
@@ -144,8 +146,8 @@ export function EquipmentDetailsTab({
             <TextInput
               value={quantity}
               onChangeText={setQuantity}
-              keyboardType="numeric"
-              placeholderTextColor="#616161"
+              keyboardType="decimal-pad"
+              placeholderTextColor="rgba(255,255,255,0.4)"
               className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
             />
           </View>
@@ -190,7 +192,7 @@ export function EquipmentDetailsTab({
               value={notes}
               onChangeText={setNotes}
               placeholder="Any notes…"
-              placeholderTextColor="#616161"
+              placeholderTextColor="rgba(255,255,255,0.4)"
               multiline
               numberOfLines={3}
               className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
@@ -232,7 +234,7 @@ export function EquipmentDetailsTab({
           }`}
         >
           {isSaving ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={COLORS.white} />
           ) : (
             <Text className="text-sm font-semibold text-foreground">Save Changes</Text>
           )}
@@ -286,7 +288,7 @@ export function EquipmentDetailsTab({
                 className="flex-1 py-2.5 rounded-xl items-center bg-destructive/10"
               >
                 {isDeleting ? (
-                  <ActivityIndicator color="#ef4444" />
+                  <ActivityIndicator color={COLORS.destructive} />
                 ) : (
                   <Text className="text-sm font-medium text-destructive">Delete</Text>
                 )}

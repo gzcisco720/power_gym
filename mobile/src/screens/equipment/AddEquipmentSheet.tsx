@@ -19,6 +19,8 @@ import { EquipmentImagePicker } from './components/EquipmentImagePicker';
 
 const MAX_IMAGES = 5;
 
+const COLORS = { white: '#ffffff', primary: '#4f46e5', destructive: '#ef4444' } as const;
+
 interface AddEquipmentSheetProps {
   visible: boolean;
   onClose: () => void;
@@ -145,7 +147,7 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
                   value={name}
                   onChangeText={handleNameChange}
                   placeholder="e.g. Treadmill"
-                  placeholderTextColor="#616161"
+                  placeholderTextColor="rgba(255,255,255,0.4)"
                   className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   autoCapitalize="words"
                 />
@@ -177,7 +179,7 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
                   value={brand}
                   onChangeText={setBrand}
                   placeholder="e.g. Life Fitness"
-                  placeholderTextColor="#616161"
+                  placeholderTextColor="rgba(255,255,255,0.4)"
                   className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                 />
               </View>
@@ -190,8 +192,8 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
                 <TextInput
                   value={quantity}
                   onChangeText={setQuantity}
-                  keyboardType="numeric"
-                  placeholderTextColor="#616161"
+                  keyboardType="decimal-pad"
+                  placeholderTextColor="rgba(255,255,255,0.4)"
                   className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                 />
               </View>
@@ -278,7 +280,7 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
               }`}
             >
               {isSaving ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={COLORS.white} />
               ) : (
                 <Text className="text-sm font-semibold text-foreground">Save</Text>
               )}

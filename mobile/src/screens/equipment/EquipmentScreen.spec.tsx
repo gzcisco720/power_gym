@@ -75,13 +75,22 @@ beforeEach(() => {
 // ── EquipmentCard tests ───────────────────────────────────────────────────────
 
 describe('EquipmentCard', () => {
-  it('renders equipment name and status badge', () => {
-    const item = makeItem({ name: 'Rowing Machine', status: 'active' });
+  it('renders equipment name and status badge when trackCondition is true', () => {
+    const item = makeItem({ name: 'Rowing Machine', status: 'active', trackCondition: true });
     const { getByText } = render(
       <EquipmentCard item={item} onPress={jest.fn()} />,
     );
     expect(getByText('Rowing Machine')).toBeTruthy();
     expect(getByText('Active')).toBeTruthy();
+  });
+
+  it('does not render status badge when trackCondition is false', () => {
+    const item = makeItem({ name: 'Rowing Machine', status: 'active', trackCondition: false });
+    const { getByText, queryByText } = render(
+      <EquipmentCard item={item} onPress={jest.fn()} />,
+    );
+    expect(getByText('Rowing Machine')).toBeTruthy();
+    expect(queryByText('Active')).toBeNull();
   });
 
   it('nextServiceDate in the past renders an Overdue badge', () => {
