@@ -6,6 +6,7 @@ Sprint Contract plans only. One row per active plan.
 
 | Feature | Plan File | Status |
 |---|---|---|
+| Mobile Services | [2026-06-02/plans/mobile-services-plan.md](2026-06-02/plans/mobile-services-plan.md) | In Progress |
 
 ## Management Files
 
