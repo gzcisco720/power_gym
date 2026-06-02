@@ -11,7 +11,6 @@ import {
   MembersScreen,
   InvitesScreen,
   CalendarScreen,
-  ServicesScreen,
   BillingScreen,
   TrainingTemplatesScreen,
   NutritionTemplatesScreen,
@@ -24,6 +23,7 @@ import {
   CheckInScreen,
   JourneyScreen,
 } from '../screens/placeholders';
+import { ServicesScreen } from '../screens/services/ServicesScreen';
 import { EquipmentScreen } from '../screens/equipment/EquipmentScreen';
 import { EquipmentDetailScreen } from '../screens/equipment/EquipmentDetailScreen';
 import { AppDrawerContent } from '../components/drawer/AppDrawerContent';

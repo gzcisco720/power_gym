@@ -200,7 +200,14 @@ cross-app — `backend/` (new `service-types` module + model) and `mobile/` (typ
 - `cd mobile && pnpm test` (no regressions)
 - `cd mobile && pnpm lint`
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 3 Checkpoint
+- [x] `mobile/src/screens/services/ServicesScreen.tsx`
+- [x] `mobile/src/screens/services/ServiceBottomSheet.tsx`
+- [x] `mobile/src/screens/services/ServicesScreen.spec.tsx` — 5 tests, all pass
+- [x] `mobile/src/screens/services/ServiceBottomSheet.spec.tsx` — 5 tests, all pass
+- [x] Navigation + placeholder wired up
 
 ---
 
