@@ -244,6 +244,34 @@ describe('Equipment (e2e)', () => {
     });
   });
 
+  // ─── POST /equipment/upload-signature ────────────────────────────────────────
+
+  describe('POST /equipment/upload-signature', () => {
+    it('owner → 200 with body whose provider is "cloudinary" or "local" and folder:"equipment"', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/equipment/upload-signature')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .expect(200);
+
+      const body = res.body as Record<string, unknown>;
+      expect(['cloudinary', 'local']).toContain(body.provider);
+      expect(body.folder).toBe('equipment');
+    });
+
+    it('no token → 401', async () => {
+      await request(app.getHttpServer())
+        .post('/equipment/upload-signature')
+        .expect(401);
+    });
+
+    it('member token → 403', async () => {
+      await request(app.getHttpServer())
+        .post('/equipment/upload-signature')
+        .set('Authorization', `Bearer ${memberToken}`)
+        .expect(403);
+    });
+  });
+
   // ─── Condition Reports ────────────────────────────────────────────────────────
 
   describe('Condition Reports', () => {

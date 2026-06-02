@@ -26,6 +26,7 @@ const mockService = {
   remove: jest.fn(),
   findConditionReports: jest.fn(),
   createConditionReport: jest.fn(),
+  getUploadSignature: jest.fn(),
 };
 
 describe('EquipmentController', () => {
@@ -61,6 +62,26 @@ describe('EquipmentController', () => {
       await controller.remove(mockEquipmentId);
 
       expect(mockService.remove).toHaveBeenCalledWith(mockEquipmentId);
+    });
+  });
+
+  describe('getUploadSignature', () => {
+    it('calls service.getUploadSignature and returns its result', () => {
+      const mockConfig = {
+        provider: 'cloudinary',
+        uploadUrl: 'https://api.cloudinary.com/v1_1/test/image/upload',
+        apiKey: 'key',
+        signature: 'sig',
+        timestamp: 1700000000,
+        folder: 'equipment',
+        cloudName: 'test',
+      };
+      mockService.getUploadSignature.mockReturnValue(mockConfig);
+
+      const result = controller.getUploadSignature();
+
+      expect(mockService.getUploadSignature).toHaveBeenCalled();
+      expect(result).toEqual(mockConfig);
     });
   });
 });

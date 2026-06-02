@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { ConfigService } from '@nestjs/config';
 import { Model, Types } from 'mongoose';
 import {
   Equipment,
@@ -11,6 +12,25 @@ import {
 } from '../../common/models/condition-report.model';
 import { CreateEquipmentDto } from './dto/create-equipment.dto';
 import { UpdateEquipmentDto } from './dto/update-equipment.dto';
+import { buildUploadSignature } from '../../common/upload/upload-signature';
+
+type CloudinaryConfig = {
+  provider: 'cloudinary';
+  uploadUrl: string;
+  apiKey: string;
+  signature: string;
+  timestamp: number;
+  folder: string;
+  cloudName: string;
+};
+
+type LocalConfig = {
+  provider: 'local';
+  uploadUrl: string;
+  folder: string;
+};
+
+export type UploadConfig = CloudinaryConfig | LocalConfig;
 
 @Injectable()
 export class EquipmentService {
@@ -19,6 +39,7 @@ export class EquipmentService {
     private readonly equipmentModel: Model<EquipmentDocument>,
     @InjectModel(ConditionReport.name)
     private readonly conditionReportModel: Model<ConditionReportDocument>,
+    private readonly configService: ConfigService,
   ) {}
 
   async findAll(): Promise<EquipmentDocument[]> {
@@ -80,5 +101,32 @@ export class EquipmentService {
       equipmentId: new Types.ObjectId(equipmentId),
       note: note.trim(),
     });
+  }
+
+  getUploadSignature(): UploadConfig {
+    const folder = 'equipment';
+
+    if (this.configService.get<string>('UPLOAD_PROVIDER') === 'local') {
+      return { provider: 'local', uploadUrl: '/equipment/upload', folder };
+    }
+
+    const secret =
+      this.configService.get<string>('CLOUDINARY_API_SECRET') ?? '';
+    const cloudName =
+      this.configService.get<string>('CLOUDINARY_CLOUD_NAME') ?? '';
+    const apiKey = this.configService.get<string>('CLOUDINARY_API_KEY') ?? '';
+    const timestamp = Math.round(Date.now() / 1000);
+
+    const sig = buildUploadSignature({ secret, cloudName, apiKey, timestamp });
+
+    return {
+      provider: 'cloudinary',
+      uploadUrl: `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      apiKey,
+      signature: sig.signature,
+      timestamp,
+      folder,
+      cloudName,
+    };
   }
 }

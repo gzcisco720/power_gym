@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Types } from 'mongoose';
 import { EquipmentService } from './equipment.service';
 import { Equipment } from '../../common/models/equipment.model';
@@ -60,6 +61,7 @@ describe('EquipmentService', () => {
           provide: getModelToken(ConditionReport.name),
           useValue: conditionReportModel,
         },
+        { provide: ConfigService, useValue: { get: jest.fn() } },
       ],
     }).compile();
 
@@ -200,5 +202,66 @@ describe('EquipmentService', () => {
         service.createConditionReport(mockEquipmentId, 'note'),
       ).rejects.toThrow(NotFoundException);
     });
+  });
+});
+
+// ─── getUploadSignature ──────────────────────────────────────────────────────
+
+async function buildServiceWithConfig(
+  configValues: Record<string, string | undefined>,
+): Promise<EquipmentService> {
+  const mockConfig = {
+    get: (key: string) => configValues[key],
+  };
+
+  const module: TestingModule = await Test.createTestingModule({
+    providers: [
+      EquipmentService,
+      {
+        provide: getModelToken(Equipment.name),
+        useValue: makeEquipmentModel(),
+      },
+      {
+        provide: getModelToken(ConditionReport.name),
+        useValue: makeConditionReportModel(),
+      },
+      { provide: ConfigService, useValue: mockConfig },
+    ],
+  }).compile();
+
+  return module.get<EquipmentService>(EquipmentService);
+}
+
+describe('EquipmentService > getUploadSignature', () => {
+  it('returns local config when UPLOAD_PROVIDER is "local"', async () => {
+    const svc = await buildServiceWithConfig({
+      UPLOAD_PROVIDER: 'local',
+    });
+
+    const result = svc.getUploadSignature();
+
+    expect(result.provider).toBe('local');
+    expect(result.folder).toBe('equipment');
+    expect('uploadUrl' in result).toBe(true);
+  });
+
+  it('returns cloudinary config with provider "cloudinary" when UPLOAD_PROVIDER is unset', async () => {
+    const svc = await buildServiceWithConfig({
+      UPLOAD_PROVIDER: undefined,
+      CLOUDINARY_API_SECRET: 'test-secret',
+      CLOUDINARY_CLOUD_NAME: 'test-cloud',
+      CLOUDINARY_API_KEY: 'test-key',
+    });
+
+    const result = svc.getUploadSignature();
+
+    expect(result.provider).toBe('cloudinary');
+    expect(result.folder).toBe('equipment');
+    if (result.provider === 'cloudinary') {
+      expect(typeof result.signature).toBe('string');
+      expect(result.signature.length).toBeGreaterThan(0);
+      expect(result.cloudName).toBe('test-cloud');
+      expect(result.apiKey).toBe('test-key');
+    }
   });
 });

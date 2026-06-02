@@ -174,7 +174,13 @@ cross-app: `backend/` (new equipment module) + `mobile/` (API layer, Zustand sto
 2. Write failing service unit tests for env branching → Red; implement → Green
 3. Add controller endpoint; write failing integration test → Red; wire up → Green
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 2 Checkpoint
+- [x] `backend/src/common/upload/upload-signature.ts` — pure `buildUploadSignature` helper
+- [x] `EquipmentService.getUploadSignature` — env-branched local/cloudinary config (unit tests)
+- [x] `EquipmentController` — `POST /equipment/upload-signature` endpoint
+- [x] Integration tests — owner 200, no token 401, member 403
 
 ---
 

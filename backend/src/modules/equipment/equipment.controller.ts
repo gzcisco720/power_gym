@@ -59,4 +59,10 @@ export class EquipmentController {
   ) {
     return this.equipmentService.createConditionReport(id, dto.note);
   }
+
+  @Post('upload-signature')
+  @HttpCode(HttpStatus.OK)
+  getUploadSignature() {
+    return this.equipmentService.getUploadSignature();
+  }
 }
