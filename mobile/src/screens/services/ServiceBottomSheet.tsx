@@ -35,7 +35,6 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
   const [note, setNote] = useState(service?.note ?? '');
   const [isActive, setIsActive] = useState(service?.isActive ?? true);
   const [isSaving, setIsSaving] = useState(false);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // JSON snapshot for dirty detection in Edit mode
@@ -63,7 +62,6 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
     setPrice(service ? String(service.pricePerSession) : '');
     setNote(service?.note ?? '');
     setIsActive(service?.isActive ?? true);
-    setSuccessMsg(null);
     setErrorMsg(null);
     onClose();
   }
@@ -82,7 +80,6 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
           isActive,
         });
         updateItem(updated);
-        setSuccessMsg('Changes saved');
       } else {
         const created = await createServiceType({
           name: name.trim(),
@@ -91,7 +88,6 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
           note: note.trim() || undefined,
         });
         addItem(created);
-        setSuccessMsg('Service added');
       }
       handleClose();
     } catch {
@@ -108,7 +104,7 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
       <View className="flex-1 justify-end bg-black/60">
         <View
           className="rounded-t-2xl bg-card"
-          style={{ paddingBottom: insets.bottom || 16 }}
+          style={{ paddingBottom: insets.bottom + 16 }}
         >
           {/* Sheet header */}
           <View className="flex-row items-center justify-between px-4 pt-4 pb-2 border-b border-foreground/[.06]">
@@ -140,6 +136,7 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
                   placeholderTextColor="rgba(255,255,255,0.4)"
                   className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   autoCapitalize="words"
+                  accessibilityLabel="Service name"
                 />
               </View>
 
@@ -157,6 +154,7 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
                   placeholderTextColor="rgba(255,255,255,0.4)"
                   keyboardType="decimal-pad"
                   className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
+                  accessibilityLabel="Duration in minutes"
                 />
               </View>
 
@@ -174,6 +172,7 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
                   placeholderTextColor="rgba(255,255,255,0.4)"
                   keyboardType="decimal-pad"
                   className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
+                  accessibilityLabel="Price per session"
                 />
               </View>
 
@@ -190,6 +189,7 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
                   placeholderTextColor="rgba(255,255,255,0.4)"
                   className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   multiline
+                  accessibilityLabel="Note"
                 />
               </View>
 
@@ -215,9 +215,6 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
               )}
 
               {/* Feedback */}
-              {successMsg ? (
-                <Text className="text-sm text-emerald-300 text-center">{successMsg}</Text>
-              ) : null}
               {errorMsg ? (
                 <Text className="text-xs text-destructive text-center">{errorMsg}</Text>
               ) : null}
@@ -225,7 +222,7 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
           </ScrollView>
 
           {/* Footer action bar */}
-          <View className="px-4 py-3 border-t border-foreground/10">
+          <View className="px-4 py-3 border-t border-foreground/10 bg-background/95">
             <Pressable
               testID="service-save-button"
               onPress={handleSave}

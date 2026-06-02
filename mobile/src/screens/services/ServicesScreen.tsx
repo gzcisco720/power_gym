@@ -73,7 +73,7 @@ export function ServicesScreen() {
               accessibilityLabel={tab.label}
               accessibilityRole="tab"
               accessibilityState={{ selected: isActive }}
-              className={`flex-1 items-center py-2.5 border-b-2 ${
+              className={`flex-1 items-center py-3 border-b-2 ${
                 isActive ? 'border-primary' : 'border-transparent'
               }`}
             >
@@ -91,7 +91,7 @@ export function ServicesScreen() {
 
       {/* List */}
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="px-4 py-4 gap-2">
+        <View className="px-4 py-2 gap-2">
           {loading ? (
             <>
               {[0, 1, 2, 3].map((i) => (
