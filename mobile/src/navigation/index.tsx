@@ -11,7 +11,6 @@ import {
   MembersScreen,
   InvitesScreen,
   CalendarScreen,
-  EquipmentScreen,
   ServicesScreen,
   BillingScreen,
   TrainingTemplatesScreen,
@@ -25,6 +24,7 @@ import {
   CheckInScreen,
   JourneyScreen,
 } from '../screens/placeholders';
+import { EquipmentScreen } from '../screens/equipment/EquipmentScreen';
 import { AppDrawerContent } from '../components/drawer/AppDrawerContent';
 import { DrawerHeader } from '../components/drawer/DrawerHeader';
 import { NAV_CONFIG } from './nav-config';

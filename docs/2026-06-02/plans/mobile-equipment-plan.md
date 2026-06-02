@@ -266,7 +266,17 @@ cross-app: `backend/` (new equipment module) + `mobile/` (API layer, Zustand sto
 4. Wire screen into navigation; remove placeholder
 5. E2E covered with Stage 5
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 4 Checkpoint
+- [x] `mobile/assets/data/gym_equipment.json` + `mobile/src/lib/equipment-catalog.ts`
+- [x] `mobile/src/screens/equipment/components/EquipmentCard.tsx`
+- [x] `mobile/src/screens/equipment/EquipmentScreen.tsx`
+- [x] `mobile/src/screens/equipment/components/EquipmentImagePicker.tsx`
+- [x] `mobile/src/lib/image-upload.ts`
+- [x] `mobile/src/screens/equipment/AddEquipmentSheet.tsx`
+- [x] Navigation wiring (replace placeholder)
+- [x] All Jest tests pass
 
 ---
 

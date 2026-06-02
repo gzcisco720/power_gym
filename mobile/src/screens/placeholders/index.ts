@@ -37,7 +37,6 @@ export const TrainersScreen = makePlaceholder('Trainers', 'screen-Trainers');
 export const MembersScreen = makePlaceholder('Members', 'screen-Members');
 export const InvitesScreen = makePlaceholder('Invites', 'screen-Invites');
 export const CalendarScreen = makePlaceholder('Calendar', 'screen-Calendar');
-export const EquipmentScreen = makePlaceholder('Equipment', 'screen-Equipment');
 export const ServicesScreen = makePlaceholder('Services', 'screen-Services');
 export const BillingScreen = makePlaceholder('Billing', 'screen-Billing');
 export const TrainingTemplatesScreen = makePlaceholder('Training Templates', 'screen-TrainingTemplates');

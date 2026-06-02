@@ -15,6 +15,32 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 59, bottom: 34, left: 0, right: 0 }),
 }));
 
+jest.mock('../../stores/equipment.store', () => ({
+  useEquipmentStore: jest.fn().mockReturnValue({
+    items: [],
+    filter: 'all',
+    loading: false,
+    error: null,
+    fetchEquipment: jest.fn(),
+    addItem: jest.fn(),
+    updateItem: jest.fn(),
+    removeItem: jest.fn(),
+    setFilter: jest.fn(),
+  }),
+}));
+
+jest.mock('../../lib/api/equipment.api', () => ({
+  createEquipment: jest.fn(),
+}));
+
+jest.mock('../../lib/image-upload', () => ({
+  pickAndUploadImage: jest.fn(),
+}));
+
+jest.mock('../../lib/equipment-catalog', () => ({
+  searchCatalog: jest.fn().mockReturnValue([]),
+}));
+
 jest.mock('../../stores/branding.store', () => ({
   useBrandingStore: (
     selector?: (s: { gymName: string | null; logoUrl: string | null; fetchBranding: () => void }) => unknown,
@@ -48,8 +74,8 @@ jest.mock('@react-navigation/native', () => ({
 // ── Imports ───────────────────────────────────────────────────────────────────
 
 import { DashboardScreen } from '../DashboardScreen';
+import { EquipmentScreen } from '../equipment/EquipmentScreen';
 import {
-  EquipmentScreen,
   JourneyScreen,
   makePlaceholder,
 } from '../placeholders';
