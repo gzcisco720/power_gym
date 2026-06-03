@@ -75,8 +75,8 @@ describe('ExercisePicker', () => {
     expect(search).toHaveBeenCalledWith('bench');
 
     // Result rows visible
-    expect(getByTestId('exercise-result-ex1')).toBeTruthy();
-    expect(getByTestId('exercise-result-ex2')).toBeTruthy();
+    expect(getByTestId('exercise-result-Bench Press')).toBeTruthy();
+    expect(getByTestId('exercise-result-Squat')).toBeTruthy();
     expect(getByText('Bench Press')).toBeTruthy();
     expect(getByText('Squat')).toBeTruthy();
   });

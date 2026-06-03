@@ -137,7 +137,7 @@ export function ExercisePicker({ onSelect, onClose }: ExercisePickerProps) {
             results.map((exercise) => (
               <Pressable
                 key={exercise._id}
-                testID={`exercise-result-${exercise._id}`}
+                testID={`exercise-result-${exercise.name}`}
                 onPress={() => onSelect(exercise)}
                 accessibilityLabel={exercise.name}
                 accessibilityRole="button"
