@@ -8,7 +8,6 @@ import { ResetPasswordScreen } from '../screens/ResetPasswordScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
 import {
   TrainersScreen,
-  MembersScreen,
   CalendarScreen,
   TrainingTemplatesScreen,
   NutritionTemplatesScreen,
@@ -36,6 +35,8 @@ import { AppDrawerContent } from '../components/drawer/AppDrawerContent';
 import { DrawerHeader } from '../components/drawer/DrawerHeader';
 import { NAV_CONFIG } from './nav-config';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
+import { MembersScreen as RealMembersScreen } from '../screens/members/MembersScreen';
+import { MemberDetailScreen } from '../screens/members/MemberDetailScreen';
 import { EquipmentItem } from '../types/equipment';
 
 export type AuthStackParamList = {
@@ -52,6 +53,7 @@ export type AppStackParamList = {
   CheckInDetail: { checkIn: CheckIn };
   AddBodyTest: undefined;
   BodyTestDetail: { bodyTest: BodyTest };
+  MemberDetail: { memberId: string };
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -66,7 +68,7 @@ const authScreenOptions = {
 const SCREEN_REGISTRY: Record<string, () => React.JSX.Element> = {
   Dashboard: DashboardScreen,
   Trainers: TrainersScreen,
-  Members: MembersScreen,
+  Members: RealMembersScreen,
   Invites: InvitesScreen,
   Calendar: CalendarScreen,
   Equipment: EquipmentScreen,
@@ -126,6 +128,7 @@ function AppNavigator() {
       <AppStack.Screen name="CheckInDetail" component={CheckInDetailScreen} />
       <AppStack.Screen name="AddBodyTest" component={AddBodyTestScreen} />
       <AppStack.Screen name="BodyTestDetail" component={BodyTestDetailScreen} />
+      <AppStack.Screen name="MemberDetail" component={MemberDetailScreen} />
     </AppStack.Navigator>
   );
 }

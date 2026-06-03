@@ -147,7 +147,7 @@ cross-app — `backend/` (new `members` module) + `mobile/` (new data layer, scr
 3. Implement `members.api.ts` (thin `apiClient` wrappers) and `members.store.ts` (mirror `body-tests.store.ts`; add detail slice + search query) → Green
 4. `/simplify`, then `cd mobile && pnpm test && pnpm lint`
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 2 Checkpoint
 - [x] mobile/src/types/members.ts
@@ -187,4 +187,16 @@ Functional units (5 — within the 8 limit): `MembersScreen`, `MemberDetailScree
 5. Write `owner/members.spec.ts` and `trainer/members.spec.ts`; seed via `POST /auth/dev/seed-user-role` with `seedMembers: true`; run `cd mobile && pnpm detox build` + `pnpm detox test --testPathPattern=members` against a booted simulator + running backend
 6. `/simplify`, then `cd mobile && pnpm test && pnpm lint`
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] MembersScreen + MembersScreen.spec.tsx
+- [x] MemberDetailScreen + MemberDetailScreen.spec.tsx
+- [x] MemberCard component
+- [x] MemberOverviewTab
+- [x] MemberBodyTestsTab
+- [x] MemberHealthTab
+- [x] Navigation wiring (AppStackParamList, MemberDetail screen registered, MembersScreen swapped)
+- [x] placeholders/index.ts — MembersScreen removed
+- [x] mobile/e2e/owner/members.spec.ts
+- [x] mobile/e2e/trainer/members.spec.ts

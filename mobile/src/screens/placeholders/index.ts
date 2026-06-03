@@ -34,7 +34,6 @@ export function makePlaceholder(title: string, testID: string): () => React.JSX.
 
 // Owner screens
 export const TrainersScreen = makePlaceholder('Trainers', 'screen-Trainers');
-export const MembersScreen = makePlaceholder('Members', 'screen-Members');
 export const CalendarScreen = makePlaceholder('Calendar', 'screen-Calendar');
 export const TrainingTemplatesScreen = makePlaceholder('Training Templates', 'screen-TrainingTemplates');
 export const NutritionTemplatesScreen = makePlaceholder(
