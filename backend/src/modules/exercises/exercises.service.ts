@@ -20,9 +20,10 @@ export class ExercisesService {
     };
 
     if (q) {
+      const escaped = q.slice(0, 100).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       return this.exerciseModel.find({
         ...visibilityCondition,
-        name: { $regex: q, $options: 'i' },
+        name: { $regex: escaped, $options: 'i' },
       });
     }
 
