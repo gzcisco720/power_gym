@@ -70,9 +70,9 @@ export class HealthService {
     dto: UpdateInjuryDto,
     memberId: string,
   ): Promise<MemberInjuryDocument> {
-    const update: Record<string, unknown> = { ...dto };
+    const update: UpdateInjuryDto & { resolvedAt?: Date } = { ...dto };
     if (dto.status === 'resolved' && !dto.resolvedAt) {
-      update['resolvedAt'] = new Date();
+      update.resolvedAt = new Date();
     }
 
     const updated = await this.injuryModel.findOneAndUpdate(
