@@ -157,7 +157,7 @@ Modify:
 1. Write `invites.api.spec.ts` (mocking `apiClient`) and `invites.store.spec.ts` → Red
 2. Implement `invites.ts` types + `inviteStatus`, `invites.api.ts`, `invites.store.ts` → Green
 
-**Status**: In Progress
+**Status**: Complete
 
 ---
 
@@ -195,4 +195,11 @@ Modify:
 2. Implement both components, swap the navigation registry to the real screen, remove the placeholder export → Green (Jest + lint pass)
 3. Write `e2e/owner/invites.spec.ts` and `e2e/trainer/invites.spec.ts`, build Detox, run against a booted simulator + running backend → passes
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] `InvitesScreen.tsx` + `InvitesScreen.spec.tsx`
+- [x] `CreateInviteBottomSheet.tsx` + `CreateInviteBottomSheet.spec.tsx`
+- [x] Navigation wiring (index.tsx + placeholders/index.ts)
+- [x] `e2e/owner/invites.spec.ts`
+- [x] `e2e/trainer/invites.spec.ts`

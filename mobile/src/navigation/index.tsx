@@ -9,7 +9,6 @@ import { DashboardScreen } from '../screens/DashboardScreen';
 import {
   TrainersScreen,
   MembersScreen,
-  InvitesScreen,
   CalendarScreen,
   BillingScreen,
   TrainingTemplatesScreen,
@@ -19,6 +18,7 @@ import {
   MyScheduleScreen,
   JourneyScreen,
 } from '../screens/placeholders';
+import { InvitesScreen } from '../screens/invites/InvitesScreen';
 import { MyHealthScreen } from '../screens/my-health/MyHealthScreen';
 import { MyBodyTestsScreen } from '../screens/my-body-tests/MyBodyTestsScreen';
 import { BodyTestsScreen } from '../screens/body-tests/BodyTestsScreen';
