@@ -53,7 +53,7 @@ export class TrainersService {
       email: m.email,
     }));
 
-    const createdAt = (trainer as unknown as { createdAt: Date }).createdAt;
+    const createdAt = (trainer as UserDocument & { createdAt: Date }).createdAt;
 
     return {
       id: trainer._id.toString(),
