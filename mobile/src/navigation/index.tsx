@@ -7,11 +7,11 @@ import { ForgotPasswordScreen } from '../screens/ForgotPasswordScreen';
 import { ResetPasswordScreen } from '../screens/ResetPasswordScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
 import {
-  CalendarScreen,
   MyTrainingScreen,
   MyNutritionScreen,
   JourneyScreen,
 } from '../screens/placeholders';
+import { CalendarScreen } from '../screens/calendar/CalendarScreen';
 import { NutritionTemplatesScreen } from '../screens/nutrition-templates/NutritionTemplatesScreen';
 import { NutritionTemplateDetailScreen } from '../screens/nutrition-templates/NutritionTemplateDetailScreen';
 import { NutritionTemplateFormScreen } from '../screens/nutrition-templates/NutritionTemplateFormScreen';

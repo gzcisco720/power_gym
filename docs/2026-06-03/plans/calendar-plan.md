@@ -214,7 +214,7 @@ Store `calendar.store.ts` shape:
 2. Write failing store unit tests → implement store → Green
 3. `/simplify`
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 2 Checkpoint
 - [x] Types extension (`mobile/src/types/scheduled-sessions.ts`)
@@ -257,7 +257,15 @@ Max units: 1 screen + 2 components = within limit.
 4. Write `calendar.spec.ts` Detox golden + error path; run against simulator + running backend → Green
 5. `/simplify`; then `design-reviewer` on `screens/calendar/`
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] AgendaSessionCard + spec
+- [x] SessionForm + spec
+- [x] CalendarScreen + spec
+- [x] navigation/index.tsx — CalendarScreen placeholder replaced
+- [x] screens/placeholders/index.ts — CalendarScreen removed
+- [x] mobile/e2e/owner/calendar.spec.ts (Detox E2E)
 
 ---
 
