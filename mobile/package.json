@@ -13,6 +13,7 @@
     "@testing-library/react-native": "^13.3.3",
     "axios": "^1.16.1",
     "expo": "~56.0.8",
+    "expo-clipboard": "^56.0.3",
     "expo-font": "^56.0.5",
     "expo-image-picker": "^56.0.15",
     "expo-linear-gradient": "^56.0.4",
