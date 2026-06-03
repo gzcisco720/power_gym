@@ -118,7 +118,7 @@ Endpoints (4 functional units in nutrition-templates, 2 in foods = 6 total, with
 2. Implement models, DTOs, services, controllers, modules; register in `app.module.ts` (Green).
 3. Write e2e integration specs against the real Nest test app + Mongo (passes against real stack).
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 1 Checkpoint
 - [x] NutritionTemplate model + Food model
@@ -164,7 +164,15 @@ Functional units: 2 API modules, 2 stores, 1 helper module = 5, within limit.
 2. Implement types, api modules, macro helpers, stores (Green).
 3. Verify store↔api integration tests pass with the mocked client (real store logic exercised).
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 2 Checkpoint
+- [x] mobile/src/types/nutrition-templates.ts
+- [x] mobile/src/lib/api/nutrition-templates.api.ts + spec
+- [x] mobile/src/lib/api/foods.api.ts + spec
+- [x] mobile/src/lib/nutrition-macros.ts + spec
+- [x] mobile/src/stores/nutrition-templates.store.ts + spec
+- [x] mobile/src/stores/foods.store.ts + spec
 
 ---
 
