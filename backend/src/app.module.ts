@@ -14,6 +14,7 @@ import { ServiceTypesModule } from './modules/service-types/service-types.module
 import { CheckInsModule } from './modules/check-ins/check-ins.module';
 import { BodyTestsModule } from './modules/body-tests/body-tests.module';
 import { HealthModule } from './modules/health/health.module';
+import { InvitesModule } from './modules/invites/invites.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { HealthModule } from './modules/health/health.module';
     CheckInsModule,
     BodyTestsModule,
     HealthModule,
+    InvitesModule,
   ],
 })
 export class AppModule {}
