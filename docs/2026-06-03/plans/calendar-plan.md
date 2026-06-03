@@ -161,7 +161,7 @@ Endpoints (all under `@UseGuards(JwtAuthGuard, RolesGuard)`):
 4. Extend integration spec; run `pnpm test:e2e` against real Mongo-memory stack → Green
 5. `/simplify` on the diff
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 1 Checkpoint
 - [x] DTOs (create-session.dto.ts, update-session.dto.ts, list-sessions.query.ts)
@@ -214,7 +214,14 @@ Store `calendar.store.ts` shape:
 2. Write failing store unit tests → implement store → Green
 3. `/simplify`
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 2 Checkpoint
+- [x] Types extension (`mobile/src/types/scheduled-sessions.ts`)
+- [x] API functions (`mobile/src/lib/api/scheduled-sessions.api.ts`)
+- [x] API spec (`mobile/src/lib/api/scheduled-sessions.api.spec.ts`)
+- [x] Store (`mobile/src/stores/calendar.store.ts`)
+- [x] Store spec (`mobile/src/stores/calendar.store.spec.ts`)
 
 ---
 
