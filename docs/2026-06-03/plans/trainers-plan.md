@@ -97,7 +97,7 @@ interface TrainerDetailResponse {
 2. Implement `TrainersService`, `TrainersController`, DTO types, `TrainersModule`; register module in `app.module.ts` → Green
 3. Write `trainers.e2e-spec.ts` (mirror `equipment.e2e-spec.ts` buildApp/auth helpers, seed an owner, two trainers, and members assigned to one trainer) → passes against in-memory Mongo
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 1 Checkpoint
 - [x] `trainers.service.spec.ts` — service unit tests
@@ -135,7 +135,12 @@ interface TrainerDetailResponse {
 2. Implement types, api, store → Green
 3. No UI/E2E in this stage; the real-stack proof is Stage 3's Detox spec hitting the live backend from Stage 1.
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 2 Checkpoint
+- [x] `mobile/src/types/trainers.ts` — type definitions
+- [x] `mobile/src/lib/api/trainers.api.ts` + `trainers.api.spec.ts`
+- [x] `mobile/src/stores/trainers.store.ts` + `trainers.store.spec.ts`
 
 ---
 
