@@ -17,9 +17,9 @@ import {
   MyTrainingScreen,
   MyNutritionScreen,
   MyScheduleScreen,
-  MyHealthScreen,
   JourneyScreen,
 } from '../screens/placeholders';
+import { MyHealthScreen } from '../screens/my-health/MyHealthScreen';
 import { MyBodyTestsScreen } from '../screens/my-body-tests/MyBodyTestsScreen';
 import { BodyTestsScreen } from '../screens/body-tests/BodyTestsScreen';
 import { AddBodyTestScreen } from '../screens/body-test-shared/AddBodyTestScreen';

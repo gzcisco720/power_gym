@@ -48,5 +48,4 @@ export const MyNutritionScreen = makePlaceholder('My Nutrition', 'screen-MyNutri
 
 // Member-only screens
 export const MyScheduleScreen = makePlaceholder('My Schedule', 'screen-MySchedule');
-export const MyHealthScreen = makePlaceholder('My Health', 'screen-MyHealth');
 export const JourneyScreen = makePlaceholder('Journey', 'screen-Journey');

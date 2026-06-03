@@ -158,7 +158,7 @@ cross-app: `backend/` (new `health` module) + `mobile/` (data layer + screens). 
 3. Write failing `health.store.spec.ts` → Red → implement `health.store.ts` three slices → Green.
 4. `/simplify`; ensure `pnpm test` + `pnpm lint` green. No `any`/`unknown`.
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 2 Checkpoint
 - [x] `mobile/src/types/health.ts`
@@ -201,5 +201,17 @@ cross-app: `backend/` (new `health` module) + `mobile/` (data layer + screens). 
 6. Write `mobile/e2e/member/my-health.spec.ts`; build + run Detox on the configured simulator → passes.
 7. `/simplify`; run design-reviewer on `screens/my-health/`; ensure `pnpm test` + `pnpm lint` green.
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] `mobile/src/screens/my-health/MyHealthScreen.tsx`
+- [x] `mobile/src/screens/my-health/tabs/InjuriesTab.tsx` + `InjuriesTab.spec.tsx`
+- [x] `mobile/src/screens/my-health/tabs/MedicationsTab.tsx` + `MedicationsTab.spec.tsx`
+- [x] `mobile/src/screens/my-health/tabs/MedicalBackgroundTab.tsx` + `MedicalBackgroundTab.spec.tsx`
+- [x] `mobile/src/screens/my-health/components/InjuryBottomSheet.tsx`
+- [x] `mobile/src/screens/my-health/components/MedicationBottomSheet.tsx`
+- [x] `mobile/src/screens/my-health/components/InjuryCard.tsx`
+- [x] `mobile/src/screens/my-health/components/MedicationCard.tsx`
+- [x] Navigation wiring
+- [x] `mobile/e2e/member/my-health.spec.ts`
 
