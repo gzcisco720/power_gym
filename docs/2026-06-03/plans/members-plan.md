@@ -112,7 +112,7 @@ cross-app — `backend/` (new `members` module) + `mobile/` (new data layer, scr
 5. Register `MembersModule` in `app.module.ts`; add `seedMembers` to the dev controller + DTO (the seed creates one member assigned to the seeded owner/trainer, with one body test, one active injury, one active medication, one check-in)
 6. `/simplify`, then `cd backend && pnpm test && pnpm test:e2e && pnpm lint && pnpm build`
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 1 Checkpoint
 - [x] members.service.spec.ts (unit tests — Red)
@@ -147,7 +147,12 @@ cross-app — `backend/` (new `members` module) + `mobile/` (new data layer, scr
 3. Implement `members.api.ts` (thin `apiClient` wrappers) and `members.store.ts` (mirror `body-tests.store.ts`; add detail slice + search query) → Green
 4. `/simplify`, then `cd mobile && pnpm test && pnpm lint`
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 2 Checkpoint
+- [x] mobile/src/types/members.ts
+- [x] mobile/src/lib/api/members.api.ts + members.api.spec.ts
+- [x] mobile/src/stores/members.store.ts + members.store.spec.ts
 
 ---
 
