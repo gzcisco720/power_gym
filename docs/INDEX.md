@@ -6,6 +6,7 @@ Sprint Contract plans only. One row per active plan.
 
 | Feature | Plan File | Status |
 |---|---|---|
+| Mobile Check-In (Sprint A: Form + History) | [2026-06-03/plans/mobile-check-in-plan.md](2026-06-03/plans/mobile-check-in-plan.md) | In Progress |
 
 ## Management Files
 
