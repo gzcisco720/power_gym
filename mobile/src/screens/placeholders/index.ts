@@ -51,5 +51,4 @@ export const MyBodyTestsScreen = makePlaceholder('My Body Tests', 'screen-MyBody
 export const MyScheduleScreen = makePlaceholder('My Schedule', 'screen-MySchedule');
 export const MyHealthScreen = makePlaceholder('My Health', 'screen-MyHealth');
 export const BodyTestsScreen = makePlaceholder('Body Tests', 'screen-BodyTests');
-export const CheckInScreen = makePlaceholder('Check-In', 'screen-CheckIn');
 export const JourneyScreen = makePlaceholder('Journey', 'screen-Journey');

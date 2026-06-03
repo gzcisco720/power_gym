@@ -1,0 +1,116 @@
+import React, { useState } from 'react';
+import { View, Text, Image, Pressable, ScrollView, Modal, ActivityIndicator } from 'react-native';
+import { pickAndUploadCheckInImage } from '../../../lib/check-in-image-upload';
+
+const COLORS = { white: '#ffffff', destructive: '#ef4444' } as const;
+const MAX_PHOTOS = 5;
+
+interface PhotosSectionProps {
+  photos: string[];
+  onChange(photos: string[]): void;
+}
+
+export function PhotosSection({ photos, onChange }: PhotosSectionProps) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fullscreenUri, setFullscreenUri] = useState<string | null>(null);
+
+  async function handleAdd() {
+    if (photos.length >= MAX_PHOTOS) {
+      setError('Maximum 5 photos allowed');
+      return;
+    }
+    setError(null);
+    setUploading(true);
+    try {
+      const url = await pickAndUploadCheckInImage();
+      if (url) onChange([...photos, url]);
+    } catch {
+      setError('Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function handleRemove(index: number) {
+    onChange(photos.filter((_, i) => i !== index));
+  }
+
+  return (
+    <View className="gap-3">
+      <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
+        Photos <Text className="text-foreground/65">(optional, max 5)</Text>
+      </Text>
+
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View className="flex-row gap-2">
+          {photos.map((uri, i) => (
+            <View key={uri} className="relative">
+              <Pressable
+                onPress={() => setFullscreenUri(uri)}
+                accessibilityLabel="View photo"
+                accessibilityRole="button"
+              >
+                <Image
+                  source={{ uri }}
+                  className="w-14 h-14 rounded-lg"
+                  accessibilityLabel="Check-in photo"
+                />
+              </Pressable>
+              <Pressable
+                onPress={() => handleRemove(i)}
+                accessibilityLabel="Remove photo"
+                accessibilityRole="button"
+                className="absolute -top-1 -right-1 bg-destructive rounded-full w-5 h-5 items-center justify-center"
+              >
+                <Text className="text-xs text-foreground font-bold">×</Text>
+              </Pressable>
+            </View>
+          ))}
+
+          {photos.length < MAX_PHOTOS && (
+            <Pressable
+              onPress={handleAdd}
+              disabled={uploading}
+              accessibilityLabel="Add photo"
+              accessibilityRole="button"
+              className="w-14 h-14 rounded-lg bg-input border border-foreground/10 items-center justify-center"
+            >
+              {uploading ? (
+                <ActivityIndicator color={COLORS.white} size="small" />
+              ) : (
+                <Text className="text-xl text-foreground/65">+</Text>
+              )}
+            </Pressable>
+          )}
+        </View>
+      </ScrollView>
+
+      {error ? <Text className="text-xs text-destructive">{error}</Text> : null}
+
+      {/* Fullscreen photo modal */}
+      <Modal
+        visible={fullscreenUri !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setFullscreenUri(null)}
+      >
+        <Pressable
+          className="flex-1 bg-black/90 items-center justify-center"
+          onPress={() => setFullscreenUri(null)}
+          accessibilityLabel="Close fullscreen photo"
+          accessibilityRole="button"
+        >
+          {fullscreenUri ? (
+            <Image
+              source={{ uri: fullscreenUri }}
+              className="w-full h-96"
+              resizeMode="contain"
+              accessibilityLabel="Full screen check-in photo"
+            />
+          ) : null}
+        </Pressable>
+      </Modal>
+    </View>
+  );
+}

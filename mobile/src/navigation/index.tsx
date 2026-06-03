@@ -20,9 +20,12 @@ import {
   MyScheduleScreen,
   MyHealthScreen,
   BodyTestsScreen,
-  CheckInScreen,
   JourneyScreen,
 } from '../screens/placeholders';
+import { CheckInScreen } from '../screens/check-in/CheckInScreen';
+import { CheckInFormScreen } from '../screens/check-in/CheckInFormScreen';
+import { CheckInDetailScreen } from '../screens/check-in/CheckInDetailScreen';
+import { CheckIn } from '../types/check-ins';
 import { ServicesScreen } from '../screens/services/ServicesScreen';
 import { EquipmentScreen } from '../screens/equipment/EquipmentScreen';
 import { EquipmentDetailScreen } from '../screens/equipment/EquipmentDetailScreen';
@@ -42,6 +45,8 @@ export type AppStackParamList = {
   Drawer: undefined;
   Settings: undefined;
   EquipmentDetail: { equipment: EquipmentItem };
+  CheckInForm: undefined;
+  CheckInDetail: { checkIn: CheckIn };
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -112,6 +117,8 @@ function AppNavigator() {
       <AppStack.Screen name="Drawer" component={DrawerNavigator} />
       <AppStack.Screen name="Settings" component={SettingsScreen} />
       <AppStack.Screen name="EquipmentDetail" component={EquipmentDetailScreen} />
+      <AppStack.Screen name="CheckInForm" component={CheckInFormScreen} />
+      <AppStack.Screen name="CheckInDetail" component={CheckInDetailScreen} />
     </AppStack.Navigator>
   );
 }

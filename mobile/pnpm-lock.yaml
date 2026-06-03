@@ -11,6 +11,9 @@ importers:
       '@expo-google-fonts/space-grotesk':
         specifier: ^0.4.1
         version: 0.4.1
+      '@react-native-community/slider':
+        specifier: ^5.2.0
+        version: 5.2.0
       '@react-navigation/drawer':
         specifier: ^7.10.3
         version: 7.10.3(0bff96ca4376c48444ed7b93b22c9fd9)
@@ -1227,6 +1230,9 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  '@react-native-community/slider@5.2.0':
+    resolution: {integrity: sha512-484sH8aWEaSjxaZ7HT3YZ8CKDcNes2synko1vdEz5DFEdvKAduxKJTj22L/qBMD7rtIkfbX69DMzWDAGbOAV6w==}
 
   '@react-native/assets-registry@0.85.3':
     resolution: {integrity: sha512-u9ZiYP23vA2IFtdFQFmetzSmk6SM0xgKIoiOsr1hXNHjHaLhOm+/Ph1ud57wX6+Dbwdzx8coJgnzSKL3W21PCg==}
@@ -6895,6 +6901,8 @@ snapshots:
       react: 19.2.3
     optionalDependencies:
       '@types/react': 19.2.15
+
+  '@react-native-community/slider@5.2.0': {}
 
   '@react-native/assets-registry@0.85.3': {}
 

@@ -197,7 +197,13 @@ Created:
 2. Add slider dep; implement components, three screens, image-upload helper, navigation wiring → Green
 3. Run `pnpm test --testPathPattern=check-in` and `pnpm lint` → pass; then `/simplify`
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 3 Checkpoint
+- [x] CheckInScreen
+- [x] CheckInFormScreen
+- [x] CheckInDetailScreen
+- [x] Navigation wiring
 
 ---
 
