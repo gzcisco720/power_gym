@@ -118,7 +118,18 @@ Endpoints (4 functional units in nutrition-templates, 2 in foods = 6 total, with
 2. Implement models, DTOs, services, controllers, modules; register in `app.module.ts` (Green).
 3. Write e2e integration specs against the real Nest test app + Mongo (passes against real stack).
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 1 Checkpoint
+- [x] NutritionTemplate model + Food model
+- [x] DTOs (nutrition-templates + foods)
+- [x] NutritionTemplatesService + unit spec
+- [x] FoodsService + unit spec
+- [x] NutritionTemplatesController + unit spec
+- [x] FoodsController + unit spec
+- [x] Modules + app.module.ts registration
+- [x] nutrition-templates.e2e-spec.ts
+- [x] foods.e2e-spec.ts
 
 ---
 

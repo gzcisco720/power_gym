@@ -21,6 +21,8 @@ import { MembersModule } from './modules/members/members.module';
 import { TrainersModule } from './modules/trainers/trainers.module';
 import { PlanTemplatesModule } from './modules/plan-templates/plan-templates.module';
 import { ExercisesModule } from './modules/exercises/exercises.module';
+import { NutritionTemplatesModule } from './modules/nutrition-templates/nutrition-templates.module';
+import { FoodsModule } from './modules/foods/foods.module';
 
 @Module({
   imports: [
@@ -50,6 +52,8 @@ import { ExercisesModule } from './modules/exercises/exercises.module';
     TrainersModule,
     PlanTemplatesModule,
     ExercisesModule,
+    NutritionTemplatesModule,
+    FoodsModule,
   ],
 })
 export class AppModule {}
