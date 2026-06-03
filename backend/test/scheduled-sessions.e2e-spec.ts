@@ -32,6 +32,8 @@ import {
 const OWNER_EMAIL = 'ss-e2e-owner@example.com';
 const MEMBER_EMAIL = 'ss-e2e-member@example.com';
 const MEMBER2_EMAIL = 'ss-e2e-member2@example.com';
+const TRAINER_EMAIL = 'ss-e2e-trainer@example.com';
+const TRAINER2_EMAIL = 'ss-e2e-trainer2@example.com';
 const TEST_PASSWORD = 'Password1';
 
 async function buildApp(
@@ -79,6 +81,9 @@ describe('ScheduledSessions (e2e)', () => {
   let ownerToken: string;
   let memberToken: string;
   let member2Token: string;
+  let trainerToken: string;
+  let trainer2Token: string;
+  let memberId: string;
 
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
@@ -91,6 +96,9 @@ describe('ScheduledSessions (e2e)', () => {
 
     const passwordHash = await bcrypt.hash(TEST_PASSWORD, 10);
     const ownerObjId = new Types.ObjectId();
+    const trainerObjId = new Types.ObjectId();
+    const trainer2ObjId = new Types.ObjectId();
+    const memberObjId = new Types.ObjectId();
 
     await userModel.create({
       _id: ownerObjId,
@@ -103,6 +111,27 @@ describe('ScheduledSessions (e2e)', () => {
     });
 
     await userModel.create({
+      _id: trainerObjId,
+      firstName: 'SS',
+      lastName: 'Trainer',
+      email: TRAINER_EMAIL,
+      passwordHash,
+      role: 'trainer',
+      trainerId: null,
+    });
+
+    await userModel.create({
+      _id: trainer2ObjId,
+      firstName: 'SS',
+      lastName: 'Trainer2',
+      email: TRAINER2_EMAIL,
+      passwordHash,
+      role: 'trainer',
+      trainerId: null,
+    });
+
+    const memberDoc = await userModel.create({
+      _id: memberObjId,
       firstName: 'SS',
       lastName: 'Member',
       email: MEMBER_EMAIL,
@@ -110,6 +139,7 @@ describe('ScheduledSessions (e2e)', () => {
       role: 'member',
       trainerId: ownerObjId,
     });
+    memberId = memberDoc._id.toString();
 
     await userModel.create({
       firstName: 'SS',
@@ -137,6 +167,18 @@ describe('ScheduledSessions (e2e)', () => {
       .send({ email: MEMBER2_EMAIL, password: TEST_PASSWORD })
       .expect(201);
     member2Token = (member2Login.body as { accessToken: string }).accessToken;
+
+    const trainerLogin = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: TRAINER_EMAIL, password: TEST_PASSWORD })
+      .expect(201);
+    trainerToken = (trainerLogin.body as { accessToken: string }).accessToken;
+
+    const trainer2Login = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: TRAINER2_EMAIL, password: TEST_PASSWORD })
+      .expect(201);
+    trainer2Token = (trainer2Login.body as { accessToken: string }).accessToken;
   });
 
   afterAll(async () => {
@@ -226,6 +268,271 @@ describe('ScheduledSessions (e2e)', () => {
       const items = res.body as Array<Record<string, unknown>>;
       // Member2 has no seeded sessions
       expect(items.length).toBe(0);
+    });
+  });
+
+  // ─── POST /scheduled-sessions ─────────────────────────────────────────────
+
+  describe('POST /scheduled-sessions', () => {
+    it('no token → 401', async () => {
+      await request(app.getHttpServer())
+        .post('/scheduled-sessions')
+        .send({
+          date: '2027-01-10T09:00:00.000Z',
+          startTime: '09:00',
+          endTime: '10:00',
+          memberIds: [memberId],
+        })
+        .expect(401);
+    });
+
+    it('member token → 403', async () => {
+      await request(app.getHttpServer())
+        .post('/scheduled-sessions')
+        .set('Authorization', `Bearer ${memberToken}`)
+        .send({
+          date: '2027-01-10T09:00:00.000Z',
+          startTime: '09:00',
+          endTime: '10:00',
+          memberIds: [memberId],
+        })
+        .expect(403);
+    });
+
+    it('owner token + valid body → 201 returns array with SessionDto including _id, seriesId, memberNames', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/scheduled-sessions')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          date: '2027-01-10T09:00:00.000Z',
+          startTime: '09:00',
+          endTime: '10:00',
+          memberIds: [memberId],
+        })
+        .expect(201);
+
+      const items = res.body as Array<Record<string, unknown>>;
+      expect(Array.isArray(items)).toBe(true);
+      expect(items.length).toBe(1);
+      expect(items[0]).toHaveProperty('_id');
+      expect(Object.prototype.hasOwnProperty.call(items[0], 'seriesId')).toBe(
+        true,
+      );
+      expect(items[0]).toHaveProperty('memberNames');
+    });
+
+    it('malformed body (missing memberIds) → 400', async () => {
+      await request(app.getHttpServer())
+        .post('/scheduled-sessions')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          date: '2027-01-10T09:00:00.000Z',
+          startTime: '09:00',
+          endTime: '10:00',
+          // memberIds missing
+        })
+        .expect(400);
+    });
+
+    it('recurrence.weeks=3 → 3 docs sharing one seriesId appear in GET /scheduled-sessions', async () => {
+      const createRes = await request(app.getHttpServer())
+        .post('/scheduled-sessions')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          date: '2027-02-01T09:00:00.000Z',
+          startTime: '10:00',
+          endTime: '11:00',
+          memberIds: [memberId],
+          recurrence: { weeks: 3 },
+        })
+        .expect(201);
+
+      const createdItems = createRes.body as Array<Record<string, unknown>>;
+      expect(createdItems.length).toBe(3);
+
+      const seriesIds = createdItems.map((i) => i['seriesId']);
+      expect(new Set(seriesIds).size).toBe(1);
+      expect(seriesIds[0]).not.toBeNull();
+
+      // Verify via GET
+      const getRes = await request(app.getHttpServer())
+        .get('/scheduled-sessions')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .query({ range: 'upcoming' })
+        .expect(200);
+
+      const allItems = getRes.body as Array<Record<string, unknown>>;
+      const seriesItems = allItems.filter(
+        (i) => i['seriesId'] === seriesIds[0],
+      );
+      expect(seriesItems.length).toBe(3);
+    });
+  });
+
+  // ─── GET /scheduled-sessions ─────────────────────────────────────────────
+
+  describe('GET /scheduled-sessions', () => {
+    it('no token → 401', async () => {
+      await request(app.getHttpServer()).get('/scheduled-sessions').expect(401);
+    });
+
+    it('member token → 403', async () => {
+      await request(app.getHttpServer())
+        .get('/scheduled-sessions')
+        .set('Authorization', `Bearer ${memberToken}`)
+        .expect(403);
+    });
+
+    it('trainer token returns only sessions where trainerId is that trainer', async () => {
+      // Create session for trainer1
+      await request(app.getHttpServer())
+        .post('/scheduled-sessions')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          date: '2027-03-01T09:00:00.000Z',
+          startTime: '08:00',
+          endTime: '09:00',
+          memberIds: [memberId],
+          trainerId: (
+            await userModel.findOne({ email: TRAINER_EMAIL })
+          )?._id.toString(),
+        })
+        .expect(201);
+
+      // Create session for trainer2
+      await request(app.getHttpServer())
+        .post('/scheduled-sessions')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          date: '2027-03-01T10:00:00.000Z',
+          startTime: '10:00',
+          endTime: '11:00',
+          memberIds: [memberId],
+          trainerId: (
+            await userModel.findOne({ email: TRAINER2_EMAIL })
+          )?._id.toString(),
+        })
+        .expect(201);
+
+      // trainer1 should only see their own sessions
+      const trainerRes = await request(app.getHttpServer())
+        .get('/scheduled-sessions')
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .query({ range: 'upcoming' })
+        .expect(200);
+
+      const trainerItems = trainerRes.body as Array<Record<string, unknown>>;
+      const trainer1Doc = await userModel.findOne({ email: TRAINER_EMAIL });
+      const trainer1Id = trainer1Doc?._id.toString();
+
+      for (const item of trainerItems) {
+        expect(item['trainerId']).toBe(trainer1Id);
+      }
+
+      // trainer2 should only see their own sessions
+      const trainer2Res = await request(app.getHttpServer())
+        .get('/scheduled-sessions')
+        .set('Authorization', `Bearer ${trainer2Token}`)
+        .query({ range: 'upcoming' })
+        .expect(200);
+
+      const trainer2Items = trainer2Res.body as Array<Record<string, unknown>>;
+      const trainer2Doc = await userModel.findOne({ email: TRAINER2_EMAIL });
+      const trainer2Id = trainer2Doc?._id.toString();
+
+      for (const item of trainer2Items) {
+        expect(item['trainerId']).toBe(trainer2Id);
+      }
+    });
+  });
+
+  // ─── PATCH /scheduled-sessions/:id ───────────────────────────────────────
+
+  describe('PATCH /scheduled-sessions/:id', () => {
+    it('scope=series updates startTime on all series docs', async () => {
+      // Create a series of 2
+      const createRes = await request(app.getHttpServer())
+        .post('/scheduled-sessions')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          date: '2027-04-01T09:00:00.000Z',
+          startTime: '07:00',
+          endTime: '08:00',
+          memberIds: [memberId],
+          recurrence: { weeks: 2 },
+        })
+        .expect(201);
+
+      const createdItems = createRes.body as Array<Record<string, unknown>>;
+      const firstId = createdItems[0]['_id'] as string;
+
+      await request(app.getHttpServer())
+        .patch(`/scheduled-sessions/${firstId}`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({ startTime: '08:00', scope: 'series' })
+        .expect(200);
+
+      // Verify via GET — both series docs should have startTime 08:00
+      const getRes = await request(app.getHttpServer())
+        .get('/scheduled-sessions')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .query({ range: 'upcoming' })
+        .expect(200);
+
+      const allItems = getRes.body as Array<Record<string, unknown>>;
+      const seriesItems = allItems.filter(
+        (i) => i['seriesId'] === createdItems[0]['seriesId'],
+      );
+      expect(seriesItems.length).toBe(2);
+      for (const item of seriesItems) {
+        expect(item['startTime']).toBe('08:00');
+      }
+    });
+  });
+
+  // ─── DELETE /scheduled-sessions/:id ──────────────────────────────────────
+
+  describe('DELETE /scheduled-sessions/:id', () => {
+    it('scope=single removes that doc; sibling series docs remain', async () => {
+      // Create a series of 2
+      const createRes = await request(app.getHttpServer())
+        .post('/scheduled-sessions')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          date: '2027-05-01T09:00:00.000Z',
+          startTime: '06:00',
+          endTime: '07:00',
+          memberIds: [memberId],
+          recurrence: { weeks: 2 },
+        })
+        .expect(201);
+
+      const createdItems = createRes.body as Array<Record<string, unknown>>;
+      const firstId = createdItems[0]['_id'] as string;
+      const seriesId = createdItems[0]['seriesId'] as string;
+
+      await request(app.getHttpServer())
+        .delete(`/scheduled-sessions/${firstId}`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .query({ scope: 'single' })
+        .expect(200);
+
+      // Verify via GET
+      const getRes = await request(app.getHttpServer())
+        .get('/scheduled-sessions')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .query({ range: 'upcoming' })
+        .expect(200);
+
+      const allItems = getRes.body as Array<Record<string, unknown>>;
+      const remainingSeriesItems = allItems.filter(
+        (i) => i['seriesId'] === seriesId,
+      );
+      // Second doc of the series should remain
+      expect(remainingSeriesItems.length).toBe(1);
+      // First doc should be gone
+      const deletedStillExists = allItems.some((i) => i['_id'] === firstId);
+      expect(deletedStillExists).toBe(false);
     });
   });
 });
