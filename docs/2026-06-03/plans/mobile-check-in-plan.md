@@ -96,29 +96,29 @@ Created:
 **Sprint Contract**:
 
 *Unit tests (`check-ins.service.spec.ts` + `check-ins.controller.spec.ts`):*
-- [ ] `CheckInsService > findByMember > returns the member's check-ins sorted by submittedAt descending` (mocked model)
-- [ ] `CheckInsService > create > looks up the User and stamps trainerId from the user document's trainerId field`
-- [ ] `CheckInsService > create > throws NotFoundException when the member User does not exist`
-- [ ] `CheckInsService > create > throws ConflictException when a check-in already exists with submittedAt >= current Monday 00:00`
-- [ ] `CheckInsService > create > falls back to memberId as trainerId when the member's trainerId is null`
-- [ ] `CheckInsService > getUploadSignature > returns config with folder "check-ins"`
-- [ ] `CheckInsController > create > passes req.user.sub as memberId to the service`
+- [x] `CheckInsService > findByMember > returns the member's check-ins sorted by submittedAt descending` (mocked model)
+- [x] `CheckInsService > create > looks up the User and stamps trainerId from the user document's trainerId field`
+- [x] `CheckInsService > create > throws NotFoundException when the member User does not exist`
+- [x] `CheckInsService > create > throws ConflictException when a check-in already exists with submittedAt >= current Monday 00:00`
+- [x] `CheckInsService > create > falls back to memberId as trainerId when the member's trainerId is null`
+- [x] `CheckInsService > getUploadSignature > returns config with folder "check-ins"`
+- [x] `CheckInsController > create > passes req.user.sub as memberId to the service`
 
 *Integration (`test/check-ins.e2e-spec.ts`):*
-- [ ] `POST /check-ins` with member token + valid body → 201 with `_id`, `memberId` matching the member, `submittedAt` present
-- [ ] `POST /check-ins` a second time in the same week with member token → 409
-- [ ] `POST /check-ins` with `sleepQuality: 11` (out of range) and member token → 400
-- [ ] `GET /check-ins` with member token → 200 array containing the created check-in
-- [ ] `GET /check-ins` with no token → 401
-- [ ] `GET /check-ins` with owner token → 403
-- [ ] `GET /check-ins/upload-signature` with member token → 200 with provider in ["cloudinary","local"] and `folder: "check-ins"`
+- [x] `POST /check-ins` with member token + valid body → 201 with `_id`, `memberId` matching the member, `submittedAt` present
+- [x] `POST /check-ins` a second time in the same week with member token → 409
+- [x] `POST /check-ins` with `sleepQuality: 11` (out of range) and member token → 400
+- [x] `GET /check-ins` with member token → 200 array containing the created check-in
+- [x] `GET /check-ins` with no token → 401
+- [x] `GET /check-ins` with owner token → 403
+- [x] `GET /check-ins/upload-signature` with member token → 200 with provider in ["cloudinary","local"] and `folder: "check-ins"`
 
 **TDD sequence**:
 1. Write failing service + controller unit tests → Red
 2. Implement DTO, service, controller, module; register in `AppModule` → Green
 3. Write `check-ins.e2e-spec.ts`; run `pnpm test:e2e` against MongoMemoryServer → passes
 
-**Status**: Not Started
+**Status**: Complete
 
 ---
 
