@@ -110,7 +110,7 @@ Modify:
 2. Implement `invites.service.ts`, `invites.controller.ts`, dto, module; register in `app.module.ts` → Green
 3. Write `test/invites.e2e-spec.ts` against the real Nest app + MongoMemoryServer → passes
 
-**Status**: In Progress
+**Status**: Complete
 
 ---
 
@@ -139,17 +139,17 @@ Modify:
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `inviteStatus > returns "used" when usedAt is a non-null ISO string regardless of expiry`
-- [ ] `inviteStatus > returns "expired" when usedAt is null and expiresAt is in the past`
-- [ ] `inviteStatus > returns "pending" when usedAt is null and expiresAt is in the future`
-- [ ] `invites.api > fetchInvites > calls apiClient.get("/invites") and returns response.data`
-- [ ] `invites.api > createInvite > calls apiClient.post("/invites", dto) and returns response.data`
-- [ ] `invites.api > revokeInvite > calls apiClient.delete("/invites/:id")`
-- [ ] `invites.api > fetchTrainerOptions > calls apiClient.get("/invites/trainers") and returns response.data`
-- [ ] `useInvitesStore > fetchInvites > populates items and sets loading false on success`
-- [ ] `useInvitesStore > fetchInvites > sets error and loading false when the api rejects`
-- [ ] `useInvitesStore > addItem > prepends the new invite to items`
-- [ ] `useInvitesStore > removeItem > removes the invite with the matching _id`
+- [x] `inviteStatus > returns "used" when usedAt is a non-null ISO string regardless of expiry`
+- [x] `inviteStatus > returns "expired" when usedAt is null and expiresAt is in the past`
+- [x] `inviteStatus > returns "pending" when usedAt is null and expiresAt is in the future`
+- [x] `invites.api > fetchInvites > calls apiClient.get("/invites") and returns response.data`
+- [x] `invites.api > createInvite > calls apiClient.post("/invites", dto) and returns response.data`
+- [x] `invites.api > revokeInvite > calls apiClient.delete("/invites/:id")`
+- [x] `invites.api > fetchTrainerOptions > calls apiClient.get("/invites/trainers") and returns response.data`
+- [x] `useInvitesStore > fetchInvites > populates items and sets loading false on success`
+- [x] `useInvitesStore > fetchInvites > sets error and loading false when the api rejects`
+- [x] `useInvitesStore > addItem > prepends the new invite to items`
+- [x] `useInvitesStore > removeItem > removes the invite with the matching _id`
 
 *Integration / E2E:* (none — this is a non-UI data layer; covered end-to-end in Stage 3)
 
@@ -157,7 +157,7 @@ Modify:
 1. Write `invites.api.spec.ts` (mocking `apiClient`) and `invites.store.spec.ts` → Red
 2. Implement `invites.ts` types + `inviteStatus`, `invites.api.ts`, `invites.store.ts` → Green
 
-**Status**: Not Started
+**Status**: In Progress
 
 ---
 
