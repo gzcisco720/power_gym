@@ -19,6 +19,8 @@ import { BillingModule } from './modules/billing/billing.module';
 import { ScheduledSessionsModule } from './modules/scheduled-sessions/scheduled-sessions.module';
 import { MembersModule } from './modules/members/members.module';
 import { TrainersModule } from './modules/trainers/trainers.module';
+import { PlanTemplatesModule } from './modules/plan-templates/plan-templates.module';
+import { ExercisesModule } from './modules/exercises/exercises.module';
 
 @Module({
   imports: [
@@ -46,6 +48,8 @@ import { TrainersModule } from './modules/trainers/trainers.module';
     ScheduledSessionsModule,
     MembersModule,
     TrainersModule,
+    PlanTemplatesModule,
+    ExercisesModule,
   ],
 })
 export class AppModule {}

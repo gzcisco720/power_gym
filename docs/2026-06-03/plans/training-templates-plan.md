@@ -124,7 +124,18 @@ Modified:
 3. Write integration specs in `backend/test/`, run against `mongodb-memory-server` → pass
 4. `/simplify`, then `cd backend && pnpm lint && pnpm test && pnpm test:e2e && pnpm build`
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 1 Checkpoint
+- [x] Models: PlanTemplate + Exercise
+- [x] DTOs: plan-day.dto.ts, create-plan-template.dto.ts, update-plan-template.dto.ts, create-exercise.dto.ts
+- [x] PlanTemplatesService unit tests (Red → Green)
+- [x] ExercisesService unit tests (Red → Green)
+- [x] PlanTemplatesController unit test (Red → Green)
+- [x] ExercisesController unit test (Red → Green)
+- [x] Modules + app.module.ts registration
+- [x] exercises.dev.controller.ts
+- [x] Integration specs: plan-templates.e2e-spec.ts + exercises.e2e-spec.ts
 
 ---
 
