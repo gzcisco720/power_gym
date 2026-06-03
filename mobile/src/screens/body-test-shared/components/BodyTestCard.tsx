@@ -30,7 +30,7 @@ export function BodyTestCard({ bodyTest, onPress }: BodyTestCardProps) {
         <Text className="text-sm font-medium text-foreground">
           {formatDate(bodyTest.date)}
         </Text>
-        <Text className="text-[18px] font-semibold text-primary-light">
+        <Text className="text-2xl font-semibold text-primary-light">
           {bodyTest.bodyFatPct.toFixed(1)}%
         </Text>
       </View>

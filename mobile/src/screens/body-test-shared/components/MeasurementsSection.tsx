@@ -2,8 +2,6 @@ import React from 'react';
 import { View, Text, TextInput } from 'react-native';
 import { Protocol, Sex } from '../../../types/body-tests';
 
-const COLORS = { inputText: '#ffffff' } as const;
-
 interface MeasurementField {
   key: string;
   label: string;
@@ -71,7 +69,6 @@ export function MeasurementsSection({
             placeholder="e.g. 18.5"
             placeholderTextColor="rgba(255,255,255,0.3)"
             className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
-            style={{ color: COLORS.inputText }}
             accessibilityLabel="Body fat percentage"
           />
         </View>
@@ -103,7 +100,6 @@ export function MeasurementsSection({
             placeholder="mm"
             placeholderTextColor="rgba(255,255,255,0.3)"
             className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
-            style={{ color: COLORS.inputText }}
             accessibilityLabel={label}
           />
         </View>

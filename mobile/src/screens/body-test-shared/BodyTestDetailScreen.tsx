@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { Dialog } from '../../components/ui/Dialog';
 import { useBodyTestsStore } from '../../stores/body-tests.store';
 import { useAuthStore } from '../../stores/auth.store';
 import { deleteBodyTest } from '../../lib/api/body-tests.api';
@@ -10,8 +11,6 @@ import { PROTOCOL_LABELS } from '../../types/body-tests';
 import { AppStackParamList } from '../../navigation/index';
 
 type DetailRouteProp = RouteProp<AppStackParamList, 'BodyTestDetail'>;
-
-const COLORS = { destructive: '#ef4444', white: '#ffffff' } as const;
 
 const SKINFOLD_LABELS: Record<string, string> = {
   tricep: 'Tricep',
@@ -111,7 +110,7 @@ export function BodyTestDetailScreen() {
             </View>
             <View className="flex-row gap-4">
               <View>
-                <Text className="text-[11px] uppercase tracking-[1.5px] text-foreground/65">
+                <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Fat Mass
                 </Text>
                 <Text className="text-sm font-semibold text-foreground">
@@ -119,7 +118,7 @@ export function BodyTestDetailScreen() {
                 </Text>
               </View>
               <View>
-                <Text className="text-[11px] uppercase tracking-[1.5px] text-foreground/65">
+                <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Lean Mass
                 </Text>
                 <Text className="text-sm font-semibold text-foreground">
@@ -127,7 +126,7 @@ export function BodyTestDetailScreen() {
                 </Text>
               </View>
               <View>
-                <Text className="text-[11px] uppercase tracking-[1.5px] text-foreground/65">
+                <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Weight
                 </Text>
                 <Text className="text-sm font-semibold text-foreground">
@@ -138,7 +137,7 @@ export function BodyTestDetailScreen() {
           </View>
 
           {/* Protocol */}
-          <View className="gap-1">
+          <View className="gap-1.5">
             <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
               Protocol
             </Text>
@@ -159,7 +158,7 @@ export function BodyTestDetailScreen() {
                     key={key}
                     className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 min-w-[44%] flex-1"
                   >
-                    <Text className="text-[11px] uppercase tracking-[1.5px] text-foreground/65">
+                    <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                       {SKINFOLD_LABELS[key]}
                     </Text>
                     <Text className="text-sm font-semibold text-foreground">
@@ -205,21 +204,16 @@ export function BodyTestDetailScreen() {
       </ScrollView>
 
       {/* Delete confirmation dialog */}
-      <Modal
-        visible={deleteDialogVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setDeleteDialogVisible(false)}
-      >
-        <View className="flex-1 items-center justify-center bg-black/60 px-6">
-          <View className="w-full rounded-2xl bg-card px-6 pb-6 pt-6 gap-4">
-            <Text className="text-[18px] font-semibold text-foreground">
+      <Dialog.Root open={deleteDialogVisible} onOpenChange={setDeleteDialogVisible}>
+        <Dialog.Overlay>
+          <Dialog.Content>
+            <Text className="text-[18px] font-semibold text-foreground mb-1">
               Delete this test?
             </Text>
-            <Text className="text-sm text-foreground/65">
+            <Text className="text-sm text-foreground/65 mb-4">
               This cannot be undone.
             </Text>
-            <View className="flex-row gap-3 mt-2">
+            <View className="flex-row gap-3">
               <Pressable
                 onPress={() => setDeleteDialogVisible(false)}
                 disabled={isDeleting}
@@ -238,15 +232,15 @@ export function BodyTestDetailScreen() {
                 className="flex-1 py-3 rounded-xl bg-destructive/10 items-center"
               >
                 {isDeleting ? (
-                  <ActivityIndicator color={COLORS.destructive} />
+                  <ActivityIndicator className="text-destructive" />
                 ) : (
                   <Text className="text-sm font-semibold text-destructive">Delete</Text>
                 )}
               </Pressable>
             </View>
-          </View>
-        </View>
-      </Modal>
+          </Dialog.Content>
+        </Dialog.Overlay>
+      </Dialog.Root>
     </Screen>
   );
 }

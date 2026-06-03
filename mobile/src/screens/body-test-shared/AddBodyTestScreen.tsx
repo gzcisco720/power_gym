@@ -11,7 +11,6 @@ import { createBodyTest } from '../../lib/api/body-tests.api';
 import { Protocol, Sex, CreateBodyTestDto } from '../../types/body-tests';
 import { calculateBodyFat, calculateComposition } from '../../lib/body-test-formulas';
 
-const COLORS = { white: '#ffffff', inputText: '#ffffff' } as const;
 
 const PROTOCOLS: { id: Protocol; label: string; testID: string }[] = [
   { id: '3site', label: '3-Site', testID: 'protocol-3site' },
@@ -166,7 +165,6 @@ export function AddBodyTestScreen() {
                 placeholder="Years"
                 placeholderTextColor="rgba(255,255,255,0.3)"
                 className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
-                style={{ color: COLORS.inputText }}
                 accessibilityLabel="Age"
               />
             </View>
@@ -214,7 +212,6 @@ export function AddBodyTestScreen() {
                 placeholder="kg"
                 placeholderTextColor="rgba(255,255,255,0.3)"
                 className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
-                style={{ color: COLORS.inputText }}
                 accessibilityLabel="Weight in kg"
               />
             </View>
@@ -286,7 +283,6 @@ export function AddBodyTestScreen() {
                 placeholder="kg"
                 placeholderTextColor="rgba(255,255,255,0.3)"
                 className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
-                style={{ color: COLORS.inputText }}
                 accessibilityLabel="Target weight in kg"
               />
             </View>
@@ -301,14 +297,13 @@ export function AddBodyTestScreen() {
                 placeholder="%"
                 placeholderTextColor="rgba(255,255,255,0.3)"
                 className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
-                style={{ color: COLORS.inputText }}
                 accessibilityLabel="Target body fat percentage"
               />
             </View>
           </View>
 
           {successMsg ? (
-            <Text className="text-xs text-foreground/65 text-center">{successMsg}</Text>
+            <Text className="text-xs text-emerald-300 text-center">{successMsg}</Text>
           ) : errorMsg ? (
             <Text className="text-xs text-destructive text-center">{errorMsg}</Text>
           ) : null}
@@ -332,7 +327,7 @@ export function AddBodyTestScreen() {
           }`}
         >
           {submitting ? (
-            <ActivityIndicator color={COLORS.white} />
+            <ActivityIndicator className="text-foreground" />
           ) : (
             <Text className="text-sm font-semibold text-foreground">Save Test</Text>
           )}

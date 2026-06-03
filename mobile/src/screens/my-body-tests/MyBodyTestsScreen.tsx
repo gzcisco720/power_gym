@@ -39,7 +39,7 @@ export function MyBodyTestsScreen() {
           onPress={() => navigation.navigate('AddBodyTest')}
           accessibilityLabel="Add body test"
           accessibilityRole="button"
-          className="rounded-xl bg-primary px-3 py-2"
+          className="w-11 h-11 items-center justify-center rounded-xl bg-primary"
         >
           <Text className="text-sm font-semibold text-foreground">+</Text>
         </Pressable>
