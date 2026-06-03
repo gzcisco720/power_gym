@@ -224,6 +224,9 @@ describe('MemberDetailScreen', () => {
     expect(getByTestId('overview-joined-at')).toBeTruthy();
     expect(getByTestId('overview-last-body-test')).toBeTruthy();
     expect(getByTestId('overview-last-checkin')).toBeTruthy();
+    // Quick-link cards are present
+    expect(getByTestId('overview-link-bodytests')).toBeTruthy();
+    expect(getByTestId('overview-link-health')).toBeTruthy();
   });
 
   it('switches to Body Tests tab on press', () => {
@@ -254,11 +257,15 @@ describe('MemberOverviewTab', () => {
       lastCheckinDate: '2024-06-02T00:00:00.000Z',
     });
 
-    const { getByTestId } = render(<MemberOverviewTab overview={overview} />);
+    const { getByTestId } = render(
+      <MemberOverviewTab overview={overview} onNavigateToTab={jest.fn()} />,
+    );
 
     expect(getByTestId('overview-joined-at')).toBeTruthy();
     expect(getByTestId('overview-last-body-test')).toBeTruthy();
     expect(getByTestId('overview-last-checkin')).toBeTruthy();
+    expect(getByTestId('overview-link-bodytests')).toBeTruthy();
+    expect(getByTestId('overview-link-health')).toBeTruthy();
   });
 
   it('shows "Never" for null dates', () => {
@@ -268,7 +275,9 @@ describe('MemberOverviewTab', () => {
       lastCheckinDate: null,
     });
 
-    const { getAllByText } = render(<MemberOverviewTab overview={overview} />);
+    const { getAllByText } = render(
+      <MemberOverviewTab overview={overview} onNavigateToTab={jest.fn()} />,
+    );
 
     const neverElements = getAllByText('Never');
     expect(neverElements.length).toBeGreaterThanOrEqual(2);

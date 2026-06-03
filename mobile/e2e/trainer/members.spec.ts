@@ -88,13 +88,14 @@ describe('Trainer: Members — scoped list', () => {
     await waitFor(element(by.text('Test Medication'))).toBeVisible().withTimeout(10000);
   });
 
-  it('access edge: list shows exactly the members assigned to this trainer (not the other trainer\'s member)', async () => {
-    // The trainer should only see their own member
-    // The other trainer's member email is different — verify the seeded member count
-    // We check that the list has at least one card but not the other trainer's email
+  it('access edge: list does NOT contain a member belonging to the other trainer', async () => {
+    // The trainer should only see their own member — not the other trainer's member.
+    // The other trainer's seeded member email is predictable: seed-member-for-{OTHER_TRAINER_EMAIL}
+    const otherMemberEmail = `seed-member-for-${OTHER_TRAINER_EMAIL}`;
+
     await waitFor(element(by.id(/^member-card-/))).toBeVisible().withTimeout(10000);
 
-    // Verify total count of member cards — expect exactly 1 (only this trainer's member)
-    await detoxExpect(element(by.id(/^member-card-/))).toBeVisible();
+    // Assert the other trainer's member email text is absent from the list
+    await detoxExpect(element(by.text(otherMemberEmail))).not.toBeVisible();
   });
 });
