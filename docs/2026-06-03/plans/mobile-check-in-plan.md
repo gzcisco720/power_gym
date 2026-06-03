@@ -229,7 +229,10 @@ Created:
 2. Adjust testIDs in screens only if a selector mismatch is found (no behavior changes) → Green
 3. `pnpm detox test` golden path + error case pass
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 4 Checkpoint
+- [x] mobile/e2e/member/check-in.spec.ts
 
 ---
 
