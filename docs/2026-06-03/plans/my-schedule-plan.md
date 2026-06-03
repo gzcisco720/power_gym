@@ -160,7 +160,7 @@ export interface ScheduledSession {
 2. Implement `scheduled-sessions.ts` types, `scheduled-sessions.api.ts`, `scheduled-sessions.store.ts` → Green.
 3. `/simplify`; ensure `cd mobile && pnpm test` and `pnpm lint` pass.
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 2 Checkpoint
 - [x] `mobile/src/lib/api/scheduled-sessions.api.spec.ts` — API unit tests
@@ -202,4 +202,13 @@ export interface ScheduledSession {
 3. Write `my-schedule.spec.ts` Detox spec; run against a booted simulator + running backend → passes.
 4. `/simplify`; run design-reviewer on `mobile/src/screens/my-schedule/`; ensure `cd mobile && pnpm test` and `pnpm lint` pass and the Detox spec passes.
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] `mobile/src/screens/my-schedule/components/SessionCard.spec.tsx` — unit tests
+- [x] `mobile/src/screens/my-schedule/MyScheduleScreen.spec.tsx` — unit tests
+- [x] `mobile/src/screens/my-schedule/components/SessionCard.tsx`
+- [x] `mobile/src/screens/my-schedule/MyScheduleScreen.tsx`
+- [x] `mobile/src/navigation/index.tsx` — wire real screen
+- [x] `mobile/src/screens/placeholders/index.ts` — remove MyScheduleScreen
+- [x] `mobile/e2e/member/my-schedule.spec.ts` — Detox E2E

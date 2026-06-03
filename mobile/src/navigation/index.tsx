@@ -14,9 +14,9 @@ import {
   NutritionTemplatesScreen,
   MyTrainingScreen,
   MyNutritionScreen,
-  MyScheduleScreen,
   JourneyScreen,
 } from '../screens/placeholders';
+import { MyScheduleScreen } from '../screens/my-schedule/MyScheduleScreen';
 import { BillingScreen } from '../screens/billing/BillingScreen';
 import { InvitesScreen } from '../screens/invites/InvitesScreen';
 import { MyHealthScreen } from '../screens/my-health/MyHealthScreen';
