@@ -16,12 +16,15 @@ import {
   NutritionTemplatesScreen,
   MyTrainingScreen,
   MyNutritionScreen,
-  MyBodyTestsScreen,
   MyScheduleScreen,
   MyHealthScreen,
-  BodyTestsScreen,
   JourneyScreen,
 } from '../screens/placeholders';
+import { MyBodyTestsScreen } from '../screens/my-body-tests/MyBodyTestsScreen';
+import { BodyTestsScreen } from '../screens/body-tests/BodyTestsScreen';
+import { AddBodyTestScreen } from '../screens/body-test-shared/AddBodyTestScreen';
+import { BodyTestDetailScreen } from '../screens/body-test-shared/BodyTestDetailScreen';
+import { BodyTest } from '../types/body-tests';
 import { CheckInScreen } from '../screens/check-in/CheckInScreen';
 import { CheckInFormScreen } from '../screens/check-in/CheckInFormScreen';
 import { CheckInDetailScreen } from '../screens/check-in/CheckInDetailScreen';
@@ -47,6 +50,8 @@ export type AppStackParamList = {
   EquipmentDetail: { equipment: EquipmentItem };
   CheckInForm: undefined;
   CheckInDetail: { checkIn: CheckIn };
+  AddBodyTest: undefined;
+  BodyTestDetail: { bodyTest: BodyTest };
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -119,6 +124,8 @@ function AppNavigator() {
       <AppStack.Screen name="EquipmentDetail" component={EquipmentDetailScreen} />
       <AppStack.Screen name="CheckInForm" component={CheckInFormScreen} />
       <AppStack.Screen name="CheckInDetail" component={CheckInDetailScreen} />
+      <AppStack.Screen name="AddBodyTest" component={AddBodyTestScreen} />
+      <AppStack.Screen name="BodyTestDetail" component={BodyTestDetailScreen} />
     </AppStack.Navigator>
   );
 }

@@ -215,7 +215,23 @@ cross-app — `backend/` (new body-tests NestJS module) + `mobile/` (types, form
 4. Wire navigation + remove placeholders → app boots with real screens
 5. Run `cd mobile && pnpm test && pnpm lint`; then `use the design-reviewer agent` on the new screens
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 3 Checkpoint
+- [x] `mobile/src/screens/body-test-shared/components/BodyTestCard.tsx`
+- [x] `mobile/src/screens/my-body-tests/MyBodyTestsScreen.tsx`
+- [x] `mobile/src/screens/body-tests/BodyTestsScreen.tsx`
+- [x] `mobile/src/screens/body-test-shared/components/MeasurementsSection.tsx`
+- [x] `mobile/src/screens/body-test-shared/components/LivePreview.tsx`
+- [x] `mobile/src/screens/body-test-shared/AddBodyTestScreen.tsx`
+- [x] `mobile/src/screens/body-test-shared/BodyTestDetailScreen.tsx`
+- [x] `mobile/src/screens/placeholders/index.ts` — `MyBodyTestsScreen` + `BodyTestsScreen` removed
+- [x] `mobile/src/navigation/index.tsx` — `AddBodyTest` + `BodyTestDetail` registered; real screens in SCREEN_REGISTRY
+- [x] `mobile/__tests__/screens/body-tests/BodyTestCard.test.tsx`
+- [x] `mobile/__tests__/screens/body-tests/MyBodyTestsScreen.test.tsx`
+- [x] `mobile/__tests__/screens/body-tests/BodyTestsScreen.test.tsx`
+- [x] `mobile/__tests__/screens/body-tests/AddBodyTestScreen.test.tsx`
+- [x] `mobile/__tests__/screens/body-tests/BodyTestDetailScreen.test.tsx`
 
 ---
 
