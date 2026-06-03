@@ -164,7 +164,7 @@ Functional units: 2 API modules, 2 stores, 1 helper module = 5, within limit.
 2. Implement types, api modules, macro helpers, stores (Green).
 3. Verify store↔api integration tests pass with the mocked client (real store logic exercised).
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 2 Checkpoint
 - [x] mobile/src/types/nutrition-templates.ts
@@ -208,7 +208,22 @@ UI must follow `.claude/instructions/design.md` (mobile): dark theme tokens, `te
 3. Write/run Detox specs for owner + trainer against a real simulator build until they pass.
 4. Run `/simplify`, then run the design-reviewer agent on the new screens and fix violations.
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] mobile/src/screens/nutrition-templates/NutritionTemplatesScreen.tsx
+- [x] mobile/src/screens/nutrition-templates/NutritionTemplateDetailScreen.tsx
+- [x] mobile/src/screens/nutrition-templates/NutritionTemplateFormScreen.tsx
+- [x] mobile/src/screens/nutrition-templates/components/FoodSearchSheet.tsx
+- [x] mobile/src/screens/nutrition-templates/components/DayTypeTabs.tsx
+- [x] mobile/src/screens/nutrition-templates/__tests__/NutritionTemplatesScreen.test.tsx
+- [x] mobile/src/screens/nutrition-templates/__tests__/NutritionTemplateDetailScreen.test.tsx
+- [x] mobile/src/screens/nutrition-templates/__tests__/NutritionTemplateFormScreen.test.tsx
+- [x] mobile/src/screens/nutrition-templates/__tests__/FoodSearchSheet.test.tsx
+- [x] mobile/src/screens/placeholders/index.ts (removed NutritionTemplatesScreen)
+- [x] mobile/src/navigation/index.tsx (NutritionTemplateDetail + NutritionTemplateForm registered)
+- [x] mobile/e2e/owner/nutrition-templates.spec.ts
+- [x] mobile/e2e/trainer/nutrition-templates.spec.ts
 
 ---
 
