@@ -6,7 +6,6 @@ Sprint Contract plans only. One row per active plan.
 
 | Feature | Plan File | Status |
 |---|---|---|
-| Mobile Body Tests | [docs/2026-06-03/plans/mobile-body-tests-plan.md](2026-06-03/plans/mobile-body-tests-plan.md) | In Progress |
 
 ## Management Files
 
