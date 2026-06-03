@@ -12,6 +12,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { EquipmentModule } from './modules/equipment/equipment.module';
 import { ServiceTypesModule } from './modules/service-types/service-types.module';
 import { CheckInsModule } from './modules/check-ins/check-ins.module';
+import { BodyTestsModule } from './modules/body-tests/body-tests.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { CheckInsModule } from './modules/check-ins/check-ins.module';
     EquipmentModule,
     ServiceTypesModule,
     CheckInsModule,
+    BodyTestsModule,
   ],
 })
 export class AppModule {}

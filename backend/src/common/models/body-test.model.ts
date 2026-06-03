@@ -8,8 +8,8 @@ export class BodyTest {
   @Prop({ type: Types.ObjectId, required: true })
   memberId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, required: true })
-  trainerId: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, default: null })
+  trainerId: Types.ObjectId | null;
 
   @Prop({ type: Date, required: true })
   date: Date;

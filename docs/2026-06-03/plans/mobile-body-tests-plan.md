@@ -121,7 +121,14 @@ cross-app — `backend/` (new body-tests NestJS module) + `mobile/` (types, form
 4. Write `body-tests.e2e-spec.ts` against Mongo-memory + real guards → passes
 5. Run `cd backend && pnpm test && pnpm test:e2e && pnpm lint && pnpm build`
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 1 Checkpoint
+- [x] `body-test-formulas.ts` + `body-test-formulas.spec.ts`
+- [x] `body-tests.service.ts` + `body-tests.service.spec.ts`
+- [x] `body-tests.controller.ts` + `body-tests.controller.spec.ts` + `dto/create-body-test.dto.ts` + `body-tests.module.ts`
+- [x] `app.module.ts` — `BodyTestsModule` registered
+- [x] `body-tests.e2e-spec.ts` — all 8 integration assertions passing
 
 ---
 
