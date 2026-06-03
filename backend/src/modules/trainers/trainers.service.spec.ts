@@ -170,7 +170,9 @@ describe('TrainersService', () => {
         'tom@example.com',
       );
 
-      userModel.findById.mockResolvedValue(trainer);
+      userModel.findById.mockReturnValue({
+        lean: jest.fn().mockResolvedValue(trainer),
+      });
       userModel.find.mockResolvedValue([member1, member2]);
 
       const result = await service.findOne(TRAINER_ID);
@@ -196,7 +198,9 @@ describe('TrainersService', () => {
     });
 
     it('throws NotFoundException when id is not a trainer', async () => {
-      userModel.findById.mockResolvedValue(null);
+      userModel.findById.mockReturnValue({
+        lean: jest.fn().mockResolvedValue(null),
+      });
 
       await expect(service.findOne(OWNER_ID)).rejects.toThrow(
         NotFoundException,
@@ -205,7 +209,9 @@ describe('TrainersService', () => {
 
     it('throws NotFoundException when found user has a non-trainer role', async () => {
       const member = makeMember(MEMBER1_ID, null);
-      userModel.findById.mockResolvedValue(member);
+      userModel.findById.mockReturnValue({
+        lean: jest.fn().mockResolvedValue(member),
+      });
 
       await expect(service.findOne(MEMBER1_ID)).rejects.toThrow(
         NotFoundException,

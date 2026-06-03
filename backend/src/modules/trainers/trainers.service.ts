@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User, UserDocument } from '../../common/models/user.model';
 import {
   TrainerListItem,
@@ -36,7 +36,9 @@ export class TrainersService {
   }
 
   async findOne(id: string): Promise<TrainerDetailResponse> {
-    const trainer = await this.userModel.findById(id);
+    const trainer = await this.userModel
+      .findById(id)
+      .lean<User & { _id: Types.ObjectId; createdAt: Date }>();
 
     if (!trainer || trainer.role !== 'trainer') {
       throw new NotFoundException('Trainer not found');
@@ -53,7 +55,7 @@ export class TrainersService {
       email: m.email,
     }));
 
-    const createdAt = (trainer as UserDocument & { createdAt: Date }).createdAt;
+    const createdAt = trainer.createdAt;
 
     return {
       id: trainer._id.toString(),
