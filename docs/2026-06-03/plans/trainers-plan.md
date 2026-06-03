@@ -135,7 +135,7 @@ interface TrainerDetailResponse {
 2. Implement types, api, store → Green
 3. No UI/E2E in this stage; the real-stack proof is Stage 3's Detox spec hitting the live backend from Stage 1.
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 2 Checkpoint
 - [x] `mobile/src/types/trainers.ts` — type definitions
@@ -176,7 +176,14 @@ interface TrainerDetailResponse {
 3. Write/run `mobile/e2e/owner/trainers.spec.ts` against a booted simulator + live backend (Stage 1) seeded with an owner, a trainer with members, and a trainer with none → passes
 4. Refactor (`/simplify`) and run `design-reviewer` on the new screens before marking complete
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] `TrainerRow` component + unit test
+- [x] `TrainersScreen` + unit test
+- [x] `TrainerOverviewTab` + `TrainerMembersTab` + `TrainerDetailScreen` + unit tests
+- [x] Navigation wiring + placeholder removal
+- [x] `mobile/e2e/owner/trainers.spec.ts` — Detox E2E
 
 ---
 

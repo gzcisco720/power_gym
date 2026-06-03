@@ -1,0 +1,93 @@
+import React, { useEffect, useState } from 'react';
+import { View, Text, Pressable } from 'react-native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { Screen } from '../../components/Screen';
+import { ScreenHeader } from '../../components/ScreenHeader';
+import { useTrainersStore } from '../../stores/trainers.store';
+import { TrainerOverviewTab } from './components/TrainerOverviewTab';
+import { TrainerMembersTab } from './components/TrainerMembersTab';
+import { AppStackParamList } from '../../navigation/index';
+
+type DetailRouteProp = RouteProp<AppStackParamList, 'TrainerDetail'>;
+
+type TabId = 'overview' | 'members';
+
+const TABS: { id: TabId; label: string; testID: string }[] = [
+  { id: 'overview', label: 'Overview', testID: 'trainer-detail-tab-overview' },
+  { id: 'members', label: 'Members', testID: 'trainer-detail-tab-members' },
+];
+
+export function TrainerDetailScreen() {
+  const navigation = useNavigation();
+  const route = useRoute<DetailRouteProp>();
+  const { trainerId, trainerName } = route.params;
+
+  const [activeTab, setActiveTab] = useState<TabId>('overview');
+
+  const detail = useTrainersStore((s) => s.detail);
+  const detailLoading = useTrainersStore((s) => s.detailLoading);
+  const fetchTrainerDetail = useTrainersStore((s) => s.fetchTrainerDetail);
+
+  useEffect(() => {
+    void fetchTrainerDetail(trainerId);
+  }, [fetchTrainerDetail, trainerId]);
+
+  return (
+    <Screen testID="screen-TrainerDetail">
+      <ScreenHeader title={trainerName} onBack={() => navigation.goBack()} />
+
+      {/* Email sub-line */}
+      {detail ? (
+        <View className="px-4 py-2 border-b border-foreground/[.06]">
+          <Text className="text-xs text-foreground/65">{detail.email}</Text>
+        </View>
+      ) : null}
+
+      {/* Tab bar */}
+      <View className="flex-row border-b border-foreground/[.06] bg-background">
+        {TABS.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <Pressable
+              key={tab.id}
+              testID={tab.testID}
+              onPress={() => setActiveTab(tab.id)}
+              accessibilityLabel={tab.label}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: isActive }}
+              className={`flex-1 items-center py-2.5 border-b-2 ${
+                isActive ? 'border-primary' : 'border-transparent'
+              }`}
+            >
+              <Text
+                className={`text-xs font-medium ${
+                  isActive ? 'text-primary-light' : 'text-foreground/65'
+                }`}
+              >
+                {tab.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {/* Tab content */}
+      {detailLoading || !detail ? (
+        <View className="px-4 py-4 gap-2">
+          {[0, 1, 2].map((i) => (
+            <View key={i} className="rounded-xl bg-muted h-12 opacity-60" />
+          ))}
+        </View>
+      ) : (
+        <>
+          {activeTab === 'overview' ? (
+            <TrainerOverviewTab detail={detail} />
+          ) : null}
+          {activeTab === 'members' ? (
+            <TrainerMembersTab members={detail.members} />
+          ) : null}
+        </>
+      )}
+    </Screen>
+  );
+}
