@@ -239,7 +239,7 @@ export function MedicationBottomSheet({
                   }}
                   placeholder="YYYY-MM-DD"
                   placeholderTextColor="rgba(255,255,255,0.4)"
-                  keyboardType="decimal-pad"
+                  keyboardType="numbers-and-punctuation"
                   className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   accessibilityLabel="Start date"
                   aria-invalid={startDateError != null}
@@ -262,7 +262,7 @@ export function MedicationBottomSheet({
                   onChangeText={setEndDate}
                   placeholder="YYYY-MM-DD"
                   placeholderTextColor="rgba(255,255,255,0.4)"
-                  keyboardType="decimal-pad"
+                  keyboardType="numbers-and-punctuation"
                   className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   accessibilityLabel="End date"
                 />
