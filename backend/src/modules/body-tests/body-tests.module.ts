@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BodyTestsController } from './body-tests.controller';
+import { BodyTestsDevController } from './body-tests.dev.controller';
 import { BodyTestsService } from './body-tests.service';
 import { BodyTest, BodyTestSchema } from '../../common/models/body-test.model';
 import { User, UserSchema } from '../../common/models/user.model';
@@ -12,7 +13,10 @@ import { User, UserSchema } from '../../common/models/user.model';
       { name: User.name, schema: UserSchema },
     ]),
   ],
-  controllers: [BodyTestsController],
+  controllers: [
+    BodyTestsController,
+    ...(process.env.NODE_ENV !== 'production' ? [BodyTestsDevController] : []),
+  ],
   providers: [BodyTestsService],
 })
 export class BodyTestsModule {}

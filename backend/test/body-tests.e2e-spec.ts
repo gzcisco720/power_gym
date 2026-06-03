@@ -219,6 +219,39 @@ describe('BodyTests (e2e)', () => {
     });
   });
 
+  // ─── POST /body-tests/dev/seed-for-user (dev-only) ──────────────────────────
+
+  describe('POST /body-tests/dev/seed-for-user', () => {
+    it('seeds a body test for an existing user and returns { ok: true, seeded: true }', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/body-tests/dev/seed-for-user')
+        .send({ email: MEMBER_EMAIL })
+        .expect(200);
+
+      const body = res.body as { ok: boolean; seeded: boolean };
+      expect(body.ok).toBe(true);
+      expect(body.seeded).toBe(true);
+    });
+
+    it('calling again is idempotent and returns { ok: true, seeded: false }', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/body-tests/dev/seed-for-user')
+        .send({ email: MEMBER_EMAIL })
+        .expect(200);
+
+      const body = res.body as { ok: boolean; seeded: boolean };
+      expect(body.ok).toBe(true);
+      expect(body.seeded).toBe(false);
+    });
+
+    it('returns 404 when the user does not exist', async () => {
+      await request(app.getHttpServer())
+        .post('/body-tests/dev/seed-for-user')
+        .send({ email: 'nonexistent@example.com' })
+        .expect(404);
+    });
+  });
+
   // ─── DELETE /body-tests/:id ──────────────────────────────────────────────────
 
   describe('DELETE /body-tests/:id', () => {

@@ -258,4 +258,11 @@ cross-app — `backend/` (new body-tests NestJS module) + `mobile/` (types, form
 3. Write `mobile/e2e/member/body-tests.spec.ts` → run against simulator + backend → passes
 4. Run the full Detox suite for both specs; if a dev seed route was added, add an integration test for it and re-run `cd backend && pnpm test:e2e`
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 4 Checkpoint
+- [x] `backend/src/modules/body-tests/body-tests.dev.controller.ts` — `POST /body-tests/dev/seed-for-user` (dev-only)
+- [x] `backend/src/modules/body-tests/body-tests.module.ts` — `BodyTestsDevController` registered (dev-only)
+- [x] `backend/test/body-tests.e2e-spec.ts` — 3 integration assertions for the new dev seed endpoint
+- [x] `mobile/e2e/owner/body-tests.spec.ts` — Owner golden path + error case
+- [x] `mobile/e2e/member/body-tests.spec.ts` — Member read-only path + no add-button assertion
