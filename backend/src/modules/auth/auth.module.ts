@@ -14,6 +14,14 @@ import {
   PasswordResetTokenSchema,
 } from '../../common/models/password-reset-token.model';
 import { EmailModule } from '../../common/email/email.module';
+import {
+  ServiceType,
+  ServiceTypeSchema,
+} from '../../common/models/service-type.model';
+import {
+  ScheduledSession,
+  ScheduledSessionSchema,
+} from '../../common/models/scheduled-session.model';
 
 @Module({
   imports: [
@@ -31,6 +39,8 @@ import { EmailModule } from '../../common/email/email.module';
       { name: RefreshToken.name, schema: RefreshTokenSchema },
       { name: User.name, schema: UserSchema },
       { name: PasswordResetToken.name, schema: PasswordResetTokenSchema },
+      { name: ServiceType.name, schema: ServiceTypeSchema },
+      { name: ScheduledSession.name, schema: ScheduledSessionSchema },
     ]),
     EmailModule,
   ],
