@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, TextInput, Pressable } from 'react-native';
 import { StuckToDiet } from '../../../types/check-ins';
 
+const COLORS = { placeholder: 'rgba(255,255,255,0.4)' } as const;
+
 const DIET_OPTIONS: { value: StuckToDiet; label: string; testID: string }[] = [
   { value: 'yes', label: 'Yes', testID: 'checkin-diet-yes' },
   { value: 'partial', label: 'Partial', testID: 'checkin-diet-partial' },
@@ -22,7 +24,7 @@ interface DietSectionProps {
 
 export function DietSection({ values, onChange }: DietSectionProps) {
   return (
-    <View className="gap-4">
+    <View className="gap-3">
       {/* Stuck to diet toggle */}
       <View className="gap-1.5">
         <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
@@ -65,7 +67,7 @@ export function DietSection({ values, onChange }: DietSectionProps) {
           value={values.dietDetails}
           onChangeText={(text) => onChange({ ...values, dietDetails: text })}
           placeholder="What did you eat?"
-          placeholderTextColor="rgba(255,255,255,0.4)"
+          placeholderTextColor={COLORS.placeholder}
           multiline
           numberOfLines={2}
           className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
@@ -81,7 +83,7 @@ export function DietSection({ values, onChange }: DietSectionProps) {
           value={values.wellbeing}
           onChangeText={(text) => onChange({ ...values, wellbeing: text })}
           placeholder="How are you feeling overall?"
-          placeholderTextColor="rgba(255,255,255,0.4)"
+          placeholderTextColor={COLORS.placeholder}
           multiline
           numberOfLines={2}
           className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
@@ -97,7 +99,7 @@ export function DietSection({ values, onChange }: DietSectionProps) {
           value={values.notes}
           onChangeText={(text) => onChange({ ...values, notes: text })}
           placeholder="Anything else to note?"
-          placeholderTextColor="rgba(255,255,255,0.4)"
+          placeholderTextColor={COLORS.placeholder}
           multiline
           numberOfLines={2}
           className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import Slider from '@react-native-community/slider';
 
-const COLORS = { primary: '#4f46e5', primaryLight: '#818cf8', track: '#1f1f1f' } as const;
+const COLORS = { primary: '#4f46e5', primaryLight: '#818cf8', track: '#161616' } as const;
 
 export interface WellnessValues {
   sleepQuality: number;
@@ -35,7 +35,7 @@ export function WellnessSliders({ values, onChange }: WellnessSlidersProps) {
   }
 
   return (
-    <View className="gap-4">
+    <View className="gap-2">
       {SLIDER_FIELDS.map(({ key, label }) => (
         <View key={key}>
           <View className="flex-row items-center justify-between mb-1">

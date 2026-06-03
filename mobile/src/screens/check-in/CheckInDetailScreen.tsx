@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Image, Pressable, Modal } from 'react-native';
+import { View, Text, ScrollView, Image, Pressable } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { CheckIn, StuckToDiet } from '../../types/check-ins';
 import { AppStackParamList } from '../../navigation/index';
+import { FullscreenPhotoModal } from './components/FullscreenPhotoModal';
 
 type DetailRouteProp = RouteProp<AppStackParamList, 'CheckInDetail'>;
 
@@ -81,7 +82,7 @@ export function CheckInDetailScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="px-4 py-4 gap-6">
           {/* Wellness section */}
-          <View className="gap-3">
+          <View className="gap-2">
             <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
               Wellness
             </Text>
@@ -111,11 +112,11 @@ export function CheckInDetailScreen() {
 
           {/* Body Metrics — only if any values are non-null */}
           {visibleMetrics.length > 0 && (
-            <View className="gap-3">
+            <View className="gap-2">
               <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
                 Body Metrics
               </Text>
-              <View className="flex-row flex-wrap gap-3">
+              <View className="flex-row flex-wrap gap-2">
                 {visibleMetrics.map(({ label, key, unit }) => (
                   <View
                     key={key}
@@ -137,11 +138,11 @@ export function CheckInDetailScreen() {
           )}
 
           {/* Diet section */}
-          <View className="gap-3">
+          <View className="gap-2">
             <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
               Diet
             </Text>
-            <View className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-3 gap-3">
+            <View className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-3 gap-2">
               <View className="flex-row items-center justify-between">
                 <Text className="text-sm text-foreground/65">Stuck to diet?</Text>
                 <View className={`rounded-full px-3 py-1 ${badge.className.split(' ')[0]}`}>
@@ -188,11 +189,11 @@ export function CheckInDetailScreen() {
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View className="flex-row gap-2">
-                  {checkIn.photos.map((uri) => (
+                  {checkIn.photos.map((uri, i) => (
                     <Pressable
                       key={uri}
                       onPress={() => setFullscreenUri(uri)}
-                      accessibilityLabel="View photo fullscreen"
+                      accessibilityLabel={`View photo ${i + 1} fullscreen`}
                       accessibilityRole="button"
                     >
                       <Image
@@ -209,29 +210,11 @@ export function CheckInDetailScreen() {
         </View>
       </ScrollView>
 
-      {/* Fullscreen photo modal */}
-      <Modal
+      <FullscreenPhotoModal
         visible={fullscreenUri !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setFullscreenUri(null)}
-      >
-        <Pressable
-          className="flex-1 bg-black/90 items-center justify-center"
-          onPress={() => setFullscreenUri(null)}
-          accessibilityLabel="Close fullscreen photo"
-          accessibilityRole="button"
-        >
-          {fullscreenUri ? (
-            <Image
-              source={{ uri: fullscreenUri }}
-              className="w-full h-96"
-              resizeMode="contain"
-              accessibilityLabel="Full screen check-in photo"
-            />
-          ) : null}
-        </Pressable>
-      </Modal>
+        imageUri={fullscreenUri}
+        onClose={() => setFullscreenUri(null)}
+      />
     </Screen>
   );
 }

@@ -57,6 +57,7 @@ export function CheckInFormScreen() {
   const [diet, setDiet] = useState<DietValues>(DEFAULT_DIET);
   const [photos, setPhotos] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const isValid = diet.stuckToDiet !== null;
@@ -92,7 +93,8 @@ export function CheckInFormScreen() {
     try {
       const result = await createCheckIn(dto);
       addItem(result);
-      navigation.goBack();
+      setSuccessMsg('Check-in submitted!');
+      setTimeout(() => navigation.goBack(), 800);
     } catch (err) {
       const axiosErr = err as { response?: { status?: number } };
       if (axiosErr?.response?.status === 409) {
@@ -140,7 +142,9 @@ export function CheckInFormScreen() {
             <PhotosSection photos={photos} onChange={setPhotos} />
           </View>
 
-          {errorMsg ? (
+          {successMsg ? (
+            <Text className="text-xs text-foreground/65 text-center">{successMsg}</Text>
+          ) : errorMsg ? (
             <Text className="text-xs text-destructive text-center">{errorMsg}</Text>
           ) : null}
         </View>

@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, TextInput } from 'react-native';
 
+const COLORS = { placeholder: 'rgba(255,255,255,0.4)' } as const;
+
 export interface BodyMetricsValues {
   weight: string;
   waist: string;
@@ -46,7 +48,7 @@ export function BodyMetricsSection({ values, onChange }: BodyMetricsSectionProps
             onChangeText={(text) => onChange({ ...values, [key]: text })}
             keyboardType="decimal-pad"
             placeholder="—"
-            placeholderTextColor="rgba(255,255,255,0.4)"
+            placeholderTextColor={COLORS.placeholder}
             className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
           />
         </View>

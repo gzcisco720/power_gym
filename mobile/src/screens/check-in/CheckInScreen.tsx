@@ -76,7 +76,7 @@ export function CheckInScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="px-4 py-4 gap-6">
           {/* This week status card */}
-          <View className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-4 gap-3">
+          <View className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-3 gap-3">
             <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
               This Week
             </Text>
@@ -107,7 +107,7 @@ export function CheckInScreen() {
           </View>
 
           {/* History section */}
-          <View className="gap-3">
+          <View className="gap-2">
             <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
               Past Check-Ins
             </Text>
@@ -115,7 +115,7 @@ export function CheckInScreen() {
             {loading ? (
               <>
                 {[0, 1, 2].map((i) => (
-                  <View key={i} className="rounded-xl bg-muted px-3 py-3 h-12 opacity-60" />
+                  <View key={i} className="rounded-xl bg-muted px-3 py-2 h-12 opacity-60" />
                 ))}
               </>
             ) : items.length === 0 ? (

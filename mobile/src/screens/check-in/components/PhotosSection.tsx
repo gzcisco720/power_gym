@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, Image, Pressable, ScrollView, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, Image, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { pickAndUploadCheckInImage } from '../../../lib/check-in-image-upload';
+import { FullscreenPhotoModal } from './FullscreenPhotoModal';
 
-const COLORS = { white: '#ffffff', destructive: '#ef4444' } as const;
+const COLORS = { white: '#ffffff' } as const;
 const MAX_PHOTOS = 5;
 
 interface PhotosSectionProps {
@@ -48,7 +49,7 @@ export function PhotosSection({ photos, onChange }: PhotosSectionProps) {
             <View key={uri} className="relative">
               <Pressable
                 onPress={() => setFullscreenUri(uri)}
-                accessibilityLabel="View photo"
+                accessibilityLabel={`View photo ${i + 1}`}
                 accessibilityRole="button"
               >
                 <Image
@@ -59,8 +60,9 @@ export function PhotosSection({ photos, onChange }: PhotosSectionProps) {
               </Pressable>
               <Pressable
                 onPress={() => handleRemove(i)}
-                accessibilityLabel="Remove photo"
+                accessibilityLabel={`Remove photo ${i + 1}`}
                 accessibilityRole="button"
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 className="absolute -top-1 -right-1 bg-destructive rounded-full w-5 h-5 items-center justify-center"
               >
                 <Text className="text-xs text-foreground font-bold">×</Text>
@@ -88,29 +90,11 @@ export function PhotosSection({ photos, onChange }: PhotosSectionProps) {
 
       {error ? <Text className="text-xs text-destructive">{error}</Text> : null}
 
-      {/* Fullscreen photo modal */}
-      <Modal
+      <FullscreenPhotoModal
         visible={fullscreenUri !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setFullscreenUri(null)}
-      >
-        <Pressable
-          className="flex-1 bg-black/90 items-center justify-center"
-          onPress={() => setFullscreenUri(null)}
-          accessibilityLabel="Close fullscreen photo"
-          accessibilityRole="button"
-        >
-          {fullscreenUri ? (
-            <Image
-              source={{ uri: fullscreenUri }}
-              className="w-full h-96"
-              resizeMode="contain"
-              accessibilityLabel="Full screen check-in photo"
-            />
-          ) : null}
-        </Pressable>
-      </Modal>
+        imageUri={fullscreenUri}
+        onClose={() => setFullscreenUri(null)}
+      />
     </View>
   );
 }
