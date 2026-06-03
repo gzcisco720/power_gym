@@ -165,7 +165,16 @@ cross-app — `backend/` (new body-tests NestJS module) + `mobile/` (types, form
 3. Write store tests (mock api module) → Red → implement `stores/body-tests.store.ts` → Green
 4. Run `cd mobile && pnpm test && pnpm lint`
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 2 Checkpoint
+- [x] `mobile/src/types/body-tests.ts` — `Protocol`, `Sex`, `BodyTest`, `CreateBodyTestDto`, `PROTOCOL_LABELS`
+- [x] `mobile/src/lib/body-test-formulas.ts` — `calculateBodyFat` (null-guard, clamp [1,60]) + `calculateComposition`
+- [x] `mobile/src/lib/api/body-tests.api.ts` — `fetchMyBodyTests`, `createBodyTest`, `deleteBodyTest`
+- [x] `mobile/src/stores/body-tests.store.ts` — `items`, `loading`, `error`, `fetchMyBodyTests`, `addItem`, `removeItem`
+- [x] `mobile/__tests__/lib/body-test-formulas.test.ts` — 10 tests passing
+- [x] `mobile/__tests__/lib/api/body-tests.api.test.ts` — 3 tests passing
+- [x] `mobile/__tests__/stores/body-tests.store.test.ts` — 4 tests passing
 
 ---
 
