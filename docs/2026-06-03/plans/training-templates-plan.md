@@ -172,7 +172,7 @@ Modified:
 2. Implement types, api functions, stores → Green
 3. `/simplify`, then `cd mobile && pnpm lint && pnpm test`
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 2 Checkpoint
 - [x] `mobile/src/types/training-templates.ts`
@@ -199,11 +199,11 @@ Modified:
 **Sprint Contract**:
 
 *Unit tests (React Native Testing Library):*
-- [ ] `TrainingTemplatesScreen > renders a card per template with its name, day count, and exercise count from the store`
-- [ ] `TrainingTemplatesScreen > shows skeleton rows while loading is true and the empty state when items is empty and loading is false`
-- [ ] `TrainingTemplateDetailScreen > renders each day with its exercises showing "sets × repsMin–repsMax" and opens the confirm dialog when delete is pressed`
-- [ ] `TrainingTemplateFormScreen > save button is disabled until name is present and remains disabled while an added exercise is missing sets/reps`
-- [ ] `ExercisePicker > calls exercisesStore.search with the typed query and renders a result row per returned exercise`
+- [x] `TrainingTemplatesScreen > renders a card per template with its name, day count, and exercise count from the store`
+- [x] `TrainingTemplatesScreen > shows skeleton rows while loading is true and the empty state when items is empty and loading is false`
+- [x] `TrainingTemplateDetailScreen > renders each day with its exercises showing "sets × repsMin–repsMax" and opens the confirm dialog when delete is pressed`
+- [x] `TrainingTemplateFormScreen > save button is disabled until name is present and remains disabled while an added exercise is missing sets/reps`
+- [x] `ExercisePicker > calls exercisesStore.search with the typed query and renders a result row per returned exercise`
 
 *E2E (Detox, against real simulator + backend):*
 - [ ] `Owner: golden path` — log in as seeded owner → open Training Templates via drawer → tap `+ Create Template` → enter name → add a day → add an exercise from the picker → set sets/reps → save → new template card appears in the list → tap it → detail shows the day and exercise → tap delete → confirm → card is gone from the list
@@ -216,4 +216,14 @@ Modified:
 3. Write Detox specs (owner + trainer); `pnpm detox:build` then `pnpm detox:test` against running backend → pass
 4. `/simplify`, then `cd mobile && pnpm lint && pnpm test`; then run the `design-reviewer` agent on `mobile/src/screens/training-templates/`
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] `TrainingTemplatesScreen.tsx` + spec (RNTL Green)
+- [x] `TrainingTemplateDetailScreen.tsx` + spec (RNTL Green)
+- [x] `TrainingTemplateFormScreen.tsx` + spec (RNTL Green)
+- [x] `ExercisePicker.tsx` + spec (RNTL Green)
+- [x] `navigation/index.tsx` — AppStackParamList updated, screens registered, placeholder swapped
+- [x] `placeholders/index.ts` — TrainingTemplatesScreen export removed
+- [x] `e2e/owner/training-templates.spec.ts` — written (awaiting Detox run)
+- [x] `e2e/trainer/training-templates.spec.ts` — written (awaiting Detox run)
