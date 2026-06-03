@@ -124,7 +124,7 @@ Modified:
 3. Write integration specs in `backend/test/`, run against `mongodb-memory-server` → pass
 4. `/simplify`, then `cd backend && pnpm lint && pnpm test && pnpm test:e2e && pnpm build`
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 1 Checkpoint
 - [x] Models: PlanTemplate + Exercise
@@ -172,7 +172,14 @@ Modified:
 2. Implement types, api functions, stores → Green
 3. `/simplify`, then `cd mobile && pnpm lint && pnpm test`
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 2 Checkpoint
+- [x] `mobile/src/types/training-templates.ts`
+- [x] `mobile/src/lib/api/training-templates.api.ts` + spec
+- [x] `mobile/src/lib/api/exercises.api.ts` + spec
+- [x] `mobile/src/stores/training-templates.store.ts` + spec
+- [x] `mobile/src/stores/exercises.store.ts` + spec
 
 ---
 
