@@ -141,7 +141,7 @@ Follow `health.api.ts` (axios via shared `apiClient`) and `health.store.ts` (Zus
 2. Write `billing.store.spec.ts` mocking the api module → Red. Implement `billing.store.ts` → Green.
 3. `/simplify`; confirm `cd mobile && pnpm test` and `pnpm lint` pass.
 
-**Status**: In Progress
+**Status**: Complete
 
 ---
 
@@ -173,4 +173,13 @@ Add stable `testID`s: `screen-Billing`, `billing-period-prev`, `billing-period-n
 5. Write Detox specs; `pnpm detox build` then `pnpm detox test` for member + owner billing → pass against the real stack.
 6. Run the `design-reviewer` agent on `mobile/src/screens/billing/` and fix any violations.
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] BillingPeriodNav.spec.tsx (unit tests)
+- [x] BillingPeriodNav.tsx (implementation)
+- [x] BillingScreen.spec.tsx (unit tests)
+- [x] BillingScreen.tsx + OwnerTrainerBilling.tsx + MemberBilling.tsx (implementation)
+- [x] Navigation wiring (remove placeholder, import real screen)
+- [x] mobile/e2e/member/billing.spec.ts
+- [x] mobile/e2e/owner/billing.spec.ts
