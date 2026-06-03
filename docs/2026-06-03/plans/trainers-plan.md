@@ -97,7 +97,13 @@ interface TrainerDetailResponse {
 2. Implement `TrainersService`, `TrainersController`, DTO types, `TrainersModule`; register module in `app.module.ts` → Green
 3. Write `trainers.e2e-spec.ts` (mirror `equipment.e2e-spec.ts` buildApp/auth helpers, seed an owner, two trainers, and members assigned to one trainer) → passes against in-memory Mongo
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 1 Checkpoint
+- [x] `trainers.service.spec.ts` — service unit tests
+- [x] `trainers.controller.spec.ts` — controller unit tests
+- [x] Implementation (`TrainersService`, `TrainersController`, DTO, `TrainersModule`, `app.module.ts`)
+- [x] `trainers.e2e-spec.ts` — integration tests
 
 ---
 
