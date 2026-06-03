@@ -123,7 +123,7 @@ cross-app: `backend/` (new `health` module) + `mobile/` (data layer + screens). 
 5. Write `health.e2e-spec.ts` against the real Nest test app + in-memory/seeded Mongo (mirror `check-ins.e2e-spec.ts` bootstrapping) → passes.
 6. `/simplify`; ensure `pnpm test`, `pnpm test:e2e`, `pnpm lint`, `pnpm build` all green.
 
-**Status**: In Progress
+**Status**: Complete
 
 ---
 
@@ -158,7 +158,12 @@ cross-app: `backend/` (new `health` module) + `mobile/` (data layer + screens). 
 3. Write failing `health.store.spec.ts` → Red → implement `health.store.ts` three slices → Green.
 4. `/simplify`; ensure `pnpm test` + `pnpm lint` green. No `any`/`unknown`.
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 2 Checkpoint
+- [x] `mobile/src/types/health.ts`
+- [x] `mobile/src/lib/api/health.api.ts` + `health.api.spec.ts`
+- [x] `mobile/src/stores/health.store.ts` + `health.store.spec.ts`
 
 ---
 
