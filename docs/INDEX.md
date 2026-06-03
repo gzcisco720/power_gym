@@ -6,6 +6,7 @@ Sprint Contract plans only. One row per active plan.
 
 | Feature | Plan File | Status |
 |---|---|---|
+| My Health (Mobile) | [2026-06-03/plans/my-health-plan.md](2026-06-03/plans/my-health-plan.md) | In Progress |
 
 ## Management Files
 
