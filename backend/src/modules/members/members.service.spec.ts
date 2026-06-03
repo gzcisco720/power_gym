@@ -123,7 +123,7 @@ describe('MembersService', () => {
       const trainer = makeTrainer(TRAINER_ID, 'Jane', 'Trainer');
 
       userModel.find.mockImplementation(
-        (query: { role?: string; trainerId?: unknown }) => {
+        (query: { role?: string; trainerId?: Types.ObjectId }) => {
           if (query.role === 'member') {
             return Promise.resolve([member1, member2]);
           }
@@ -162,7 +162,7 @@ describe('MembersService', () => {
       const trainer = makeTrainer(TRAINER_ID, 'Jane', 'Trainer');
 
       userModel.find.mockImplementation(
-        (query: { role?: string; trainerId?: unknown }) => {
+        (query: { role?: string; trainerId?: Types.ObjectId }) => {
           if (query.role === 'member') {
             // Only called with trainerId filter for trainer role
             return Promise.resolve([myMember]);
@@ -178,7 +178,7 @@ describe('MembersService', () => {
       expect(result[0].id).toBe(MEMBER_ID);
       // Verify the query was scoped to the trainer
       const findCall = userModel.find.mock.calls[0] as [
-        { trainerId?: unknown },
+        { trainerId?: Types.ObjectId },
       ];
       expect(findCall[0].trainerId?.toString()).toBe(TRAINER_ID);
     });
