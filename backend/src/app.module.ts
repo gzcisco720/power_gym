@@ -15,6 +15,7 @@ import { CheckInsModule } from './modules/check-ins/check-ins.module';
 import { BodyTestsModule } from './modules/body-tests/body-tests.module';
 import { HealthModule } from './modules/health/health.module';
 import { InvitesModule } from './modules/invites/invites.module';
+import { BillingModule } from './modules/billing/billing.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { InvitesModule } from './modules/invites/invites.module';
     BodyTestsModule,
     HealthModule,
     InvitesModule,
+    BillingModule,
   ],
 })
 export class AppModule {}

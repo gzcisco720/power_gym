@@ -105,7 +105,15 @@ Wiring follows existing patterns: register `ScheduledSession`, `ServiceType`, an
 3. Write `billing.controller.spec.ts` (verifies `@Roles` metadata + delegates to service) and `billing.e2e-spec.ts` against the real Nest test app with seeded Mongo data → Green.
 4. Register `BillingModule` in `app.module.ts`; confirm `pnpm test` and `pnpm test:e2e` pass with no regressions.
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 1 Checkpoint
+- [x] billing.service.spec.ts (unit tests)
+- [x] BillingService implementation
+- [x] billing.controller.spec.ts
+- [x] BillingController implementation + DTO
+- [x] billing.e2e-spec.ts
+- [x] BillingModule + app.module.ts registration
 
 ---
 

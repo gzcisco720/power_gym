@@ -79,7 +79,7 @@ export class InvitesService {
       .select('firstName lastName');
 
     return trainers.map((t) => ({
-      _id: t._id as Types.ObjectId,
+      _id: t._id,
       name: `${t.firstName} ${t.lastName}`,
     }));
   }
