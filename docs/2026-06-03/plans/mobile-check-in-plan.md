@@ -136,26 +136,26 @@ Created:
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `checkInsApi > fetchCheckIns > calls GET /check-ins and returns response.data`
-- [ ] `checkInsApi > createCheckIn > calls POST /check-ins with the dto and returns response.data`
-- [ ] `checkInsApi > getCheckInUploadSignature > calls the upload-signature endpoint and returns response.data`
-- [ ] `useCheckInsStore > fetchCheckIns > populates items and clears loading on success`
-- [ ] `useCheckInsStore > fetchCheckIns > sets error and clears loading on failure`
-- [ ] `useCheckInsStore > addItem > prepends the new check-in to items`
-- [ ] `useCheckInsStore > hasCheckedInThisWeek > returns true when items[0].submittedAt is within the current week`
-- [ ] `useCheckInsStore > hasCheckedInThisWeek > returns false when items is empty`
-- [ ] `useCheckInsStore > hasCheckedInThisWeek > returns false when items[0].submittedAt is before this week's Monday`
+- [x] `checkInsApi > fetchCheckIns > calls GET /check-ins and returns response.data`
+- [x] `checkInsApi > createCheckIn > calls POST /check-ins with the dto and returns response.data`
+- [x] `checkInsApi > getCheckInUploadSignature > calls the upload-signature endpoint and returns response.data`
+- [x] `useCheckInsStore > fetchCheckIns > populates items and clears loading on success`
+- [x] `useCheckInsStore > fetchCheckIns > sets error and clears loading on failure`
+- [x] `useCheckInsStore > addItem > prepends the new check-in to items`
+- [x] `useCheckInsStore > hasCheckedInThisWeek > returns true when items[0].submittedAt is within the current week`
+- [x] `useCheckInsStore > hasCheckedInThisWeek > returns false when items is empty`
+- [x] `useCheckInsStore > hasCheckedInThisWeek > returns false when items[0].submittedAt is before this week's Monday`
 
 *Integration (mobile has no E2E at this layer — store integration via Jest):*
-- [ ] `useCheckInsStore > fetchCheckIns → addItem` sequence: fetch populates list, then addItem makes `hasCheckedInThisWeek()` return true for a current-week item
-- [ ] `useCheckInsStore` after `fetchCheckIns` resolving an empty array → `items` is `[]` and `hasCheckedInThisWeek()` is false
+- [x] `useCheckInsStore > fetchCheckIns → addItem` sequence: fetch populates list, then addItem makes `hasCheckedInThisWeek()` return true for a current-week item
+- [x] `useCheckInsStore` after `fetchCheckIns` resolving an empty array → `items` is `[]` and `hasCheckedInThisWeek()` is false
 
 **TDD sequence**:
 1. Write failing api + store Jest tests → Red
 2. Implement types, api, store → Green
 3. Run `pnpm test --testPathPattern=check-ins` → passes
 
-**Status**: Not Started
+**Status**: Complete
 
 ---
 
