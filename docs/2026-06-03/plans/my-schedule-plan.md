@@ -104,7 +104,18 @@ Modified:
 3. Write `scheduled-sessions.e2e-spec.ts` against the real stack (seed via the dev endpoint) → passes.
 4. `/simplify`; ensure `pnpm test`, `pnpm test:e2e`, `pnpm lint`, `pnpm build` all pass in `backend/`.
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 1 Checkpoint
+- [x] `scheduled-sessions.service.spec.ts` — unit tests
+- [x] `scheduled-sessions.controller.spec.ts` — unit tests
+- [x] `scheduled-sessions.service.ts`
+- [x] `scheduled-sessions.controller.ts`
+- [x] `scheduled-sessions.dev.controller.ts`
+- [x] `dto/seed-sessions.dto.ts`
+- [x] `scheduled-sessions.module.ts`
+- [x] `app.module.ts` registration
+- [x] `backend/test/scheduled-sessions.e2e-spec.ts`
 
 ---
 

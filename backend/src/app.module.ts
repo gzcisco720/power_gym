@@ -16,6 +16,7 @@ import { BodyTestsModule } from './modules/body-tests/body-tests.module';
 import { HealthModule } from './modules/health/health.module';
 import { InvitesModule } from './modules/invites/invites.module';
 import { BillingModule } from './modules/billing/billing.module';
+import { ScheduledSessionsModule } from './modules/scheduled-sessions/scheduled-sessions.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { BillingModule } from './modules/billing/billing.module';
     HealthModule,
     InvitesModule,
     BillingModule,
+    ScheduledSessionsModule,
   ],
 })
 export class AppModule {}
