@@ -104,7 +104,7 @@ Modified:
 3. Write `scheduled-sessions.e2e-spec.ts` against the real stack (seed via the dev endpoint) → passes.
 4. `/simplify`; ensure `pnpm test`, `pnpm test:e2e`, `pnpm lint`, `pnpm build` all pass in `backend/`.
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 1 Checkpoint
 - [x] `scheduled-sessions.service.spec.ts` — unit tests
@@ -160,7 +160,14 @@ export interface ScheduledSession {
 2. Implement `scheduled-sessions.ts` types, `scheduled-sessions.api.ts`, `scheduled-sessions.store.ts` → Green.
 3. `/simplify`; ensure `cd mobile && pnpm test` and `pnpm lint` pass.
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 2 Checkpoint
+- [x] `mobile/src/lib/api/scheduled-sessions.api.spec.ts` — API unit tests
+- [x] `mobile/src/stores/scheduled-sessions.store.spec.ts` — Store unit + integration tests
+- [x] `mobile/src/types/scheduled-sessions.ts`
+- [x] `mobile/src/lib/api/scheduled-sessions.api.ts`
+- [x] `mobile/src/stores/scheduled-sessions.store.ts`
 
 ---
 
