@@ -22,6 +22,16 @@ import {
   ScheduledSession,
   ScheduledSessionSchema,
 } from '../../common/models/scheduled-session.model';
+import { BodyTest, BodyTestSchema } from '../../common/models/body-test.model';
+import { CheckIn, CheckInSchema } from '../../common/models/check-in.model';
+import {
+  MemberInjury,
+  MemberInjurySchema,
+} from '../../common/models/member-injury.model';
+import {
+  MemberMedication,
+  MemberMedicationSchema,
+} from '../../common/models/member-medication.model';
 
 @Module({
   imports: [
@@ -41,6 +51,10 @@ import {
       { name: PasswordResetToken.name, schema: PasswordResetTokenSchema },
       { name: ServiceType.name, schema: ServiceTypeSchema },
       { name: ScheduledSession.name, schema: ScheduledSessionSchema },
+      { name: BodyTest.name, schema: BodyTestSchema },
+      { name: CheckIn.name, schema: CheckInSchema },
+      { name: MemberInjury.name, schema: MemberInjurySchema },
+      { name: MemberMedication.name, schema: MemberMedicationSchema },
     ]),
     EmailModule,
   ],

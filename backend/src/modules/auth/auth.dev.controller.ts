@@ -24,6 +24,19 @@ import {
   ScheduledSessionDocument,
 } from '../../common/models/scheduled-session.model';
 import { User, UserDocument } from '../../common/models/user.model';
+import {
+  BodyTest,
+  BodyTestDocument,
+} from '../../common/models/body-test.model';
+import { CheckIn, CheckInDocument } from '../../common/models/check-in.model';
+import {
+  MemberInjury,
+  MemberInjuryDocument,
+} from '../../common/models/member-injury.model';
+import {
+  MemberMedication,
+  MemberMedicationDocument,
+} from '../../common/models/member-medication.model';
 
 class SeedUserRoleDto {
   @IsString()
@@ -40,6 +53,10 @@ class SeedUserRoleDto {
   @IsOptional()
   @IsBoolean()
   seedBilling?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  seedMembers?: boolean;
 }
 
 /**
@@ -56,6 +73,14 @@ export class AuthDevController {
     @InjectModel(ScheduledSession.name)
     private readonly sessionModel: Model<ScheduledSessionDocument>,
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(BodyTest.name)
+    private readonly bodyTestModel: Model<BodyTestDocument>,
+    @InjectModel(CheckIn.name)
+    private readonly checkInModel: Model<CheckInDocument>,
+    @InjectModel(MemberInjury.name)
+    private readonly injuryModel: Model<MemberInjuryDocument>,
+    @InjectModel(MemberMedication.name)
+    private readonly medicationModel: Model<MemberMedicationDocument>,
   ) {}
 
   @HttpCode(200)
@@ -88,6 +113,10 @@ export class AuthDevController {
 
     if (dto.seedBilling) {
       await this.seedBillingData(dto.email, dto.role);
+    }
+
+    if (dto.seedMembers) {
+      await this.seedMembersData(dto.email, dto.role);
     }
 
     return { ok: true };
@@ -169,6 +198,84 @@ export class AuthDevController {
       customServiceName: null,
       customFee: null,
       reminderSentAt: null,
+    });
+  }
+
+  private async seedMembersData(
+    userEmail: string,
+    role: 'owner' | 'trainer' | 'member',
+  ) {
+    if (role === 'member') return;
+
+    const user = await this.userModel.findOne({ email: userEmail }).lean();
+    if (!user) return;
+
+    const userId = user._id;
+
+    // Seed a named member assigned to this owner/trainer
+    const memberEmail = `seed-members-member-for-${userEmail}`;
+    await this.authService.seedTestUser(
+      memberEmail,
+      'MemberPass123!',
+      'member',
+    );
+    const member = await this.userModel.findOne({ email: memberEmail }).lean();
+    if (!member) return;
+
+    const memberId = member._id;
+    await this.userModel.updateOne(
+      { _id: memberId },
+      { trainerId: userId, firstName: 'Seeded', lastName: 'Member' },
+    );
+
+    // Body test
+    await this.bodyTestModel.create({
+      memberId,
+      trainerId: userId,
+      date: new Date(),
+      age: 30,
+      sex: 'male',
+      weight: 80,
+      protocol: 'other',
+      bodyFatPct: 18,
+      fatMassKg: 14.4,
+      leanMassKg: 65.6,
+      targetWeight: null,
+      targetBodyFatPct: null,
+    });
+
+    // Check-in
+    await this.checkInModel.create({
+      memberId,
+      trainerId: userId,
+      submittedAt: new Date(),
+      sleepQuality: 7,
+      stress: 4,
+      fatigue: 5,
+      hunger: 6,
+      recovery: 7,
+      energy: 6,
+      digestion: 8,
+      stuckToDiet: 'yes',
+    });
+
+    // Active injury
+    await this.injuryModel.create({
+      memberId,
+      title: 'Seeded Knee Injury',
+      status: 'active',
+      createdByRole: 'trainer',
+    });
+
+    // Active medication
+    await this.medicationModel.create({
+      memberId,
+      name: 'Seeded Medication',
+      purpose: 'Test medication',
+      duration: 'short_term',
+      startDate: new Date(),
+      endDate: null,
+      status: 'active',
     });
   }
 }
