@@ -23,6 +23,7 @@ import { PlanTemplatesModule } from './modules/plan-templates/plan-templates.mod
 import { ExercisesModule } from './modules/exercises/exercises.module';
 import { NutritionTemplatesModule } from './modules/nutrition-templates/nutrition-templates.module';
 import { FoodsModule } from './modules/foods/foods.module';
+import { TrainingModule } from './modules/training/training.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { FoodsModule } from './modules/foods/foods.module';
     ExercisesModule,
     NutritionTemplatesModule,
     FoodsModule,
+    TrainingModule,
   ],
 })
 export class AppModule {}
