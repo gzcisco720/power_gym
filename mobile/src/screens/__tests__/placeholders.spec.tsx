@@ -75,10 +75,7 @@ jest.mock('@react-navigation/native', () => ({
 
 import { DashboardScreen } from '../DashboardScreen';
 import { EquipmentScreen } from '../equipment/EquipmentScreen';
-import {
-  JourneyScreen,
-  makePlaceholder,
-} from '../placeholders';
+import { makePlaceholder } from '../placeholders';
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
@@ -96,13 +93,6 @@ describe('placeholders', () => {
     it('renders a header and the "Equipment" title', () => {
       const { getByText } = render(<EquipmentScreen />);
       expect(getByText('Equipment')).toBeTruthy();
-    });
-  });
-
-  describe('Journey screen (member)', () => {
-    it('renders the "Journey" title', () => {
-      const { getByText } = render(<JourneyScreen />);
-      expect(getByText('Journey')).toBeTruthy();
     });
   });
 

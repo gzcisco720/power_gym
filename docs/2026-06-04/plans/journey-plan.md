@@ -183,18 +183,18 @@ interface JourneySummary {
 **Sprint Contract**:
 
 *Unit tests — `JourneyScreen.spec.tsx` (RNTL, store mocked):*
-- [ ] `JourneyScreen > on mount > calls fetchJourney exactly once`
-- [ ] `JourneyScreen > with summary > renders journey-streak showing the streak number`
-- [ ] `JourneyScreen > with summary > renders one journey-session-{id} per recentSession and shows its dayName + completedSetCount`
-- [ ] `JourneyScreen > with summary > renders 7 journey-nutrition-day-{date} rows and marks targetMet days distinctly from un-logged days`
-- [ ] `JourneyScreen > with summary > renders one journey-body-test-{id} per body test showing weight and bodyFatPct`
-- [ ] `JourneyScreen > with all-empty summary (streak 0, no sessions/tests, no logged days) > renders journey-empty`
-- [ ] `JourneyScreen > while loading > renders skeleton rows and not journey-empty`
+- [x] `JourneyScreen > on mount > calls fetchJourney exactly once`
+- [x] `JourneyScreen > with summary > renders journey-streak showing the streak number`
+- [x] `JourneyScreen > with summary > renders one journey-session-{id} per recentSession and shows its dayName + completedSetCount`
+- [x] `JourneyScreen > with summary > renders 7 journey-nutrition-day-{date} rows and marks targetMet days distinctly from un-logged days`
+- [x] `JourneyScreen > with summary > renders one journey-body-test-{id} per body test showing weight and bodyFatPct`
+- [x] `JourneyScreen > with all-empty summary (streak 0, no sessions/tests, no logged days) > renders journey-empty`
+- [x] `JourneyScreen > while loading > renders skeleton rows and not journey-empty`
 
 *E2E — `mobile/e2e/member/journey.spec.ts` (Detox, seeds via `/auth/dev/seed-user-role` + `/journey/dev/seed`):*
-- [ ] Member logs in → opens drawer → taps `drawer-item-Journey` → `screen-Journey` is visible
-- [ ] On a member seeded with a finished session + nutrition log + body test: `journey-streak` is visible, at least one `journey-session-{id}` is visible, and at least one `journey-body-test-{id}` is visible (golden path: streak + session list + nutrition + body trend all render from one fetch)
-- [ ] Edge case: a member seeded with no data → `screen-Journey` visible and `journey-empty` visible
+- [x] Member logs in → opens drawer → taps `drawer-item-Journey` → `screen-Journey` is visible
+- [x] On a member seeded with a finished session + nutrition log + body test: `journey-streak` is visible, at least one `journey-session-{id}` is visible, and at least one `journey-body-test-{id}` is visible (golden path: streak + session list + nutrition + body trend all render from one fetch)
+- [x] Edge case: a member seeded with no data → `screen-Journey` visible and `journey-empty` visible
 
 **TDD sequence**:
 1. Write `JourneyScreen.spec.tsx` (7 criteria) mocking `useJourneyStore` → Red.
@@ -203,4 +203,10 @@ interface JourneySummary {
 4. Write `mobile/e2e/member/journey.spec.ts` mirroring the seed/login flow in `member/my-training.spec.ts`; run `cd mobile && pnpm detox:test --testPathPattern=member/journey` against a booted simulator + running backend → green.
 5. `/simplify`, then run the `design-reviewer` agent on `mobile/src/screens/journey/JourneyScreen.tsx`.
 
-**Status**: Not Started
+**Stage 3 Checkpoint**
+- [x] `mobile/src/screens/journey/JourneyScreen.tsx` (unit tests green)
+- [x] `mobile/src/screens/journey/JourneyScreen.spec.tsx`
+- [x] Navigation rewire (remove placeholder, update import)
+- [x] `mobile/e2e/member/journey.spec.ts`
+
+**Status**: Complete

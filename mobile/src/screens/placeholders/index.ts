@@ -32,5 +32,3 @@ export function makePlaceholder(title: string, testID: string): () => React.JSX.
   return cache.get(testID)!;
 }
 
-// Member-only screens
-export const JourneyScreen = makePlaceholder('Journey', 'screen-Journey');

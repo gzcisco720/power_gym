@@ -6,9 +6,7 @@ import { LoginScreen } from '../screens/LoginScreen';
 import { ForgotPasswordScreen } from '../screens/ForgotPasswordScreen';
 import { ResetPasswordScreen } from '../screens/ResetPasswordScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
-import {
-  JourneyScreen,
-} from '../screens/placeholders';
+import { JourneyScreen } from '../screens/journey/JourneyScreen';
 import { MyTrainingScreen } from '../screens/my-training/MyTrainingScreen';
 import { MyNutritionScreen } from '../screens/my-nutrition/MyNutritionScreen';
 import { LogFoodScreen } from '../screens/my-nutrition/LogFoodScreen';
