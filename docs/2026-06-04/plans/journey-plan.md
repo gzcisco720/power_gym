@@ -147,14 +147,14 @@ interface JourneySummary {
 **Sprint Contract**:
 
 *Unit tests — `journey.store.spec.ts` (mock `journey.api.ts`):*
-- [ ] `useJourneyStore > fetchJourney > sets loading true while in flight then stores summary and clears loading on success`
-- [ ] `useJourneyStore > fetchJourney > stores error message and clears loading when the api rejects`
-- [ ] `useJourneyStore > fetchJourney > leaves summary null and error set after a failure (does not retain stale data on first load)`
-- [ ] `useJourneyStore > initial state > summary is null, loading is false, error is null`
+- [x] `useJourneyStore > fetchJourney > sets loading true while in flight then stores summary and clears loading on success`
+- [x] `useJourneyStore > fetchJourney > stores error message and clears loading when the api rejects`
+- [x] `useJourneyStore > fetchJourney > leaves summary null and error set after a failure (does not retain stale data on first load)`
+- [x] `useJourneyStore > initial state > summary is null, loading is false, error is null`
 
 *Integration (store ↔ api boundary, api mocked):*
-- [ ] `fetchJourney` resolves and `summary` deep-equals the `JourneySummary` returned by the mocked `fetchJourney` api function (verifies the type contract passes through unchanged)
-- [ ] On rejection, `summary` stays `null` and `error` equals the rejected `Error.message`
+- [x] `fetchJourney` resolves and `summary` deep-equals the `JourneySummary` returned by the mocked `fetchJourney` api function (verifies the type contract passes through unchanged)
+- [x] On rejection, `summary` stays `null` and `error` equals the rejected `Error.message`
 
 **TDD sequence**:
 1. Add `journey.ts` types (exact shapes from the Data Shapes section) — no test needed for pure type declarations.
@@ -162,7 +162,7 @@ interface JourneySummary {
 3. Implement `journey.api.ts` (`fetchJourney(): Promise<JourneySummary>` → `apiClient.get('/journey')`) and `journey.store.ts` → Green.
 4. Run `cd mobile && pnpm test -- --testPathPattern=journey.store && pnpm lint` → green. Then `/simplify`.
 
-**Status**: Not Started
+**Status**: Complete
 
 ---
 
