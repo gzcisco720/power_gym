@@ -289,7 +289,13 @@ interface NutritionState {
 2. Write `nutrition.store.spec.ts` → Red → implement `nutrition.store.ts` → Green.
 3. `/simplify` then `cd mobile && pnpm test && pnpm lint`.
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 2 Checkpoint
+- [x] `mobile/src/types/nutrition.ts` — interfaces for all shared data shapes
+- [x] `mobile/src/lib/api/nutrition.api.ts` + `nutrition.api.spec.ts` — 7 tests green
+- [x] `mobile/src/stores/nutrition.store.ts` + `nutrition.store.spec.ts` — 7 tests green
+- [x] lint + tsc (production files) pass
 
 ---
 
