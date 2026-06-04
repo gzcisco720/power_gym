@@ -5,6 +5,7 @@ import { JourneyService } from './journey.service';
 import { WorkoutSession } from '../../common/models/workout-session.model';
 import { NutritionDailyLog } from '../../common/models/nutrition-daily-log.model';
 import { BodyTest } from '../../common/models/body-test.model';
+import { MemberNutritionPlan } from '../../common/models/member-nutrition-plan.model';
 
 const MEMBER_ID = new Types.ObjectId().toString();
 
@@ -33,11 +34,13 @@ describe('JourneyService', () => {
   let workoutSessionModel: { find: jest.Mock };
   let nutritionDailyLogModel: { find: jest.Mock };
   let bodyTestModel: { find: jest.Mock };
+  let memberNutritionPlanModel: { find: jest.Mock };
 
   beforeEach(async () => {
     workoutSessionModel = { find: jest.fn() };
     nutritionDailyLogModel = { find: jest.fn() };
     bodyTestModel = { find: jest.fn() };
+    memberNutritionPlanModel = { find: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -53,6 +56,10 @@ describe('JourneyService', () => {
         {
           provide: getModelToken(BodyTest.name),
           useValue: bodyTestModel,
+        },
+        {
+          provide: getModelToken(MemberNutritionPlan.name),
+          useValue: memberNutritionPlanModel,
         },
       ],
     }).compile();
@@ -178,11 +185,16 @@ describe('JourneyService', () => {
       const todayStr = dateStr(0);
       const log = {
         date: todayStr,
+        planId: null,
+        dayTypeName: 'Normal',
         meals: [{ items: [{ kcal: 500 }] }],
       };
 
       nutritionDailyLogModel.find.mockReturnValue({
         lean: jest.fn().mockResolvedValue([log]),
+      });
+      memberNutritionPlanModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
       });
 
       const result = await service.getNutritionDays(MEMBER_ID);
@@ -200,35 +212,69 @@ describe('JourneyService', () => {
       }
     });
 
-    it('sets targetMet=true only when targetKcal > 0 and loggedKcal >= targetKcal', async () => {
+    it('sets targetMet=true when plan day-type kcal target is met, false when no plan exists', async () => {
       const todayStr = dateStr(0);
-      // Log with 2000 kcal
-      const log = {
+      const planId = new Types.ObjectId();
+
+      // Case 1: log with a plan that has a day-type with 1800 kcal target
+      const logWithPlan = {
         date: todayStr,
+        planId,
+        dayTypeName: 'Normal',
         meals: [
           {
             items: [{ kcal: 1000 }, { kcal: 1000 }],
           },
         ],
-        targetKcal: 1800,
       };
 
       nutritionDailyLogModel.find.mockReturnValue({
-        lean: jest.fn().mockResolvedValue([log]),
+        lean: jest.fn().mockResolvedValue([logWithPlan]),
+      });
+      memberNutritionPlanModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([
+          {
+            _id: planId,
+            dayTypes: [
+              {
+                name: 'Normal',
+                meals: [{ items: [{ kcal: 900 }, { kcal: 900 }] }],
+              },
+            ],
+          },
+        ]),
       });
 
-      const result = await service.getNutritionDays(MEMBER_ID);
-      const today = result.find((d) => d.date === todayStr);
+      const resultWithPlan = await service.getNutritionDays(MEMBER_ID);
+      const todayWithPlan = resultWithPlan.find((d) => d.date === todayStr);
 
-      expect(today).toBeDefined();
-      expect(today!.logged).toBe(true);
-      expect(today!.loggedKcal).toBe(2000);
-      // targetKcal=0 (not stored on log itself, defaulting to 0) — targetMet=false
-      expect(today!.targetMet).toBe(false);
+      expect(todayWithPlan).toBeDefined();
+      expect(todayWithPlan!.logged).toBe(true);
+      expect(todayWithPlan!.loggedKcal).toBe(2000);
+      expect(todayWithPlan!.targetKcal).toBe(1800);
+      expect(todayWithPlan!.targetMet).toBe(true);
 
-      // A day where we manually set targetKcal from the log
-      // Since our implementation derives targetKcal=0 from NutritionDailyLog
-      // (no plan lookup), targetMet stays false when targetKcal=0
+      // Case 2: log with no planId → targetKcal=0, targetMet=false
+      const logNoPlan = {
+        date: todayStr,
+        planId: null,
+        dayTypeName: 'Normal',
+        meals: [{ items: [{ kcal: 2000 }] }],
+      };
+
+      nutritionDailyLogModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([logNoPlan]),
+      });
+      memberNutritionPlanModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
+      });
+
+      const resultNoPlan = await service.getNutritionDays(MEMBER_ID);
+      const todayNoPlan = resultNoPlan.find((d) => d.date === todayStr);
+
+      expect(todayNoPlan).toBeDefined();
+      expect(todayNoPlan!.targetKcal).toBe(0);
+      expect(todayNoPlan!.targetMet).toBe(false);
     });
   });
 
@@ -284,6 +330,9 @@ describe('JourneyService', () => {
         });
 
       nutritionDailyLogModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
+      });
+      memberNutritionPlanModel.find.mockReturnValue({
         lean: jest.fn().mockResolvedValue([]),
       });
 

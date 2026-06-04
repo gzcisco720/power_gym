@@ -13,6 +13,10 @@ import {
   BodyTest,
   BodyTestDocument,
 } from '../../common/models/body-test.model';
+import {
+  MemberNutritionPlan,
+  MemberNutritionPlanDocument,
+} from '../../common/models/member-nutrition-plan.model';
 
 export interface JourneySessionSummary {
   _id: string;
@@ -62,6 +66,8 @@ export class JourneyService {
     private readonly nutritionDailyLogModel: Model<NutritionDailyLogDocument>,
     @InjectModel(BodyTest.name)
     private readonly bodyTestModel: Model<BodyTestDocument>,
+    @InjectModel(MemberNutritionPlan.name)
+    private readonly memberNutritionPlanModel: Model<MemberNutritionPlanDocument>,
   ) {}
 
   async computeStreak(memberId: string): Promise<number> {
@@ -144,6 +150,23 @@ export class JourneyService {
       })
       .lean();
 
+    // Collect unique planIds from logs so we can batch-load plans
+    const planIdSet = new Set<string>();
+    for (const log of logs) {
+      if (log.planId) {
+        planIdSet.add(log.planId.toString());
+      }
+    }
+
+    // Load all referenced plans in one query
+    const plans = await this.memberNutritionPlanModel
+      .find({
+        _id: { $in: Array.from(planIdSet).map((id) => new Types.ObjectId(id)) },
+      })
+      .lean();
+
+    const planMap = new Map(plans.map((p) => [p._id.toString(), p]));
+
     const logMap = new Map<string, (typeof logs)[0]>();
     for (const log of logs) {
       logMap.set(log.date, log);
@@ -169,9 +192,27 @@ export class JourneyService {
         0,
       );
 
-      // targetKcal is not stored on the log directly — we default to 0.
-      // (The plan's day-type kcal target would require a plan lookup that is out of scope.)
-      const targetKcal = 0;
+      // Resolve targetKcal from the referenced nutrition plan day-type
+      let targetKcal = 0;
+      if (log.planId) {
+        const plan = planMap.get(log.planId.toString());
+        if (plan) {
+          const dayType = (
+            plan.dayTypes as Array<{
+              name: string;
+              meals: Array<{ items: Array<{ kcal: number }> }>;
+            }>
+          ).find((dt) => dt.name === log.dayTypeName);
+          if (dayType) {
+            targetKcal = dayType.meals.reduce(
+              (sum, meal) =>
+                sum + meal.items.reduce((mSum, item) => mSum + item.kcal, 0),
+              0,
+            );
+          }
+        }
+      }
+
       const targetMet = targetKcal > 0 && loggedKcal >= targetKcal;
 
       return {

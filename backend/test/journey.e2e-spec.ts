@@ -27,6 +27,35 @@ import {
   EMAIL_SERVICE,
 } from '../src/common/email/email.service';
 
+interface JourneySessionSummary {
+  _id: string;
+  date: string;
+  dayName: string;
+  completedSetCount: number;
+}
+
+interface JourneyNutritionDay {
+  date: string;
+  logged: boolean;
+  loggedKcal: number;
+  targetKcal: number;
+  targetMet: boolean;
+}
+
+interface JourneyBodyTestPoint {
+  _id: string;
+  date: string;
+  weight: number;
+  bodyFatPct: number;
+}
+
+interface JourneySummaryBody {
+  workoutStreak: number;
+  recentSessions: JourneySessionSummary[];
+  nutritionDays: JourneyNutritionDay[];
+  bodyTests: JourneyBodyTestPoint[];
+}
+
 const OWNER_EMAIL = 'jrn-e2e-owner@example.com';
 const MEMBER_EMAIL = 'jrn-e2e-member@example.com';
 const EMPTY_MEMBER_EMAIL = 'jrn-e2e-empty-member@example.com';
@@ -162,24 +191,15 @@ describe('Journey (e2e)', () => {
         .set('Authorization', `Bearer ${emptyMemberToken}`)
         .expect(200);
 
-      const body = res.body as {
-        workoutStreak: number;
-        recentSessions: unknown[];
-        nutritionDays: unknown[];
-        bodyTests: unknown[];
-      };
+      const body = res.body as JourneySummaryBody;
       expect(body.workoutStreak).toBe(0);
       expect(body.recentSessions).toEqual([]);
       expect(body.nutritionDays).toHaveLength(7);
-      expect(
-        (body.nutritionDays as Array<{ logged: boolean }>).every(
-          (d) => d.logged === false,
-        ),
-      ).toBe(true);
+      expect(body.nutritionDays.every((d) => d.logged === false)).toBe(true);
       expect(body.bodyTests).toEqual([]);
     });
 
-    it('member seeded with session + nutrition log + body test → 200 with workoutStreak>=1, recentSessions.length=1, nutritionDays.length=7, bodyTests.length=1', async () => {
+    it('member seeded with session + nutrition log + body test → 200 with workoutStreak>=1, recentSessions.length=1, nutritionDays.length=7, bodyTests.length=1, and today nutritionDay has targetKcal>0', async () => {
       // Seed via dev endpoint
       await request(app.getHttpServer())
         .post('/journey/dev/seed')
@@ -191,16 +211,17 @@ describe('Journey (e2e)', () => {
         .set('Authorization', `Bearer ${memberToken}`)
         .expect(200);
 
-      const body = res.body as {
-        workoutStreak: number;
-        recentSessions: unknown[];
-        nutritionDays: unknown[];
-        bodyTests: unknown[];
-      };
+      const body = res.body as JourneySummaryBody;
       expect(body.workoutStreak).toBeGreaterThanOrEqual(1);
       expect(body.recentSessions).toHaveLength(1);
       expect(body.nutritionDays).toHaveLength(7);
       expect(body.bodyTests).toHaveLength(1);
+
+      // The seeded nutrition plan day-type has 1800 kcal target
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const todayDay = body.nutritionDays.find((d) => d.date === todayStr);
+      expect(todayDay).toBeDefined();
+      expect(todayDay!.targetKcal).toBeGreaterThan(0);
     });
   });
 });

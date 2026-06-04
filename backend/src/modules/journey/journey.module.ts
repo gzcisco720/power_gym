@@ -13,6 +13,10 @@ import {
 } from '../../common/models/nutrition-daily-log.model';
 import { BodyTest, BodyTestSchema } from '../../common/models/body-test.model';
 import { User, UserSchema } from '../../common/models/user.model';
+import {
+  MemberNutritionPlan,
+  MemberNutritionPlanSchema,
+} from '../../common/models/member-nutrition-plan.model';
 
 const devControllers =
   process.env.NODE_ENV !== 'production' ? [JourneyDevController] : [];
@@ -24,6 +28,10 @@ const devControllers =
       { name: NutritionDailyLog.name, schema: NutritionDailyLogSchema },
       { name: BodyTest.name, schema: BodyTestSchema },
       { name: User.name, schema: UserSchema },
+      {
+        name: MemberNutritionPlan.name,
+        schema: MemberNutritionPlanSchema,
+      },
     ]),
   ],
   controllers: [JourneyController, ...devControllers],

@@ -21,6 +21,10 @@ import {
   BodyTest,
   BodyTestDocument,
 } from '../../common/models/body-test.model';
+import {
+  MemberNutritionPlan,
+  MemberNutritionPlanDocument,
+} from '../../common/models/member-nutrition-plan.model';
 import { SeedJourneyDto } from './dto/seed-journey.dto';
 
 /**
@@ -38,6 +42,8 @@ export class JourneyDevController {
     private readonly nutritionDailyLogModel: Model<NutritionDailyLogDocument>,
     @InjectModel(BodyTest.name)
     private readonly bodyTestModel: Model<BodyTestDocument>,
+    @InjectModel(MemberNutritionPlan.name)
+    private readonly memberNutritionPlanModel: Model<MemberNutritionPlanDocument>,
   ) {}
 
   @HttpCode(200)
@@ -91,12 +97,53 @@ export class JourneyDevController {
       memberNote: null,
     });
 
-    // Seed a NutritionDailyLog for today
+    // Seed a MemberNutritionPlan with a 'Normal' day-type (1800 kcal target)
+    const nutritionPlan = await this.memberNutritionPlanModel.create({
+      memberId,
+      assignedById: memberId,
+      templateId: null,
+      name: 'Seed Plan',
+      isActive: true,
+      assignedAt: now,
+      deactivatedAt: null,
+      dayTypes: [
+        {
+          name: 'Normal',
+          meals: [
+            {
+              name: 'Breakfast',
+              order: 1,
+              items: [
+                {
+                  foodName: 'Oats',
+                  quantityG: 100,
+                  kcal: 900,
+                  protein: 12,
+                  carbs: 60,
+                  fat: 7,
+                },
+                {
+                  foodName: 'Eggs',
+                  quantityG: 150,
+                  kcal: 900,
+                  protein: 20,
+                  carbs: 2,
+                  fat: 10,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      schedule: { weeklyPattern: [], calendarOverrides: [], iterate: true },
+    });
+
+    // Seed a NutritionDailyLog for today referencing the plan
     // Remove existing log for today to avoid unique index conflict
     await this.nutritionDailyLogModel.deleteOne({ memberId, date: todayStr });
     await this.nutritionDailyLogModel.create({
       memberId,
-      planId: new Types.ObjectId(),
+      planId: nutritionPlan._id,
       date: todayStr,
       dayTypeName: 'Normal',
       meals: [
