@@ -9,17 +9,21 @@ import { BodyTest } from '../../types/body-tests';
 import { MemberOverviewTab } from './tabs/MemberOverviewTab';
 import { MemberBodyTestsTab } from './tabs/MemberBodyTestsTab';
 import { MemberHealthTab } from './tabs/MemberHealthTab';
+import { MemberTrainingTab } from './tabs/MemberTrainingTab';
+import { AssignPlanSheet } from './AssignPlanSheet';
 import { AppStackParamList } from '../../navigation/index';
+import { ActivePlan } from '../../types/training';
 
 type DetailRouteProp = RouteProp<AppStackParamList, 'MemberDetail'>;
 type Nav = NativeStackNavigationProp<AppStackParamList>;
 
-type TabId = 'overview' | 'bodytests' | 'health';
+type TabId = 'overview' | 'bodytests' | 'health' | 'training';
 
 const TABS: { id: TabId; label: string; testID: string }[] = [
   { id: 'overview', label: 'Overview', testID: 'member-detail-tab-overview' },
   { id: 'bodytests', label: 'Body Tests', testID: 'member-detail-tab-bodytests' },
   { id: 'health', label: 'Health', testID: 'member-detail-tab-health' },
+  { id: 'training', label: 'Training', testID: 'member-detail-tab-training' },
 ];
 
 export function MemberDetailScreen() {
@@ -28,6 +32,8 @@ export function MemberDetailScreen() {
   const { memberId } = route.params;
 
   const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const [memberActivePlan, setMemberActivePlan] = useState<ActivePlan | null>(null);
+  const [assignSheetVisible, setAssignSheetVisible] = useState(false);
 
   const members = useMembersStore((s) => s.members);
   const selectedMembers = useMembersStore((s) => s.selectedMembers);
@@ -122,8 +128,30 @@ export function MemberDetailScreen() {
           {activeTab === 'health' ? (
             <MemberHealthTab injuries={detail.injuries} medications={detail.medications} />
           ) : null}
+          {activeTab === 'training' ? (
+            <MemberTrainingTab
+              memberId={memberId}
+              activePlan={memberActivePlan}
+              onAssignPress={() => setAssignSheetVisible(true)}
+            />
+          ) : null}
         </>
       )}
+
+      {/* Assign plan sheet overlay */}
+      {assignSheetVisible ? (
+        <View className="absolute inset-0 bg-background">
+          <AssignPlanSheet
+            testID="assign-plan-sheet"
+            memberId={memberId}
+            onAssigned={(plan) => {
+              setMemberActivePlan(plan);
+              setAssignSheetVisible(false);
+            }}
+            onClose={() => setAssignSheetVisible(false)}
+          />
+        </View>
+      ) : null}
     </Screen>
   );
 }

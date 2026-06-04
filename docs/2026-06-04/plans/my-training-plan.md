@@ -306,7 +306,17 @@ Design: follow `.claude/instructions/design.md` mobile rules — `text-foregroun
 4. Write `my-training.spec.ts`; `pnpm detox build` + `pnpm detox test --testPathPattern=member/my-training` against a booted simulator + running backend until Green.
 5. Run the `design-reviewer` agent on the two new screens; fix violations.
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 3 Checkpoint
+- [x] mobile/src/screens/my-training/MyTrainingScreen.tsx + MyTrainingScreen.spec.tsx
+- [x] mobile/src/screens/my-training/WorkoutSessionScreen.tsx + WorkoutSessionScreen.spec.tsx
+- [x] mobile/src/screens/members/AssignPlanSheet.tsx + AssignPlanSheet.spec.tsx
+- [x] mobile/src/screens/members/tabs/MemberTrainingTab.tsx + MemberTrainingTab.spec.tsx
+- [x] mobile/src/navigation/index.tsx (WorkoutSession route, real MyTrainingScreen)
+- [x] mobile/src/screens/placeholders/index.ts (removed MyTrainingScreen placeholder)
+- [x] mobile/src/screens/members/MemberDetailScreen.tsx (training tab added)
+- [x] mobile/e2e/member/my-training.spec.ts
 
 ---
 

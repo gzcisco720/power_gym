@@ -33,7 +33,6 @@ export function makePlaceholder(title: string, testID: string): () => React.JSX.
 }
 
 // Owner screens
-export const MyTrainingScreen = makePlaceholder('My Training', 'screen-MyTraining');
 export const MyNutritionScreen = makePlaceholder('My Nutrition', 'screen-MyNutrition');
 
 // Member-only screens
