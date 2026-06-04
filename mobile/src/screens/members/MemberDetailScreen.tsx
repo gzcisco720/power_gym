@@ -10,20 +10,24 @@ import { MemberOverviewTab } from './tabs/MemberOverviewTab';
 import { MemberBodyTestsTab } from './tabs/MemberBodyTestsTab';
 import { MemberHealthTab } from './tabs/MemberHealthTab';
 import { MemberTrainingTab } from './tabs/MemberTrainingTab';
+import { MemberNutritionTab } from './tabs/MemberNutritionTab';
 import { AssignPlanSheet } from './AssignPlanSheet';
+import { AssignNutritionPlanSheet } from './AssignNutritionPlanSheet';
 import { AppStackParamList } from '../../navigation/index';
 import { ActivePlan } from '../../types/training';
+import { ActiveNutritionPlan } from '../../types/nutrition';
 
 type DetailRouteProp = RouteProp<AppStackParamList, 'MemberDetail'>;
 type Nav = NativeStackNavigationProp<AppStackParamList>;
 
-type TabId = 'overview' | 'bodytests' | 'health' | 'training';
+type TabId = 'overview' | 'bodytests' | 'health' | 'training' | 'nutrition';
 
 const TABS: { id: TabId; label: string; testID: string }[] = [
   { id: 'overview', label: 'Overview', testID: 'member-detail-tab-overview' },
   { id: 'bodytests', label: 'Body Tests', testID: 'member-detail-tab-bodytests' },
   { id: 'health', label: 'Health', testID: 'member-detail-tab-health' },
   { id: 'training', label: 'Training', testID: 'member-detail-tab-training' },
+  { id: 'nutrition', label: 'Nutrition', testID: 'member-detail-tab-nutrition' },
 ];
 
 export function MemberDetailScreen() {
@@ -33,7 +37,9 @@ export function MemberDetailScreen() {
 
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [memberActivePlan, setMemberActivePlan] = useState<ActivePlan | null>(null);
+  const [memberActiveNutritionPlan, setMemberActiveNutritionPlan] = useState<ActiveNutritionPlan | null>(null);
   const [assignSheetVisible, setAssignSheetVisible] = useState(false);
+  const [assignNutritionSheetVisible, setAssignNutritionSheetVisible] = useState(false);
 
   const members = useMembersStore((s) => s.members);
   const selectedMembers = useMembersStore((s) => s.selectedMembers);
@@ -135,10 +141,17 @@ export function MemberDetailScreen() {
               onAssignPress={() => setAssignSheetVisible(true)}
             />
           ) : null}
+          {activeTab === 'nutrition' ? (
+            <MemberNutritionTab
+              memberId={memberId}
+              activePlan={memberActiveNutritionPlan}
+              onAssignPress={() => setAssignNutritionSheetVisible(true)}
+            />
+          ) : null}
         </>
       )}
 
-      {/* Assign plan sheet overlay */}
+      {/* Assign training plan sheet overlay */}
       {assignSheetVisible ? (
         <View className="absolute inset-0 bg-background">
           <AssignPlanSheet
@@ -149,6 +162,21 @@ export function MemberDetailScreen() {
               setAssignSheetVisible(false);
             }}
             onClose={() => setAssignSheetVisible(false)}
+          />
+        </View>
+      ) : null}
+
+      {/* Assign nutrition plan sheet overlay */}
+      {assignNutritionSheetVisible ? (
+        <View className="absolute inset-0 bg-background">
+          <AssignNutritionPlanSheet
+            testID="assign-nutrition-plan-sheet"
+            memberId={memberId}
+            onAssigned={(plan) => {
+              setMemberActiveNutritionPlan(plan);
+              setAssignNutritionSheetVisible(false);
+            }}
+            onClose={() => setAssignNutritionSheetVisible(false)}
           />
         </View>
       ) : null}

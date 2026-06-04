@@ -336,4 +336,12 @@ interface NutritionState {
 4. `/simplify` then `cd mobile && pnpm test && pnpm lint`; then `pnpm detox build` + `pnpm detox test --testPathPattern=member/my-nutrition`.
 5. Run the design-reviewer on `mobile/src/screens/my-nutrition/`.
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] `MacroSummary.tsx`, `MealCard.tsx` components
+- [x] `MyNutritionScreen.tsx` + `.spec.tsx`
+- [x] `LogFoodScreen.tsx` + `.spec.tsx`
+- [x] Navigation wiring + placeholder removal + MemberDetailScreen
+- [x] `mobile/e2e/member/my-nutrition.spec.ts`
+- [x] lint + tsc (production files) pass

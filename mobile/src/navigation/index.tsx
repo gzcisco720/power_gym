@@ -7,10 +7,11 @@ import { ForgotPasswordScreen } from '../screens/ForgotPasswordScreen';
 import { ResetPasswordScreen } from '../screens/ResetPasswordScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
 import {
-  MyNutritionScreen,
   JourneyScreen,
 } from '../screens/placeholders';
 import { MyTrainingScreen } from '../screens/my-training/MyTrainingScreen';
+import { MyNutritionScreen } from '../screens/my-nutrition/MyNutritionScreen';
+import { LogFoodScreen } from '../screens/my-nutrition/LogFoodScreen';
 import { WorkoutSessionScreen } from '../screens/my-training/WorkoutSessionScreen';
 import { CalendarScreen } from '../screens/calendar/CalendarScreen';
 import { NutritionTemplatesScreen } from '../screens/nutrition-templates/NutritionTemplatesScreen';
@@ -67,6 +68,7 @@ export type AppStackParamList = {
   NutritionTemplateDetail: { templateId: string; templateName: string };
   NutritionTemplateForm: { templateId?: string; templateName?: string };
   WorkoutSession: { session: WorkoutSession };
+  LogFood: { mealName: string };
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -148,6 +150,7 @@ function AppNavigator() {
       <AppStack.Screen name="NutritionTemplateDetail" component={NutritionTemplateDetailScreen} />
       <AppStack.Screen name="NutritionTemplateForm" component={NutritionTemplateFormScreen} />
       <AppStack.Screen name="WorkoutSession" component={WorkoutSessionScreen} />
+      <AppStack.Screen name="LogFood" component={LogFoodScreen} />
     </AppStack.Navigator>
   );
 }

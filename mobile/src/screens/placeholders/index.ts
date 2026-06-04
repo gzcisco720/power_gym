@@ -32,8 +32,5 @@ export function makePlaceholder(title: string, testID: string): () => React.JSX.
   return cache.get(testID)!;
 }
 
-// Owner screens
-export const MyNutritionScreen = makePlaceholder('My Nutrition', 'screen-MyNutrition');
-
 // Member-only screens
 export const JourneyScreen = makePlaceholder('Journey', 'screen-Journey');
