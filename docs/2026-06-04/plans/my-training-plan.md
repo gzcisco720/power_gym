@@ -260,7 +260,12 @@ interface TrainingState {
 2. Write `training.store.spec.ts` mocking the api module → Red → implement `training.store.ts` → Green.
 3. `/simplify`, then `pnpm test && pnpm lint`.
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 2 Checkpoint
+- [x] mobile/src/types/training.ts
+- [x] mobile/src/lib/api/training.api.ts + training.api.spec.ts
+- [x] mobile/src/stores/training.store.ts + training.store.spec.ts
 
 ---
 
