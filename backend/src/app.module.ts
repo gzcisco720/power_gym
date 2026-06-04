@@ -25,6 +25,7 @@ import { NutritionTemplatesModule } from './modules/nutrition-templates/nutritio
 import { FoodsModule } from './modules/foods/foods.module';
 import { TrainingModule } from './modules/training/training.module';
 import { NutritionModule } from './modules/nutrition/nutrition.module';
+import { JourneyModule } from './modules/journey/journey.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { NutritionModule } from './modules/nutrition/nutrition.module';
     FoodsModule,
     TrainingModule,
     NutritionModule,
+    JourneyModule,
   ],
 })
 export class AppModule {}
