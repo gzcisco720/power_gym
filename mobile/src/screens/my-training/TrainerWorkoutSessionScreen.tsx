@@ -8,6 +8,7 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { useTrainingStore } from '../../stores/training.store';
 import { AppStackParamList } from '../../navigation/index';
 import { SessionSet, PatchSetInput } from '../../types/training';
+import { colors } from '../../lib/theme';
 
 type SessionRouteProp = RouteProp<AppStackParamList, 'TrainerWorkoutSession'>;
 type Nav = NativeStackNavigationProp<AppStackParamList>;
@@ -126,7 +127,7 @@ export function TrainerWorkoutSessionScreen() {
                             onChangeText={(v) => setInput(set.exerciseId, set.setNumber, { reps: v })}
                             keyboardType="number-pad"
                             placeholder={`${set.prescribedRepsMin}`}
-                            placeholderTextColor="rgba(255,255,255,0.3)"
+                            placeholderTextColor={colors.placeholderText}
                             editable={!isLogged}
                             className="bg-input rounded-lg px-2 py-1.5 text-sm text-foreground"
                           />
@@ -144,7 +145,7 @@ export function TrainerWorkoutSessionScreen() {
                               onChangeText={(v) => setInput(set.exerciseId, set.setNumber, { weight: v })}
                               keyboardType="decimal-pad"
                               placeholder="0"
-                              placeholderTextColor="rgba(255,255,255,0.3)"
+                              placeholderTextColor={colors.placeholderText}
                               editable={!isLogged}
                               className="bg-input rounded-lg px-2 py-1.5 text-sm text-foreground"
                             />
