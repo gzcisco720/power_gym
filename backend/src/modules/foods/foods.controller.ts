@@ -1,9 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Patch,
   Post,
   Query,
   Request,
@@ -15,6 +18,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { JwtUser } from '../auth/strategies/jwt.strategy';
 import { FoodsService } from './foods.service';
 import { CreateFoodDto } from './dto/create-food.dto';
+import { UpdateFoodDto } from './dto/update-food.dto';
 import { SearchFoodsDto } from './dto/search-foods.dto';
 
 interface RequestWithUser extends Request {
@@ -40,5 +44,20 @@ export class FoodsController {
   @HttpCode(HttpStatus.CREATED)
   create(@Request() req: RequestWithUser, @Body() dto: CreateFoodDto) {
     return this.foodsService.create(dto, req.user.sub);
+  }
+
+  @Patch(':id')
+  update(
+    @Request() req: RequestWithUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateFoodDto,
+  ) {
+    return this.foodsService.update(id, dto, req.user.sub);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Request() req: RequestWithUser, @Param('id') id: string) {
+    return this.foodsService.remove(id, req.user.sub);
   }
 }

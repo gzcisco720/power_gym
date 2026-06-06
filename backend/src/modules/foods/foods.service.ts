@@ -1,8 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Food, FoodDocument } from './food.model';
 import { CreateFoodDto } from './dto/create-food.dto';
+import { UpdateFoodDto } from './dto/update-food.dto';
 
 @Injectable()
 export class FoodsService {
@@ -49,5 +54,45 @@ export class FoodsService {
       isGlobal: false,
       createdBy: new Types.ObjectId(userId),
     });
+  }
+
+  async update(
+    id: string,
+    dto: UpdateFoodDto,
+    userId: string,
+  ): Promise<FoodDocument> {
+    const food = await this.foodModel.findById(id);
+
+    if (!food) {
+      throw new NotFoundException('Food not found');
+    }
+
+    if (food.isGlobal || food.createdBy.toString() !== userId) {
+      throw new ForbiddenException(
+        'You do not have permission to update this food',
+      );
+    }
+
+    return (await this.foodModel.findByIdAndUpdate(
+      id,
+      { $set: dto },
+      { returnDocument: 'after' },
+    ))!;
+  }
+
+  async remove(id: string, userId: string): Promise<void> {
+    const food = await this.foodModel.findById(id);
+
+    if (!food) {
+      throw new NotFoundException('Food not found');
+    }
+
+    if (food.isGlobal || food.createdBy.toString() !== userId) {
+      throw new ForbiddenException(
+        'You do not have permission to delete this food',
+      );
+    }
+
+    await this.foodModel.findByIdAndDelete(id);
   }
 }

@@ -276,4 +276,140 @@ describe('Foods (e2e)', () => {
         .expect(401);
     });
   });
+
+  // ─── PATCH /foods/:id ────────────────────────────────────────────────────────
+
+  describe('PATCH /foods/:id', () => {
+    let ownerFoodId: string;
+    let globalFoodId: string;
+
+    beforeAll(async () => {
+      // Create a private food owned by the owner
+      const createRes = await request(app.getHttpServer())
+        .post('/foods')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          name: 'Owner Private Food',
+          brand: null,
+          macrosPer100g: { kcal: 100, protein: 10, carbs: 10, fat: 5 },
+          servings: [],
+        })
+        .expect(201);
+      ownerFoodId = (createRes.body as Record<string, unknown>)._id as string;
+
+      // Get the global food id seeded in beforeAll
+      const searchRes = await request(app.getHttpServer())
+        .get('/foods?q=Chicken+Breast')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .expect(200);
+      const globalFood = (
+        searchRes.body as Array<Record<string, unknown>>
+      ).find((f) => f.isGlobal === true);
+      globalFoodId = globalFood!._id as string;
+    });
+
+    it('owner on their own food → 200, response reflects the changed name', async () => {
+      const res = await request(app.getHttpServer())
+        .patch(`/foods/${ownerFoodId}`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({ name: 'Owner Private Food Updated' })
+        .expect(200);
+
+      const body = res.body as Record<string, unknown>;
+      expect(body).toHaveProperty('name', 'Owner Private Food Updated');
+    });
+
+    it('owner on a global food → 403', async () => {
+      await request(app.getHttpServer())
+        .patch(`/foods/${globalFoodId}`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({ name: 'Attempted Override' })
+        .expect(403);
+    });
+
+    it("trainer on the owner's private food → 403", async () => {
+      await request(app.getHttpServer())
+        .patch(`/foods/${ownerFoodId}`)
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .send({ name: 'Trainer Override Attempt' })
+        .expect(403);
+    });
+
+    it('no token → 401', async () => {
+      await request(app.getHttpServer())
+        .patch(`/foods/${ownerFoodId}`)
+        .send({ name: 'No Auth' })
+        .expect(401);
+    });
+
+    it('member token → 403', async () => {
+      await request(app.getHttpServer())
+        .patch(`/foods/${ownerFoodId}`)
+        .set('Authorization', `Bearer ${memberToken}`)
+        .send({ name: 'Member Attempt' })
+        .expect(403);
+    });
+  });
+
+  // ─── DELETE /foods/:id ───────────────────────────────────────────────────────
+
+  describe('DELETE /foods/:id', () => {
+    let deletableFoodId: string;
+    let deletableFoodName: string;
+    let globalFoodId: string;
+
+    beforeAll(async () => {
+      deletableFoodName = `Delete Target ${Date.now()}`;
+      const createRes = await request(app.getHttpServer())
+        .post('/foods')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          name: deletableFoodName,
+          brand: null,
+          macrosPer100g: { kcal: 50, protein: 5, carbs: 5, fat: 2 },
+          servings: [],
+        })
+        .expect(201);
+      deletableFoodId = (createRes.body as Record<string, unknown>)
+        ._id as string;
+
+      const searchRes = await request(app.getHttpServer())
+        .get('/foods?q=Chicken+Breast')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .expect(200);
+      const globalFood = (
+        searchRes.body as Array<Record<string, unknown>>
+      ).find((f) => f.isGlobal === true);
+      globalFoodId = globalFood!._id as string;
+    });
+
+    it('owner on their own food → 204, subsequent GET no longer returns it', async () => {
+      await request(app.getHttpServer())
+        .delete(`/foods/${deletableFoodId}`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .expect(204);
+
+      const searchRes = await request(app.getHttpServer())
+        .get(`/foods?q=${encodeURIComponent(deletableFoodName)}`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .expect(200);
+      const names = (searchRes.body as Array<Record<string, unknown>>).map(
+        (f) => f.name,
+      );
+      expect(names).not.toContain(deletableFoodName);
+    });
+
+    it('owner on a global food → 403', async () => {
+      await request(app.getHttpServer())
+        .delete(`/foods/${globalFoodId}`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .expect(403);
+    });
+
+    it('no token → 401', async () => {
+      await request(app.getHttpServer())
+        .delete(`/foods/${globalFoodId}`)
+        .expect(401);
+    });
+  });
 });
