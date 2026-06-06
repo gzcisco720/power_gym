@@ -1,5 +1,5 @@
 import { apiClient } from '../../../src/lib/api/client';
-import { fetchCheckIns, createCheckIn, getCheckInUploadSignature } from '../../../src/lib/api/check-ins.api';
+import { fetchCheckIns, createCheckIn, getCheckInUploadSignature, fetchMemberCheckIn } from '../../../src/lib/api/check-ins.api';
 import { CheckIn, CreateCheckInDto } from '../../../src/types/check-ins';
 import { UploadConfig } from '../../../src/types/equipment';
 
@@ -92,6 +92,17 @@ describe('checkInsApi', () => {
 
       expect(mockApiClient.post).toHaveBeenCalledWith('/check-ins/upload-signature');
       expect(result).toEqual(uploadConfig);
+    });
+  });
+
+  describe('fetchMemberCheckIn', () => {
+    it('requests GET /check-ins/members/:memberId/:id and returns the check-in', async () => {
+      mockApiClient.get.mockResolvedValueOnce({ data: sampleCheckIn });
+
+      const result = await fetchMemberCheckIn('member-1', 'ci-1');
+
+      expect(mockApiClient.get).toHaveBeenCalledWith('/check-ins/members/member-1/ci-1');
+      expect(result).toEqual(sampleCheckIn);
     });
   });
 });

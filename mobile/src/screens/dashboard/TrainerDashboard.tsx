@@ -1,11 +1,14 @@
 import React, { useEffect } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTrainerDashboardStore } from '../../stores/trainer-dashboard.store';
 import { StatCard } from '../../components/dashboard/StatCard';
 import { DashboardSkeleton } from '../../components/dashboard/DashboardSkeleton';
 import { TrainingHeatmap } from '../../components/dashboard/TrainingHeatmap';
+import { fetchMemberCheckIn } from '../../lib/api/check-ins.api';
+import { AppStackParamList } from '../../navigation/index';
 import {
   TrainerSession,
   NeedsAttentionItem,
@@ -14,7 +17,10 @@ import {
   ThisWeekEntry,
 } from '../../types/dashboard';
 
-type DrawerNav = DrawerNavigationProp<Record<string, undefined>>;
+type DashboardNav = CompositeNavigationProp<
+  DrawerNavigationProp<Record<string, undefined>>,
+  NativeStackNavigationProp<AppStackParamList>
+>;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -164,7 +170,7 @@ function WeekBar({ entry }: { entry: ThisWeekEntry }) {
 
 export function TrainerDashboard() {
   const { data, isLoading, fetchDashboard } = useTrainerDashboardStore();
-  const navigation = useNavigation<DrawerNav>();
+  const navigation = useNavigation<DashboardNav>();
 
   useEffect(() => {
     void fetchDashboard();
@@ -278,7 +284,11 @@ export function TrainerDashboard() {
                   <AttentionRow key={item.memberId} item={item} />
                 ))
               )}
-              <Pressable accessibilityLabel="View all needs attention" accessibilityRole="button">
+              <Pressable
+                onPress={() => navigation.navigate('Members')}
+                accessibilityLabel="View all needs attention"
+                accessibilityRole="button"
+              >
                 <Text className="text-[12px] text-primary mt-1">View all →</Text>
               </Pressable>
             </View>
@@ -301,7 +311,15 @@ export function TrainerDashboard() {
                         {formatRelativeTime(ci.createdAt)}
                       </Text>
                     </View>
-                    <Pressable accessibilityLabel={`Review check-in for ${ci.memberName}`} accessibilityRole="button">
+                    <Pressable
+                      onPress={() => {
+                        void fetchMemberCheckIn(ci.memberId, ci.checkinId).then((checkIn) => {
+                          navigation.navigate('CheckInDetail', { checkIn });
+                        });
+                      }}
+                      accessibilityLabel={`Review check-in for ${ci.memberName}`}
+                      accessibilityRole="button"
+                    >
                       <Text className="text-[11px] text-primary ml-1">Review →</Text>
                     </Pressable>
                   </View>

@@ -14,11 +14,17 @@ jest.mock('../../../src/stores/body-tests.store', () => ({
   useBodyTestsStore: jest.fn(),
 }));
 
+jest.mock('../../../src/stores/auth.store', () => ({
+  useAuthStore: jest.fn(),
+}));
+
 import { useBodyTestsStore } from '../../../src/stores/body-tests.store';
+import { useAuthStore } from '../../../src/stores/auth.store';
 import { BodyTest } from '../../../src/types/body-tests';
 import { MyBodyTestsScreen } from '../../../src/screens/my-body-tests/MyBodyTestsScreen';
 
 const mockUseBodyTestsStore = useBodyTestsStore as jest.MockedFunction<typeof useBodyTestsStore>;
+const mockUseAuthStore = useAuthStore as jest.MockedFunction<typeof useAuthStore>;
 
 function makeBodyTest(overrides: Partial<BodyTest> = {}): BodyTest {
   return {
@@ -61,8 +67,14 @@ function makeStoreState(overrides: Partial<ReturnType<typeof useBodyTestsStore>>
   };
 }
 
+function makeUser(role: 'owner' | 'trainer' | 'member') {
+  return { id: 'u1', firstName: 'Test', lastName: 'User', role, trainerId: null };
+}
+
 beforeEach(() => {
   jest.clearAllMocks();
+  // Default: owner role
+  mockUseAuthStore.mockReturnValue(makeUser('owner') as ReturnType<typeof useAuthStore>);
 });
 
 describe('MyBodyTestsScreen', () => {
@@ -84,5 +96,19 @@ describe('MyBodyTestsScreen', () => {
     const { getByTestId } = render(<MyBodyTestsScreen />);
     fireEvent.press(getByTestId('bodytests-add-button'));
     expect(mockNavigate).toHaveBeenCalledWith('AddBodyTest');
+  });
+
+  it('does not render the add button when the user role is member', () => {
+    mockUseAuthStore.mockReturnValue(makeUser('member') as ReturnType<typeof useAuthStore>);
+    mockUseBodyTestsStore.mockReturnValue(makeStoreState());
+    const { queryByTestId } = render(<MyBodyTestsScreen />);
+    expect(queryByTestId('bodytests-add-button')).toBeNull();
+  });
+
+  it('renders the add button when the user role is owner', () => {
+    mockUseAuthStore.mockReturnValue(makeUser('owner') as ReturnType<typeof useAuthStore>);
+    mockUseBodyTestsStore.mockReturnValue(makeStoreState());
+    const { getByTestId } = render(<MyBodyTestsScreen />);
+    expect(getByTestId('bodytests-add-button')).toBeTruthy();
   });
 });

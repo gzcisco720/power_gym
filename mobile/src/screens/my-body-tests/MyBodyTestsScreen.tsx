@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
 import { useBodyTestsStore } from '../../stores/body-tests.store';
+import { useAuthStore } from '../../stores/auth.store';
 import { BodyTest } from '../../types/body-tests';
 import { BodyTestCard } from '../body-test-shared/components/BodyTestCard';
 import { AppStackParamList } from '../../navigation/index';
@@ -13,6 +14,7 @@ type Nav = NativeStackNavigationProp<AppStackParamList, 'Drawer'>;
 export function MyBodyTestsScreen() {
   const navigation = useNavigation<Nav>();
   const { items, loading, fetchMyBodyTests } = useBodyTestsStore();
+  const user = useAuthStore((s) => s.user);
 
   useEffect(() => {
     void fetchMyBodyTests();
@@ -34,15 +36,17 @@ export function MyBodyTestsScreen() {
             Body composition history
           </Text>
         </View>
-        <Pressable
-          testID="bodytests-add-button"
-          onPress={() => navigation.navigate('AddBodyTest')}
-          accessibilityLabel="Add body test"
-          accessibilityRole="button"
-          className="w-11 h-11 items-center justify-center rounded-xl bg-primary"
-        >
-          <Text className="text-sm font-semibold text-foreground">+</Text>
-        </Pressable>
+        {user?.role !== 'member' && (
+          <Pressable
+            testID="bodytests-add-button"
+            onPress={() => navigation.navigate('AddBodyTest')}
+            accessibilityLabel="Add body test"
+            accessibilityRole="button"
+            className="w-11 h-11 items-center justify-center rounded-xl bg-primary"
+          >
+            <Text className="text-sm font-semibold text-foreground">+</Text>
+          </Pressable>
+        )}
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>

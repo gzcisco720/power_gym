@@ -21,3 +21,8 @@ export async function fetchMemberPhotos(memberId: string): Promise<MemberPhoto[]
   const response = await apiClient.get<MemberPhoto[]>(`/check-ins/members/${memberId}/photos`);
   return response.data;
 }
+
+export async function fetchMemberCheckIn(memberId: string, id: string): Promise<CheckIn> {
+  const response = await apiClient.get<CheckIn>(`/check-ins/members/${memberId}/${id}`);
+  return response.data;
+}
