@@ -19,6 +19,10 @@ import { PlanTemplatesModule } from '../src/modules/plan-templates/plan-template
 import { TrainingModule } from '../src/modules/training/training.module';
 import { EmailModule } from '../src/common/email/email.module';
 import {
+  WorkoutSession,
+  WorkoutSessionDocument,
+} from '../src/common/models/workout-session.model';
+import {
   User,
   UserSchema,
   UserDocument,
@@ -869,6 +873,145 @@ describe('Training (e2e)', () => {
         )
         .set('Authorization', `Bearer ${trainerToken}`)
         .expect(400);
+    });
+  });
+
+  // ─── GET /training/self/sessions ─────────────────────────────────────────────
+
+  describe('GET /training/self/sessions', () => {
+    let selfSessionId: string;
+
+    beforeAll(async () => {
+      const wsModel = module.get<Model<WorkoutSessionDocument>>(
+        getModelToken(WorkoutSession.name),
+      );
+
+      const trainerUser = await userModel.findOne({ email: TRAINER_EMAIL });
+      const trainerObjectId = trainerUser!._id as Types.ObjectId;
+      const fakePlanId = new Types.ObjectId();
+
+      const session = await wsModel.create({
+        memberId: trainerObjectId,
+        memberPlanId: fakePlanId,
+        dayNumber: 1,
+        dayName: 'Trainer Self Day',
+        startedAt: new Date(),
+        completedAt: new Date(),
+        lastActivityAt: new Date(),
+        autoSealed: false,
+        sets: [
+          {
+            exerciseId: exerciseId,
+            exerciseName: 'Bench Press',
+            groupId: 'g1',
+            isSuperset: false,
+            isBodyweight: false,
+            setNumber: 1,
+            prescribedRepsMin: 8,
+            prescribedRepsMax: 12,
+            isExtraSet: false,
+            actualReps: 10,
+            actualWeight: 80,
+            completedAt: new Date(),
+          },
+        ],
+        loggedBy: null,
+        rpe: null,
+        memberNote: null,
+      });
+      selfSessionId = session._id.toString();
+    });
+
+    it('no JWT → 401', async () => {
+      await request(app.getHttpServer())
+        .get('/training/self/sessions')
+        .expect(401);
+    });
+
+    it('member role → 403', async () => {
+      await request(app.getHttpServer())
+        .get('/training/self/sessions')
+        .set('Authorization', `Bearer ${memberToken}`)
+        .expect(403);
+    });
+
+    it('trainer with one completed self-session → 200 with a one-element summary array', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/training/self/sessions')
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(200);
+
+      const sessions = res.body as Array<Record<string, unknown>>;
+      expect(Array.isArray(sessions)).toBe(true);
+      expect(sessions.length).toBeGreaterThanOrEqual(1);
+      const found = sessions.find((s) => s._id === selfSessionId);
+      expect(found).toBeDefined();
+    });
+  });
+
+  // ─── GET /training/self/sessions/:id ─────────────────────────────────────────
+
+  describe('GET /training/self/sessions/:id', () => {
+    let selfSessionId: string;
+
+    beforeAll(async () => {
+      const wsModel = module.get<Model<WorkoutSessionDocument>>(
+        getModelToken(WorkoutSession.name),
+      );
+      const trainerUser = await userModel.findOne({ email: TRAINER_EMAIL });
+      const trainerObjectId = trainerUser!._id as Types.ObjectId;
+      const fakePlanId = new Types.ObjectId();
+
+      const session = await wsModel.create({
+        memberId: trainerObjectId,
+        memberPlanId: fakePlanId,
+        dayNumber: 2,
+        dayName: 'Trainer Detail Day',
+        startedAt: new Date(),
+        completedAt: new Date(),
+        lastActivityAt: new Date(),
+        autoSealed: false,
+        sets: [
+          {
+            exerciseId: exerciseId,
+            exerciseName: 'Squat',
+            groupId: 'g1',
+            isSuperset: false,
+            isBodyweight: false,
+            setNumber: 1,
+            prescribedRepsMin: 5,
+            prescribedRepsMax: 8,
+            isExtraSet: false,
+            actualReps: 5,
+            actualWeight: 100,
+            completedAt: new Date(),
+          },
+        ],
+        loggedBy: null,
+        rpe: null,
+        memberNote: null,
+      });
+      selfSessionId = session._id.toString();
+    });
+
+    it('owning trainer → 200 with the full sets array', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/training/self/sessions/${selfSessionId}`)
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(200);
+
+      const body = res.body as Record<string, unknown>;
+      expect(body._id).toBe(selfSessionId);
+      expect(Array.isArray(body.sets)).toBe(true);
+      expect((body.sets as unknown[]).length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('session owned by another user → 404', async () => {
+      // otherTrainerToken tries to access a session that belongs to trainer
+      await request(app.getHttpServer())
+        .get(`/training/self/sessions/${selfSessionId}`)
+        .set('Authorization', `Bearer ${otherTrainerToken}`)
+        .expect(404);
     });
   });
 

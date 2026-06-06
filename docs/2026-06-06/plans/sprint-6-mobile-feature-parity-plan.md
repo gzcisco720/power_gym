@@ -167,20 +167,20 @@ Summary shape:
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `TrainingService > getSelfSessions > returns only sessions where memberId equals the caller id and completedAt is not null`
-- [ ] `TrainingService > getSelfSessions > orders results newest-first by completedAt`
-- [ ] `TrainingService > getSelfSessions > returns [] when the caller has no completed sessions`
-- [ ] `TrainingService > getSelfSession > returns the full session including its sets array for a session owned by the caller`
-- [ ] `TrainingService > getSelfSession > throws NotFoundException when the session belongs to a different user`
-- [ ] `TrainingController > getSelfSessions > delegates to service with the caller id from the JWT`
-- [ ] `TrainingController > getSelfSession > delegates to service with session id and caller id`
+- [x] `TrainingService > getSelfSessions > returns only sessions where memberId equals the caller id and completedAt is not null`
+- [x] `TrainingService > getSelfSessions > orders results newest-first by completedAt`
+- [x] `TrainingService > getSelfSessions > returns [] when the caller has no completed sessions`
+- [x] `TrainingService > getSelfSession > returns the full session including its sets array for a session owned by the caller`
+- [x] `TrainingService > getSelfSession > throws NotFoundException when the session belongs to a different user`
+- [x] `TrainingController > getSelfSessions > delegates to service with the caller id from the JWT`
+- [x] `TrainingController > getSelfSession > delegates to service with session id and caller id`
 
 *Integration (`backend/test/training.e2e-spec.ts`):*
-- [ ] `GET /training/self/sessions` as a trainer with one completed self-session → 200 with a one-element summary array
-- [ ] `GET /training/self/sessions/:id` as the owning trainer → 200 with the full sets array
-- [ ] `GET /training/self/sessions` with no JWT → 401
-- [ ] `GET /training/self/sessions` as a `member` role → 403
-- [ ] `GET /training/self/sessions/:id` for a session owned by another user → 404
+- [x] `GET /training/self/sessions` as a trainer with one completed self-session → 200 with a one-element summary array
+- [x] `GET /training/self/sessions/:id` as the owning trainer → 200 with the full sets array
+- [x] `GET /training/self/sessions` with no JWT → 401
+- [x] `GET /training/self/sessions` as a `member` role → 403
+- [x] `GET /training/self/sessions/:id` for a session owned by another user → 404
 
 **TDD sequence**:
 1. Write failing service unit tests for `getSelfSessions` / `getSelfSession` → Red
@@ -188,7 +188,15 @@ Summary shape:
 3. Write failing controller unit tests → add `@Get('self/sessions')` and `@Get('self/sessions/:id')` `@Roles('owner','trainer')`. Order routes so `self/sessions` is declared before `members/:memberId/...` to avoid param-route shadowing → Green
 4. Write/extend integration spec covering 200/401/403/404 → passes against the real Nest test stack
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 3 Checkpoint
+- [x] `TrainingService > getSelfSessions` unit tests
+- [x] `TrainingService > getSelfSession` unit tests
+- [x] `TrainingController > getSelfSessions` unit test
+- [x] `TrainingController > getSelfSession` unit test
+- [x] `GET /training/self/sessions` integration tests
+- [x] `GET /training/self/sessions/:id` integration tests
 
 ---
 

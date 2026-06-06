@@ -812,6 +812,99 @@ describe('TrainingService', () => {
     });
   });
 
+  // ─── getSelfSessions ──────────────────────────────────────────────────────────
+
+  describe('getSelfSessions', () => {
+    it('returns only sessions where memberId equals the caller id and completedAt is not null', async () => {
+      const callerId = TRAINER_ID;
+      const completedSession = {
+        _id: new Types.ObjectId(SESSION_ID),
+        memberId: new Types.ObjectId(callerId),
+        dayName: 'Day 1',
+        startedAt: now,
+        completedAt: new Date(),
+        sets: [],
+        rpe: null,
+      };
+      const mockQuery = {
+        sort: jest.fn().mockResolvedValue([completedSession]),
+      };
+      workoutSessionModel.find.mockReturnValue(mockQuery);
+
+      const result = await service.getSelfSessions(callerId);
+
+      expect(workoutSessionModel.find).toHaveBeenCalledWith({
+        memberId: new Types.ObjectId(callerId),
+        completedAt: { $ne: null },
+      });
+      expect(result).toEqual([completedSession]);
+    });
+
+    it('orders results newest-first by completedAt', async () => {
+      const callerId = TRAINER_ID;
+      const older = { _id: new Types.ObjectId(), completedAt: new Date('2024-01-01') };
+      const newer = { _id: new Types.ObjectId(), completedAt: new Date('2024-06-01') };
+      const mockQuery = {
+        sort: jest.fn().mockResolvedValue([newer, older]),
+      };
+      workoutSessionModel.find.mockReturnValue(mockQuery);
+
+      await service.getSelfSessions(callerId);
+
+      expect(mockQuery.sort).toHaveBeenCalledWith({ completedAt: -1 });
+    });
+
+    it('returns [] when the caller has no completed sessions', async () => {
+      const mockQuery = {
+        sort: jest.fn().mockResolvedValue([]),
+      };
+      workoutSessionModel.find.mockReturnValue(mockQuery);
+
+      const result = await service.getSelfSessions(TRAINER_ID);
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  // ─── getSelfSession ───────────────────────────────────────────────────────────
+
+  describe('getSelfSession', () => {
+    it('returns the full session including its sets array for a session owned by the caller', async () => {
+      const completedSession = {
+        ...sampleSession,
+        memberId: new Types.ObjectId(TRAINER_ID),
+        completedAt: new Date(),
+      };
+      workoutSessionModel.findById.mockResolvedValue(completedSession);
+
+      const result = await service.getSelfSession(SESSION_ID, TRAINER_ID);
+
+      expect(workoutSessionModel.findById).toHaveBeenCalledWith(SESSION_ID);
+      expect(result).toEqual(completedSession);
+      expect(result.sets).toHaveLength(3);
+    });
+
+    it('throws NotFoundException when the session belongs to a different user', async () => {
+      workoutSessionModel.findById.mockResolvedValue({
+        ...sampleSession,
+        memberId: new Types.ObjectId(MEMBER_ID), // different user
+        completedAt: new Date(),
+      });
+
+      await expect(
+        service.getSelfSession(SESSION_ID, TRAINER_ID),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('throws NotFoundException when the session is not found', async () => {
+      workoutSessionModel.findById.mockResolvedValue(null);
+
+      await expect(
+        service.getSelfSession(SESSION_ID, TRAINER_ID),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
   // ─── getExerciseHistory ───────────────────────────────────────────────────────
 
   describe('getExerciseHistory', () => {

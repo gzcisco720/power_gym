@@ -53,6 +53,8 @@ describe('TrainingController', () => {
     startMemberSession: jest.Mock;
     patchMemberSet: jest.Mock;
     finishMemberSession: jest.Mock;
+    getSelfSessions: jest.Mock;
+    getSelfSession: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -73,6 +75,8 @@ describe('TrainingController', () => {
       startMemberSession: jest.fn().mockResolvedValue({ _id: SESSION_ID }),
       patchMemberSet: jest.fn().mockResolvedValue({ _id: SESSION_ID }),
       finishMemberSession: jest.fn().mockResolvedValue({ _id: SESSION_ID }),
+      getSelfSessions: jest.fn().mockResolvedValue([]),
+      getSelfSession: jest.fn().mockResolvedValue({ _id: SESSION_ID }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -254,6 +258,26 @@ describe('TrainingController', () => {
         TRAINER_ID,
         'trainer',
       );
+    });
+  });
+
+  describe('getSelfSessions', () => {
+    it('delegates to service with the caller id from the JWT', async () => {
+      const req = { user: trainerUser } as RequestWithUser & Request;
+
+      await controller.getSelfSessions(req);
+
+      expect(service.getSelfSessions).toHaveBeenCalledWith(TRAINER_ID);
+    });
+  });
+
+  describe('getSelfSession', () => {
+    it('delegates to service with session id and caller id', async () => {
+      const req = { user: trainerUser } as RequestWithUser & Request;
+
+      await controller.getSelfSession(req, SESSION_ID);
+
+      expect(service.getSelfSession).toHaveBeenCalledWith(SESSION_ID, TRAINER_ID);
     });
   });
 });

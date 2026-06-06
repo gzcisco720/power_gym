@@ -69,6 +69,21 @@ export class TrainingController {
     return this.trainingService.finishSession(id, req.user.sub);
   }
 
+  @Get('self/sessions')
+  @Roles('owner', 'trainer')
+  getSelfSessions(@Request() req: RequestWithUser) {
+    return this.trainingService.getSelfSessions(req.user.sub);
+  }
+
+  @Get('self/sessions/:id')
+  @Roles('owner', 'trainer')
+  getSelfSession(
+    @Request() req: RequestWithUser,
+    @Param('id') id: string,
+  ) {
+    return this.trainingService.getSelfSession(id, req.user.sub);
+  }
+
   @Post('members/:memberId/assign-plan')
   @HttpCode(HttpStatus.CREATED)
   @Roles('owner', 'trainer')

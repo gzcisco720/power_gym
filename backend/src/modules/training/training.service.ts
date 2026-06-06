@@ -436,6 +436,28 @@ export class TrainingService {
     };
   }
 
+  async getSelfSessions(callerId: string): Promise<WorkoutSessionDocument[]> {
+    return this.workoutSessionModel
+      .find({
+        memberId: new Types.ObjectId(callerId),
+        completedAt: { $ne: null },
+      })
+      .sort({ completedAt: -1 });
+  }
+
+  async getSelfSession(
+    sessionId: string,
+    callerId: string,
+  ): Promise<WorkoutSessionDocument> {
+    const session = await this.workoutSessionModel.findById(sessionId);
+
+    if (!session || session.memberId.toString() !== callerId) {
+      throw new NotFoundException('Session not found');
+    }
+
+    return session;
+  }
+
   async getExerciseHistory(
     memberId: string,
     exerciseId: string,
