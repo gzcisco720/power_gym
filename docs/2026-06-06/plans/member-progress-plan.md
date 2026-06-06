@@ -112,7 +112,7 @@ Notes for the Generator:
 2. Implement `getProgress` / `getExerciseHistory` + the shared scope helper + controller routes → Green.
 3. Add integration tests against the real Mongo-memory stack → pass.
 
-**Status**: Not Started
+**Status**: Complete
 
 ---
 
@@ -153,7 +153,7 @@ useMemberProgressStore:
 2. Implement types, api client, store → Green.
 3. Run `cd mobile && pnpm test` for the new specs → pass.
 
-**Status**: Not Started
+**Status**: Complete
 
 ---
 
@@ -186,7 +186,7 @@ useMemberProgressStore:
 2. Implement `MemberProgressTab`, wire it into `MemberDetailScreen` (`TabId` + `TABS` + render branch) → Green.
 3. Run `cd mobile && pnpm test` → pass. (Detox in Stage 4.)
 
-**Status**: Not Started
+**Status**: Complete
 
 ---
 
@@ -210,4 +210,4 @@ useMemberProgressStore:
 2. Build + run: `cd mobile && pnpm detox build --configuration <config>` then `pnpm detox test --configuration <config> --testPathPattern=trainer/member-progress`.
 3. Spec passes against the running backend.
 
-**Status**: Not Started
+**Status**: Complete
