@@ -268,4 +268,14 @@ Summary shape:
 3. Write failing `SelfSessionDetailScreen` unit tests (grouped sets, status, note) → implement the screen + register the `SelfSessionDetail` route in `navigation/index.tsx` → Green
 4. Complete the Detox spec history + detail flow; build + run against the simulator → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 5 Checkpoint
+- [x] `useSelfTrainingStore > fetchSession` unit tests (pre-existing from Stage 4)
+- [x] `MyTrainingScreen > History view renders one row per completed self-session with its day name and date`
+- [x] `MyTrainingScreen > History view shows "No sessions yet" empty state when there are no completed sessions`
+- [x] `SelfSessionDetailScreen > renders each exercise grouped with its logged sets showing reps and weight`
+- [x] `SelfSessionDetailScreen > shows the completion status and the session note when present`
+- [x] `SelfSessionDetail` route registered in `navigation/index.tsx`
+- [x] `handleSessionSelect` wired in `MyTrainingScreen` to navigate to `SelfSessionDetail`
+- [x] `mobile/e2e/trainer/self-training-history.spec.ts` updated with history + detail E2E flows

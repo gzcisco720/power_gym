@@ -48,6 +48,7 @@ import { FoodFormScreen } from '../screens/foods/FoodFormScreen';
 import { EquipmentItem } from '../types/equipment';
 import { Food } from '../types/nutrition-templates';
 import { WorkoutSession } from '../types/training';
+import { SelfSessionDetailScreen } from '../screens/my-training/SelfSessionDetailScreen';
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -73,6 +74,7 @@ export type AppStackParamList = {
   TrainerWorkoutSession: { memberId: string; memberName: string };
   LogFood: { mealName: string };
   FoodForm: { food?: Food };
+  SelfSessionDetail: { sessionId: string };
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -158,6 +160,7 @@ function AppNavigator() {
       <AppStack.Screen name="TrainerWorkoutSession" component={TrainerWorkoutSessionScreen} />
       <AppStack.Screen name="LogFood" component={LogFoodScreen} />
       <AppStack.Screen name="FoodForm" component={FoodFormScreen} />
+      <AppStack.Screen name="SelfSessionDetail" component={SelfSessionDetailScreen} />
     </AppStack.Navigator>
   );
 }

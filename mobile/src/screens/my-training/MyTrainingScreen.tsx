@@ -11,9 +11,9 @@ import { SelfWorkoutCalendar } from './SelfWorkoutCalendar';
 
 type Nav = NativeStackNavigationProp<AppStackParamList>;
 
-type ViewTab = 'Plan' | 'Calendar';
+type ViewTab = 'Plan' | 'Calendar' | 'History';
 
-const VIEW_TABS: ViewTab[] = ['Plan', 'Calendar'];
+const VIEW_TABS: ViewTab[] = ['Plan', 'Calendar', 'History'];
 
 function exerciseSummary(day: PlanDay): string {
   const count = day.exercises.length;
@@ -46,10 +46,10 @@ export function MyTrainingScreen() {
   );
 
   const handleSessionSelect = useCallback(
-    (_session: SelfSessionSummary) => {
-      // Navigation to SelfSessionDetail will be wired in Stage 5.
+    (session: SelfSessionSummary) => {
+      navigation.navigate('SelfSessionDetail', { sessionId: session._id });
     },
-    [],
+    [navigation],
   );
 
   return (
@@ -138,6 +138,53 @@ export function MyTrainingScreen() {
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           <SelfWorkoutCalendar sessions={sessions} onSelect={handleSessionSelect} />
         </ScrollView>
+      )}
+
+      {activeTab === 'History' && (
+        sessions.length === 0 ? (
+          <View testID="history-empty" className="flex-1 items-center justify-center px-4">
+            <Text className="text-[15px] font-semibold text-foreground text-center">
+              No sessions yet
+            </Text>
+            <Text className="text-[13px] text-foreground/65 text-center mt-1">
+              Completed personal training sessions will appear here.
+            </Text>
+          </View>
+        ) : (
+          <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+            <View className="px-4 py-4 gap-1.5">
+              {sessions.map((session) => {
+                const date = new Date(session.completedAt);
+                const dateLabel = date.toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                });
+                return (
+                  <Pressable
+                    key={session._id}
+                    testID={`history-row-${session._id}`}
+                    onPress={() => handleSessionSelect(session)}
+                    accessibilityLabel={session.dayName}
+                    accessibilityRole="button"
+                    className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2"
+                  >
+                    <View className="flex-row items-center justify-between">
+                      <Text className="text-sm font-medium text-foreground flex-1" numberOfLines={1}>
+                        {session.dayName}
+                      </Text>
+                      <Text className="text-xs text-foreground/65 ml-2">{dateLabel}</Text>
+                    </View>
+                    <Text className="text-xs text-foreground/65 mt-0.5">
+                      {session.setCount} {session.setCount === 1 ? 'set' : 'sets'}
+                      {session.rpe !== null ? ` · RPE ${session.rpe}` : ''}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </ScrollView>
+        )
       )}
     </Screen>
   );

@@ -1,6 +1,7 @@
 /**
  * Stage 3 unit tests — MyTrainingScreen (Plan view)
  * Stage 4 unit tests — MyTrainingScreen (Calendar view switch)
+ * Stage 5 unit tests — MyTrainingScreen (History view)
  */
 
 import React from 'react';
@@ -211,5 +212,31 @@ describe('MyTrainingScreen', () => {
 
     // SelfWorkoutCalendar should be visible
     expect(getByTestId('self-workout-calendar')).toBeTruthy();
+  });
+
+  it('the History view renders one row per completed self-session with its day name and date', () => {
+    setupTrainingStore(makePlan());
+    const session = makeSelfSession({ _id: 'self-sess1', dayName: 'Push Day', completedAt: '2026-06-01T11:00:00.000Z' });
+    setupSelfTrainingStore([session]);
+
+    const { getByTestId, getByText } = render(<MyTrainingScreen />);
+
+    // Tap the History tab
+    fireEvent.press(getByTestId('view-tab-History'));
+
+    // Expect a session row rendered
+    expect(getByTestId('history-row-self-sess1')).toBeTruthy();
+    expect(getByText('Push Day')).toBeTruthy();
+  });
+
+  it('the History view shows the "No sessions yet" empty state when there are no completed sessions', () => {
+    setupTrainingStore(makePlan());
+    setupSelfTrainingStore([]);
+
+    const { getByTestId } = render(<MyTrainingScreen />);
+
+    fireEvent.press(getByTestId('view-tab-History'));
+
+    expect(getByTestId('history-empty')).toBeTruthy();
   });
 });
