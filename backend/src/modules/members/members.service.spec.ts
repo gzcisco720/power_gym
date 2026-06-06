@@ -8,6 +8,9 @@ import { BodyTest } from '../../common/models/body-test.model';
 import { CheckIn } from '../../common/models/check-in.model';
 import { MemberInjury } from '../../common/models/member-injury.model';
 import { MemberMedication } from '../../common/models/member-medication.model';
+import { WorkoutSession } from '../../common/models/workout-session.model';
+import { PersonalBest } from '../../common/models/personal-best.model';
+import { MemberPlan } from '../../common/models/member-plan.model';
 
 const OWNER_ID = new Types.ObjectId().toString();
 const TRAINER_ID = new Types.ObjectId().toString();
@@ -57,9 +60,21 @@ describe('MembersService', () => {
   let checkInModel: { findOne: jest.Mock };
   let injuryModel: {
     find: jest.Mock;
+    countDocuments: jest.Mock;
   };
   let medicationModel: {
     find: jest.Mock;
+    countDocuments: jest.Mock;
+  };
+  let workoutSessionModel: {
+    countDocuments: jest.Mock;
+    find: jest.Mock;
+  };
+  let personalBestModel: {
+    findOne: jest.Mock;
+  };
+  let memberPlanModel: {
+    findOne: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -77,9 +92,21 @@ describe('MembersService', () => {
     };
     injuryModel = {
       find: jest.fn(),
+      countDocuments: jest.fn(),
     };
     medicationModel = {
       find: jest.fn(),
+      countDocuments: jest.fn(),
+    };
+    workoutSessionModel = {
+      countDocuments: jest.fn(),
+      find: jest.fn(),
+    };
+    personalBestModel = {
+      findOne: jest.fn(),
+    };
+    memberPlanModel = {
+      findOne: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -95,6 +122,18 @@ describe('MembersService', () => {
         {
           provide: getModelToken(MemberMedication.name),
           useValue: medicationModel,
+        },
+        {
+          provide: getModelToken(WorkoutSession.name),
+          useValue: workoutSessionModel,
+        },
+        {
+          provide: getModelToken(PersonalBest.name),
+          useValue: personalBestModel,
+        },
+        {
+          provide: getModelToken(MemberPlan.name),
+          useValue: memberPlanModel,
         },
       ],
     }).compile();
@@ -327,6 +366,226 @@ describe('MembersService', () => {
         { status?: string },
       ];
       expect(findCall[0].status).toBe('active');
+    });
+  });
+
+  // ─── getOverviewStats ─────────────────────────────────────────────────────────
+
+  describe('getOverviewStats', () => {
+    function setupMember() {
+      const member = makeMember(MEMBER_ID, TRAINER_ID);
+      userModel.findById.mockResolvedValue(member);
+    }
+
+    it('returns sessionsThisMonth counting only this-month completed sessions for the member', async () => {
+      setupMember();
+      workoutSessionModel.countDocuments.mockResolvedValue(5);
+      bodyTestModel.find.mockReturnValue({
+        sort: jest
+          .fn()
+          .mockReturnValue({ limit: jest.fn().mockResolvedValue([]) }),
+      });
+      personalBestModel.findOne.mockReturnValue({
+        sort: jest.fn().mockResolvedValue(null),
+      });
+      memberPlanModel.findOne.mockResolvedValue(null);
+      injuryModel.countDocuments.mockResolvedValue(0);
+      medicationModel.countDocuments.mockResolvedValue(0);
+      workoutSessionModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
+      });
+
+      const result = await service.getOverviewStats(
+        MEMBER_ID,
+        OWNER_ID,
+        'owner',
+      );
+
+      expect(result.sessionsThisMonth).toBe(5);
+    });
+
+    it('returns weight delta as latest minus previous body test, null when fewer than 1 test', async () => {
+      setupMember();
+      workoutSessionModel.countDocuments.mockResolvedValue(0);
+
+      // Fewer than 1 test → weight null
+      bodyTestModel.find.mockReturnValue({
+        sort: jest
+          .fn()
+          .mockReturnValue({ limit: jest.fn().mockResolvedValue([]) }),
+      });
+      personalBestModel.findOne.mockReturnValue({
+        sort: jest.fn().mockResolvedValue(null),
+      });
+      memberPlanModel.findOne.mockResolvedValue(null);
+      injuryModel.countDocuments.mockResolvedValue(0);
+      medicationModel.countDocuments.mockResolvedValue(0);
+      workoutSessionModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
+      });
+
+      const noTestResult = await service.getOverviewStats(
+        MEMBER_ID,
+        OWNER_ID,
+        'owner',
+      );
+      expect(noTestResult.weight).toBeNull();
+
+      // One test → value present, deltaKg null (no previous)
+      userModel.findById.mockResolvedValue(makeMember(MEMBER_ID, TRAINER_ID));
+      workoutSessionModel.countDocuments.mockResolvedValue(0);
+      bodyTestModel.find.mockReturnValue({
+        sort: jest.fn().mockReturnValue({
+          limit: jest
+            .fn()
+            .mockResolvedValue([
+              { weight: 80, bodyFatPct: 20, date: new Date() },
+            ]),
+        }),
+      });
+      workoutSessionModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
+      });
+
+      const oneTestResult = await service.getOverviewStats(
+        MEMBER_ID,
+        OWNER_ID,
+        'owner',
+      );
+      expect(oneTestResult.weight).not.toBeNull();
+      expect(oneTestResult.weight!.value).toBe(80);
+      expect(oneTestResult.weight!.deltaKg).toBeNull();
+
+      // Two tests → deltaKg = latest - previous
+      userModel.findById.mockResolvedValue(makeMember(MEMBER_ID, TRAINER_ID));
+      workoutSessionModel.countDocuments.mockResolvedValue(0);
+      bodyTestModel.find.mockReturnValue({
+        sort: jest.fn().mockReturnValue({
+          limit: jest.fn().mockResolvedValue([
+            { weight: 80, bodyFatPct: 20, date: new Date('2026-03-01') },
+            { weight: 78, bodyFatPct: 19, date: new Date('2026-02-01') },
+          ]),
+        }),
+      });
+      workoutSessionModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
+      });
+
+      const twoTestResult = await service.getOverviewStats(
+        MEMBER_ID,
+        OWNER_ID,
+        'owner',
+      );
+      expect(twoTestResult.weight!.value).toBe(80);
+      expect(twoTestResult.weight!.deltaKg).toBeCloseTo(2, 5);
+    });
+
+    it('returns topPR with highest estimatedOneRM, null when member has no PRs', async () => {
+      setupMember();
+      workoutSessionModel.countDocuments.mockResolvedValue(0);
+      bodyTestModel.find.mockReturnValue({
+        sort: jest
+          .fn()
+          .mockReturnValue({ limit: jest.fn().mockResolvedValue([]) }),
+      });
+      memberPlanModel.findOne.mockResolvedValue(null);
+      injuryModel.countDocuments.mockResolvedValue(0);
+      medicationModel.countDocuments.mockResolvedValue(0);
+      workoutSessionModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
+      });
+
+      // No PR case
+      personalBestModel.findOne.mockReturnValue({
+        sort: jest.fn().mockResolvedValue(null),
+      });
+
+      const noprResult = await service.getOverviewStats(
+        MEMBER_ID,
+        OWNER_ID,
+        'owner',
+      );
+      expect(noprResult.topPR).toBeNull();
+
+      // With PR case
+      userModel.findById.mockResolvedValue(makeMember(MEMBER_ID, TRAINER_ID));
+      workoutSessionModel.countDocuments.mockResolvedValue(0);
+      bodyTestModel.find.mockReturnValue({
+        sort: jest
+          .fn()
+          .mockReturnValue({ limit: jest.fn().mockResolvedValue([]) }),
+      });
+      workoutSessionModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
+      });
+      personalBestModel.findOne.mockReturnValue({
+        sort: jest.fn().mockResolvedValue({
+          exerciseName: 'Bench Press',
+          estimatedOneRM: 120,
+        }),
+      });
+
+      const prResult = await service.getOverviewStats(
+        MEMBER_ID,
+        OWNER_ID,
+        'owner',
+      );
+      expect(prResult.topPR).toEqual({
+        exerciseName: 'Bench Press',
+        estimatedOneRM: 120,
+      });
+    });
+
+    it('returns heatmap entries only for days with at least one completed session in the last 90 days', async () => {
+      setupMember();
+      workoutSessionModel.countDocuments.mockResolvedValue(0);
+      bodyTestModel.find.mockReturnValue({
+        sort: jest
+          .fn()
+          .mockReturnValue({ limit: jest.fn().mockResolvedValue([]) }),
+      });
+      personalBestModel.findOne.mockReturnValue({
+        sort: jest.fn().mockResolvedValue(null),
+      });
+      memberPlanModel.findOne.mockResolvedValue(null);
+      injuryModel.countDocuments.mockResolvedValue(0);
+      medicationModel.countDocuments.mockResolvedValue(0);
+
+      const date1 = new Date('2026-05-01T10:00:00Z');
+      const date2 = new Date('2026-05-01T18:00:00Z');
+      const date3 = new Date('2026-05-03T10:00:00Z');
+      workoutSessionModel.find.mockReturnValue({
+        lean: jest
+          .fn()
+          .mockResolvedValue([
+            { completedAt: date1 },
+            { completedAt: date2 },
+            { completedAt: date3 },
+          ]),
+      });
+
+      const result = await service.getOverviewStats(
+        MEMBER_ID,
+        OWNER_ID,
+        'owner',
+      );
+
+      expect(result.heatmap.length).toBeGreaterThanOrEqual(2);
+      const may1Entry = result.heatmap.find((h) => h.date === '2026-05-01');
+      const may3Entry = result.heatmap.find((h) => h.date === '2026-05-03');
+      expect(may1Entry).toBeDefined();
+      expect(may1Entry!.count).toBe(2);
+      expect(may3Entry).toBeDefined();
+      expect(may3Entry!.count).toBe(1);
+    });
+
+    it('throws NotFoundException when trainer requests a member not assigned to them', async () => {
+      const member = makeMember(MEMBER_ID, OTHER_TRAINER_ID);
+      userModel.findById.mockResolvedValue(member);
+
+      await expect(
+        service.getOverviewStats(MEMBER_ID, TRAINER_ID, 'trainer'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

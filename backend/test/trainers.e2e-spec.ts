@@ -340,7 +340,7 @@ describe('Trainers (e2e)', () => {
   // ─── GET /trainers/:id/training-plans ─────────────────────────────────────────
 
   describe('GET /trainers/:id/training-plans', () => {
-    it('owner → 200 with only that trainer\'s templates', async () => {
+    it("owner → 200 with only that trainer's templates", async () => {
       const res = await request(app.getHttpServer())
         .get(`/trainers/${trainer1Id}/training-plans`)
         .set('Authorization', `Bearer ${ownerToken}`)
@@ -406,6 +406,38 @@ describe('Trainers (e2e)', () => {
         .set('Authorization', `Bearer ${ownerToken}`)
         .send({ trainerId: trainer2Id })
         .expect(404);
+    });
+  });
+
+  // ─── GET /trainers/:id/overview-stats ─────────────────────────────────────────
+
+  describe('GET /trainers/:id/overview-stats', () => {
+    it('as owner → 200 with all KPI + chart keys present', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/trainers/${trainer1Id}/overview-stats`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .expect(200);
+
+      const body = res.body as Record<string, unknown>;
+      expect(body).toHaveProperty('memberCount');
+      expect(body).toHaveProperty('sessionsThisMonth');
+      expect(body).toHaveProperty('templateCount');
+      expect(body).toHaveProperty('activeMembersThisMonth');
+      expect(body).toHaveProperty('newPRsThisMonth');
+      expect(body).toHaveProperty('avgStreakDays');
+      expect(body).toHaveProperty('weeklySchedule');
+      expect(body).toHaveProperty('sessionsTrend');
+      expect(Array.isArray(body.weeklySchedule)).toBe(true);
+      expect((body.weeklySchedule as unknown[]).length).toBe(7);
+      expect(Array.isArray(body.sessionsTrend)).toBe(true);
+      expect((body.sessionsTrend as unknown[]).length).toBe(6);
+    });
+
+    it('as a member (forbidden role) → 403', async () => {
+      await request(app.getHttpServer())
+        .get(`/trainers/${trainer1Id}/overview-stats`)
+        .set('Authorization', `Bearer ${memberToken}`)
+        .expect(403);
     });
   });
 });

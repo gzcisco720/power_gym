@@ -13,6 +13,18 @@ import {
   MemberMedication,
   MemberMedicationSchema,
 } from '../../common/models/member-medication.model';
+import {
+  WorkoutSession,
+  WorkoutSessionSchema,
+} from '../../common/models/workout-session.model';
+import {
+  PersonalBest,
+  PersonalBestSchema,
+} from '../../common/models/personal-best.model';
+import {
+  MemberPlan,
+  MemberPlanSchema,
+} from '../../common/models/member-plan.model';
 
 @Module({
   imports: [
@@ -22,6 +34,9 @@ import {
       { name: CheckIn.name, schema: CheckInSchema },
       { name: MemberInjury.name, schema: MemberInjurySchema },
       { name: MemberMedication.name, schema: MemberMedicationSchema },
+      { name: WorkoutSession.name, schema: WorkoutSessionSchema },
+      { name: PersonalBest.name, schema: PersonalBestSchema },
+      { name: MemberPlan.name, schema: MemberPlanSchema },
     ]),
   ],
   controllers: [MembersController],

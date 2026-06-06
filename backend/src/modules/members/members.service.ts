@@ -16,6 +16,18 @@ import {
   MemberMedicationDocument,
 } from '../../common/models/member-medication.model';
 import { UserRole } from '../../common/models/user.model';
+import {
+  WorkoutSession,
+  WorkoutSessionDocument,
+} from '../../common/models/workout-session.model';
+import {
+  PersonalBest,
+  PersonalBestDocument,
+} from '../../common/models/personal-best.model';
+import {
+  MemberPlan,
+  MemberPlanDocument,
+} from '../../common/models/member-plan.model';
 
 export interface MemberListItem {
   id: string;
@@ -31,6 +43,18 @@ export interface MemberOverview {
   lastCheckinDate: Date | null;
 }
 
+export interface MemberOverviewStats {
+  sessionsThisMonth: number;
+  weight: { value: number; deltaKg: number | null } | null;
+  bodyFat: { pct: number; deltaPct: number | null } | null;
+  topPR: { exerciseName: string; estimatedOneRM: number } | null;
+  activePlan: { name: string; dayCount: number } | null;
+  activeInjuryCount: number;
+  activeMedicationCount: number;
+  weightTrend: { date: string; weight: number }[];
+  heatmap: { date: string; count: number }[];
+}
+
 @Injectable()
 export class MembersService {
   constructor(
@@ -43,6 +67,12 @@ export class MembersService {
     private readonly injuryModel: Model<MemberInjuryDocument>,
     @InjectModel(MemberMedication.name)
     private readonly medicationModel: Model<MemberMedicationDocument>,
+    @InjectModel(WorkoutSession.name)
+    private readonly workoutSessionModel: Model<WorkoutSessionDocument>,
+    @InjectModel(PersonalBest.name)
+    private readonly personalBestModel: Model<PersonalBestDocument>,
+    @InjectModel(MemberPlan.name)
+    private readonly memberPlanModel: Model<MemberPlanDocument>,
   ) {}
 
   async listMembers(
@@ -147,6 +177,113 @@ export class MembersService {
     return this.medicationModel
       .find({ memberId: new Types.ObjectId(memberId), status: 'active' })
       .sort({ startDate: -1 });
+  }
+
+  async getOverviewStats(
+    memberId: string,
+    requesterId: string,
+    requesterRole: UserRole,
+  ): Promise<MemberOverviewStats> {
+    await this.resolveAndScopeMember(memberId, requesterId, requesterRole);
+
+    const memberObjId = new Types.ObjectId(memberId);
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const ninetyDaysAgo = new Date(now.getTime() - 90 * 86400000);
+
+    const [
+      sessionsThisMonth,
+      recentBodyTests,
+      topPR,
+      activePlan,
+      activeInjuryCount,
+      activeMedicationCount,
+      heatmapSessions,
+    ] = await Promise.all([
+      this.workoutSessionModel.countDocuments({
+        memberId: memberObjId,
+        completedAt: { $gte: startOfMonth },
+      }),
+      this.bodyTestModel
+        .find({ memberId: memberObjId })
+        .sort({ date: -1 })
+        .limit(4),
+      this.personalBestModel
+        .findOne({ memberId: memberObjId })
+        .sort({ estimatedOneRM: -1 }),
+      this.memberPlanModel.findOne({ memberId: memberObjId, isActive: true }),
+      this.injuryModel.countDocuments({
+        memberId: memberObjId,
+        status: 'active',
+      }),
+      this.medicationModel.countDocuments({
+        memberId: memberObjId,
+        status: 'active',
+      }),
+      this.workoutSessionModel
+        .find({
+          memberId: memberObjId,
+          completedAt: { $gte: ninetyDaysAgo },
+        })
+        .lean(),
+    ]);
+
+    // Weight + body fat from most recent 2 body tests
+    const latestTest = recentBodyTests[0] ?? null;
+    const prevTest = recentBodyTests[1] ?? null;
+
+    const weight: MemberOverviewStats['weight'] = latestTest
+      ? {
+          value: latestTest.weight,
+          deltaKg: prevTest ? latestTest.weight - prevTest.weight : null,
+        }
+      : null;
+
+    const bodyFat: MemberOverviewStats['bodyFat'] = latestTest
+      ? {
+          pct: latestTest.bodyFatPct,
+          deltaPct: prevTest
+            ? latestTest.bodyFatPct - prevTest.bodyFatPct
+            : null,
+        }
+      : null;
+
+    // Weight trend for chart (oldest → newest)
+    const weightTrend = [...recentBodyTests].reverse().map((t) => ({
+      date: t.date.toISOString().split('T')[0],
+      weight: t.weight,
+    }));
+
+    // Heatmap: count sessions per day
+    const dayCountMap = new Map<string, number>();
+    for (const s of heatmapSessions) {
+      if (!s.completedAt) continue;
+      const key = s.completedAt.toISOString().split('T')[0];
+      dayCountMap.set(key, (dayCountMap.get(key) ?? 0) + 1);
+    }
+    const heatmap = Array.from(dayCountMap.entries()).map(([date, count]) => ({
+      date,
+      count,
+    }));
+
+    return {
+      sessionsThisMonth,
+      weight,
+      bodyFat,
+      topPR: topPR
+        ? {
+            exerciseName: topPR.exerciseName,
+            estimatedOneRM: topPR.estimatedOneRM,
+          }
+        : null,
+      activePlan: activePlan
+        ? { name: activePlan.name, dayCount: activePlan.days.length }
+        : null,
+      activeInjuryCount,
+      activeMedicationCount,
+      weightTrend,
+      heatmap,
+    };
   }
 
   /**

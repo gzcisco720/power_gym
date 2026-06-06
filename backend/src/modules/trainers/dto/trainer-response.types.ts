@@ -45,3 +45,16 @@ export interface TrainerTemplateItem {
   dayCount: number;
   createdAt: string;
 }
+
+export type WeekDay = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
+
+export interface TrainerOverviewStats {
+  memberCount: number;
+  sessionsThisMonth: number;
+  templateCount: number;
+  activeMembersThisMonth: number;
+  newPRsThisMonth: number;
+  avgStreakDays: number;
+  weeklySchedule: { day: WeekDay; count: number }[];
+  sessionsTrend: { month: string; count: number }[];
+}

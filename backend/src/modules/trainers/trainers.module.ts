@@ -23,6 +23,10 @@ import {
   NutritionTemplate,
   NutritionTemplateSchema,
 } from '../../modules/nutrition-templates/nutrition-template.model';
+import {
+  PersonalBest,
+  PersonalBestSchema,
+} from '../../common/models/personal-best.model';
 
 @Module({
   imports: [
@@ -33,6 +37,7 @@ import {
       { name: MemberPlan.name, schema: MemberPlanSchema },
       { name: PlanTemplate.name, schema: PlanTemplateSchema },
       { name: NutritionTemplate.name, schema: NutritionTemplateSchema },
+      { name: PersonalBest.name, schema: PersonalBestSchema },
     ]),
   ],
   controllers: [TrainersController],

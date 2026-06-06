@@ -23,12 +23,18 @@ import {
   NutritionTemplateDocument,
 } from '../../modules/nutrition-templates/nutrition-template.model';
 import {
+  PersonalBest,
+  PersonalBestDocument,
+} from '../../common/models/personal-best.model';
+import {
   TrainerListItem,
   TrainerDetailResponse,
   TrainerMember,
   TrainerMemberMetrics,
   TrainerSessionItem,
   TrainerTemplateItem,
+  TrainerOverviewStats,
+  WeekDay,
 } from './dto/trainer-response.types';
 
 @Injectable()
@@ -45,6 +51,8 @@ export class TrainersService {
     private readonly planTemplateModel: Model<PlanTemplateDocument>,
     @InjectModel(NutritionTemplate.name)
     private readonly nutritionTemplateModel: Model<NutritionTemplateDocument>,
+    @InjectModel(PersonalBest.name)
+    private readonly personalBestModel: Model<PersonalBestDocument>,
   ) {}
 
   async findAll(): Promise<TrainerListItem[]> {
@@ -100,6 +108,179 @@ export class TrainersService {
     };
   }
 
+  async getOverviewStats(trainerId: string): Promise<TrainerOverviewStats> {
+    const trainer = await this.userModel
+      .findById(trainerId)
+      .lean<User & { _id: Types.ObjectId; createdAt: Date }>();
+
+    if (!trainer || trainer.role !== 'trainer') {
+      throw new NotFoundException('Trainer not found');
+    }
+
+    const members = await this.userModel.find({
+      role: 'member',
+      trainerId: new Types.ObjectId(trainerId),
+    });
+    const memberCount = members.length;
+    const memberObjIds = members.map((m) => m._id);
+
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Build this-week Mon–Sun range
+    const dayOfWeek = now.getDay(); // 0=Sun,1=Mon,...,6=Sat
+    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diffToMonday);
+    monday.setHours(0, 0, 0, 0);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+
+    // Build last 6 months range
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+
+    const [
+      sessionsThisMonth,
+      activeMemberIds,
+      newPRsThisMonth,
+      templateCount,
+      weekSessions,
+      trendAgg,
+      allMemberSessions,
+    ] = await Promise.all([
+      memberCount === 0
+        ? Promise.resolve(0)
+        : this.workoutSessionModel.countDocuments({
+            memberId: { $in: memberObjIds },
+            completedAt: { $gte: startOfMonth },
+          }),
+      memberCount === 0
+        ? Promise.resolve([])
+        : this.workoutSessionModel.distinct('memberId', {
+            memberId: { $in: memberObjIds },
+            completedAt: { $gte: startOfMonth },
+          }),
+      memberCount === 0
+        ? Promise.resolve(0)
+        : this.personalBestModel.countDocuments({
+            memberId: { $in: memberObjIds },
+            achievedAt: { $gte: startOfMonth },
+          }),
+      this.planTemplateModel.countDocuments({
+        createdBy: new Types.ObjectId(trainerId),
+      }),
+      memberCount === 0
+        ? Promise.resolve([])
+        : this.scheduledSessionModel
+            .find({
+              trainerId: new Types.ObjectId(trainerId),
+              date: { $gte: monday, $lte: sunday },
+            })
+            .lean(),
+      memberCount === 0
+        ? Promise.resolve([])
+        : this.workoutSessionModel.aggregate<{
+            _id: { year: number; month: number };
+            count: number;
+          }>([
+            {
+              $match: {
+                memberId: { $in: memberObjIds },
+                completedAt: { $gte: sixMonthsAgo },
+              },
+            },
+            {
+              $group: {
+                _id: {
+                  year: { $year: '$completedAt' },
+                  month: { $month: '$completedAt' },
+                },
+                count: { $sum: 1 },
+              },
+            },
+          ]),
+      // Streak: need per-member completed sessions in last 90 days
+      memberCount === 0
+        ? Promise.resolve([])
+        : this.workoutSessionModel
+            .find({
+              memberId: { $in: memberObjIds },
+              completedAt: { $gte: new Date(now.getTime() - 90 * 86400000) },
+            })
+            .lean(),
+    ]);
+
+    // avgStreakDays: mean of per-member streak
+    const avgStreakDays =
+      memberCount === 0
+        ? 0
+        : (() => {
+            const streaks = members.map((m) =>
+              this.computeStreakFromSessions(
+                m._id,
+                allMemberSessions as {
+                  memberId: Types.ObjectId;
+                  completedAt: Date | null;
+                }[],
+                now,
+              ),
+            );
+            return Math.round(
+              streaks.reduce((s, v) => s + v, 0) / streaks.length,
+            );
+          })();
+
+    // Weekly schedule: Mon–Sun counts
+    const WEEK_DAYS: WeekDay[] = [
+      'Mon',
+      'Tue',
+      'Wed',
+      'Thu',
+      'Fri',
+      'Sat',
+      'Sun',
+    ];
+    const dayCounts = new Map<WeekDay, number>(WEEK_DAYS.map((d) => [d, 0]));
+    for (const s of weekSessions) {
+      const d = new Date(s.date);
+      const dow = d.getDay(); // 0=Sun
+      const idx = dow === 0 ? 6 : dow - 1; // Mon=0, Sun=6
+      dayCounts.set(WEEK_DAYS[idx], (dayCounts.get(WEEK_DAYS[idx]) ?? 0) + 1);
+    }
+    const weeklySchedule = WEEK_DAYS.map((day) => ({
+      day,
+      count: dayCounts.get(day) ?? 0,
+    }));
+
+    // Sessions trend: last 6 months filled with zeros
+    const sessionsTrend: { month: string; count: number }[] = [];
+    const aggMap = new Map<string, number>(
+      (
+        trendAgg as { _id: { year: number; month: number }; count: number }[]
+      ).map((a) => [
+        `${a._id.year}-${String(a._id.month).padStart(2, '0')}`,
+        a.count,
+      ]),
+    );
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      sessionsTrend.push({ month: key, count: aggMap.get(key) ?? 0 });
+    }
+
+    return {
+      memberCount,
+      sessionsThisMonth,
+      templateCount,
+      activeMembersThisMonth: (activeMemberIds as Types.ObjectId[]).length,
+      newPRsThisMonth,
+      avgStreakDays,
+      weeklySchedule,
+      sessionsTrend,
+    };
+  }
+
   async getTrainerMembers(trainerId: string): Promise<TrainerMemberMetrics[]> {
     const trainer = await this.userModel
       .findById(trainerId)
@@ -119,7 +300,7 @@ export class TrainersService {
 
     const results: TrainerMemberMetrics[] = await Promise.all(
       members.map(async (member) => {
-        const memberObjId = member._id as Types.ObjectId;
+        const memberObjId = member._id;
 
         const [activePlan, streak, sessionsThisMonth] = await Promise.all([
           this.memberPlanModel.findOne({
@@ -189,10 +370,7 @@ export class TrainersService {
     });
 
     const memberNameMap = new Map<string, string>(
-      memberDocs.map((m) => [
-        m._id.toString(),
-        `${m.firstName} ${m.lastName}`,
-      ]),
+      memberDocs.map((m) => [m._id.toString(), `${m.firstName} ${m.lastName}`]),
     );
 
     return sessions.map((s) => ({
@@ -221,9 +399,7 @@ export class TrainersService {
 
     const templates = await this.planTemplateModel
       .find({ createdBy: new Types.ObjectId(trainerId) })
-      .lean<
-        (PlanTemplate & { _id: Types.ObjectId; createdAt: Date })[]
-      >();
+      .lean<(PlanTemplate & { _id: Types.ObjectId; createdAt: Date })[]>();
 
     return templates.map((t) => ({
       id: t._id.toString(),
@@ -246,9 +422,7 @@ export class TrainersService {
 
     const templates = await this.nutritionTemplateModel
       .find({ createdBy: new Types.ObjectId(trainerId) })
-      .lean<
-        (NutritionTemplate & { _id: Types.ObjectId; createdAt: Date })[]
-      >();
+      .lean<(NutritionTemplate & { _id: Types.ObjectId; createdAt: Date })[]>();
 
     return templates.map((t) => ({
       id: t._id.toString(),
@@ -286,6 +460,33 @@ export class TrainersService {
       name: `${updated!.firstName} ${updated!.lastName}`,
       email: updated!.email,
     };
+  }
+
+  private computeStreakFromSessions(
+    memberObjId: Types.ObjectId,
+    sessions: { memberId: Types.ObjectId; completedAt: Date | null }[],
+    now: Date,
+  ): number {
+    const memberSessions = sessions.filter(
+      (s) => s.memberId.toString() === memberObjId.toString(),
+    );
+    const key = (d: Date) =>
+      `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    const daySet = new Set(
+      memberSessions.flatMap((s) =>
+        s.completedAt ? [key(new Date(s.completedAt))] : [],
+      ),
+    );
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    const cursor = new Date(today);
+    if (!daySet.has(key(cursor))) cursor.setDate(cursor.getDate() - 1);
+    let streak = 0;
+    while (daySet.has(key(cursor))) {
+      streak++;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
   }
 
   private async computeStreak(

@@ -18,6 +18,7 @@ describe('MembersController', () => {
   let service: {
     listMembers: jest.Mock;
     getOverview: jest.Mock;
+    getOverviewStats: jest.Mock;
     getBodyTests: jest.Mock;
     getInjuries: jest.Mock;
     getMedications: jest.Mock;
@@ -27,6 +28,7 @@ describe('MembersController', () => {
     service = {
       listMembers: jest.fn().mockResolvedValue([]),
       getOverview: jest.fn().mockResolvedValue({}),
+      getOverviewStats: jest.fn().mockResolvedValue({}),
       getBodyTests: jest.fn().mockResolvedValue([]),
       getInjuries: jest.fn().mockResolvedValue([]),
       getMedications: jest.fn().mockResolvedValue([]),
@@ -86,6 +88,17 @@ describe('MembersController', () => {
       await controller.getMedications(req as never, MEMBER_ID);
 
       expect(service.getMedications).toHaveBeenCalledWith(
+        MEMBER_ID,
+        REQUESTER_ID,
+        'owner',
+      );
+    });
+
+    it('getOverviewStats passes sub, role, and member id param', async () => {
+      const req = makeReq('owner');
+      await controller.getOverviewStats(req as never, MEMBER_ID);
+
+      expect(service.getOverviewStats).toHaveBeenCalledWith(
         MEMBER_ID,
         REQUESTER_ID,
         'owner',

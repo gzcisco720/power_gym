@@ -25,6 +25,15 @@ export class MembersController {
     return this.membersService.getOverview(id, req.user.sub, req.user.role);
   }
 
+  @Get(':id/overview-stats')
+  getOverviewStats(@Request() req: RequestWithUser, @Param('id') id: string) {
+    return this.membersService.getOverviewStats(
+      id,
+      req.user.sub,
+      req.user.role,
+    );
+  }
+
   @Get(':id/body-tests')
   getBodyTests(@Request() req: RequestWithUser, @Param('id') id: string) {
     return this.membersService.getBodyTests(id, req.user.sub, req.user.role);

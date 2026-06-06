@@ -112,30 +112,35 @@ Sources: `WorkoutSession` (completed, by member/trainer's members), `BodyTest`, 
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `MembersService > getOverviewStats > returns sessionsThisMonth counting only this-month completed sessions for the member`
-- [ ] `MembersService > getOverviewStats > returns weight delta as latest minus previous body test, null when fewer than 1 test`
-- [ ] `MembersService > getOverviewStats > returns topPR with highest estimatedOneRM, null when member has no PRs`
-- [ ] `MembersService > getOverviewStats > returns heatmap entries only for days with at least one completed session in the last 90 days`
-- [ ] `MembersService > getOverviewStats > throws NotFoundException when trainer requests a member not assigned to them`
-- [ ] `TrainersService > getOverviewStats > activeMembersThisMonth counts distinct members with a completed session this month`
-- [ ] `TrainersService > getOverviewStats > newPRsThisMonth counts PersonalBest docs achieved this month across the trainer's members`
-- [ ] `TrainersService > getOverviewStats > weeklySchedule returns 7 entries Mon–Sun with per-day scheduled-session counts`
-- [ ] `TrainersService > getOverviewStats > sessionsTrend returns 6 month buckets oldest→newest`
-- [ ] `TrainersService > getOverviewStats > throws NotFoundException when id is not a trainer`
+- [x] `MembersService > getOverviewStats > returns sessionsThisMonth counting only this-month completed sessions for the member`
+- [x] `MembersService > getOverviewStats > returns weight delta as latest minus previous body test, null when fewer than 1 test`
+- [x] `MembersService > getOverviewStats > returns topPR with highest estimatedOneRM, null when member has no PRs`
+- [x] `MembersService > getOverviewStats > returns heatmap entries only for days with at least one completed session in the last 90 days`
+- [x] `MembersService > getOverviewStats > throws NotFoundException when trainer requests a member not assigned to them`
+- [x] `TrainersService > getOverviewStats > activeMembersThisMonth counts distinct members with a completed session this month`
+- [x] `TrainersService > getOverviewStats > newPRsThisMonth counts PersonalBest docs achieved this month across the trainer's members`
+- [x] `TrainersService > getOverviewStats > weeklySchedule returns 7 entries Mon–Sun with per-day scheduled-session counts`
+- [x] `TrainersService > getOverviewStats > sessionsTrend returns 6 month buckets oldest→newest`
+- [x] `TrainersService > getOverviewStats > throws NotFoundException when id is not a trainer`
 
 *Integration:*
-- [ ] `GET /members/:id/overview-stats` as owner → 200 with the full stats shape (all keys present)
-- [ ] `GET /members/:id/overview-stats` as a trainer for a member of another trainer → 404
-- [ ] `GET /members/:id/overview-stats` with no auth token → 401
-- [ ] `GET /trainers/:id/overview-stats` as owner → 200 with all KPI + chart keys present
-- [ ] `GET /trainers/:id/overview-stats` as a member (forbidden role) → 403
+- [x] `GET /members/:id/overview-stats` as owner → 200 with the full stats shape (all keys present)
+- [x] `GET /members/:id/overview-stats` as a trainer for a member of another trainer → 404
+- [x] `GET /members/:id/overview-stats` with no auth token → 401
+- [x] `GET /trainers/:id/overview-stats` as owner → 200 with all KPI + chart keys present
+- [x] `GET /trainers/:id/overview-stats` as a member (forbidden role) → 403
 
 **TDD sequence**:
 1. Write failing unit tests for both service methods → Red
 2. Implement `getOverviewStats` in each service (extract shared streak helper) → Green
 3. Add controller routes + integration tests against the real Nest test app → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 1 Checkpoint
+- [x] `MembersService.getOverviewStats` unit tests + implementation
+- [x] `TrainersService.getOverviewStats` unit tests + implementation
+- [x] Controller routes + integration tests
 
 ---
 

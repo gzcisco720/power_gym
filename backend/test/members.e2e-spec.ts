@@ -477,4 +477,42 @@ describe('Members (e2e)', () => {
         .expect(404);
     });
   });
+
+  // ─── GET /members/:id/overview-stats ─────────────────────────────────────────
+
+  describe('GET /members/:id/overview-stats', () => {
+    it('as owner → 200 with the full stats shape (all keys present)', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/members/${memberId.toString()}/overview-stats`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .expect(200);
+
+      const body = res.body as Record<string, unknown>;
+      expect(body).toHaveProperty('sessionsThisMonth');
+      expect(body).toHaveProperty('weight');
+      expect(body).toHaveProperty('bodyFat');
+      expect(body).toHaveProperty('topPR');
+      expect(body).toHaveProperty('activePlan');
+      expect(body).toHaveProperty('activeInjuryCount');
+      expect(body).toHaveProperty('activeMedicationCount');
+      expect(body).toHaveProperty('weightTrend');
+      expect(body).toHaveProperty('heatmap');
+      expect(typeof body.sessionsThisMonth).toBe('number');
+      expect(Array.isArray(body.weightTrend)).toBe(true);
+      expect(Array.isArray(body.heatmap)).toBe(true);
+    });
+
+    it('as a trainer for a member of another trainer → 404', async () => {
+      await request(app.getHttpServer())
+        .get(`/members/${member2Id.toString()}/overview-stats`)
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(404);
+    });
+
+    it('with no auth token → 401', async () => {
+      await request(app.getHttpServer())
+        .get(`/members/${memberId.toString()}/overview-stats`)
+        .expect(401);
+    });
+  });
 });

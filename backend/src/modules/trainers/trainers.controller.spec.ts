@@ -76,6 +76,7 @@ describe('TrainersController', () => {
   let service: {
     findAll: jest.Mock;
     findOne: jest.Mock;
+    getOverviewStats: jest.Mock;
     getTrainerMembers: jest.Mock;
     getTrainerSessions: jest.Mock;
     getTrainerTrainingPlans: jest.Mock;
@@ -87,6 +88,7 @@ describe('TrainersController', () => {
     service = {
       findAll: jest.fn().mockResolvedValue(TRAINER_LIST),
       findOne: jest.fn().mockResolvedValue(TRAINER_DETAIL),
+      getOverviewStats: jest.fn().mockResolvedValue({}),
       getTrainerMembers: jest.fn().mockResolvedValue(TRAINER_MEMBERS),
       getTrainerSessions: jest.fn().mockResolvedValue(TRAINER_SESSIONS),
       getTrainerTrainingPlans: jest.fn().mockResolvedValue(TRAINER_TEMPLATES),
@@ -163,7 +165,11 @@ describe('TrainersController', () => {
   describe('reassignMember', () => {
     it('delegates to service with current trainerId, memberId, and target trainerId', async () => {
       const dto: ReassignMemberDto = { trainerId: TRAINER2_ID };
-      const result = await controller.reassignMember(TRAINER_ID, MEMBER_ID, dto);
+      const result = await controller.reassignMember(
+        TRAINER_ID,
+        MEMBER_ID,
+        dto,
+      );
 
       expect(service.reassignMember).toHaveBeenCalledWith(
         TRAINER_ID,
@@ -171,6 +177,14 @@ describe('TrainersController', () => {
         TRAINER2_ID,
       );
       expect(result).toMatchObject({ id: MEMBER_ID });
+    });
+  });
+
+  describe('getOverviewStats', () => {
+    it('delegates to service with the trainer id', async () => {
+      await controller.getOverviewStats(TRAINER_ID);
+
+      expect(service.getOverviewStats).toHaveBeenCalledWith(TRAINER_ID);
     });
   });
 });

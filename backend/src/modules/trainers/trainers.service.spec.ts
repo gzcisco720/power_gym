@@ -8,9 +8,8 @@ import { WorkoutSession } from '../../common/models/workout-session.model';
 import { ScheduledSession } from '../../common/models/scheduled-session.model';
 import { MemberPlan } from '../../common/models/member-plan.model';
 import { PlanTemplate } from '../../common/models/plan-template.model';
-import {
-  NutritionTemplate,
-} from '../../modules/nutrition-templates/nutrition-template.model';
+import { NutritionTemplate } from '../../modules/nutrition-templates/nutrition-template.model';
+import { PersonalBest } from '../../common/models/personal-best.model';
 
 const OWNER_ID = new Types.ObjectId().toString();
 const TRAINER_ID = new Types.ObjectId().toString();
@@ -64,6 +63,8 @@ describe('TrainersService', () => {
   let workoutSessionModel: {
     find: jest.Mock;
     countDocuments: jest.Mock;
+    distinct: jest.Mock;
+    aggregate: jest.Mock;
   };
   let scheduledSessionModel: {
     find: jest.Mock;
@@ -73,9 +74,13 @@ describe('TrainersService', () => {
   };
   let planTemplateModel: {
     find: jest.Mock;
+    countDocuments: jest.Mock;
   };
   let nutritionTemplateModel: {
     find: jest.Mock;
+  };
+  let personalBestModel: {
+    countDocuments: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -88,6 +93,8 @@ describe('TrainersService', () => {
     workoutSessionModel = {
       find: jest.fn(),
       countDocuments: jest.fn(),
+      distinct: jest.fn(),
+      aggregate: jest.fn(),
     };
     scheduledSessionModel = {
       find: jest.fn(),
@@ -97,9 +104,13 @@ describe('TrainersService', () => {
     };
     planTemplateModel = {
       find: jest.fn(),
+      countDocuments: jest.fn(),
     };
     nutritionTemplateModel = {
       find: jest.fn(),
+    };
+    personalBestModel = {
+      countDocuments: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -125,6 +136,10 @@ describe('TrainersService', () => {
         {
           provide: getModelToken(NutritionTemplate.name),
           useValue: nutritionTemplateModel,
+        },
+        {
+          provide: getModelToken(PersonalBest.name),
+          useValue: personalBestModel,
         },
       ],
     }).compile();
@@ -287,8 +302,20 @@ describe('TrainersService', () => {
   describe('getTrainerMembers', () => {
     it('returns members of the trainer each with streak, sessionsThisMonth, and a valid status', async () => {
       const trainer = makeTrainer(TRAINER_ID);
-      const member1 = makeMember(MEMBER1_ID, TRAINER_ID, 'Alice', 'Lee', 'alice@example.com');
-      const member2 = makeMember(MEMBER2_ID, TRAINER_ID, 'Bob', 'Brown', 'bob@example.com');
+      const member1 = makeMember(
+        MEMBER1_ID,
+        TRAINER_ID,
+        'Alice',
+        'Lee',
+        'alice@example.com',
+      );
+      const member2 = makeMember(
+        MEMBER2_ID,
+        TRAINER_ID,
+        'Bob',
+        'Brown',
+        'bob@example.com',
+      );
 
       userModel.findById.mockReturnValue({
         lean: jest.fn().mockResolvedValue(trainer),
@@ -305,7 +332,9 @@ describe('TrainersService', () => {
       const now = new Date();
       const todayKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
       workoutSessionModel.find
-        .mockReturnValueOnce({ lean: jest.fn().mockResolvedValue([{ completedAt: now }]) }) // member1 streak query
+        .mockReturnValueOnce({
+          lean: jest.fn().mockResolvedValue([{ completedAt: now }]),
+        }) // member1 streak query
         .mockReturnValueOnce({ lean: jest.fn().mockResolvedValue([]) }); // member2 streak query
 
       // sessionsThisMonth
@@ -352,10 +381,12 @@ describe('TrainersService', () => {
       const now = new Date();
       workoutSessionModel.find
         .mockReturnValueOnce({ lean: jest.fn().mockResolvedValue([]) }) // member1 streak (irrelevant)
-        .mockReturnValueOnce({ lean: jest.fn().mockResolvedValue([{ completedAt: now }]) }); // member2 streak
+        .mockReturnValueOnce({
+          lean: jest.fn().mockResolvedValue([{ completedAt: now }]),
+        }); // member2 streak
 
       workoutSessionModel.countDocuments
-        .mockResolvedValueOnce(0)  // member1
+        .mockResolvedValueOnce(0) // member1
         .mockResolvedValueOnce(5); // member2
 
       const result = await service.getTrainerMembers(TRAINER_ID);
@@ -487,12 +518,148 @@ describe('TrainersService', () => {
     });
   });
 
+  // ─── getOverviewStats ─────────────────────────────────────────────────────────
+
+  describe('getOverviewStats', () => {
+    function setupTrainer() {
+      const trainer = makeTrainer(TRAINER_ID);
+      userModel.findById.mockReturnValue({
+        lean: jest.fn().mockResolvedValue(trainer),
+      });
+      userModel.find.mockResolvedValue([
+        makeMember(MEMBER1_ID, TRAINER_ID),
+        makeMember(MEMBER2_ID, TRAINER_ID),
+      ]);
+    }
+
+    it('activeMembersThisMonth counts distinct members with a completed session this month', async () => {
+      setupTrainer();
+      planTemplateModel.countDocuments.mockResolvedValue(3);
+      workoutSessionModel.countDocuments.mockResolvedValue(10);
+      workoutSessionModel.distinct.mockResolvedValue([MEMBER1_ID, MEMBER2_ID]);
+      personalBestModel.countDocuments.mockResolvedValue(2);
+      workoutSessionModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
+      });
+      scheduledSessionModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
+      });
+      workoutSessionModel.aggregate.mockResolvedValue([]);
+
+      const result = await service.getOverviewStats(TRAINER_ID);
+
+      expect(result.activeMembersThisMonth).toBe(2);
+    });
+
+    it('newPRsThisMonth counts PersonalBest docs achieved this month across the trainer members', async () => {
+      setupTrainer();
+      planTemplateModel.countDocuments.mockResolvedValue(0);
+      workoutSessionModel.countDocuments.mockResolvedValue(0);
+      workoutSessionModel.distinct.mockResolvedValue([]);
+      personalBestModel.countDocuments.mockResolvedValue(4);
+      workoutSessionModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
+      });
+      scheduledSessionModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
+      });
+      workoutSessionModel.aggregate.mockResolvedValue([]);
+
+      const result = await service.getOverviewStats(TRAINER_ID);
+
+      expect(result.newPRsThisMonth).toBe(4);
+    });
+
+    it('weeklySchedule returns 7 entries Mon–Sun with per-day scheduled-session counts', async () => {
+      setupTrainer();
+      planTemplateModel.countDocuments.mockResolvedValue(0);
+      workoutSessionModel.countDocuments.mockResolvedValue(0);
+      workoutSessionModel.distinct.mockResolvedValue([]);
+      personalBestModel.countDocuments.mockResolvedValue(0);
+      workoutSessionModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
+      });
+
+      // Seed two scheduled sessions this week
+      const monday = new Date('2026-06-01'); // a Monday
+      const wednesday = new Date('2026-06-03');
+      scheduledSessionModel.find.mockReturnValue({
+        lean: jest
+          .fn()
+          .mockResolvedValue([
+            { date: monday },
+            { date: wednesday },
+            { date: wednesday },
+          ]),
+      });
+      workoutSessionModel.aggregate.mockResolvedValue([]);
+
+      const result = await service.getOverviewStats(TRAINER_ID);
+
+      expect(result.weeklySchedule).toHaveLength(7);
+      const days = result.weeklySchedule.map((e) => e.day);
+      expect(days).toEqual(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
+      // Total counts should sum to 3 from seeded sessions
+      const total = result.weeklySchedule.reduce((s, e) => s + e.count, 0);
+      expect(total).toBe(3);
+    });
+
+    it('sessionsTrend returns 6 month buckets oldest–newest', async () => {
+      setupTrainer();
+      planTemplateModel.countDocuments.mockResolvedValue(0);
+      workoutSessionModel.countDocuments.mockResolvedValue(0);
+      workoutSessionModel.distinct.mockResolvedValue([]);
+      personalBestModel.countDocuments.mockResolvedValue(0);
+      workoutSessionModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
+      });
+      scheduledSessionModel.find.mockReturnValue({
+        lean: jest.fn().mockResolvedValue([]),
+      });
+      workoutSessionModel.aggregate.mockResolvedValue([
+        { _id: { year: 2026, month: 1 }, count: 5 },
+        { _id: { year: 2026, month: 3 }, count: 8 },
+      ]);
+
+      const result = await service.getOverviewStats(TRAINER_ID);
+
+      expect(result.sessionsTrend).toHaveLength(6);
+      // Should be in ascending order (oldest first)
+      for (let i = 0; i < result.sessionsTrend.length - 1; i++) {
+        expect(
+          result.sessionsTrend[i].month <= result.sessionsTrend[i + 1].month,
+        ).toBe(true);
+      }
+    });
+
+    it('throws NotFoundException when id is not a trainer', async () => {
+      userModel.findById.mockReturnValue({
+        lean: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(service.getOverviewStats(OWNER_ID)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+
   // ─── reassignMember ───────────────────────────────────────────────────────────
 
   describe('reassignMember', () => {
-    it('updates the member\'s trainerId to the new trainer and returns the updated member', async () => {
-      const member = makeMember(MEMBER1_ID, TRAINER_ID, 'Alice', 'Lee', 'alice@example.com');
-      const newTrainer = makeTrainer(TRAINER2_ID, 'Bob', 'Coach', 'bob@example.com');
+    it("updates the member's trainerId to the new trainer and returns the updated member", async () => {
+      const member = makeMember(
+        MEMBER1_ID,
+        TRAINER_ID,
+        'Alice',
+        'Lee',
+        'alice@example.com',
+      );
+      const newTrainer = makeTrainer(
+        TRAINER2_ID,
+        'Bob',
+        'Coach',
+        'bob@example.com',
+      );
 
       // Lookup current trainer to validate it exists
       userModel.findById

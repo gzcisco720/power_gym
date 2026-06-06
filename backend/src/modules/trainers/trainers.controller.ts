@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Patch,
-  Param,
-  Body,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Patch, Param, Body, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -25,6 +18,11 @@ export class TrainersController {
 
   // Specific sub-resource routes must be declared BEFORE the catch-all :id route
   // to avoid NestJS treating e.g. "members" as a value for :id.
+
+  @Get(':id/overview-stats')
+  getOverviewStats(@Param('id') id: string) {
+    return this.trainersService.getOverviewStats(id);
+  }
 
   @Get(':id/members')
   getTrainerMembers(@Param('id') id: string) {
