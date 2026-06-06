@@ -107,7 +107,7 @@ export function TrainerOverviewTab({ trainerId, detail }: TrainerOverviewTabProp
         {/* Weekly schedule bar chart */}
         <View className="gap-2">
           <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
-            This Week's Schedule
+            Weekly Schedule
           </Text>
           <View className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-3">
             <WeeklyScheduleBar schedule={overviewStats.weeklySchedule} />
