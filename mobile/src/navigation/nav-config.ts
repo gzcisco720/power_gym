@@ -39,6 +39,7 @@ export const NAV_CONFIG: Record<UserRole, NavGroup[]> = {
       items: [
         { key: 'TrainingTemplates', label: 'Training Templates', screen: 'TrainingTemplates' },
         { key: 'NutritionTemplates', label: 'Nutrition Templates', screen: 'NutritionTemplates' },
+        { key: 'Foods', label: 'Foods', screen: 'Foods' },
       ],
     },
     {
@@ -75,6 +76,7 @@ export const NAV_CONFIG: Record<UserRole, NavGroup[]> = {
       items: [
         { key: 'TrainingTemplates', label: 'Training Templates', screen: 'TrainingTemplates' },
         { key: 'NutritionTemplates', label: 'Nutrition Templates', screen: 'NutritionTemplates' },
+        { key: 'Foods', label: 'Foods', screen: 'Foods' },
       ],
     },
     {

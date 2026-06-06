@@ -42,7 +42,10 @@ import { NAV_CONFIG } from './nav-config';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { MembersScreen as RealMembersScreen } from '../screens/members/MembersScreen';
 import { MemberDetailScreen } from '../screens/members/MemberDetailScreen';
+import { FoodsScreen } from '../screens/foods/FoodsScreen';
+import { FoodFormScreen } from '../screens/foods/FoodFormScreen';
 import { EquipmentItem } from '../types/equipment';
+import { Food } from '../types/nutrition-templates';
 import { WorkoutSession } from '../types/training';
 
 export type AuthStackParamList = {
@@ -67,6 +70,7 @@ export type AppStackParamList = {
   NutritionTemplateForm: { templateId?: string; templateName?: string };
   WorkoutSession: { session: WorkoutSession };
   LogFood: { mealName: string };
+  FoodForm: { food?: Food };
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -97,6 +101,7 @@ const SCREEN_REGISTRY: Record<string, () => React.JSX.Element> = {
   BodyTests: BodyTestsScreen,
   CheckIn: CheckInScreen,
   Journey: JourneyScreen,
+  Foods: FoodsScreen,
 };
 
 function DrawerNavigator() {
@@ -149,6 +154,7 @@ function AppNavigator() {
       <AppStack.Screen name="NutritionTemplateForm" component={NutritionTemplateFormScreen} />
       <AppStack.Screen name="WorkoutSession" component={WorkoutSessionScreen} />
       <AppStack.Screen name="LogFood" component={LogFoodScreen} />
+      <AppStack.Screen name="FoodForm" component={FoodFormScreen} />
     </AppStack.Navigator>
   );
 }

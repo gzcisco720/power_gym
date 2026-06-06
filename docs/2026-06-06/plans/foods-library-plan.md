@@ -173,7 +173,13 @@ cross-app: `backend/` (PATCH + DELETE endpoints) and `mobile/` (data layer, scre
 
 **Dependencies**: Stage 2.
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 3 Checkpoint
+- [x] FoodCard component
+- [x] FoodsScreen
+- [x] FoodFormScreen
+- [x] nav-config.ts + navigation/index.tsx
 
 ---
 
