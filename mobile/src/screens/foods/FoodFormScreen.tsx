@@ -6,17 +6,18 @@ import {
   ScrollView,
   Pressable,
   ActivityIndicator,
-  Modal,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { Dialog } from '../../components/ui/Dialog';
 import { useFoodsStore } from '../../stores/foods.store';
 import { createFood } from '../../lib/api/foods.api';
 import { Food } from '../../types/nutrition-templates';
 import { AppStackParamList } from '../../navigation/index';
+import { colors } from '../../lib/theme';
 
 type FoodFormRouteProp = RouteProp<AppStackParamList, 'FoodForm'>;
 type Nav = NativeStackNavigationProp<AppStackParamList>;
@@ -137,7 +138,7 @@ export function FoodFormScreen() {
               value={form.name}
               onChangeText={(v) => setField('name', v)}
               placeholder="e.g. Chicken Breast"
-              placeholderTextColor="rgba(255,255,255,0.4)"
+              placeholderTextColor={colors.placeholderText}
               accessibilityLabel="Food name"
               className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
             />
@@ -154,7 +155,7 @@ export function FoodFormScreen() {
               value={form.brand}
               onChangeText={(v) => setField('brand', v)}
               placeholder="e.g. FreshFarm"
-              placeholderTextColor="rgba(255,255,255,0.4)"
+              placeholderTextColor={colors.placeholderText}
               accessibilityLabel="Brand"
               className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
             />
@@ -177,7 +178,7 @@ export function FoodFormScreen() {
                   value={form.kcal}
                   onChangeText={(v) => setField('kcal', v)}
                   placeholder="0"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
+                  placeholderTextColor={colors.placeholderText}
                   keyboardType="decimal-pad"
                   accessibilityLabel="Calories per 100g"
                   className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground text-center"
@@ -194,7 +195,7 @@ export function FoodFormScreen() {
                   value={form.protein}
                   onChangeText={(v) => setField('protein', v)}
                   placeholder="0"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
+                  placeholderTextColor={colors.placeholderText}
                   keyboardType="decimal-pad"
                   accessibilityLabel="Protein per 100g"
                   className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground text-center"
@@ -213,7 +214,7 @@ export function FoodFormScreen() {
                   value={form.carbs}
                   onChangeText={(v) => setField('carbs', v)}
                   placeholder="0"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
+                  placeholderTextColor={colors.placeholderText}
                   keyboardType="decimal-pad"
                   accessibilityLabel="Carbs per 100g"
                   className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground text-center"
@@ -230,7 +231,7 @@ export function FoodFormScreen() {
                   value={form.fat}
                   onChangeText={(v) => setField('fat', v)}
                   placeholder="0"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
+                  placeholderTextColor={colors.placeholderText}
                   keyboardType="decimal-pad"
                   accessibilityLabel="Fat per 100g"
                   className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground text-center"
@@ -278,16 +279,14 @@ export function FoodFormScreen() {
       </View>
 
       {/* Unsaved changes dialog */}
-      <Modal
-        visible={showDiscardDialog}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowDiscardDialog(false)}
+      <Dialog.Root
+        open={showDiscardDialog}
+        onOpenChange={(open) => { if (!open) setShowDiscardDialog(false); }}
       >
-        <View className="flex-1 items-center justify-center bg-black/60 px-6">
-          <View className="w-full rounded-2xl bg-card ring-1 ring-foreground/10 p-5 gap-4">
-            <Text className="text-[15px] font-semibold text-foreground">Discard changes?</Text>
-            <Text className="text-[13px] text-foreground/65">
+        <Dialog.Overlay>
+          <Dialog.Content>
+            <Text className="text-[15px] font-semibold text-foreground mb-1">Discard changes?</Text>
+            <Text className="text-[13px] text-foreground/65 mb-4">
               Your unsaved changes will be lost.
             </Text>
             <View className="flex-row gap-2">
@@ -312,9 +311,9 @@ export function FoodFormScreen() {
                 <Text className="text-sm font-semibold text-destructive">Discard</Text>
               </Pressable>
             </View>
-          </View>
-        </View>
-      </Modal>
+          </Dialog.Content>
+        </Dialog.Overlay>
+      </Dialog.Root>
     </Screen>
   );
 }

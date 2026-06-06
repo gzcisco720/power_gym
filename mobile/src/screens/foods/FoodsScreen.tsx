@@ -1,20 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  ScrollView,
-  Pressable,
-  ActivityIndicator,
-  Modal,
-} from 'react-native';
+import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
+import { Dialog } from '../../components/ui/Dialog';
 import { useFoodsStore } from '../../stores/foods.store';
 import { Food } from '../../types/nutrition-templates';
 import { FoodCard } from './components/FoodCard';
 import { AppStackParamList } from '../../navigation/index';
+import { colors } from '../../lib/theme';
 
 type FoodsScreenNav = NativeStackNavigationProp<AppStackParamList, 'Drawer'>;
 
@@ -82,9 +76,9 @@ export function FoodsScreen() {
           onPress={handleAddPress}
           accessibilityLabel="Add food"
           accessibilityRole="button"
-          className="rounded-xl bg-primary px-3 py-2"
+          className="h-11 w-11 items-center justify-center rounded-xl bg-primary"
         >
-          <Text className="text-sm font-semibold text-foreground">+ Add</Text>
+          <Text className="text-sm font-semibold text-foreground">+</Text>
         </Pressable>
       </View>
 
@@ -97,12 +91,12 @@ export function FoodsScreen() {
             value={query}
             onChangeText={handleQueryChange}
             placeholder="Search foods..."
-            placeholderTextColor="rgba(255,255,255,0.4)"
+            placeholderTextColor={colors.placeholderText}
             accessibilityLabel="Search foods"
             className="flex-1 py-2.5 text-sm text-foreground"
           />
           {loading ? (
-            <ActivityIndicator size="small" color="rgba(255,255,255,0.4)" />
+            <ActivityIndicator size="small" color={colors.placeholderText} />
           ) : query.length > 0 ? (
             <Pressable
               onPress={() => handleQueryChange('')}
@@ -142,16 +136,14 @@ export function FoodsScreen() {
       </ScrollView>
 
       {/* Delete confirm dialog */}
-      <Modal
-        visible={pendingDeleteFood !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={handleDeleteCancel}
+      <Dialog.Root
+        open={pendingDeleteFood !== null}
+        onOpenChange={(open) => { if (!open) handleDeleteCancel(); }}
       >
-        <View className="flex-1 items-center justify-center bg-black/60 px-6">
-          <View className="w-full rounded-2xl bg-card ring-1 ring-foreground/10 p-5 gap-4">
-            <Text className="text-[15px] font-semibold text-foreground">Delete food?</Text>
-            <Text className="text-[13px] text-foreground/65">
+        <Dialog.Overlay>
+          <Dialog.Content>
+            <Text className="text-[15px] font-semibold text-foreground mb-1">Delete food?</Text>
+            <Text className="text-[13px] text-foreground/65 mb-4">
               {`"${pendingDeleteFood?.name ?? ''}" will be permanently deleted.`}
             </Text>
             <View className="flex-row gap-2">
@@ -173,9 +165,9 @@ export function FoodsScreen() {
                 <Text className="text-sm font-semibold text-destructive">Delete</Text>
               </Pressable>
             </View>
-          </View>
-        </View>
-      </Modal>
+          </Dialog.Content>
+        </Dialog.Overlay>
+      </Dialog.Root>
     </Screen>
   );
 }
