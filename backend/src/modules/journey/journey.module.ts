@@ -17,6 +17,10 @@ import {
   MemberNutritionPlan,
   MemberNutritionPlanSchema,
 } from '../../common/models/member-nutrition-plan.model';
+import {
+  CheckIn,
+  CheckInSchema,
+} from '../../common/models/check-in.model';
 
 const devControllers =
   process.env.NODE_ENV !== 'production' ? [JourneyDevController] : [];
@@ -32,6 +36,7 @@ const devControllers =
         name: MemberNutritionPlan.name,
         schema: MemberNutritionPlanSchema,
       },
+      { name: CheckIn.name, schema: CheckInSchema },
     ]),
   ],
   controllers: [JourneyController, ...devControllers],

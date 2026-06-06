@@ -6,6 +6,8 @@ import { WorkoutSession } from '../../common/models/workout-session.model';
 import { NutritionDailyLog } from '../../common/models/nutrition-daily-log.model';
 import { BodyTest } from '../../common/models/body-test.model';
 import { MemberNutritionPlan } from '../../common/models/member-nutrition-plan.model';
+import { CheckIn } from '../../common/models/check-in.model';
+import { User } from '../../common/models/user.model';
 
 const MEMBER_ID = new Types.ObjectId().toString();
 
@@ -35,12 +37,16 @@ describe('JourneyService', () => {
   let nutritionDailyLogModel: { find: jest.Mock };
   let bodyTestModel: { find: jest.Mock };
   let memberNutritionPlanModel: { find: jest.Mock };
+  let checkInModel: { find: jest.Mock };
+  let userModel: { findById: jest.Mock };
 
   beforeEach(async () => {
     workoutSessionModel = { find: jest.fn() };
     nutritionDailyLogModel = { find: jest.fn() };
     bodyTestModel = { find: jest.fn() };
     memberNutritionPlanModel = { find: jest.fn() };
+    checkInModel = { find: jest.fn() };
+    userModel = { findById: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -60,6 +66,14 @@ describe('JourneyService', () => {
         {
           provide: getModelToken(MemberNutritionPlan.name),
           useValue: memberNutritionPlanModel,
+        },
+        {
+          provide: getModelToken(CheckIn.name),
+          useValue: checkInModel,
+        },
+        {
+          provide: getModelToken(User.name),
+          useValue: userModel,
         },
       ],
     }).compile();
@@ -353,6 +367,166 @@ describe('JourneyService', () => {
       expect(result.nutritionDays).toHaveLength(7);
       expect(result).toHaveProperty('bodyTests');
       expect(Array.isArray(result.bodyTests)).toBe(true);
+    });
+  });
+
+  // ─── getTimeline ──────────────────────────────────────────────────────────────
+
+  function makeSession(daysAgo: number) {
+    const d = new Date();
+    d.setDate(d.getDate() - daysAgo);
+    d.setHours(10, 0, 0, 0);
+    return {
+      _id: new Types.ObjectId(),
+      memberId: new Types.ObjectId(MEMBER_ID),
+      dayName: `Day ${daysAgo}`,
+      completedAt: d,
+      sets: [{ completedAt: d }, { completedAt: null }],
+    };
+  }
+
+  function makeBodyTest(daysAgo: number) {
+    const d = new Date();
+    d.setDate(d.getDate() - daysAgo);
+    return {
+      _id: new Types.ObjectId(),
+      memberId: new Types.ObjectId(MEMBER_ID),
+      date: d,
+      weight: 75,
+      bodyFatPct: 15,
+    };
+  }
+
+  function makeCheckIn(daysAgo: number) {
+    const d = new Date();
+    d.setDate(d.getDate() - daysAgo);
+    return {
+      _id: new Types.ObjectId(),
+      memberId: new Types.ObjectId(MEMBER_ID),
+      submittedAt: d,
+      sleepQuality: 7,
+      stress: 5,
+      fatigue: 4,
+      hunger: 6,
+      recovery: 8,
+      energy: 7,
+      digestion: 8,
+    };
+  }
+
+  function setupTimelineMocks(
+    sessions: ReturnType<typeof makeSession>[],
+    bodyTests: ReturnType<typeof makeBodyTest>[],
+    checkIns: ReturnType<typeof makeCheckIn>[],
+    createdAt: Date,
+  ) {
+    workoutSessionModel.find.mockReturnValue({
+      sort: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(sessions),
+      }),
+    });
+    bodyTestModel.find.mockReturnValue({
+      sort: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(bodyTests),
+      }),
+    });
+    checkInModel.find.mockReturnValue({
+      sort: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(checkIns),
+      }),
+    });
+    userModel.findById.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue({ createdAt }),
+      }),
+    });
+  }
+
+  describe('getTimeline', () => {
+    it('merges sessions, body tests, check-ins, streak milestones and joined into one list sorted newest-first', async () => {
+      const session = makeSession(2);
+      const bodyTest = makeBodyTest(5);
+      const checkIn = makeCheckIn(3);
+      const createdAt = new Date();
+      createdAt.setDate(createdAt.getDate() - 30);
+
+      setupTimelineMocks([session], [bodyTest], [checkIn], createdAt);
+
+      const result = await service.getTimeline(MEMBER_ID, {});
+
+      expect(result.items.length).toBeGreaterThan(0);
+      const types = result.items.map((i) => i.type);
+      expect(types).toContain('session_completed');
+      expect(types).toContain('body_test');
+      expect(types).toContain('check_in');
+      expect(types).toContain('joined');
+
+      // Check descending order
+      for (let i = 1; i < result.items.length; i++) {
+        expect(
+          new Date(result.items[i - 1].date) >= new Date(result.items[i].date),
+        ).toBe(true);
+      }
+    });
+
+    it('returns at most limit items and a nextCursor equal to the last item date when more remain', async () => {
+      // 5 sessions, limit=2 → only 2 returned plus a nextCursor
+      const sessions = [0, 1, 2, 3, 4].map((n) => makeSession(n + 1));
+      const createdAt = new Date();
+      createdAt.setDate(createdAt.getDate() - 100);
+
+      setupTimelineMocks(sessions, [], [], createdAt);
+
+      const result = await service.getTimeline(MEMBER_ID, { limit: 2 });
+
+      expect(result.items).toHaveLength(2);
+      expect(result.nextCursor).not.toBeNull();
+      expect(result.nextCursor).toBe(result.items[1].date);
+    });
+
+    it('returns nextCursor null on the final page', async () => {
+      const session = makeSession(1);
+      const createdAt = new Date();
+      createdAt.setDate(createdAt.getDate() - 10);
+
+      setupTimelineMocks([session], [], [], createdAt);
+
+      const result = await service.getTimeline(MEMBER_ID, { limit: 20 });
+
+      expect(result.nextCursor).toBeNull();
+    });
+
+    it('emits a streak_milestone item only at 7/14/30/60/100-day crossings', async () => {
+      // Build sessions for 7 consecutive days ending today
+      const sessions = Array.from({ length: 7 }, (_, i) => makeSession(i));
+      const createdAt = new Date();
+      createdAt.setDate(createdAt.getDate() - 30);
+
+      setupTimelineMocks(sessions, [], [], createdAt);
+
+      const result = await service.getTimeline(MEMBER_ID, {});
+
+      const milestones = result.items.filter(
+        (i) => i.type === 'streak_milestone',
+      );
+      // Should have exactly one milestone for 7 days
+      expect(milestones).toHaveLength(1);
+      expect(
+        (milestones[0] as { type: string; days: number }).days,
+      ).toBe(7);
+    });
+
+    it('always includes a joined item as the oldest entry', async () => {
+      const createdAt = new Date();
+      createdAt.setDate(createdAt.getDate() - 50);
+
+      setupTimelineMocks([], [], [], createdAt);
+
+      const result = await service.getTimeline(MEMBER_ID, {});
+
+      expect(result.items.length).toBeGreaterThan(0);
+      const last = result.items[result.items.length - 1];
+      expect(last.type).toBe('joined');
     });
   });
 });

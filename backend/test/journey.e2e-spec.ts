@@ -26,6 +26,14 @@ import {
   IEmailService,
   EMAIL_SERVICE,
 } from '../src/common/email/email.service';
+import {
+  WorkoutSession,
+  WorkoutSessionSchema,
+  WorkoutSessionDocument,
+} from '../src/common/models/workout-session.model';
+import {
+  JourneyTimelineItem,
+} from '../src/modules/journey/journey.service';
 
 interface JourneySessionSummary {
   _id: string;
@@ -96,14 +104,20 @@ async function buildApp(
   return { app, module: moduleFixture };
 }
 
+const TRAINER_EMAIL = 'jrn-e2e-trainer@example.com';
+const TIMELINE_MEMBER_EMAIL = 'jrn-e2e-timeline-member@example.com';
+
 describe('Journey (e2e)', () => {
   let app: INestApplication<App>;
   let module: TestingModule;
   let mongod: MongoMemoryServer;
   let userModel: Model<UserDocument>;
+  let workoutSessionModel: Model<WorkoutSessionDocument>;
   let ownerToken: string;
   let memberToken: string;
   let emptyMemberToken: string;
+  let trainerToken: string;
+  let timelineMemberToken: string;
 
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
@@ -113,6 +127,9 @@ describe('Journey (e2e)', () => {
     ({ app, module } = await buildApp(uri, mockEmail));
 
     userModel = module.get<Model<UserDocument>>(getModelToken(User.name));
+    workoutSessionModel = module.get<Model<WorkoutSessionDocument>>(
+      getModelToken(WorkoutSession.name),
+    );
 
     const passwordHash = await bcrypt.hash(TEST_PASSWORD, 10);
 
@@ -146,6 +163,26 @@ describe('Journey (e2e)', () => {
       trainerId: null,
     });
 
+    await userModel.create({
+      _id: new Types.ObjectId(),
+      firstName: 'JRN',
+      lastName: 'Trainer',
+      email: TRAINER_EMAIL,
+      passwordHash,
+      role: 'trainer',
+      trainerId: null,
+    });
+
+    await userModel.create({
+      _id: new Types.ObjectId(),
+      firstName: 'JRN',
+      lastName: 'TimelineMember',
+      email: TIMELINE_MEMBER_EMAIL,
+      passwordHash,
+      role: 'member',
+      trainerId: null,
+    });
+
     const ownerLogin = await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: OWNER_EMAIL, password: TEST_PASSWORD })
@@ -164,6 +201,20 @@ describe('Journey (e2e)', () => {
       .expect(201);
     emptyMemberToken = (emptyMemberLogin.body as { accessToken: string })
       .accessToken;
+
+    const trainerLogin = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: TRAINER_EMAIL, password: TEST_PASSWORD })
+      .expect(201);
+    trainerToken = (trainerLogin.body as { accessToken: string }).accessToken;
+
+    const timelineMemberLogin = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: TIMELINE_MEMBER_EMAIL, password: TEST_PASSWORD })
+      .expect(201);
+    timelineMemberToken = (
+      timelineMemberLogin.body as { accessToken: string }
+    ).accessToken;
   });
 
   afterAll(async () => {
@@ -222,6 +273,131 @@ describe('Journey (e2e)', () => {
       const todayDay = body.nutritionDays.find((d) => d.date === todayStr);
       expect(todayDay).toBeDefined();
       expect(todayDay!.targetKcal).toBeGreaterThan(0);
+    });
+  });
+
+  // ─── GET /journey/timeline ────────────────────────────────────────────────────
+
+  describe('GET /journey/timeline', () => {
+    it('no token → 401', async () => {
+      await request(app.getHttpServer())
+        .get('/journey/timeline')
+        .expect(401);
+    });
+
+    it('trainer token (forbidden role) → 403', async () => {
+      await request(app.getHttpServer())
+        .get('/journey/timeline')
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(403);
+    });
+
+    it('member with no data → 200 with items (only joined) and nextCursor null', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/journey/timeline')
+        .set('Authorization', `Bearer ${emptyMemberToken}`)
+        .expect(200);
+
+      const body = res.body as { items: JourneyTimelineItem[]; nextCursor: string | null };
+      expect(body).toHaveProperty('items');
+      expect(body).toHaveProperty('nextCursor');
+      expect(Array.isArray(body.items)).toBe(true);
+      // Only the joined event
+      expect(body.items).toHaveLength(1);
+      expect(body.items[0].type).toBe('joined');
+      expect(body.nextCursor).toBeNull();
+    });
+
+    it('member as timeline member → 200 with items in descending date order', async () => {
+      // Seed 3 sessions for the timeline member
+      const timelineMember = await userModel
+        .findOne({ email: TIMELINE_MEMBER_EMAIL })
+        .lean();
+      const memberId = timelineMember!._id;
+      const fakeplanId = new Types.ObjectId();
+      const fakeExerciseId = new Types.ObjectId();
+
+      for (let i = 0; i < 3; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() - (i + 1));
+        await workoutSessionModel.create({
+          memberId,
+          memberPlanId: fakeplanId,
+          dayNumber: i + 1,
+          dayName: `Day ${i + 1}`,
+          startedAt: d,
+          completedAt: d,
+          lastActivityAt: d,
+          autoSealed: false,
+          sets: [
+            {
+              exerciseId: fakeExerciseId,
+              exerciseName: 'Squat',
+              groupId: 'g1',
+              isSuperset: false,
+              isBodyweight: false,
+              setNumber: 1,
+              prescribedRepsMin: 5,
+              prescribedRepsMax: 8,
+              isExtraSet: false,
+              actualReps: 6,
+              actualWeight: 100,
+              completedAt: d,
+            },
+          ],
+          loggedBy: null,
+          rpe: null,
+          memberNote: null,
+        });
+      }
+
+      const res = await request(app.getHttpServer())
+        .get('/journey/timeline')
+        .set('Authorization', `Bearer ${timelineMemberToken}`)
+        .expect(200);
+
+      const body = res.body as { items: JourneyTimelineItem[]; nextCursor: string | null };
+      expect(body.items.length).toBeGreaterThan(0);
+
+      // Verify descending date order
+      for (let i = 1; i < body.items.length; i++) {
+        expect(
+          new Date(body.items[i - 1].date) >= new Date(body.items[i].date),
+        ).toBe(true);
+      }
+    });
+
+    it('limit=2 pagination produces no duplicate ids across pages', async () => {
+      // Use the timeline member seeded above (3 sessions + joined = 4 items)
+      const page1Res = await request(app.getHttpServer())
+        .get('/journey/timeline?limit=2')
+        .set('Authorization', `Bearer ${timelineMemberToken}`)
+        .expect(200);
+
+      const page1 = page1Res.body as { items: JourneyTimelineItem[]; nextCursor: string | null };
+      expect(page1.items).toHaveLength(2);
+      expect(page1.nextCursor).not.toBeNull();
+
+      const page2Res = await request(app.getHttpServer())
+        .get(`/journey/timeline?limit=2&cursor=${encodeURIComponent(page1.nextCursor!)}`)
+        .set('Authorization', `Bearer ${timelineMemberToken}`)
+        .expect(200);
+
+      const page2 = page2Res.body as { items: JourneyTimelineItem[]; nextCursor: string | null };
+      expect(page2.items.length).toBeGreaterThan(0);
+
+      // No duplicate ids across the two pages
+      const page1Ids = new Set(page1.items.map((i) => i.id));
+      for (const item of page2.items) {
+        expect(page1Ids.has(item.id)).toBe(false);
+      }
+    });
+
+    it('limit > 50 → 400 (validation)', async () => {
+      await request(app.getHttpServer())
+        .get('/journey/timeline?limit=51')
+        .set('Authorization', `Bearer ${emptyMemberToken}`)
+        .expect(400);
     });
   });
 });
