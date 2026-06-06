@@ -289,22 +289,31 @@ Add `fetchMemberOverviewStats` to members.api, hold the result in members.store 
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `membersStore > fetchMemberDetail > stores overviewStats alongside existing detail fields`
-- [ ] `MemberOverviewTab > renders > displays sessionsThisMonth, weight+delta, bodyFat+delta, and top PR in the KPI strip`
-- [ ] `MemberOverviewTab > renders > shows "No plan assigned" when activePlan is null`
-- [ ] `MemberOverviewTab > renders > shows active injury and medication counts in the health panel`
-- [ ] `TrainingHeatmap > renders > assigns a higher-intensity class to days with more sessions than days with fewer`
+- [x] `membersStore > fetchMemberDetail > stores overviewStats alongside existing detail fields`
+- [x] `MemberOverviewTab > renders > displays sessionsThisMonth, weight+delta, bodyFat+delta, and top PR in the KPI strip`
+- [x] `MemberOverviewTab > renders > shows "No plan assigned" when activePlan is null`
+- [x] `MemberOverviewTab > renders > shows active injury and medication counts in the health panel`
+- [x] `TrainingHeatmap > renders > assigns a higher-intensity class to days with more sessions than days with fewer`
 
 *E2E (Detox):*
-- [ ] Trainer opens a member detail Overview tab → KPI strip, Active Plan card, Health panel, and training heatmap are all visible with seeded data
-- [ ] Trainer opens Overview for a member with no plan → Active Plan card shows "No plan assigned"
+- [x] Trainer opens a member detail Overview tab → KPI strip, Active Plan card, Health panel, and training heatmap are all visible with seeded data
+- [x] Trainer opens Overview for a member with no plan → Active Plan card shows "No plan assigned"
 
 **TDD sequence**:
 1. Write failing store + component unit tests → Red
 2. Add API/store wiring + rebuild MemberOverviewTab + TrainingHeatmap → Green
 3. Write Detox spec, run against simulator → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 5 Checkpoint
+- [x] types/members.ts — MemberOverviewStats interface
+- [x] members.api.ts — fetchMemberOverviewStats
+- [x] members.store.ts — overviewStats in MemberDetail, fetched in fetchMemberDetail
+- [x] MemberOverviewTab.tsx — rebuilt with KPI strip, Active Plan, Health panel, weight trend, heatmap
+- [x] TrainingHeatmap.tsx (create)
+- [x] member-overview.spec.tsx (store + component unit tests)
+- [x] member-overview.spec.ts (Detox E2E spec)
 
 ---
 

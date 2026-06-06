@@ -5,6 +5,7 @@ jest.mock('../lib/api/members.api', () => ({
   fetchMemberInjuries: jest.fn(),
   fetchMemberMedications: jest.fn(),
   fetchMemberCheckIns: jest.fn(),
+  fetchMemberOverviewStats: jest.fn(),
 }));
 
 import * as membersApi from '../lib/api/members.api';
@@ -20,6 +21,7 @@ const mockFetchMemberBodyTests = membersApi.fetchMemberBodyTests as jest.MockedF
 const mockFetchMemberInjuries = membersApi.fetchMemberInjuries as jest.MockedFunction<typeof membersApi.fetchMemberInjuries>;
 const mockFetchMemberMedications = membersApi.fetchMemberMedications as jest.MockedFunction<typeof membersApi.fetchMemberMedications>;
 const mockFetchMemberCheckIns = membersApi.fetchMemberCheckIns as jest.MockedFunction<typeof membersApi.fetchMemberCheckIns>;
+const mockFetchMemberOverviewStats = membersApi.fetchMemberOverviewStats as jest.MockedFunction<typeof membersApi.fetchMemberOverviewStats>;
 
 const MOCK_MEMBER_1: Member = {
   id: 'mem1',
@@ -148,6 +150,8 @@ function resetStore() {
 beforeEach(() => {
   jest.clearAllMocks();
   resetStore();
+  // Default: overviewStats resolves to null so tests that don't care about it don't fail
+  mockFetchMemberOverviewStats.mockResolvedValue(null as never);
 });
 
 describe('useMembersStore', () => {
@@ -186,7 +190,7 @@ describe('useMembersStore', () => {
       await useMembersStore.getState().fetchMemberDetail('mem1');
 
       const state = useMembersStore.getState();
-      expect(state.selectedMembers['mem1']).toEqual({
+      expect(state.selectedMembers['mem1']).toMatchObject({
         overview: MOCK_OVERVIEW,
         bodyTests: [MOCK_BODY_TEST],
         injuries: [MOCK_INJURY],

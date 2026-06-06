@@ -132,7 +132,10 @@ export function MemberDetailScreen() {
       ) : (
         <>
           {activeTab === 'overview' ? (
-            <MemberOverviewTab overview={detail.overview} onNavigateToTab={setActiveTab} />
+            <MemberOverviewTab
+              overviewStats={detail.overviewStats ?? null}
+              onNavigateToTab={setActiveTab}
+            />
           ) : null}
           {activeTab === 'bodytests' ? (
             <MemberBodyTestsTab

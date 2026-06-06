@@ -39,7 +39,7 @@ jest.mock('../../stores/member-photos.store', () => ({
 
 import { useRoute } from '@react-navigation/native';
 import { useMembersStore } from '../../stores/members.store';
-import { Member, MemberOverview } from '../../types/members';
+import { Member, MemberOverview, MemberOverviewStats } from '../../types/members';
 import { BodyTest } from '../../types/body-tests';
 import { Injury, Medication } from '../../types/health';
 import { MemberDetailScreen } from './MemberDetailScreen';
@@ -145,6 +145,7 @@ function makeMedication(overrides: Partial<Medication> = {}): Medication {
 
 type DetailSlice = {
   overview: MemberOverview;
+  overviewStats: MemberOverviewStats | null;
   bodyTests: BodyTest[];
   injuries: Injury[];
   medications: Medication[];
@@ -200,6 +201,7 @@ describe('MemberDetailScreen', () => {
     const member = makeMember();
     const detail: DetailSlice = {
       overview: makeOverview(),
+      overviewStats: null,
       bodyTests: [],
       injuries: [],
       medications: [],
@@ -215,15 +217,12 @@ describe('MemberDetailScreen', () => {
     expect(getByText('Bob Trainer')).toBeTruthy();
   });
 
-  it('Overview tab shows join date, last body test date, last check-in date', () => {
+  it('Overview tab shows KPI strip and quick-link cards', () => {
     setupRoute('mem1');
     const member = makeMember();
     const detail: DetailSlice = {
-      overview: makeOverview({
-        joinedAt: '2024-01-15T00:00:00.000Z',
-        lastBodyTestDate: '2024-06-01T00:00:00.000Z',
-        lastCheckinDate: '2024-06-02T00:00:00.000Z',
-      }),
+      overview: makeOverview(),
+      overviewStats: null,
       bodyTests: [],
       injuries: [],
       medications: [],
@@ -234,12 +233,11 @@ describe('MemberDetailScreen', () => {
 
     // Overview tab is active by default
     expect(getByTestId('member-detail-tab-overview')).toBeTruthy();
-    expect(getByTestId('overview-joined-at')).toBeTruthy();
-    expect(getByTestId('overview-last-body-test')).toBeTruthy();
-    expect(getByTestId('overview-last-checkin')).toBeTruthy();
     // Quick-link cards are present
     expect(getByTestId('overview-link-bodytests')).toBeTruthy();
     expect(getByTestId('overview-link-health')).toBeTruthy();
+    // KPI strip renders sessions cell even when overviewStats is null
+    expect(getByTestId('kpi-sessions')).toBeTruthy();
   });
 
   it('switches to Body Tests tab on press', () => {
@@ -247,6 +245,7 @@ describe('MemberDetailScreen', () => {
     const member = makeMember();
     const detail: DetailSlice = {
       overview: makeOverview(),
+      overviewStats: null,
       bodyTests: [],
       injuries: [],
       medications: [],
@@ -264,6 +263,7 @@ describe('MemberDetailScreen', () => {
     const member = makeMember();
     const detail: DetailSlice = {
       overview: makeOverview(),
+      overviewStats: null,
       bodyTests: [],
       injuries: [],
       medications: [],
@@ -285,37 +285,22 @@ describe('MemberDetailScreen', () => {
 // ── MemberOverviewTab ─────────────────────────────────────────────────────────
 
 describe('MemberOverviewTab', () => {
-  it('renders joinedAt, lastBodyTestDate, lastCheckinDate', () => {
-    const overview = makeOverview({
-      joinedAt: '2024-01-15T00:00:00.000Z',
-      lastBodyTestDate: '2024-06-01T00:00:00.000Z',
-      lastCheckinDate: '2024-06-02T00:00:00.000Z',
-    });
-
+  it('renders KPI strip with sessions, quick-link cards', () => {
     const { getByTestId } = render(
-      <MemberOverviewTab overview={overview} onNavigateToTab={jest.fn()} />,
+      <MemberOverviewTab overviewStats={null} onNavigateToTab={jest.fn()} />,
     );
 
-    expect(getByTestId('overview-joined-at')).toBeTruthy();
-    expect(getByTestId('overview-last-body-test')).toBeTruthy();
-    expect(getByTestId('overview-last-checkin')).toBeTruthy();
+    expect(getByTestId('kpi-sessions')).toBeTruthy();
     expect(getByTestId('overview-link-bodytests')).toBeTruthy();
     expect(getByTestId('overview-link-health')).toBeTruthy();
   });
 
-  it('shows "Never" for null dates', () => {
-    const overview = makeOverview({
-      joinedAt: null,
-      lastBodyTestDate: null,
-      lastCheckinDate: null,
-    });
-
-    const { getAllByText } = render(
-      <MemberOverviewTab overview={overview} onNavigateToTab={jest.fn()} />,
+  it('shows "No plan assigned" when activePlan is null', () => {
+    const { getByTestId } = render(
+      <MemberOverviewTab overviewStats={null} onNavigateToTab={jest.fn()} />,
     );
 
-    const neverElements = getAllByText('Never');
-    expect(neverElements.length).toBeGreaterThanOrEqual(2);
+    expect(getByTestId('active-plan-empty')).toBeTruthy();
   });
 });
 

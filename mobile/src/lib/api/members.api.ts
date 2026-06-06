@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { Member, MemberOverview } from '../../types/members';
+import { Member, MemberOverview, MemberOverviewStats } from '../../types/members';
 import { BodyTest } from '../../types/body-tests';
 import { Injury, Medication } from '../../types/health';
 import { CheckIn } from '../../types/check-ins';
@@ -31,5 +31,10 @@ export async function fetchMemberMedications(id: string): Promise<Medication[]> 
 
 export async function fetchMemberCheckIns(id: string): Promise<CheckIn[]> {
   const response = await apiClient.get<CheckIn[]>(`/check-ins/members/${id}`);
+  return response.data;
+}
+
+export async function fetchMemberOverviewStats(id: string): Promise<MemberOverviewStats> {
+  const response = await apiClient.get<MemberOverviewStats>(`/members/${id}/overview-stats`);
   return response.data;
 }
