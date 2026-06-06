@@ -363,7 +363,16 @@ Add `mobile/src/lib/training/elapsed.ts` (`formatElapsed(startedAtISO, now)` →
 2. Implement timer, RpeSheet, add/delete UI + store actions → Green
 3. Write Detox spec, run against simulator → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 7 Checkpoint
+- [x] `elapsed.ts` + unit tests
+- [x] `trainingStore > finishWorkout(rpe)` + `addSet` + `deleteSet` actions + unit tests
+- [x] `training.api.ts` — `finishSession(rpe)`, `addSet`, `deleteSet`
+- [x] `types/training.ts` — `FinishSessionInput`, `AddSetInput`, `DeleteSetInput`
+- [x] `RpeSheet` component + unit tests
+- [x] `WorkoutSessionScreen` — elapsed timer, Add Set button, delete extra sets, RPE sheet
+- [x] Detox E2E spec (`e2e/member/workout-session.spec.ts`)
 
 ---
 

@@ -5,6 +5,8 @@ jest.mock('../lib/api/training.api', () => ({
   finishSession: jest.fn(),
   assignPlan: jest.fn(),
   fetchMemberHistory: jest.fn(),
+  addSet: jest.fn(),
+  deleteSet: jest.fn(),
 }));
 
 import * as trainingApi from '../lib/api/training.api';
@@ -15,6 +17,8 @@ const mockFetchMyPlan = trainingApi.fetchMyPlan as jest.MockedFunction<typeof tr
 const mockStartSession = trainingApi.startSession as jest.MockedFunction<typeof trainingApi.startSession>;
 const mockPatchSet = trainingApi.patchSet as jest.MockedFunction<typeof trainingApi.patchSet>;
 const mockFinishSession = trainingApi.finishSession as jest.MockedFunction<typeof trainingApi.finishSession>;
+const mockAddSet = trainingApi.addSet as jest.MockedFunction<typeof trainingApi.addSet>;
+const mockDeleteSet = trainingApi.deleteSet as jest.MockedFunction<typeof trainingApi.deleteSet>;
 
 const MOCK_PLAN: ActivePlan = {
   _id: 'plan1',
@@ -249,7 +253,102 @@ describe('useTrainingStore', () => {
       expect(state.error).toBeNull();
     });
   });
+
+  describe('finishWorkout with rpe', () => {
+    it('calls finishSession with the provided rpe and clears activeSession', async () => {
+      const session = makeSession();
+      useTrainingStore.setState({ activeSession: session });
+
+      const finished: WorkoutSession = { ...session, completedAt: '2024-01-02T10:30:00.000Z' };
+      mockFinishSession.mockResolvedValueOnce(finished);
+
+      await useTrainingStore.getState().finishWorkout(8);
+
+      expect(mockFinishSession).toHaveBeenCalledWith(session._id, 8);
+      const state = useTrainingStore.getState();
+      expect(state.activeSession).toBeNull();
+    });
+
+    it('calls finishSession without rpe when none provided', async () => {
+      const session = makeSession();
+      useTrainingStore.setState({ activeSession: session });
+
+      const finished: WorkoutSession = { ...session, completedAt: '2024-01-02T10:30:00.000Z' };
+      mockFinishSession.mockResolvedValueOnce(finished);
+
+      await useTrainingStore.getState().finishWorkout();
+
+      expect(mockFinishSession).toHaveBeenCalledWith(session._id, undefined);
+      const state = useTrainingStore.getState();
+      expect(state.activeSession).toBeNull();
+    });
+  });
+
+  describe('addSet', () => {
+    it('appends the returned session new set to activeSession', async () => {
+      const session = makeSession();
+      useTrainingStore.setState({ activeSession: session });
+
+      const extraSet = {
+        exerciseId: 'ex1',
+        exerciseName: 'Bench Press',
+        groupId: 'g1',
+        isSuperset: false,
+        isBodyweight: false,
+        setNumber: 3,
+        prescribedRepsMin: 8,
+        prescribedRepsMax: 12,
+        isExtraSet: true,
+        actualWeight: null,
+        actualReps: null,
+        completedAt: null,
+      };
+      const updatedSession: WorkoutSession = { ...session, sets: [...session.sets, extraSet] };
+      mockAddSet.mockResolvedValueOnce(updatedSession);
+
+      await useTrainingStore.getState().addSet(session._id, 'ex1');
+
+      const state = useTrainingStore.getState();
+      expect(state.activeSession?.sets).toHaveLength(3);
+      expect(state.activeSession?.sets[2].isExtraSet).toBe(true);
+    });
+  });
+
+  describe('deleteSet', () => {
+    it('removes the set from activeSession on success', async () => {
+      const session = makeSession({
+        sets: [
+          ...makeSession().sets,
+          {
+            exerciseId: 'ex1',
+            exerciseName: 'Bench Press',
+            groupId: 'g1',
+            isSuperset: false,
+            isBodyweight: false,
+            setNumber: 3,
+            prescribedRepsMin: 8,
+            prescribedRepsMax: 12,
+            isExtraSet: true,
+            actualWeight: null,
+            actualReps: null,
+            completedAt: null,
+          },
+        ],
+      });
+      useTrainingStore.setState({ activeSession: session });
+
+      const updatedSession: WorkoutSession = { ...session, sets: session.sets.slice(0, 2) };
+      mockDeleteSet.mockResolvedValueOnce(updatedSession);
+
+      await useTrainingStore.getState().deleteSet(session._id, 'ex1', 3);
+
+      const state = useTrainingStore.getState();
+      expect(state.activeSession?.sets).toHaveLength(2);
+    });
+  });
 });
 
 // Silence unused mock warnings
 void mockFetchMyPlan;
+void mockAddSet;
+void mockDeleteSet;

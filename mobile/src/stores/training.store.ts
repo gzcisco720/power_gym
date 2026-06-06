@@ -8,6 +8,8 @@ import {
   startMemberSession as apiStartMemberSession,
   patchMemberSet as apiPatchMemberSet,
   finishMemberSession as apiFinishMemberSession,
+  addSet as apiAddSet,
+  deleteSet as apiDeleteSet,
 } from '../lib/api/training.api';
 import { ActivePlan, WorkoutSession, PatchSetInput } from '../types/training';
 
@@ -21,8 +23,10 @@ interface TrainingState {
   fetchPlan(): Promise<void>;
   startWorkout(dayNumber: number): Promise<WorkoutSession>;
   logSet(input: PatchSetInput): Promise<void>;
-  finishWorkout(): Promise<void>;
+  finishWorkout(rpe?: number): Promise<void>;
   loggedSetCount(): number;
+  addSet(sessionId: string, exerciseId: string): Promise<void>;
+  deleteSet(sessionId: string, exerciseId: string, setNumber: number): Promise<void>;
   fetchMemberPlan(memberId: string): Promise<ActivePlan | null>;
   startMemberSession(memberId: string, dayNumber: number): Promise<WorkoutSession>;
   patchMemberSet(memberId: string, input: PatchSetInput): Promise<void>;
@@ -60,10 +64,10 @@ export const useTrainingStore = create<TrainingState>((set, get) => ({
     set({ activeSession: updated });
   },
 
-  async finishWorkout(): Promise<void> {
+  async finishWorkout(rpe?: number): Promise<void> {
     const { activeSession } = get();
     if (!activeSession) return;
-    await apiFinishSession(activeSession._id);
+    await apiFinishSession(activeSession._id, rpe);
     set({ activeSession: null, error: null });
   },
 
@@ -71,6 +75,16 @@ export const useTrainingStore = create<TrainingState>((set, get) => ({
     const { activeSession } = get();
     if (!activeSession) return 0;
     return activeSession.sets.filter((s) => s.completedAt !== null).length;
+  },
+
+  async addSet(sessionId: string, exerciseId: string): Promise<void> {
+    const updated = await apiAddSet(sessionId, exerciseId);
+    set({ activeSession: updated });
+  },
+
+  async deleteSet(sessionId: string, exerciseId: string, setNumber: number): Promise<void> {
+    const updated = await apiDeleteSet(sessionId, exerciseId, setNumber);
+    set({ activeSession: updated });
   },
 
   async fetchMemberPlan(memberId: string): Promise<ActivePlan | null> {

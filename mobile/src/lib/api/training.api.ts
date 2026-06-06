@@ -16,8 +16,31 @@ export async function patchSet(sessionId: string, input: PatchSetInput): Promise
   return response.data;
 }
 
-export async function finishSession(sessionId: string): Promise<WorkoutSession> {
-  const response = await apiClient.post<WorkoutSession>(`/training/sessions/${sessionId}/finish`, {});
+export async function finishSession(sessionId: string, rpe?: number): Promise<WorkoutSession> {
+  const response = await apiClient.post<WorkoutSession>(
+    `/training/sessions/${sessionId}/finish`,
+    rpe !== undefined ? { rpe } : {},
+  );
+  return response.data;
+}
+
+export async function addSet(sessionId: string, exerciseId: string): Promise<WorkoutSession> {
+  const response = await apiClient.post<WorkoutSession>(
+    `/training/sessions/${sessionId}/sets/add`,
+    { exerciseId },
+  );
+  return response.data;
+}
+
+export async function deleteSet(
+  sessionId: string,
+  exerciseId: string,
+  setNumber: number,
+): Promise<WorkoutSession> {
+  const response = await apiClient.delete<WorkoutSession>(
+    `/training/sessions/${sessionId}/sets`,
+    { data: { exerciseId, setNumber } },
+  );
   return response.data;
 }
 

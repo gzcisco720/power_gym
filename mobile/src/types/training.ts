@@ -73,6 +73,22 @@ export interface AssignPlanInput {
   templateId: string;
 }
 
+// POST /training/sessions/:id/finish — optional RPE 1–10
+export interface FinishSessionInput {
+  rpe?: number;
+}
+
+// POST /training/sessions/:id/sets/add
+export interface AddSetInput {
+  exerciseId: string;
+}
+
+// DELETE /training/sessions/:id/sets
+export interface DeleteSetInput {
+  exerciseId: string;
+  setNumber: number;
+}
+
 // GET /training/self/sessions — one item per completed personal-training session.
 export interface SelfSessionSummary {
   _id: string;

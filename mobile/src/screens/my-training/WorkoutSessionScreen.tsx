@@ -1,13 +1,16 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { View, Text, ScrollView, TextInput, Pressable } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useReducedMotion } from 'react-native-reanimated';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { useTrainingStore } from '../../stores/training.store';
 import { AppStackParamList } from '../../navigation/index';
 import { SessionSet, PatchSetInput } from '../../types/training';
+import { formatElapsed } from '../../lib/training/elapsed';
+import { RpeSheet } from './components/RpeSheet';
 
 type SessionRouteProp = RouteProp<AppStackParamList, 'WorkoutSession'>;
 type Nav = NativeStackNavigationProp<AppStackParamList>;
@@ -17,15 +20,15 @@ interface SetInputState {
   weight: string;
 }
 
-// Group sets by exerciseName preserving order
-function groupSets(sets: SessionSet[]): { exerciseName: string; sets: SessionSet[] }[] {
-  const seen = new Map<string, { exerciseName: string; sets: SessionSet[] }>();
+// Group sets by exerciseId preserving insertion order
+function groupSets(sets: SessionSet[]): { exerciseId: string; exerciseName: string; sets: SessionSet[] }[] {
+  const seen = new Map<string, { exerciseId: string; exerciseName: string; sets: SessionSet[] }>();
   for (const s of sets) {
     const existing = seen.get(s.exerciseId);
     if (existing) {
       existing.sets.push(s);
     } else {
-      seen.set(s.exerciseId, { exerciseName: s.exerciseName, sets: [s] });
+      seen.set(s.exerciseId, { exerciseId: s.exerciseId, exerciseName: s.exerciseName, sets: [s] });
     }
   }
   return Array.from(seen.values());
@@ -35,15 +38,41 @@ export function WorkoutSessionScreen() {
   const navigation = useNavigation<Nav>();
   const route = useRoute<SessionRouteProp>();
   const insets = useSafeAreaInsets();
+  const reducedMotion = useReducedMotion();
 
   const logSet = useTrainingStore((s) => s.logSet);
   const finishWorkout = useTrainingStore((s) => s.finishWorkout);
+  const addSet = useTrainingStore((s) => s.addSet);
+  const deleteSet = useTrainingStore((s) => s.deleteSet);
   const activeSession = useTrainingStore((s) => s.activeSession);
 
   // Use activeSession from store (kept in sync by logSet), fall back to route param for initial render
   const session = activeSession ?? route.params?.session;
 
   const [inputs, setInputs] = useState<Record<string, SetInputState>>({});
+  const [rpeSheetVisible, setRpeSheetVisible] = useState(false);
+
+  // Elapsed timer
+  const [elapsed, setElapsed] = useState('00:00');
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (!session?.startedAt) return;
+
+    const tick = () => setElapsed(formatElapsed(session.startedAt, new Date()));
+
+    tick();
+
+    if (!reducedMotion) {
+      intervalRef.current = setInterval(tick, 1000);
+    }
+
+    return () => {
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [session?.startedAt, reducedMotion]);
 
   function getInput(exerciseId: string, setNumber: number): SetInputState {
     const key = `${exerciseId}-${setNumber}`;
@@ -70,10 +99,38 @@ export function WorkoutSessionScreen() {
     [logSet, inputs],
   );
 
-  const handleFinish = useCallback(async () => {
-    await finishWorkout();
-    navigation.goBack();
-  }, [finishWorkout, navigation]);
+  const handleAddSet = useCallback(
+    async (exerciseId: string) => {
+      if (!session) return;
+      await addSet(session._id, exerciseId);
+    },
+    [addSet, session],
+  );
+
+  const handleDeleteSet = useCallback(
+    async (exerciseId: string, setNumber: number) => {
+      if (!session) return;
+      await deleteSet(session._id, exerciseId, setNumber);
+    },
+    [deleteSet, session],
+  );
+
+  const handleFinishPress = useCallback(() => {
+    setRpeSheetVisible(true);
+  }, []);
+
+  const handleRpeConfirm = useCallback(
+    async (rpe: number) => {
+      setRpeSheetVisible(false);
+      await finishWorkout(rpe);
+      navigation.goBack();
+    },
+    [finishWorkout, navigation],
+  );
+
+  const handleRpeDismiss = useCallback(() => {
+    setRpeSheetVisible(false);
+  }, []);
 
   if (!session) {
     return (
@@ -90,12 +147,20 @@ export function WorkoutSessionScreen() {
 
   return (
     <Screen testID="screen-WorkoutSession">
-      <ScreenHeader title={session.dayName} onBack={() => navigation.goBack()} />
+      <ScreenHeader
+        title={session.dayName}
+        onBack={() => navigation.goBack()}
+        right={
+          <Text testID="elapsed-timer" className="text-xs text-foreground/65 tabular-nums">
+            {elapsed}
+          </Text>
+        }
+      />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="px-4 py-4 gap-6">
           {groups.map((group) => (
-            <View key={group.sets[0].exerciseId} className="gap-2">
+            <View key={group.exerciseId} className="gap-2">
               <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
                 {group.exerciseName}
               </Text>
@@ -172,10 +237,34 @@ export function WorkoutSessionScreen() {
                           <Text className="text-xs font-semibold text-foreground">Log</Text>
                         </Pressable>
                       )}
+
+                      {/* Delete button for extra sets */}
+                      {set.isExtraSet ? (
+                        <Pressable
+                          testID={`delete-set-${set.exerciseId}-${set.setNumber}`}
+                          onPress={() => void handleDeleteSet(set.exerciseId, set.setNumber)}
+                          accessibilityLabel={`Delete extra set ${set.setNumber}`}
+                          accessibilityRole="button"
+                          className="w-7 h-7 items-center justify-center"
+                        >
+                          <Text className="text-destructive text-sm font-semibold">×</Text>
+                        </Pressable>
+                      ) : null}
                     </View>
                   </View>
                 );
               })}
+
+              {/* Add Set button per exercise group */}
+              <Pressable
+                testID={`add-set-${group.exerciseId}`}
+                onPress={() => void handleAddSet(group.exerciseId)}
+                accessibilityLabel={`Add set for ${group.exerciseName}`}
+                accessibilityRole="button"
+                className="rounded-lg border border-foreground/10 items-center py-1.5"
+              >
+                <Text className="text-xs text-foreground/65">+ Add Set</Text>
+              </Pressable>
             </View>
           ))}
         </View>
@@ -188,7 +277,7 @@ export function WorkoutSessionScreen() {
       >
         <Pressable
           testID="finish-workout-button"
-          onPress={() => void handleFinish()}
+          onPress={handleFinishPress}
           accessibilityLabel="Finish workout"
           accessibilityRole="button"
           className="rounded-xl bg-primary items-center py-3"
@@ -196,6 +285,12 @@ export function WorkoutSessionScreen() {
           <Text className="text-sm font-semibold text-foreground">Finish Workout</Text>
         </Pressable>
       </View>
+
+      <RpeSheet
+        visible={rpeSheetVisible}
+        onConfirm={(rpe) => void handleRpeConfirm(rpe)}
+        onDismiss={handleRpeDismiss}
+      />
     </Screen>
   );
 }

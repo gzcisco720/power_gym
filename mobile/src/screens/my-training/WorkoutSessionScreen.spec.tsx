@@ -1,5 +1,5 @@
 /**
- * Stage 3 unit tests — WorkoutSessionScreen
+ * Stage 3 + Stage 7 unit tests — WorkoutSessionScreen
  */
 
 import React from 'react';
@@ -20,6 +20,8 @@ jest.mock('@react-navigation/native', () => ({
 
 const mockLogSet = jest.fn();
 const mockFinishWorkout = jest.fn();
+const mockAddSet = jest.fn();
+const mockDeleteSet = jest.fn();
 
 jest.mock('../../stores/training.store', () => ({
   useTrainingStore: jest.fn(),
@@ -80,6 +82,8 @@ function setupStore(session: WorkoutSession) {
     startWorkout: jest.fn(),
     logSet: mockLogSet,
     finishWorkout: mockFinishWorkout,
+    addSet: mockAddSet,
+    deleteSet: mockDeleteSet,
     loggedSetCount: jest.fn().mockReturnValue(0),
   };
 
@@ -103,6 +107,8 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockLogSet.mockResolvedValue(undefined);
   mockFinishWorkout.mockResolvedValue(undefined);
+  mockAddSet.mockResolvedValue(undefined);
+  mockDeleteSet.mockResolvedValue(undefined);
 });
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -158,7 +164,7 @@ describe('WorkoutSessionScreen', () => {
     });
   });
 
-  it('tapping finish-workout-button calls finishWorkout and navigates back', async () => {
+  it('tapping finish-workout-button opens the RPE sheet', async () => {
     const session = makeSession();
     setupStore(session);
     setupRoute(session);
@@ -169,7 +175,79 @@ describe('WorkoutSessionScreen', () => {
       fireEvent.press(getByTestId('finish-workout-button'));
     });
 
-    expect(mockFinishWorkout).toHaveBeenCalled();
+    expect(getByTestId('rpe-sheet')).toBeTruthy();
+    // finishWorkout not called yet — user must confirm RPE first
+    expect(mockFinishWorkout).not.toHaveBeenCalled();
+  });
+
+  it('confirming RPE calls finishWorkout with the selected rpe and navigates back', async () => {
+    const session = makeSession();
+    setupStore(session);
+    setupRoute(session);
+
+    const { getByTestId } = render(<WorkoutSessionScreen />);
+
+    await act(async () => {
+      fireEvent.press(getByTestId('finish-workout-button'));
+    });
+
+    fireEvent.press(getByTestId('rpe-button-8'));
+
+    await act(async () => {
+      fireEvent.press(getByTestId('rpe-confirm-button'));
+    });
+
+    expect(mockFinishWorkout).toHaveBeenCalledWith(8);
     expect(mockGoBack).toHaveBeenCalled();
+  });
+
+  it('each exercise group shows an Add Set button that calls addSet', async () => {
+    const session = makeSession();
+    setupStore(session);
+    setupRoute(session);
+
+    const { getByTestId } = render(<WorkoutSessionScreen />);
+
+    expect(getByTestId('add-set-ex1')).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.press(getByTestId('add-set-ex1'));
+    });
+
+    expect(mockAddSet).toHaveBeenCalledWith(session._id, 'ex1');
+  });
+
+  it('extra set rows show a delete button that calls deleteSet', async () => {
+    const session = makeSession({
+      sets: [
+        makeSet({ exerciseId: 'ex1', setNumber: 1, isExtraSet: false }),
+        makeSet({ exerciseId: 'ex1', setNumber: 2, isExtraSet: true }),
+      ],
+    });
+    setupStore(session);
+    setupRoute(session);
+
+    const { getByTestId, queryByTestId } = render(<WorkoutSessionScreen />);
+
+    // prescribed set has no delete button
+    expect(queryByTestId('delete-set-ex1-1')).toBeNull();
+    // extra set has delete button
+    expect(getByTestId('delete-set-ex1-2')).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.press(getByTestId('delete-set-ex1-2'));
+    });
+
+    expect(mockDeleteSet).toHaveBeenCalledWith(session._id, 'ex1', 2);
+  });
+
+  it('shows the elapsed timer in the header', () => {
+    const session = makeSession();
+    setupStore(session);
+    setupRoute(session);
+
+    const { getByTestId } = render(<WorkoutSessionScreen />);
+
+    expect(getByTestId('elapsed-timer')).toBeTruthy();
   });
 });
