@@ -6,6 +6,16 @@ import { Screen } from '../../components/Screen';
 import { useCheckInsStore } from '../../stores/check-ins.store';
 import { CheckIn } from '../../types/check-ins';
 import { AppStackParamList } from '../../navigation/index';
+import { AchievementsSection } from './components/AchievementsSection';
+import { WellnessBreakdownSection } from './components/WellnessBreakdownSection';
+import { BodyMetricsSummarySection } from './components/BodyMetricsSummarySection';
+import { ProgressPhotosSection } from './components/ProgressPhotosSection';
+import { CompareCard } from './components/CompareCard';
+import {
+  computeCheckInStreakWeeks,
+  latestWithBodyMetrics,
+  latestPhotos,
+} from '../../lib/check-ins/wellness';
 
 type CheckInScreenNav = NativeStackNavigationProp<AppStackParamList, 'Drawer'>;
 
@@ -48,6 +58,12 @@ export function CheckInScreen() {
   const { items, loading, fetchCheckIns, hasCheckedInThisWeek } = useCheckInsStore();
   const submitted = hasCheckedInThisWeek();
   const latestCheckIn = items[0] ?? null;
+
+  // Derived data for the rich sections
+  const streakWeeks = computeCheckInStreakWeeks(items);
+  const bodyMetricsCheckIn = latestWithBodyMetrics(items);
+  const recentPhotos = latestPhotos(items, 6);
+  const compareCheckIn = items[1] ?? null;
 
   useEffect(() => {
     void fetchCheckIns();
@@ -105,6 +121,29 @@ export function CheckInScreen() {
               </Pressable>
             )}
           </View>
+
+          {/* Rich sections — only shown when data exists */}
+          {!loading && items.length > 0 && (
+            <>
+              <AchievementsSection streakWeeks={streakWeeks} />
+
+              {latestCheckIn && (
+                <WellnessBreakdownSection checkIn={latestCheckIn} />
+              )}
+
+              {bodyMetricsCheckIn && (
+                <BodyMetricsSummarySection checkIn={bodyMetricsCheckIn} />
+              )}
+
+              {recentPhotos.length > 0 && (
+                <ProgressPhotosSection photos={recentPhotos} />
+              )}
+
+              {latestCheckIn && compareCheckIn && (
+                <CompareCard current={latestCheckIn} previous={compareCheckIn} />
+              )}
+            </>
+          )}
 
           {/* History section */}
           <View className="gap-2">

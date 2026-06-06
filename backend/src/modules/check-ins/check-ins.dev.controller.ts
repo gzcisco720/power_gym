@@ -7,7 +7,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { IsEmail, IsString } from 'class-validator';
 import { User, UserDocument } from '../../common/models/user.model';
 import { CheckIn, CheckInDocument } from '../../common/models/check-in.model';
@@ -47,7 +47,7 @@ export class CheckInsDevController {
       throw new NotFoundException(`Member not found: ${dto.memberEmail}`);
     }
 
-    const memberId = member._id as Types.ObjectId;
+    const memberId = member._id;
     // Use a fake trainer id (the member themselves, or any ObjectId)
     const trainerId = memberId;
 

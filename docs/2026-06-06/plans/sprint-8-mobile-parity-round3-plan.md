@@ -260,7 +260,7 @@ Add `mobile/src/lib/check-ins/wellness.ts` with pure helpers: `computeCheckInStr
 2. Implement helpers + section components, wire into CheckInScreen → Green
 3. Write Detox spec, run against simulator → passes
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 4 Checkpoint
 - [x] wellness.ts helpers
