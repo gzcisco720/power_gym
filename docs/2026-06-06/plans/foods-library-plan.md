@@ -195,15 +195,15 @@ cross-app: `backend/` (PATCH + DELETE endpoints) and `mobile/` (data layer, scre
 **Sprint Contract**:
 
 *E2E (`e2e/owner/foods.spec.ts`):*
-- [ ] Owner: open drawer → tap `drawer-item-Foods` → `foods-add-button` visible
-- [ ] Owner golden path: tap `foods-add-button` → fill name + four macros → tap `food-save-button` → the new food name is visible in the Foods list
-- [ ] Owner edit: tap the created food card → change name → `food-save-button` → returns to list showing the edited name
-- [ ] Owner delete: tap `food-delete-<id>` → `food-delete-confirm` → the food name is no longer visible
-- [ ] Owner empty/error case: with an empty name, `food-save-button` is disabled (no food created) — OR searching a no-match query shows the empty state text
+- [x] Owner: open drawer → tap `drawer-item-Foods` → `foods-add-button` visible
+- [x] Owner golden path: tap `foods-add-button` → fill name + four macros → tap `food-save-button` → the new food name is visible in the Foods list
+- [x] Owner edit: tap the created food card → change name → `food-save-button` → returns to list showing the edited name
+- [x] Owner delete: tap `food-delete-<id>` → `food-delete-confirm` → the food name is no longer visible
+- [x] Owner empty/error case: with an empty name, `food-save-button` is disabled (no food created) — OR searching a no-match query shows the empty state text
 
 *E2E (`e2e/trainer/foods.spec.ts`):*
-- [ ] Trainer: open drawer → `drawer-item-Foods` visible and tappable
-- [ ] Trainer golden path: add a food → edit its name → delete it, with each state change asserted visible/not-visible
+- [x] Trainer: open drawer → `drawer-item-Foods` visible and tappable
+- [x] Trainer golden path: add a food → edit its name → delete it, with each state change asserted visible/not-visible
 
 **TDD sequence**:
 1. Write owner spec; run `cd mobile && pnpm detox:build` then `pnpm detox:test --testPathPattern=owner/foods` against the running backend → pass
@@ -211,7 +211,11 @@ cross-app: `backend/` (PATCH + DELETE endpoints) and `mobile/` (data layer, scre
 
 **Dependencies**: Stages 1–3.
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 4 Checkpoint
+- [x] e2e/owner/foods.spec.ts
+- [x] e2e/trainer/foods.spec.ts
 
 ---
 
