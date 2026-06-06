@@ -138,6 +138,98 @@ describe('CheckInsService', () => {
     });
   });
 
+  describe('findByMemberScoped', () => {
+    it('returns member check-ins sorted by submittedAt desc when owner requests', async () => {
+      const fakeItems = [{ _id: 'a' }, { _id: 'b' }];
+      const sortMock = jest.fn().mockResolvedValue(fakeItems);
+      checkInModel.find.mockReturnValue({ sort: sortMock });
+      userModel.findById.mockResolvedValue({
+        _id: new Types.ObjectId(MEMBER_ID),
+        role: 'member',
+        trainerId: new Types.ObjectId(TRAINER_ID),
+      });
+
+      const result = await service.findByMemberScoped(
+        MEMBER_ID,
+        new Types.ObjectId().toString(),
+        'owner',
+      );
+
+      expect(checkInModel.find).toHaveBeenCalledWith({
+        memberId: new Types.ObjectId(MEMBER_ID),
+      });
+      expect(sortMock).toHaveBeenCalledWith({ submittedAt: -1 });
+      expect(result).toEqual(fakeItems);
+    });
+
+    it('throws NotFoundException when trainer requests a member not assigned to them', async () => {
+      const differentTrainerId = new Types.ObjectId().toString();
+      userModel.findById.mockResolvedValue({
+        _id: new Types.ObjectId(MEMBER_ID),
+        role: 'member',
+        trainerId: new Types.ObjectId(TRAINER_ID),
+      });
+
+      await expect(
+        service.findByMemberScoped(MEMBER_ID, differentTrainerId, 'trainer'),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('findOneByMemberScoped', () => {
+    it('returns the check-in when it belongs to the scoped member', async () => {
+      const checkInId = new Types.ObjectId().toString();
+      const memberObjId = new Types.ObjectId(MEMBER_ID);
+      const fakeCheckIn = {
+        _id: new Types.ObjectId(checkInId),
+        memberId: memberObjId,
+      };
+      userModel.findById.mockResolvedValue({
+        _id: memberObjId,
+        role: 'member',
+        trainerId: new Types.ObjectId(TRAINER_ID),
+      });
+      checkInModel.findOne.mockResolvedValue(fakeCheckIn);
+
+      const result = await service.findOneByMemberScoped(
+        MEMBER_ID,
+        checkInId,
+        new Types.ObjectId().toString(),
+        'owner',
+      );
+
+      expect(checkInModel.findOne).toHaveBeenCalledWith({
+        _id: new Types.ObjectId(checkInId),
+      });
+      expect(result).toEqual(fakeCheckIn);
+    });
+
+    it("throws NotFoundException when the check-in's memberId does not match the path memberId", async () => {
+      const checkInId = new Types.ObjectId().toString();
+      const otherMemberId = new Types.ObjectId();
+      const memberObjId = new Types.ObjectId(MEMBER_ID);
+      const fakeCheckIn = {
+        _id: new Types.ObjectId(checkInId),
+        memberId: otherMemberId,
+      };
+      userModel.findById.mockResolvedValue({
+        _id: memberObjId,
+        role: 'member',
+        trainerId: new Types.ObjectId(TRAINER_ID),
+      });
+      checkInModel.findOne.mockResolvedValue(fakeCheckIn);
+
+      await expect(
+        service.findOneByMemberScoped(
+          MEMBER_ID,
+          checkInId,
+          new Types.ObjectId().toString(),
+          'owner',
+        ),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
   describe('getUploadSignature', () => {
     it('returns config with folder "check-ins"', () => {
       const result = service.getUploadSignature();

@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { Model, Types } from 'mongoose';
 import * as crypto from 'crypto';
 import { CheckIn, CheckInDocument } from '../../common/models/check-in.model';
-import { User, UserDocument } from '../../common/models/user.model';
+import { User, UserDocument, UserRole } from '../../common/models/user.model';
 import { CreateCheckInDto } from './dto/create-check-in.dto';
 
 type CloudinaryUploadConfig = {
@@ -87,6 +87,58 @@ export class CheckInsService {
       trainerId,
       submittedAt: new Date(),
     });
+  }
+
+  async findByMemberScoped(
+    memberId: string,
+    requesterId: string,
+    requesterRole: UserRole,
+  ): Promise<CheckInDocument[]> {
+    await this.resolveAndScopeMember(memberId, requesterId, requesterRole);
+
+    return this.checkInModel
+      .find({ memberId: new Types.ObjectId(memberId) })
+      .sort({ submittedAt: -1 });
+  }
+
+  async findOneByMemberScoped(
+    memberId: string,
+    checkInId: string,
+    requesterId: string,
+    requesterRole: UserRole,
+  ): Promise<CheckInDocument> {
+    await this.resolveAndScopeMember(memberId, requesterId, requesterRole);
+
+    const checkIn = await this.checkInModel.findOne({
+      _id: new Types.ObjectId(checkInId),
+    });
+
+    if (!checkIn || checkIn.memberId.toString() !== memberId) {
+      throw new NotFoundException('Check-in not found');
+    }
+
+    return checkIn;
+  }
+
+  private async resolveAndScopeMember(
+    memberId: string,
+    requesterId: string,
+    requesterRole: UserRole,
+  ): Promise<UserDocument> {
+    const member = await this.userModel.findById(memberId);
+
+    if (!member || member.role !== 'member') {
+      throw new NotFoundException('Member not found');
+    }
+
+    if (requesterRole === 'trainer') {
+      const assignedTrainerId = member.trainerId?.toString() ?? null;
+      if (assignedTrainerId !== requesterId) {
+        throw new NotFoundException('Member not found');
+      }
+    }
+
+    return member;
   }
 
   getUploadSignature(): UploadConfig {
