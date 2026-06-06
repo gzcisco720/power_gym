@@ -127,6 +127,10 @@ describe('Trainer: Member Detail — Overview tab', () => {
     // Quick-link buttons are present
     await detoxExpect(element(by.id('overview-link-bodytests'))).toBeVisible();
     await detoxExpect(element(by.id('overview-link-health'))).toBeVisible();
+
+    // Training heatmap: at least one cell is visible
+    await waitFor(element(by.id(/^heatmap-cell-/))).toBeVisible().withTimeout(5000);
+    await detoxExpect(element(by.id(/^heatmap-cell-/))).toBeVisible();
   });
 
   it('shows "No plan assigned" when the member has no active training plan', async () => {

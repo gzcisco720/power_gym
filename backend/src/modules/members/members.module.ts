@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MembersController } from './members.controller';
+import { MembersDevController } from './members.dev.controller';
 import { MembersService } from './members.service';
 import { User, UserSchema } from '../../common/models/user.model';
 import { BodyTest, BodyTestSchema } from '../../common/models/body-test.model';
@@ -26,6 +27,9 @@ import {
   MemberPlanSchema,
 } from '../../common/models/member-plan.model';
 
+const devControllers =
+  process.env.NODE_ENV !== 'production' ? [MembersDevController] : [];
+
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -39,7 +43,7 @@ import {
       { name: MemberPlan.name, schema: MemberPlanSchema },
     ]),
   ],
-  controllers: [MembersController],
+  controllers: [MembersController, ...devControllers],
   providers: [MembersService],
 })
 export class MembersModule {}
