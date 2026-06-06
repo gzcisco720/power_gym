@@ -13,12 +13,16 @@ import {
   fetchTodaySummary,
   assignNutritionPlan,
   fetchMemberNutritionHistory,
+  fetchSelfToday,
+  logSelfFood,
 } from './nutrition.api';
 import {
   ActiveNutritionPlan,
   NutritionDailyLog,
   MacroSummary,
   LogFoodInput,
+  SelfNutritionLog,
+  LogSelfFoodInput,
 } from '../../types/nutrition';
 
 const mockGet = apiClient.get as jest.MockedFunction<typeof apiClient.get>;
@@ -169,6 +173,46 @@ describe('nutrition.api', () => {
 
       expect(mockGet).toHaveBeenCalledWith('/nutrition/members/mem1/history');
       expect(result).toEqual(history);
+    });
+  });
+
+  describe('fetchSelfToday', () => {
+    it('GETs /nutrition/self/today and returns the self log', async () => {
+      const selfLog: SelfNutritionLog = {
+        date: '2026-06-06',
+        items: [],
+        totals: { kcal: 0, protein: 0, carbs: 0, fat: 0 },
+      };
+      mockGet.mockResolvedValueOnce({ data: selfLog });
+
+      const result = await fetchSelfToday();
+
+      expect(mockGet).toHaveBeenCalledWith('/nutrition/self/today');
+      expect(result).toEqual(selfLog);
+    });
+  });
+
+  describe('logSelfFood', () => {
+    it('POSTs /nutrition/self/today/items with the food payload and returns the updated log', async () => {
+      const input: LogSelfFoodInput = {
+        foodName: 'Oats',
+        quantityG: 80,
+        kcal: 300,
+        protein: 10,
+        carbs: 54,
+        fat: 6,
+      };
+      const updatedLog: SelfNutritionLog = {
+        date: '2026-06-06',
+        items: [{ foodName: 'Oats', quantityG: 80, kcal: 300, protein: 10, carbs: 54, fat: 6 }],
+        totals: { kcal: 300, protein: 10, carbs: 54, fat: 6 },
+      };
+      mockPost.mockResolvedValueOnce({ data: updatedLog });
+
+      const result = await logSelfFood(input);
+
+      expect(mockPost).toHaveBeenCalledWith('/nutrition/self/today/items', input);
+      expect(result).toEqual(updatedLog);
     });
   });
 });

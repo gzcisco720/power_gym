@@ -10,6 +10,7 @@ import { JourneyScreen } from '../screens/journey/JourneyScreen';
 import { MyTrainingScreen } from '../screens/my-training/MyTrainingScreen';
 import { MyNutritionScreen } from '../screens/my-nutrition/MyNutritionScreen';
 import { LogFoodScreen } from '../screens/my-nutrition/LogFoodScreen';
+import { FreeLogScreen } from '../screens/my-nutrition/FreeLogScreen';
 import { WorkoutSessionScreen } from '../screens/my-training/WorkoutSessionScreen';
 import { TrainerWorkoutSessionScreen } from '../screens/my-training/TrainerWorkoutSessionScreen';
 import { CalendarScreen } from '../screens/calendar/CalendarScreen';
@@ -73,6 +74,7 @@ export type AppStackParamList = {
   WorkoutSession: { session: WorkoutSession };
   TrainerWorkoutSession: { memberId: string; memberName: string };
   LogFood: { mealName: string };
+  FreeLog: undefined;
   FoodForm: { food?: Food };
   SelfSessionDetail: { sessionId: string };
 };
@@ -159,6 +161,7 @@ function AppNavigator() {
       <AppStack.Screen name="WorkoutSession" component={WorkoutSessionScreen} />
       <AppStack.Screen name="TrainerWorkoutSession" component={TrainerWorkoutSessionScreen} />
       <AppStack.Screen name="LogFood" component={LogFoodScreen} />
+      <AppStack.Screen name="FreeLog" component={FreeLogScreen} />
       <AppStack.Screen name="FoodForm" component={FoodFormScreen} />
       <AppStack.Screen name="SelfSessionDetail" component={SelfSessionDetailScreen} />
     </AppStack.Navigator>

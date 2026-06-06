@@ -323,23 +323,31 @@ Response shapes:
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `self-nutrition.store > fetchToday > populates the self log items and totals on success`
-- [ ] `self-nutrition.store > logFood > appends the logged item and updates totals`
-- [ ] `self-nutrition.store > logFood > sets error state on api failure`
-- [ ] `MyNutritionScreen > renders a "Log freely" CTA instead of only an empty state when no plan is assigned`
-- [ ] `MyNutritionScreen > renders a "Log freely" option alongside plan meals when a plan exists`
-- [ ] `FreeLogScreen > logging a selected food appends it to today's list and shows the new total`
+- [x] `self-nutrition.store > fetchToday > populates the self log items and totals on success`
+- [x] `self-nutrition.store > logFood > appends the logged item and updates totals`
+- [x] `self-nutrition.store > logFood > sets error state on api failure`
+- [x] `MyNutritionScreen > renders a "Log freely" CTA instead of only an empty state when no plan is assigned`
+- [x] `MyNutritionScreen > renders a "Log freely" option alongside plan meals when a plan exists`
+- [x] `FreeLogScreen > logging a selected food appends it to today's list and shows the new total`
 
 *Detox E2E (`mobile/e2e/member/free-nutrition-log.spec.ts`):*
-- [ ] A member with no plan opens My Nutrition, taps "Log freely", searches a food, sets a quantity, logs it → the item appears in today's free-log list with an updated calorie total
-- [ ] A member opens the free-log without selecting any food and attempts to log → a validation message appears (no item is added)
+- [x] A member with no plan opens My Nutrition, taps "Log freely", searches a food, sets a quantity, logs it → the item appears in today's free-log list with an updated calorie total
+- [x] A member opens the free-log without selecting any food and attempts to log → a validation message appears (no item is added)
 
 **TDD sequence**:
 1. Write failing api + store unit tests → implement `fetchSelfToday`/`logSelfFood` + store → Green
 2. Write failing MyNutritionScreen + FreeLogScreen tests → implement CTA/option + FreeLogScreen + register `FreeLog` route → Green
 3. `/simplify` → write Detox spec → run against simulator → passes
 
-**Status**: Not Started
+### Stage 5 Checkpoint
+- [x] `fetchSelfToday` / `logSelfFood` api functions + types
+- [x] `self-nutrition.store.ts` + unit tests
+- [x] `MyNutritionScreen.tsx` "Log freely" CTA + option
+- [x] `FreeLogScreen.tsx` + unit tests
+- [x] `FreeLog` route registered in `navigation/index.tsx`
+- [x] `mobile/e2e/member/free-nutrition-log.spec.ts` Detox spec
+
+**Status**: Complete
 
 ## Stage 6: Mobile — Dashboard nav wiring (Gap 4) + member body-test lockdown (Gap 5)
 

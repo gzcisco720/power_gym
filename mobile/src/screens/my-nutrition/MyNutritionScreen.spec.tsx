@@ -1,9 +1,9 @@
 /**
- * Stage 3 unit tests — MyNutritionScreen
+ * Stage 3 + Stage 5 unit tests — MyNutritionScreen
  */
 
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -159,5 +159,45 @@ describe('MyNutritionScreen', () => {
     expect(getByTestId('macro-summary')).toBeTruthy();
     expect(getByText('350')).toBeTruthy();
     expect(getByText('2000')).toBeTruthy();
+  });
+
+  it('renders a "Log freely" CTA instead of only an empty state when no plan is assigned', () => {
+    setupStore(null);
+
+    const { getByTestId } = render(<MyNutritionScreen />);
+
+    expect(getByTestId('log-freely-cta')).toBeTruthy();
+  });
+
+  it('tapping "Log freely" CTA navigates to FreeLog when no plan is assigned', () => {
+    setupStore(null);
+
+    const { getByTestId } = render(<MyNutritionScreen />);
+
+    fireEvent.press(getByTestId('log-freely-cta'));
+
+    expect(mockNavigate).toHaveBeenCalledWith('FreeLog');
+  });
+
+  it('renders a "Log freely" option alongside plan meals when a plan exists', () => {
+    const plan = makePlan();
+    const log = makeTodayLog();
+    setupStore(plan, log, makeSummary());
+
+    const { getByTestId } = render(<MyNutritionScreen />);
+
+    expect(getByTestId('log-freely-option')).toBeTruthy();
+  });
+
+  it('tapping "Log freely" option navigates to FreeLog when a plan exists', () => {
+    const plan = makePlan();
+    const log = makeTodayLog();
+    setupStore(plan, log, makeSummary());
+
+    const { getByTestId } = render(<MyNutritionScreen />);
+
+    fireEvent.press(getByTestId('log-freely-option'));
+
+    expect(mockNavigate).toHaveBeenCalledWith('FreeLog');
   });
 });

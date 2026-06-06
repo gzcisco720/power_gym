@@ -88,3 +88,30 @@ export interface LogFoodInput {
 export interface AssignNutritionPlanInput {
   templateId: string;
 }
+
+// Freestyle (plan-independent) self-nutrition log item
+export interface SelfNutritionItem {
+  foodName: string;
+  quantityG: number;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+// GET /nutrition/self/today response
+export interface SelfNutritionLog {
+  date: string; // YYYY-MM-DD
+  items: SelfNutritionItem[];
+  totals: MacroTotals;
+}
+
+// POST /nutrition/self/today/items body
+export interface LogSelfFoodInput {
+  foodName: string;
+  quantityG: number;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}

@@ -1,11 +1,17 @@
 import React, { useEffect } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
 import { useNutritionStore } from '../../stores/nutrition.store';
 import { MacroSummary } from './components/MacroSummary';
 import { MealCard } from './components/MealCard';
+import { AppStackParamList } from '../../navigation/index';
+
+type Nav = NativeStackNavigationProp<AppStackParamList>;
 
 export function MyNutritionScreen() {
+  const navigation = useNavigation<Nav>();
   const plan = useNutritionStore((s) => s.plan);
   const todayLog = useNutritionStore((s) => s.todayLog);
   const summary = useNutritionStore((s) => s.summary);
@@ -39,13 +45,24 @@ export function MyNutritionScreen() {
           </View>
         </ScrollView>
       ) : plan === null ? (
-        <View testID="my-nutrition-empty" className="flex-1 items-center justify-center px-4">
-          <Text className="text-[15px] font-semibold text-foreground text-center">
-            No nutrition plan assigned
-          </Text>
-          <Text className="text-[13px] text-foreground/65 text-center mt-1">
-            Ask your trainer to assign a nutrition plan.
-          </Text>
+        <View testID="my-nutrition-empty" className="flex-1 items-center justify-center px-4 gap-4">
+          <View className="items-center">
+            <Text className="text-[15px] font-semibold text-foreground text-center">
+              No nutrition plan assigned
+            </Text>
+            <Text className="text-[13px] text-foreground/65 text-center mt-1">
+              Ask your trainer to assign a nutrition plan.
+            </Text>
+          </View>
+          <Pressable
+            testID="log-freely-cta"
+            onPress={() => navigation.navigate('FreeLog')}
+            accessibilityLabel="Log food freely"
+            accessibilityRole="button"
+            className="rounded-xl bg-primary px-6 py-3 items-center"
+          >
+            <Text className="text-sm font-semibold text-foreground">Log freely</Text>
+          </Pressable>
         </View>
       ) : (
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -67,10 +84,24 @@ export function MyNutritionScreen() {
           ) : null}
 
           {/* Meal cards */}
-          <View className="px-4 pb-24 gap-2">
+          <View className="px-4 gap-2">
             {(todayLog?.meals ?? []).map((meal) => (
               <MealCard key={`${meal.name}-${meal.order}`} meal={meal} />
             ))}
+          </View>
+
+          {/* Log freely secondary option */}
+          <View className="px-4 pt-4 pb-24">
+            <Pressable
+              testID="log-freely-option"
+              onPress={() => navigation.navigate('FreeLog')}
+              accessibilityLabel="Log food freely"
+              accessibilityRole="button"
+              className="rounded-xl bg-muted ring-1 ring-foreground/10 px-4 py-3 flex-row items-center justify-between"
+            >
+              <Text className="text-sm font-medium text-foreground">Log freely</Text>
+              <Text className="text-sm text-foreground/65">→</Text>
+            </Pressable>
           </View>
         </ScrollView>
       )}
