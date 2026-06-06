@@ -230,7 +230,16 @@ Summary shape:
 3. Add the view switch to `MyTrainingScreen`; write failing screen unit test → Green
 4. Extend the Detox spec with the calendar flow; build + run against the simulator → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 4 Checkpoint
+- [x] `useSelfTrainingStore > fetchSessions` unit tests
+- [x] `useSelfTrainingStore > fetchSessions > sets error on reject` unit test
+- [x] `SelfWorkoutCalendar > marks a day` unit test
+- [x] `SelfWorkoutCalendar > advancing month re-derives marked days` unit test
+- [x] `SelfWorkoutCalendar > tapping marked day invokes onSelect` unit test
+- [x] `MyTrainingScreen > selecting Calendar view renders SelfWorkoutCalendar` unit test
+- [x] `mobile/e2e/trainer/self-training-history.spec.ts` Detox E2E spec (calendar portion)
 
 ---
 

@@ -72,3 +72,23 @@ export interface PatchSetInput {
 export interface AssignPlanInput {
   templateId: string;
 }
+
+// GET /training/self/sessions — one item per completed personal-training session.
+export interface SelfSessionSummary {
+  _id: string;
+  dayName: string;
+  startedAt: string; // ISO
+  completedAt: string; // ISO (always set — only completed sessions)
+  setCount: number;
+  rpe: number | null;
+}
+
+// GET /training/self/sessions/:id — full session detail.
+export interface SelfSessionDetail {
+  _id: string;
+  dayName: string;
+  startedAt: string; // ISO
+  completedAt: string; // ISO
+  sets: SessionSet[];
+  rpe: number | null;
+}

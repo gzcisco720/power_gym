@@ -37,6 +37,10 @@ import {
   MemberMedication,
   MemberMedicationDocument,
 } from '../../common/models/member-medication.model';
+import {
+  WorkoutSession,
+  WorkoutSessionDocument,
+} from '../../common/models/workout-session.model';
 
 class SeedUserRoleDto {
   @IsString()
@@ -61,6 +65,10 @@ class SeedUserRoleDto {
   @IsOptional()
   @IsBoolean()
   seedPhotos?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  seedSelfSessions?: boolean;
 }
 
 /**
@@ -85,6 +93,8 @@ export class AuthDevController {
     private readonly injuryModel: Model<MemberInjuryDocument>,
     @InjectModel(MemberMedication.name)
     private readonly medicationModel: Model<MemberMedicationDocument>,
+    @InjectModel(WorkoutSession.name)
+    private readonly workoutSessionModel: Model<WorkoutSessionDocument>,
   ) {}
 
   @HttpCode(200)
@@ -121,6 +131,10 @@ export class AuthDevController {
 
     if (dto.seedMembers) {
       await this.seedMembersData(dto.email, dto.role, dto.seedPhotos !== false);
+    }
+
+    if (dto.seedSelfSessions) {
+      await this.seedSelfSessionsData(dto.email);
     }
 
     return { ok: true };
@@ -285,6 +299,49 @@ export class AuthDevController {
       startDate: new Date(),
       endDate: null,
       status: 'active',
+    });
+  }
+
+  /**
+   * Seeds a completed personal-training self-session for the given owner/trainer.
+   * Uses a synthetic memberPlanId (the user's own id) to satisfy the required field.
+   */
+  private async seedSelfSessionsData(userEmail: string) {
+    const user = await this.userModel.findOne({ email: userEmail }).lean();
+    if (!user) return;
+
+    const userId = user._id;
+    const now = new Date();
+    const startedAt = new Date(now.getTime() - 60 * 60 * 1000); // 1 hour ago
+
+    await this.workoutSessionModel.create({
+      memberId: userId,
+      memberPlanId: userId, // synthetic — self-log has no real plan
+      dayNumber: 1,
+      dayName: 'Push Day',
+      startedAt,
+      completedAt: now,
+      lastActivityAt: now,
+      autoSealed: false,
+      sets: [
+        {
+          exerciseId: new Types.ObjectId(),
+          exerciseName: 'Bench Press',
+          groupId: 'g1',
+          isSuperset: false,
+          isBodyweight: false,
+          setNumber: 1,
+          prescribedRepsMin: 8,
+          prescribedRepsMax: 12,
+          isExtraSet: false,
+          actualWeight: 80,
+          actualReps: 10,
+          completedAt: now,
+        },
+      ],
+      loggedBy: userId,
+      rpe: 8,
+      memberNote: null,
     });
   }
 }

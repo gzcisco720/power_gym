@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { ActivePlan, WorkoutSession, PatchSetInput } from '../../types/training';
+import { ActivePlan, WorkoutSession, PatchSetInput, SelfSessionSummary, SelfSessionDetail } from '../../types/training';
 
 export async function fetchMyPlan(): Promise<ActivePlan | null> {
   const response = await apiClient.get<ActivePlan | null>('/training/my-plan');
@@ -48,5 +48,15 @@ export async function patchMemberSet(memberId: string, sessionId: string, input:
 
 export async function finishMemberSession(memberId: string, sessionId: string): Promise<WorkoutSession> {
   const response = await apiClient.post<WorkoutSession>(`/training/members/${memberId}/sessions/${sessionId}/finish`, {});
+  return response.data;
+}
+
+export async function fetchSelfSessions(): Promise<SelfSessionSummary[]> {
+  const response = await apiClient.get<SelfSessionSummary[]>('/training/self/sessions');
+  return response.data;
+}
+
+export async function fetchSelfSession(sessionId: string): Promise<SelfSessionDetail> {
+  const response = await apiClient.get<SelfSessionDetail>(`/training/self/sessions/${sessionId}`);
   return response.data;
 }

@@ -32,6 +32,10 @@ import {
   MemberMedication,
   MemberMedicationSchema,
 } from '../../common/models/member-medication.model';
+import {
+  WorkoutSession,
+  WorkoutSessionSchema,
+} from '../../common/models/workout-session.model';
 
 @Module({
   imports: [
@@ -55,6 +59,7 @@ import {
       { name: CheckIn.name, schema: CheckInSchema },
       { name: MemberInjury.name, schema: MemberInjurySchema },
       { name: MemberMedication.name, schema: MemberMedicationSchema },
+      { name: WorkoutSession.name, schema: WorkoutSessionSchema },
     ]),
     EmailModule,
   ],

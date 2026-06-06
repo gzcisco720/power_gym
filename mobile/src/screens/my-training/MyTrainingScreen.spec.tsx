@@ -1,5 +1,6 @@
 /**
- * Stage 3 unit tests — MyTrainingScreen
+ * Stage 3 unit tests — MyTrainingScreen (Plan view)
+ * Stage 4 unit tests — MyTrainingScreen (Calendar view switch)
  */
 
 import React from 'react';
@@ -24,13 +25,33 @@ jest.mock('../../stores/training.store', () => ({
   useTrainingStore: jest.fn(),
 }));
 
+const mockFetchSessions = jest.fn();
+
+jest.mock('../../stores/self-training.store', () => ({
+  useSelfTrainingStore: jest.fn(),
+}));
+
+// SelfWorkoutCalendar renders a simple placeholder for unit tests
+jest.mock('./SelfWorkoutCalendar', () => ({
+  SelfWorkoutCalendar: ({ sessions }: { sessions: unknown[] }) => {
+    const { View, Text } = require('react-native');
+    return (
+      <View testID="self-workout-calendar">
+        <Text>{sessions.length} sessions</Text>
+      </View>
+    );
+  },
+}));
+
 // ── Imports ───────────────────────────────────────────────────────────────────
 
 import { useTrainingStore } from '../../stores/training.store';
-import { ActivePlan, PlanDay, WorkoutSession } from '../../types/training';
+import { useSelfTrainingStore } from '../../stores/self-training.store';
+import { ActivePlan, PlanDay, WorkoutSession, SelfSessionSummary } from '../../types/training';
 import { MyTrainingScreen } from './MyTrainingScreen';
 
 const mockUseTrainingStore = useTrainingStore as jest.MockedFunction<typeof useTrainingStore>;
+const mockUseSelfTrainingStore = useSelfTrainingStore as jest.MockedFunction<typeof useSelfTrainingStore>;
 
 function makeDay(overrides: Partial<PlanDay> = {}): PlanDay {
   return {
@@ -79,7 +100,19 @@ function makeSession(overrides: Partial<WorkoutSession> = {}): WorkoutSession {
   };
 }
 
-function setupStore(plan: ActivePlan | null, loading = false) {
+function makeSelfSession(overrides: Partial<SelfSessionSummary> = {}): SelfSessionSummary {
+  return {
+    _id: 'self-sess1',
+    dayName: 'Push Day',
+    startedAt: '2026-06-01T10:00:00.000Z',
+    completedAt: '2026-06-01T11:00:00.000Z',
+    setCount: 9,
+    rpe: 8,
+    ...overrides,
+  };
+}
+
+function setupTrainingStore(plan: ActivePlan | null, loading = false) {
   const state = {
     plan,
     activeSession: null,
@@ -100,10 +133,30 @@ function setupStore(plan: ActivePlan | null, loading = false) {
   );
 }
 
+function setupSelfTrainingStore(sessions: SelfSessionSummary[] = [], loading = false) {
+  const state = {
+    sessions,
+    selectedSession: null,
+    loading,
+    error: null,
+    fetchSessions: mockFetchSessions,
+    fetchSession: jest.fn(),
+  };
+
+  mockUseSelfTrainingStore.mockImplementation(
+    (selector?: (s: typeof state) => unknown) => {
+      if (typeof selector === 'function') return selector(state);
+      return state;
+    },
+  );
+}
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockFetchPlan.mockResolvedValue(undefined);
+  mockFetchSessions.mockResolvedValue(undefined);
   mockStartWorkout.mockResolvedValue(makeSession());
+  setupSelfTrainingStore();
 });
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -111,7 +164,7 @@ beforeEach(() => {
 describe('MyTrainingScreen', () => {
   it('renders a workout-day-{n} card per plan day with the day name', () => {
     const plan = makePlan();
-    setupStore(plan);
+    setupTrainingStore(plan);
 
     const { getByTestId, getByText } = render(<MyTrainingScreen />);
 
@@ -123,7 +176,7 @@ describe('MyTrainingScreen', () => {
   });
 
   it('renders my-training-empty when the store plan is null', () => {
-    setupStore(null);
+    setupTrainingStore(null);
 
     const { getByTestId, queryByTestId } = render(<MyTrainingScreen />);
 
@@ -135,7 +188,7 @@ describe('MyTrainingScreen', () => {
     const plan = makePlan();
     const session = makeSession({ dayNumber: 1 });
     mockStartWorkout.mockResolvedValue(session);
-    setupStore(plan);
+    setupTrainingStore(plan);
 
     const { getByTestId } = render(<MyTrainingScreen />);
 
@@ -145,5 +198,18 @@ describe('MyTrainingScreen', () => {
 
     expect(mockStartWorkout).toHaveBeenCalledWith(1);
     expect(mockNavigate).toHaveBeenCalledWith('WorkoutSession', { session });
+  });
+
+  it('selecting the Calendar view renders the SelfWorkoutCalendar', () => {
+    setupTrainingStore(makePlan());
+    setupSelfTrainingStore([makeSelfSession()]);
+
+    const { getByTestId } = render(<MyTrainingScreen />);
+
+    // Tap the Calendar tab
+    fireEvent.press(getByTestId('view-tab-Calendar'));
+
+    // SelfWorkoutCalendar should be visible
+    expect(getByTestId('self-workout-calendar')).toBeTruthy();
   });
 });
