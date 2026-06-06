@@ -57,6 +57,11 @@ export async function fetchSelfSessions(): Promise<SelfSessionSummary[]> {
 }
 
 export async function fetchSelfSession(sessionId: string): Promise<SelfSessionDetail> {
-  const response = await apiClient.get<SelfSessionDetail>(`/training/self/sessions/${sessionId}`);
-  return response.data;
+  const response = await apiClient.get<SelfSessionDetail & { memberNote?: string | null }>(
+    `/training/self/sessions/${sessionId}`,
+  );
+  return {
+    ...response.data,
+    note: response.data.memberNote ?? null,
+  };
 }

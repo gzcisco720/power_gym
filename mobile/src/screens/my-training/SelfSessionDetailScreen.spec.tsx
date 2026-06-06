@@ -82,6 +82,7 @@ function makeDetail(overrides: Partial<SelfSessionDetail> = {}): SelfSessionDeta
       },
     ],
     rpe: 8,
+    note: null,
     ...overrides,
   };
 }
@@ -134,7 +135,7 @@ describe('SelfSessionDetailScreen', () => {
   });
 
   it('shows the completion status and the session note when present', () => {
-    const detailWithNote = makeDetail({ rpe: 9 } as Partial<SelfSessionDetail>);
+    const detailWithNote = makeDetail({ rpe: 9, note: 'Great session' });
     setupStore(detailWithNote);
 
     const { getByTestId, getByText } = render(<SelfSessionDetailScreen />);
@@ -144,5 +145,8 @@ describe('SelfSessionDetailScreen', () => {
 
     // RPE shown
     expect(getByText(/RPE 9/)).toBeTruthy();
+
+    // Note text rendered
+    expect(getByText('Great session')).toBeTruthy();
   });
 });

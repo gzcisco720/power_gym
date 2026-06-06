@@ -91,4 +91,5 @@ export interface SelfSessionDetail {
   completedAt: string; // ISO
   sets: SessionSet[];
   rpe: number | null;
+  note: string | null;
 }

@@ -119,6 +119,16 @@ export function SelfSessionDetailScreen() {
             )}
           </View>
 
+          {/* Session note */}
+          {selectedSession.note !== null && (
+            <View className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-3 gap-1">
+              <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
+                Note
+              </Text>
+              <Text className="text-sm text-foreground">{selectedSession.note}</Text>
+            </View>
+          )}
+
           {/* Exercise groups */}
           {exerciseGroups.map((group) => (
             <View

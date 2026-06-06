@@ -111,9 +111,13 @@ describe('Trainer: Self-Training Calendar view', () => {
     await waitFor(element(by.id('screen-SelfSessionDetail')))
       .toBeVisible()
       .withTimeout(8000);
-
-    // The day name from the seeded session should be visible
     await detoxExpect(element(by.id('screen-SelfSessionDetail'))).toBeVisible();
+
+    // The day name from the seeded session should be visible as text
+    await waitFor(element(by.text('Personal Training')))
+      .toBeVisible()
+      .withTimeout(5000);
+    await detoxExpect(element(by.text('Personal Training'))).toBeVisible();
   });
 });
 
