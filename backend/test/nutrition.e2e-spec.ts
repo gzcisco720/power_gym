@@ -461,6 +461,101 @@ describe('Nutrition (e2e)', () => {
     });
   });
 
+  // ─── GET /nutrition/self/today ────────────────────────────────────────────────
+
+  describe('GET /nutrition/self/today', () => {
+    it('member with no self log → 200, empty items and zeroed totals', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/nutrition/self/today')
+        .set('Authorization', `Bearer ${memberToken}`)
+        .expect(200);
+
+      const body = res.body as {
+        date: string;
+        items: unknown[];
+        totals: Record<string, number>;
+      };
+
+      expect(Array.isArray(body.items)).toBe(true);
+      expect(body.items).toHaveLength(0);
+      expect(body.totals.kcal).toBe(0);
+      expect(body.totals.protein).toBe(0);
+    });
+
+    it('owner token → 403', async () => {
+      await request(app.getHttpServer())
+        .get('/nutrition/self/today')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .expect(403);
+    });
+
+    it('no token → 401', async () => {
+      await request(app.getHttpServer())
+        .get('/nutrition/self/today')
+        .expect(401);
+    });
+  });
+
+  // ─── POST /nutrition/self/today/items ─────────────────────────────────────────
+
+  describe('POST /nutrition/self/today/items', () => {
+    it('member with no active plan → 200 and the item appears in a follow-up GET /nutrition/self/today', async () => {
+      const payload = {
+        foodName: 'Apple',
+        quantityG: 150,
+        kcal: 78,
+        protein: 0.4,
+        carbs: 21,
+        fat: 0.2,
+      };
+
+      const postRes = await request(app.getHttpServer())
+        .post('/nutrition/self/today/items')
+        .set('Authorization', `Bearer ${memberToken}`)
+        .send(payload)
+        .expect(200);
+
+      const postBody = postRes.body as {
+        items: Array<{ foodName: string }>;
+        totals: Record<string, number>;
+      };
+      expect(postBody.items.some((i) => i.foodName === 'Apple')).toBe(true);
+
+      const getRes = await request(app.getHttpServer())
+        .get('/nutrition/self/today')
+        .set('Authorization', `Bearer ${memberToken}`)
+        .expect(200);
+
+      const getBody = getRes.body as {
+        items: Array<{ foodName: string }>;
+      };
+      expect(getBody.items.some((i) => i.foodName === 'Apple')).toBe(true);
+    });
+
+    it('owner role → 403', async () => {
+      await request(app.getHttpServer())
+        .post('/nutrition/self/today/items')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          foodName: 'Apple',
+          quantityG: 100,
+          kcal: 52,
+          protein: 0.3,
+          carbs: 14,
+          fat: 0.2,
+        })
+        .expect(403);
+    });
+
+    it('missing required field → 400', async () => {
+      await request(app.getHttpServer())
+        .post('/nutrition/self/today/items')
+        .set('Authorization', `Bearer ${memberToken}`)
+        .send({ foodName: 'Apple', quantityG: 100 })
+        .expect(400);
+    });
+  });
+
   // ─── POST /nutrition/dev/seed ─────────────────────────────────────────────────
 
   describe('POST /nutrition/dev/seed', () => {

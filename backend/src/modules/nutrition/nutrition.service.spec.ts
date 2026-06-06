@@ -7,6 +7,7 @@ import { MemberNutritionPlan } from '../../common/models/member-nutrition-plan.m
 import { NutritionDailyLog } from '../../common/models/nutrition-daily-log.model';
 import { NutritionTemplate } from '../nutrition-templates/nutrition-template.model';
 import { User } from '../../common/models/user.model';
+import { SelfNutritionLog } from '../../common/models/self-nutrition-log.model';
 
 const OWNER_ID = new Types.ObjectId().toString();
 const TRAINER_ID = new Types.ObjectId().toString();
@@ -110,6 +111,10 @@ describe('NutritionService', () => {
   let userModel: {
     findById: jest.Mock;
   };
+  let selfNutritionLogModel: {
+    findOne: jest.Mock;
+    findOneAndUpdate: jest.Mock;
+  };
 
   beforeEach(async () => {
     memberNutritionPlanModel = {
@@ -132,6 +137,11 @@ describe('NutritionService', () => {
       findById: jest.fn(),
     };
 
+    selfNutritionLogModel = {
+      findOne: jest.fn(),
+      findOneAndUpdate: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         NutritionService,
@@ -150,6 +160,10 @@ describe('NutritionService', () => {
         {
           provide: getModelToken(User.name),
           useValue: userModel,
+        },
+        {
+          provide: getModelToken(SelfNutritionLog.name),
+          useValue: selfNutritionLogModel,
         },
       ],
     }).compile();
@@ -404,6 +418,109 @@ describe('NutritionService', () => {
       });
       expect(mockQuery.sort).toHaveBeenCalledWith({ date: -1 });
       expect(result).toEqual(logs);
+    });
+  });
+
+  // ─── getSelfToday ─────────────────────────────────────────────────────────────
+
+  describe('getSelfToday', () => {
+    it('returns an empty items array and zeroed totals when no self log exists for today', async () => {
+      selfNutritionLogModel.findOne.mockResolvedValue(null);
+
+      const result = await service.getSelfToday(MEMBER_ID);
+
+      expect(Array.isArray(result.items)).toBe(true);
+      expect(result.items).toHaveLength(0);
+      expect(result.totals).toEqual({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
+    });
+
+    it('returns the existing self log for today when one exists', async () => {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const existing = {
+        userId: new Types.ObjectId(MEMBER_ID),
+        date: todayStr,
+        items: [
+          {
+            foodName: 'Apple',
+            quantityG: 200,
+            kcal: 104,
+            protein: 0.5,
+            carbs: 28,
+            fat: 0.3,
+          },
+        ],
+      };
+      selfNutritionLogModel.findOne.mockResolvedValue(existing);
+
+      const result = await service.getSelfToday(MEMBER_ID);
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].foodName).toBe('Apple');
+      expect(result.totals.kcal).toBe(104);
+      expect(result.totals.protein).toBeCloseTo(0.5);
+    });
+  });
+
+  // ─── logSelfFood ──────────────────────────────────────────────────────────────
+
+  describe('logSelfFood', () => {
+    it("creates today's self log and appends the item when none exists", async () => {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const item = {
+        foodName: 'Banana',
+        quantityG: 120,
+        kcal: 107,
+        protein: 1.3,
+        carbs: 27,
+        fat: 0.4,
+      };
+      const upserted = {
+        userId: new Types.ObjectId(MEMBER_ID),
+        date: todayStr,
+        items: [item],
+      };
+      selfNutritionLogModel.findOneAndUpdate.mockResolvedValue(upserted);
+
+      const result = await service.logSelfFood(MEMBER_ID, item);
+
+      expect(selfNutritionLogModel.findOneAndUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ date: todayStr }),
+        expect.objectContaining({ $push: { items: item } }),
+        expect.objectContaining({ upsert: true, returnDocument: 'after' }),
+      );
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].foodName).toBe('Banana');
+    });
+
+    it('appends to existing self log and recomputes macro totals in the response', async () => {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const existingItem = {
+        foodName: 'Apple',
+        quantityG: 200,
+        kcal: 104,
+        protein: 0.5,
+        carbs: 28,
+        fat: 0.3,
+      };
+      const newItem = {
+        foodName: 'Banana',
+        quantityG: 120,
+        kcal: 107,
+        protein: 1.3,
+        carbs: 27,
+        fat: 0.4,
+      };
+      const upserted = {
+        userId: new Types.ObjectId(MEMBER_ID),
+        date: todayStr,
+        items: [existingItem, newItem],
+      };
+      selfNutritionLogModel.findOneAndUpdate.mockResolvedValue(upserted);
+
+      const result = await service.logSelfFood(MEMBER_ID, newItem);
+
+      expect(result.items).toHaveLength(2);
+      expect(result.totals.kcal).toBeCloseTo(211);
     });
   });
 });

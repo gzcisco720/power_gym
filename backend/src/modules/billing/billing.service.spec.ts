@@ -220,6 +220,108 @@ describe('BillingService', () => {
     });
   });
 
+  describe('getMemberBilling', () => {
+    it('returns total, count, currency, and lines for the member completed billable sessions in the period', async () => {
+      const memberId = new Types.ObjectId();
+      const trainerId = new Types.ObjectId();
+      const st = makeServiceType({ pricePerSession: 80, currency: 'AUD' });
+      const session = makeSession({
+        memberId,
+        trainerId,
+        serviceTypeId: st._id,
+        date: new Date(Date.now() - 86400000),
+      });
+
+      scheduledSessionModelMock.find.mockReturnValue({
+        lean: () => Promise.resolve([session]),
+      });
+      serviceTypeModelMock.find.mockReturnValue({
+        lean: () => Promise.resolve([st]),
+      });
+      userModelMock.find.mockReturnValue({
+        lean: () =>
+          Promise.resolve([
+            makeUser(memberId, { trainerId, role: 'member' }),
+          ]),
+      });
+
+      const from = new Date(Date.now() - 7 * 86400000).toISOString();
+      const to = new Date(Date.now() + 86400000).toISOString();
+
+      const result = await service.getMemberBilling(
+        memberId.toString(),
+        trainerId.toString(),
+        'trainer',
+        from,
+        to,
+      );
+
+      expect(result.count).toBe(1);
+      expect(result.total).toBe(80);
+      expect(result.currency).toBe('AUD');
+      expect(result.lines).toHaveLength(1);
+    });
+
+    it('throws NotFoundException when a trainer requests a member not assigned to them', async () => {
+      const memberId = new Types.ObjectId();
+      const trainerId = new Types.ObjectId();
+      const otherTrainerId = new Types.ObjectId();
+
+      userModelMock.find.mockReturnValue({
+        lean: () =>
+          Promise.resolve([
+            makeUser(memberId, { trainerId: otherTrainerId, role: 'member' }),
+          ]),
+      });
+
+      const from = new Date(Date.now() - 7 * 86400000).toISOString();
+      const to = new Date(Date.now() + 86400000).toISOString();
+
+      await expect(
+        service.getMemberBilling(
+          memberId.toString(),
+          trainerId.toString(),
+          'trainer',
+          from,
+          to,
+        ),
+      ).rejects.toThrow('Not Found');
+    });
+
+    it('allows an owner to fetch any member billing without scoping check', async () => {
+      const memberId = new Types.ObjectId();
+      const ownerId = new Types.ObjectId();
+      const trainerId = new Types.ObjectId();
+      const st = makeServiceType({ pricePerSession: 100 });
+      const session = makeSession({
+        memberId,
+        serviceTypeId: st._id,
+        date: new Date(Date.now() - 86400000),
+      });
+
+      scheduledSessionModelMock.find.mockReturnValue({
+        lean: () => Promise.resolve([session]),
+      });
+      serviceTypeModelMock.find.mockReturnValue({
+        lean: () => Promise.resolve([st]),
+      });
+
+      const from = new Date(Date.now() - 7 * 86400000).toISOString();
+      const to = new Date(Date.now() + 86400000).toISOString();
+
+      const result = await service.getMemberBilling(
+        memberId.toString(),
+        ownerId.toString(),
+        'owner',
+        from,
+        to,
+      );
+
+      expect(result.count).toBe(1);
+      expect(result.memberId).toBe(memberId.toString());
+    });
+  });
+
   describe('getSummary', () => {
     it('groups sessions by member returning sessionsCount and totalAmount per member plus a grandTotal equal to the sum of member totals', async () => {
       const member1Id = new Types.ObjectId();

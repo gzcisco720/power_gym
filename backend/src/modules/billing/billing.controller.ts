@@ -1,4 +1,11 @@
-import { Controller, Get, Query, Request, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -30,5 +37,21 @@ export class BillingController {
   @Roles('member')
   getMy(@Request() req: RequestWithUser, @Query() query: BillingQueryDto) {
     return this.billingService.getMyBilling(req.user.sub, query.from, query.to);
+  }
+
+  @Get('members/:memberId')
+  @Roles('owner', 'trainer')
+  getMemberBilling(
+    @Request() req: RequestWithUser,
+    @Param('memberId') memberId: string,
+    @Query() query: BillingQueryDto,
+  ) {
+    return this.billingService.getMemberBilling(
+      memberId,
+      req.user.sub,
+      req.user.role,
+      query.from,
+      query.to,
+    );
   }
 }

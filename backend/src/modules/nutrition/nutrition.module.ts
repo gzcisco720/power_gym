@@ -16,6 +16,10 @@ import {
   NutritionTemplateSchema,
 } from '../nutrition-templates/nutrition-template.model';
 import { User, UserSchema } from '../../common/models/user.model';
+import {
+  SelfNutritionLog,
+  SelfNutritionLogSchema,
+} from '../../common/models/self-nutrition-log.model';
 
 const devControllers =
   process.env.NODE_ENV !== 'production' ? [NutritionDevController] : [];
@@ -27,6 +31,7 @@ const devControllers =
       { name: NutritionDailyLog.name, schema: NutritionDailyLogSchema },
       { name: NutritionTemplate.name, schema: NutritionTemplateSchema },
       { name: User.name, schema: UserSchema },
+      { name: SelfNutritionLog.name, schema: SelfNutritionLogSchema },
     ]),
   ],
   controllers: [NutritionController, ...devControllers],

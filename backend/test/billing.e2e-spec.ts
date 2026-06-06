@@ -299,6 +299,67 @@ describe('Billing (e2e)', () => {
     });
   });
 
+  // ─── GET /billing/members/:memberId ──────────────────────────────────────────
+
+  describe('GET /billing/members/:memberId', () => {
+    it("trainer for the member → 200 with per-member billing shape", async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/billing/members/${memberId.toString()}`)
+        .query({ from: FROM, to: TO })
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(200);
+
+      const body = res.body as {
+        memberId: string;
+        lines: Array<{ serviceTypeName: string; price: number }>;
+        total: number;
+        count: number;
+        currency: string;
+      };
+
+      expect(body.memberId).toBe(memberId.toString());
+      expect(typeof body.total).toBe('number');
+      expect(typeof body.count).toBe('number');
+      expect(Array.isArray(body.lines)).toBe(true);
+    });
+
+    it('trainer for an unassigned member → 404', async () => {
+      // Create another member not assigned to the trainer
+      const otherMemberId = new Types.ObjectId();
+      const otherHash = await bcrypt.hash(TEST_PASSWORD, 10);
+      await userModel.create({
+        _id: otherMemberId,
+        firstName: 'Other',
+        lastName: 'Member',
+        email: 'bill-e2e-other-member@example.com',
+        passwordHash: otherHash,
+        role: 'member',
+        trainerId: null,
+      });
+
+      await request(app.getHttpServer())
+        .get(`/billing/members/${otherMemberId.toString()}`)
+        .query({ from: FROM, to: TO })
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(404);
+    });
+
+    it('member role → 403', async () => {
+      await request(app.getHttpServer())
+        .get(`/billing/members/${memberId.toString()}`)
+        .query({ from: FROM, to: TO })
+        .set('Authorization', `Bearer ${memberToken}`)
+        .expect(403);
+    });
+
+    it('no JWT → 401', async () => {
+      await request(app.getHttpServer())
+        .get(`/billing/members/${memberId.toString()}`)
+        .query({ from: FROM, to: TO })
+        .expect(401);
+    });
+  });
+
   // ─── GET /billing/my ──────────────────────────────────────────────────────────
 
   describe('GET /billing/my', () => {

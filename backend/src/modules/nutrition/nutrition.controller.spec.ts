@@ -48,6 +48,11 @@ const sampleSummary = {
   logged: { kcal: 0, protein: 0, carbs: 0, fat: 0 },
   target: { kcal: 0, protein: 0, carbs: 0, fat: 0 },
 };
+const sampleSelfLog = {
+  date: new Date().toISOString().slice(0, 10),
+  items: [],
+  totals: { kcal: 0, protein: 0, carbs: 0, fat: 0 },
+};
 
 describe('NutritionController', () => {
   let controller: NutritionController;
@@ -58,6 +63,8 @@ describe('NutritionController', () => {
     getSummary: jest.Mock;
     assignNutritionPlan: jest.Mock;
     getHistory: jest.Mock;
+    getSelfToday: jest.Mock;
+    logSelfFood: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -68,6 +75,8 @@ describe('NutritionController', () => {
       getSummary: jest.fn().mockResolvedValue(sampleSummary),
       assignNutritionPlan: jest.fn().mockResolvedValue(samplePlan),
       getHistory: jest.fn().mockResolvedValue([]),
+      getSelfToday: jest.fn().mockResolvedValue(sampleSelfLog),
+      logSelfFood: jest.fn().mockResolvedValue(sampleSelfLog),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -183,6 +192,34 @@ describe('NutritionController', () => {
         OWNER_ID,
         'owner',
       );
+    });
+  });
+
+  describe('logSelfFood', () => {
+    it('delegates to service with caller id and the food payload', async () => {
+      const req = { user: memberUser } as RequestWithUser & Request;
+      const dto = {
+        foodName: 'Apple',
+        quantityG: 200,
+        kcal: 104,
+        protein: 0.5,
+        carbs: 28,
+        fat: 0.3,
+      };
+
+      await controller.logSelfFood(req, dto);
+
+      expect(service.logSelfFood).toHaveBeenCalledWith(MEMBER_ID, dto);
+    });
+  });
+
+  describe('getSelfToday', () => {
+    it('delegates to service with member id', async () => {
+      const req = { user: memberUser } as RequestWithUser & Request;
+
+      await controller.getSelfToday(req);
+
+      expect(service.getSelfToday).toHaveBeenCalledWith(MEMBER_ID);
     });
   });
 });

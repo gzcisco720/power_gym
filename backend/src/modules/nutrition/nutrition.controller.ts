@@ -18,6 +18,7 @@ import { JwtUser } from '../auth/strategies/jwt.strategy';
 import { NutritionService } from './nutrition.service';
 import { AssignNutritionPlanDto } from './dto/assign-nutrition-plan.dto';
 import { LogFoodDto } from './dto/log-food.dto';
+import { LogSelfFoodDto } from './dto/log-self-food.dto';
 
 interface RequestWithUser extends Request {
   user: JwtUser;
@@ -89,5 +90,21 @@ export class NutritionController {
       req.user.sub,
       req.user.role,
     );
+  }
+
+  @Get('self/today')
+  @Roles('member')
+  getSelfToday(@Request() req: RequestWithUser) {
+    return this.nutritionService.getSelfToday(req.user.sub);
+  }
+
+  @Post('self/today/items')
+  @HttpCode(HttpStatus.OK)
+  @Roles('member')
+  logSelfFood(
+    @Request() req: RequestWithUser,
+    @Body() dto: LogSelfFoodDto,
+  ) {
+    return this.nutritionService.logSelfFood(req.user.sub, dto);
   }
 }

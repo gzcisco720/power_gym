@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
@@ -163,6 +163,26 @@ export class BillingService {
       currency,
       lines,
     };
+  }
+
+  async getMemberBilling(
+    memberId: string,
+    requesterId: string,
+    requesterRole: string,
+    from: string,
+    to: string,
+  ): Promise<MyBillingResult> {
+    if (requesterRole === 'trainer') {
+      const members = await this.userModel
+        .find({ _id: new Types.ObjectId(memberId) })
+        .lean<UserDoc[]>();
+      const member = members[0];
+      if (!member || member.trainerId?.toString() !== requesterId) {
+        throw new NotFoundException();
+      }
+    }
+
+    return this.getMyBilling(memberId, from, to);
   }
 
   async getSummary(

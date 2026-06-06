@@ -15,12 +15,24 @@ import {
 } from '../nutrition-templates/nutrition-template.model';
 import { User, UserDocument, UserRole } from '../../common/models/user.model';
 import { LogFoodDto } from './dto/log-food.dto';
+import {
+  SelfNutritionLog,
+  SelfNutritionLogDocument,
+  SelfNutritionItem,
+} from '../../common/models/self-nutrition-log.model';
+import { LogSelfFoodDto } from './dto/log-self-food.dto';
 
 export interface MacroTotals {
   kcal: number;
   protein: number;
   carbs: number;
   fat: number;
+}
+
+export interface SelfNutritionLogResult {
+  date: string;
+  items: SelfNutritionItem[];
+  totals: MacroTotals;
 }
 
 export interface MacroSummary {
@@ -80,6 +92,8 @@ export class NutritionService {
     private readonly nutritionTemplateModel: Model<NutritionTemplateDocument>,
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
+    @InjectModel(SelfNutritionLog.name)
+    private readonly selfNutritionLogModel: Model<SelfNutritionLogDocument>,
   ) {}
 
   async getMyPlan(memberId: string): Promise<ActiveNutritionPlan | null> {
@@ -250,6 +264,56 @@ export class NutritionService {
       isActive: true,
       assignedAt: new Date(),
     });
+  }
+
+  private computeSelfTotals(items: SelfNutritionItem[]): MacroTotals {
+    return items.reduce(
+      (acc, item) => {
+        acc.kcal += item.kcal;
+        acc.protein += item.protein;
+        acc.carbs += item.carbs;
+        acc.fat += item.fat;
+        return acc;
+      },
+      { kcal: 0, protein: 0, carbs: 0, fat: 0 },
+    );
+  }
+
+  async getSelfToday(memberId: string): Promise<SelfNutritionLogResult> {
+    const todayStr = getTodayStr();
+    const log = await this.selfNutritionLogModel.findOne({
+      userId: new Types.ObjectId(memberId),
+      date: todayStr,
+    });
+
+    if (!log) {
+      return { date: todayStr, items: [], totals: { kcal: 0, protein: 0, carbs: 0, fat: 0 } };
+    }
+
+    return { date: log.date, items: log.items, totals: this.computeSelfTotals(log.items) };
+  }
+
+  async logSelfFood(
+    memberId: string,
+    dto: LogSelfFoodDto,
+  ): Promise<SelfNutritionLogResult> {
+    const todayStr = getTodayStr();
+    const item: SelfNutritionItem = {
+      foodName: dto.foodName,
+      quantityG: dto.quantityG,
+      kcal: dto.kcal,
+      protein: dto.protein,
+      carbs: dto.carbs,
+      fat: dto.fat,
+    };
+
+    const log = await this.selfNutritionLogModel.findOneAndUpdate(
+      { userId: new Types.ObjectId(memberId), date: todayStr },
+      { $push: { items: item } },
+      { upsert: true, returnDocument: 'after' },
+    );
+
+    return { date: log.date, items: log.items, totals: this.computeSelfTotals(log.items) };
   }
 
   async getHistory(

@@ -18,7 +18,11 @@ const TO = '2026-05-31T23:59:59.999Z';
 
 describe('BillingController', () => {
   let controller: BillingController;
-  let service: { getMyBilling: jest.Mock; getSummary: jest.Mock };
+  let service: {
+    getMyBilling: jest.Mock;
+    getSummary: jest.Mock;
+    getMemberBilling: jest.Mock;
+  };
 
   beforeEach(async () => {
     service = {
@@ -28,6 +32,9 @@ describe('BillingController', () => {
       getSummary: jest
         .fn()
         .mockResolvedValue({ members: [], grandTotal: 0, currency: 'AUD' }),
+      getMemberBilling: jest
+        .fn()
+        .mockResolvedValue({ lines: [], total: 0, count: 0, currency: 'AUD' }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -112,6 +119,40 @@ describe('BillingController', () => {
       await controller.getMy(req, { from: FROM, to: TO });
 
       expect(service.getMyBilling).toHaveBeenCalledWith(MEMBER_ID, FROM, TO);
+    });
+  });
+
+  describe('getMemberBilling', () => {
+    it('delegates to service.getMemberBilling with memberId, requester sub, requester role, from, to', async () => {
+      const req = {
+        user: {
+          sub: TRAINER_ID,
+          role: 'trainer' as const,
+          firstName: 'Test',
+          lastName: 'Trainer',
+          trainerId: null,
+        },
+      } as RequestWithUser & Request;
+
+      await controller.getMemberBilling(req, MEMBER_ID, { from: FROM, to: TO });
+
+      expect(service.getMemberBilling).toHaveBeenCalledWith(
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+        FROM,
+        TO,
+      );
+    });
+
+    it('GET members/:memberId handler has owner and trainer roles', () => {
+      const reflector = new Reflector();
+      const roles = reflector.get<string[]>(
+        ROLES_KEY,
+        controller.getMemberBilling,
+      );
+      expect(roles).toContain('owner');
+      expect(roles).toContain('trainer');
     });
   });
 });
