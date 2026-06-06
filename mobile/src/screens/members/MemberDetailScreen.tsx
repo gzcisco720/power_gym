@@ -148,6 +148,7 @@ export function MemberDetailScreen() {
           {activeTab === 'training' ? (
             <MemberTrainingTab
               memberId={memberId}
+              memberName={member.name}
               activePlan={memberActivePlan}
               onAssignPress={() => setAssignSheetVisible(true)}
             />

@@ -11,6 +11,7 @@ import { MyTrainingScreen } from '../screens/my-training/MyTrainingScreen';
 import { MyNutritionScreen } from '../screens/my-nutrition/MyNutritionScreen';
 import { LogFoodScreen } from '../screens/my-nutrition/LogFoodScreen';
 import { WorkoutSessionScreen } from '../screens/my-training/WorkoutSessionScreen';
+import { TrainerWorkoutSessionScreen } from '../screens/my-training/TrainerWorkoutSessionScreen';
 import { CalendarScreen } from '../screens/calendar/CalendarScreen';
 import { NutritionTemplatesScreen } from '../screens/nutrition-templates/NutritionTemplatesScreen';
 import { NutritionTemplateDetailScreen } from '../screens/nutrition-templates/NutritionTemplateDetailScreen';
@@ -69,6 +70,7 @@ export type AppStackParamList = {
   NutritionTemplateDetail: { templateId: string; templateName: string };
   NutritionTemplateForm: { templateId?: string; templateName?: string };
   WorkoutSession: { session: WorkoutSession };
+  TrainerWorkoutSession: { memberId: string; memberName: string };
   LogFood: { mealName: string };
   FoodForm: { food?: Food };
 };
@@ -153,6 +155,7 @@ function AppNavigator() {
       <AppStack.Screen name="NutritionTemplateDetail" component={NutritionTemplateDetailScreen} />
       <AppStack.Screen name="NutritionTemplateForm" component={NutritionTemplateFormScreen} />
       <AppStack.Screen name="WorkoutSession" component={WorkoutSessionScreen} />
+      <AppStack.Screen name="TrainerWorkoutSession" component={TrainerWorkoutSessionScreen} />
       <AppStack.Screen name="LogFood" component={LogFoodScreen} />
       <AppStack.Screen name="FoodForm" component={FoodFormScreen} />
     </AppStack.Navigator>

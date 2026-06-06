@@ -11,6 +11,10 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
 
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: () => ({ navigate: jest.fn(), goBack: jest.fn() }),
+}));
+
 const mockFetchMemberHistory = jest.fn();
 const mockAssignPlanApi = jest.fn();
 
@@ -18,6 +22,11 @@ jest.mock('../../../lib/api/training.api', () => ({
   fetchMemberHistory: (...args: Parameters<typeof mockFetchMemberHistory>) =>
     mockFetchMemberHistory(...args),
   assignPlan: (...args: Parameters<typeof mockAssignPlanApi>) => mockAssignPlanApi(...args),
+}));
+
+jest.mock('../../../stores/training.store', () => ({
+  useTrainingStore: (selector: (s: { fetchMemberPlan: jest.Mock; startMemberSession: jest.Mock }) => unknown) =>
+    selector({ fetchMemberPlan: jest.fn().mockResolvedValue(null), startMemberSession: jest.fn() }),
 }));
 
 // ── Imports ───────────────────────────────────────────────────────────────────
@@ -96,6 +105,7 @@ describe('MemberTrainingTab', () => {
     const { getByTestId, getByText } = render(
       <MemberTrainingTab
         memberId="mem1"
+        memberName="Alice Smith"
         activePlan={plan}
         onAssignPress={onAssignPress}
       />,
@@ -115,6 +125,7 @@ describe('MemberTrainingTab', () => {
     const { getByTestId } = render(
       <MemberTrainingTab
         memberId="mem1"
+        memberName="Alice Smith"
         activePlan={null}
         onAssignPress={onAssignPress}
       />,

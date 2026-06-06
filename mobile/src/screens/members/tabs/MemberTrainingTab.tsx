@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { fetchMemberHistory } from '../../../lib/api/training.api';
-import { WorkoutSession, ActivePlan } from '../../../types/training';
+import { useTrainingStore } from '../../../stores/training.store';
+import { WorkoutSession, ActivePlan, PlanDay } from '../../../types/training';
+import { AppStackParamList } from '../../../navigation/index';
+
+type Nav = NativeStackNavigationProp<AppStackParamList>;
 
 interface MemberTrainingTabProps {
   memberId: string;
+  memberName: string;
   activePlan: ActivePlan | null;
   onAssignPress: () => void;
 }
@@ -18,9 +25,14 @@ function formatDate(iso: string): string {
   });
 }
 
-export function MemberTrainingTab({ memberId, activePlan, onAssignPress }: MemberTrainingTabProps) {
+export function MemberTrainingTab({ memberId, memberName, activePlan, onAssignPress }: MemberTrainingTabProps) {
+  const navigation = useNavigation<Nav>();
   const [history, setHistory] = useState<WorkoutSession[]>([]);
   const [loading, setLoading] = useState(false);
+  const [memberPlan, setMemberPlan] = useState<ActivePlan | null>(null);
+
+  const fetchMemberPlan = useTrainingStore((s) => s.fetchMemberPlan);
+  const startMemberSession = useTrainingStore((s) => s.startMemberSession);
 
   useEffect(() => {
     setLoading(true);
@@ -29,6 +41,17 @@ export function MemberTrainingTab({ memberId, activePlan, onAssignPress }: Membe
       .catch(() => setHistory([]))
       .finally(() => setLoading(false));
   }, [memberId]);
+
+  useEffect(() => {
+    fetchMemberPlan(memberId)
+      .then((plan) => setMemberPlan(plan))
+      .catch(() => setMemberPlan(null));
+  }, [memberId, fetchMemberPlan]);
+
+  async function handleLogSessionDay(day: PlanDay) {
+    await startMemberSession(memberId, day.dayNumber);
+    navigation.navigate('TrainerWorkoutSession', { memberId, memberName });
+  }
 
   return (
     <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -67,6 +90,29 @@ export function MemberTrainingTab({ memberId, activePlan, onAssignPress }: Membe
             </View>
           )}
         </View>
+
+        {/* Log Session section — shown when a plan with days is fetched */}
+        {memberPlan && memberPlan.days.length > 0 ? (
+          <View className="gap-2">
+            <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
+              Log Session
+            </Text>
+            <View className="flex-row flex-wrap gap-2">
+              {memberPlan.days.map((day) => (
+                <Pressable
+                  key={day.dayNumber}
+                  testID={`log-session-day-${day.dayNumber}`}
+                  onPress={() => void handleLogSessionDay(day)}
+                  accessibilityLabel={`Log session for ${day.name}`}
+                  accessibilityRole="button"
+                  className="rounded-xl bg-primary px-3 py-2 min-h-11 min-w-11 items-center justify-center"
+                >
+                  <Text className="text-xs font-semibold text-foreground">{day.name}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        ) : null}
 
         {/* Workout history section */}
         <View className="gap-2">
