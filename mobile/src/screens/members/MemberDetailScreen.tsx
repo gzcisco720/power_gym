@@ -9,6 +9,7 @@ import { BodyTest } from '../../types/body-tests';
 import { MemberOverviewTab } from './tabs/MemberOverviewTab';
 import { MemberBodyTestsTab } from './tabs/MemberBodyTestsTab';
 import { MemberHealthTab } from './tabs/MemberHealthTab';
+import { MemberCheckInsTab } from './tabs/MemberCheckInsTab';
 import { MemberTrainingTab } from './tabs/MemberTrainingTab';
 import { MemberNutritionTab } from './tabs/MemberNutritionTab';
 import { AssignPlanSheet } from './AssignPlanSheet';
@@ -16,16 +17,18 @@ import { AssignNutritionPlanSheet } from './AssignNutritionPlanSheet';
 import { AppStackParamList } from '../../navigation/index';
 import { ActivePlan } from '../../types/training';
 import { ActiveNutritionPlan } from '../../types/nutrition';
+import { CheckIn } from '../../types/check-ins';
 
 type DetailRouteProp = RouteProp<AppStackParamList, 'MemberDetail'>;
 type Nav = NativeStackNavigationProp<AppStackParamList>;
 
-type TabId = 'overview' | 'bodytests' | 'health' | 'training' | 'nutrition';
+type TabId = 'overview' | 'bodytests' | 'health' | 'checkins' | 'training' | 'nutrition';
 
 const TABS: { id: TabId; label: string; testID: string }[] = [
   { id: 'overview', label: 'Overview', testID: 'member-detail-tab-overview' },
   { id: 'bodytests', label: 'Body Tests', testID: 'member-detail-tab-bodytests' },
   { id: 'health', label: 'Health', testID: 'member-detail-tab-health' },
+  { id: 'checkins', label: 'Check-ins', testID: 'member-detail-tab-checkins' },
   { id: 'training', label: 'Training', testID: 'member-detail-tab-training' },
   { id: 'nutrition', label: 'Nutrition', testID: 'member-detail-tab-nutrition' },
 ];
@@ -133,6 +136,12 @@ export function MemberDetailScreen() {
           ) : null}
           {activeTab === 'health' ? (
             <MemberHealthTab injuries={detail.injuries} medications={detail.medications} />
+          ) : null}
+          {activeTab === 'checkins' ? (
+            <MemberCheckInsTab
+              checkIns={detail.checkIns}
+              onPressCheckIn={(c: CheckIn) => navigation.navigate('CheckInDetail', { checkIn: c })}
+            />
           ) : null}
           {activeTab === 'training' ? (
             <MemberTrainingTab

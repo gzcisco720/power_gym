@@ -4,6 +4,7 @@ jest.mock('../lib/api/members.api', () => ({
   fetchMemberBodyTests: jest.fn(),
   fetchMemberInjuries: jest.fn(),
   fetchMemberMedications: jest.fn(),
+  fetchMemberCheckIns: jest.fn(),
 }));
 
 import * as membersApi from '../lib/api/members.api';
@@ -11,12 +12,14 @@ import { useMembersStore } from './members.store';
 import { Member, MemberOverview } from '../types/members';
 import { BodyTest } from '../types/body-tests';
 import { Injury, Medication } from '../types/health';
+import { CheckIn } from '../types/check-ins';
 
 const mockFetchMembers = membersApi.fetchMembers as jest.MockedFunction<typeof membersApi.fetchMembers>;
 const mockFetchMemberOverview = membersApi.fetchMemberOverview as jest.MockedFunction<typeof membersApi.fetchMemberOverview>;
 const mockFetchMemberBodyTests = membersApi.fetchMemberBodyTests as jest.MockedFunction<typeof membersApi.fetchMemberBodyTests>;
 const mockFetchMemberInjuries = membersApi.fetchMemberInjuries as jest.MockedFunction<typeof membersApi.fetchMemberInjuries>;
 const mockFetchMemberMedications = membersApi.fetchMemberMedications as jest.MockedFunction<typeof membersApi.fetchMemberMedications>;
+const mockFetchMemberCheckIns = membersApi.fetchMemberCheckIns as jest.MockedFunction<typeof membersApi.fetchMemberCheckIns>;
 
 const MOCK_MEMBER_1: Member = {
   id: 'mem1',
@@ -104,6 +107,32 @@ const MOCK_MEDICATION: Medication = {
   createdAt: '2024-01-01T00:00:00.000Z',
 };
 
+const MOCK_CHECK_IN: CheckIn = {
+  _id: 'ci1',
+  memberId: 'mem1',
+  trainerId: 'trainer1',
+  submittedAt: '2024-06-03T10:00:00.000Z',
+  sleepQuality: 7,
+  stress: 4,
+  fatigue: 5,
+  hunger: 6,
+  recovery: 7,
+  energy: 6,
+  digestion: 8,
+  weight: null,
+  waist: null,
+  steps: null,
+  exerciseMinutes: null,
+  walkRunDistance: null,
+  sleepHours: null,
+  stuckToDiet: 'yes',
+  dietDetails: null,
+  wellbeing: null,
+  notes: null,
+  photos: [],
+  createdAt: '2024-06-03T10:00:00.000Z',
+};
+
 function resetStore() {
   useMembersStore.setState({
     members: [],
@@ -147,11 +176,12 @@ describe('useMembersStore', () => {
   });
 
   describe('fetchMemberDetail', () => {
-    it('populates overview, bodyTests, injuries, and medications for the given member id on success', async () => {
+    it('populates overview, bodyTests, injuries, medications, and checkIns for the given member id on success', async () => {
       mockFetchMemberOverview.mockResolvedValueOnce(MOCK_OVERVIEW);
       mockFetchMemberBodyTests.mockResolvedValueOnce([MOCK_BODY_TEST]);
       mockFetchMemberInjuries.mockResolvedValueOnce([MOCK_INJURY]);
       mockFetchMemberMedications.mockResolvedValueOnce([MOCK_MEDICATION]);
+      mockFetchMemberCheckIns.mockResolvedValueOnce([MOCK_CHECK_IN]);
 
       await useMembersStore.getState().fetchMemberDetail('mem1');
 
@@ -161,9 +191,23 @@ describe('useMembersStore', () => {
         bodyTests: [MOCK_BODY_TEST],
         injuries: [MOCK_INJURY],
         medications: [MOCK_MEDICATION],
+        checkIns: [MOCK_CHECK_IN],
       });
       expect(state.detailLoading).toBe(false);
       expect(state.detailError).toBeNull();
+    });
+
+    it('populates selectedMembers[id].checkIns from fetchMemberCheckIns', async () => {
+      mockFetchMemberOverview.mockResolvedValueOnce(MOCK_OVERVIEW);
+      mockFetchMemberBodyTests.mockResolvedValueOnce([]);
+      mockFetchMemberInjuries.mockResolvedValueOnce([]);
+      mockFetchMemberMedications.mockResolvedValueOnce([]);
+      mockFetchMemberCheckIns.mockResolvedValueOnce([MOCK_CHECK_IN]);
+
+      await useMembersStore.getState().fetchMemberDetail('mem1');
+
+      const state = useMembersStore.getState();
+      expect(state.selectedMembers['mem1'].checkIns).toEqual([MOCK_CHECK_IN]);
     });
 
     it('sets detailError and detailLoading false when the api rejects', async () => {

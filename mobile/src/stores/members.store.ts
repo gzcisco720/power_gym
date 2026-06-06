@@ -5,16 +5,19 @@ import {
   fetchMemberBodyTests,
   fetchMemberInjuries,
   fetchMemberMedications,
+  fetchMemberCheckIns,
 } from '../lib/api/members.api';
 import { Member, MemberOverview } from '../types/members';
 import { BodyTest } from '../types/body-tests';
 import { Injury, Medication } from '../types/health';
+import { CheckIn } from '../types/check-ins';
 
 interface MemberDetail {
   overview: MemberOverview;
   bodyTests: BodyTest[];
   injuries: Injury[];
   medications: Medication[];
+  checkIns: CheckIn[];
 }
 
 interface MembersState {
@@ -59,16 +62,17 @@ export const useMembersStore = create<MembersState>((set, get) => ({
   async fetchMemberDetail(id: string): Promise<void> {
     set({ detailLoading: true, detailError: null });
     try {
-      const [overview, bodyTests, injuries, medications] = await Promise.all([
+      const [overview, bodyTests, injuries, medications, checkIns] = await Promise.all([
         fetchMemberOverview(id),
         fetchMemberBodyTests(id),
         fetchMemberInjuries(id),
         fetchMemberMedications(id),
+        fetchMemberCheckIns(id),
       ]);
       set((state) => ({
         selectedMembers: {
           ...state.selectedMembers,
-          [id]: { overview, bodyTests, injuries, medications },
+          [id]: { overview, bodyTests, injuries, medications, checkIns },
         },
         detailLoading: false,
       }));
