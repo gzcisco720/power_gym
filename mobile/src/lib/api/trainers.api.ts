@@ -5,6 +5,7 @@ import {
   TrainerMemberMetrics,
   TrainerSessionItem,
   TrainerTemplateItem,
+  TrainerOverviewStats,
 } from '../../types/trainers';
 
 export async function fetchTrainers(): Promise<TrainerListItem[]> {
@@ -34,6 +35,11 @@ export async function fetchTrainerTrainingPlans(id: string): Promise<TrainerTemp
 
 export async function fetchTrainerNutritionPlans(id: string): Promise<TrainerTemplateItem[]> {
   const response = await apiClient.get<TrainerTemplateItem[]>(`/trainers/${id}/nutrition-plans`);
+  return response.data;
+}
+
+export async function fetchTrainerOverviewStats(id: string): Promise<TrainerOverviewStats> {
+  const response = await apiClient.get<TrainerOverviewStats>(`/trainers/${id}/overview-stats`);
   return response.data;
 }
 

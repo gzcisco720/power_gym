@@ -6,6 +6,7 @@ import {
   fetchTrainerSessions as apiFetchTrainerSessions,
   fetchTrainerTrainingPlans as apiFetchTrainerTrainingPlans,
   fetchTrainerNutritionPlans as apiFetchTrainerNutritionPlans,
+  fetchTrainerOverviewStats as apiFetchTrainerOverviewStats,
   reassignMember as apiReassignMember,
 } from '../lib/api/trainers.api';
 import {
@@ -14,6 +15,7 @@ import {
   TrainerMemberMetrics,
   TrainerSessionItem,
   TrainerTemplateItem,
+  TrainerOverviewStats,
 } from '../types/trainers';
 
 interface TrainersState {
@@ -41,12 +43,17 @@ interface TrainersState {
   trainerNutritionPlansLoading: boolean;
   trainerNutritionPlansError: string | null;
 
+  overviewStats: TrainerOverviewStats | null;
+  overviewStatsLoading: boolean;
+  overviewStatsError: string | null;
+
   fetchTrainers(): Promise<void>;
   fetchTrainerDetail(id: string): Promise<void>;
   fetchTrainerMembers(id: string): Promise<void>;
   fetchTrainerSessions(id: string): Promise<void>;
   fetchTrainerTrainingPlans(id: string): Promise<void>;
   fetchTrainerNutritionPlans(id: string): Promise<void>;
+  fetchTrainerOverviewStats(id: string): Promise<void>;
   reassignMember(currentTrainerId: string, memberId: string, targetTrainerId: string): Promise<void>;
 }
 
@@ -74,6 +81,10 @@ export const useTrainersStore = create<TrainersState>((set, get) => ({
   trainerNutritionPlans: [],
   trainerNutritionPlansLoading: false,
   trainerNutritionPlansError: null,
+
+  overviewStats: null,
+  overviewStatsLoading: false,
+  overviewStatsError: null,
 
   async fetchTrainers(): Promise<void> {
     set({ loading: true, error: null });
@@ -138,6 +149,17 @@ export const useTrainersStore = create<TrainersState>((set, get) => ({
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       set({ trainerNutritionPlansLoading: false, trainerNutritionPlansError: message });
+    }
+  },
+
+  async fetchTrainerOverviewStats(id: string): Promise<void> {
+    set({ overviewStatsLoading: true, overviewStatsError: null });
+    try {
+      const overviewStats = await apiFetchTrainerOverviewStats(id);
+      set({ overviewStats, overviewStatsLoading: false });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      set({ overviewStatsLoading: false, overviewStatsError: message });
     }
   },
 

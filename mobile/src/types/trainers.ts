@@ -42,3 +42,24 @@ export interface TrainerDetail {
   joinDate: string;
   members: TrainerMember[];
 }
+
+export interface WeeklyScheduleEntry {
+  day: string;
+  count: number;
+}
+
+export interface SessionsTrendEntry {
+  month: string;
+  count: number;
+}
+
+export interface TrainerOverviewStats {
+  memberCount: number;
+  sessionsThisMonth: number;
+  templateCount: number;
+  activeMembersThisMonth: number;
+  newPRsThisMonth: number;
+  avgStreakDays: number;
+  weeklySchedule: WeeklyScheduleEntry[];
+  sessionsTrend: SessionsTrendEntry[];
+}

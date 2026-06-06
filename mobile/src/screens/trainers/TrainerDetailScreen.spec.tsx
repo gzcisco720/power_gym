@@ -40,6 +40,32 @@ function makeDetail(overrides: Partial<TrainerDetail> = {}): TrainerDetail {
   };
 }
 
+const MOCK_OVERVIEW_STATS = {
+  memberCount: 2,
+  sessionsThisMonth: 10,
+  templateCount: 3,
+  activeMembersThisMonth: 2,
+  newPRsThisMonth: 1,
+  avgStreakDays: 8,
+  weeklySchedule: [
+    { day: 'Mon', count: 1 },
+    { day: 'Tue', count: 2 },
+    { day: 'Wed', count: 0 },
+    { day: 'Thu', count: 1 },
+    { day: 'Fri', count: 3 },
+    { day: 'Sat', count: 0 },
+    { day: 'Sun', count: 0 },
+  ],
+  sessionsTrend: [
+    { month: '2025-12', count: 5 },
+    { month: '2026-01', count: 8 },
+    { month: '2026-02', count: 7 },
+    { month: '2026-03', count: 10 },
+    { month: '2026-04', count: 12 },
+    { month: '2026-05', count: 10 },
+  ],
+};
+
 function makeStoreState(overrides: Record<string, unknown> = {}) {
   return {
     trainers: [],
@@ -60,12 +86,16 @@ function makeStoreState(overrides: Record<string, unknown> = {}) {
     trainerNutritionPlans: [],
     trainerNutritionPlansLoading: false,
     trainerNutritionPlansError: null,
+    overviewStats: null,
+    overviewStatsLoading: false,
+    overviewStatsError: null,
     fetchTrainers: jest.fn(),
     fetchTrainerDetail: jest.fn(),
     fetchTrainerMembers: jest.fn(),
     fetchTrainerSessions: jest.fn(),
     fetchTrainerTrainingPlans: jest.fn(),
     fetchTrainerNutritionPlans: jest.fn(),
+    fetchTrainerOverviewStats: jest.fn(),
     reassignMember: jest.fn(),
     ...overrides,
   };
@@ -108,20 +138,15 @@ describe('TrainerDetailScreen', () => {
     expect(fetchTrainerDetail).toHaveBeenCalledWith('trainer1');
   });
 
-  it('Overview tab shows memberCount and formatted joinDate', () => {
+  it('Overview tab shows memberCount KPI when stats are loaded', () => {
     setupRoute('trainer1', 'Alice Smith');
-    const detail = makeDetail({
-      memberCount: 2,
-      joinDate: '2023-06-15T00:00:00.000Z',
-    });
-    setupStoreMock({ detail });
+    const detail = makeDetail({ memberCount: 2 });
+    setupStoreMock({ detail, overviewStats: MOCK_OVERVIEW_STATS });
 
-    const { getByText } = render(<TrainerDetailScreen />);
+    const { getByTestId } = render(<TrainerDetailScreen />);
 
-    // memberCount
-    expect(getByText('2')).toBeTruthy();
-    // joinDate formatted — should show the month and year at minimum
-    expect(getByText(/Jun.*2023|2023.*Jun/)).toBeTruthy();
+    expect(getByTestId('kpi-memberCount')).toBeTruthy();
+    expect(getByTestId('kpi-sessionsThisMonth')).toBeTruthy();
   });
 
   it('tapping Members tab renders store-based member rows', () => {

@@ -328,21 +328,33 @@ Add `fetchTrainerOverviewStats` to trainers.api, hold in trainers.store, render 
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `trainersStore > fetchTrainerOverviewStats > stores stats and clears loading on success`
-- [ ] `TrainerOverviewTab > renders > shows all 6 KPI cells with their values`
-- [ ] `WeeklyScheduleBar > renders > renders 7 day bars Mon–Sun with heights proportional to counts`
-- [ ] `SessionsTrendChart > renders > renders one bar per month for the 6-month trend`
+- [x] `trainersStore > fetchTrainerOverviewStats > stores stats and clears loading on success`
+- [x] `TrainerOverviewTab > renders > shows all 6 KPI cells with their values`
+- [x] `WeeklyScheduleBar > renders > renders 7 day bars Mon–Sun with heights proportional to counts`
+- [x] `SessionsTrendChart > renders > renders one bar per month for the 6-month trend`
 
 *E2E (Detox):*
-- [ ] Owner opens a trainer detail Overview tab → the 6 KPI cells, weekly schedule chart, and 6-month trend chart are all visible
-- [ ] Owner opens Overview for a trainer with no sessions → KPI cells render zeros and charts render empty/zeroed without crashing
+- [x] Owner opens a trainer detail Overview tab → the 6 KPI cells, weekly schedule chart, and 6-month trend chart are all visible
+- [x] Owner opens Overview for a trainer with no sessions → KPI cells render zeros and charts render empty/zeroed without crashing
 
 **TDD sequence**:
 1. Write failing store + component unit tests → Red
 2. Add API/store wiring + rebuild TrainerOverviewTab + charts → Green
 3. Write Detox spec, run against simulator → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 6 Checkpoint
+- [x] TrainerOverviewStats type added to types/trainers.ts
+- [x] fetchTrainerOverviewStats added to trainers.api.ts
+- [x] trainers.store.ts wired with overviewStats state + fetchTrainerOverviewStats action
+- [x] trainers.store.spec.ts updated with fetchTrainerOverviewStats tests
+- [x] WeeklyScheduleBar.tsx created
+- [x] SessionsTrendChart.tsx created
+- [x] TrainerOverviewTab.tsx rebuilt with 6-cell KPI grid + charts
+- [x] TrainerDetailScreen.tsx updated to pass trainerId prop
+- [x] trainer-overview.spec.tsx component + store unit tests
+- [x] trainer-overview.spec.ts Detox E2E spec
 
 ---
 

@@ -92,7 +92,7 @@ export function TrainerDetailScreen() {
       ) : (
         <>
           {activeTab === 'overview' ? (
-            <TrainerOverviewTab detail={detail} />
+            <TrainerOverviewTab trainerId={trainerId} detail={detail} />
           ) : null}
           {activeTab === 'members' ? (
             <TrainerMembersTab trainerId={trainerId} />

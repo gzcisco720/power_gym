@@ -5,12 +5,13 @@ jest.mock('../lib/api/trainers.api', () => ({
   fetchTrainerSessions: jest.fn(),
   fetchTrainerTrainingPlans: jest.fn(),
   fetchTrainerNutritionPlans: jest.fn(),
+  fetchTrainerOverviewStats: jest.fn(),
   reassignMember: jest.fn(),
 }));
 
 import * as trainersApi from '../lib/api/trainers.api';
 import { useTrainersStore } from './trainers.store';
-import { TrainerListItem, TrainerDetail, TrainerMemberMetrics, TrainerSessionItem, TrainerTemplateItem } from '../types/trainers';
+import { TrainerListItem, TrainerDetail, TrainerMemberMetrics, TrainerSessionItem, TrainerTemplateItem, TrainerOverviewStats } from '../types/trainers';
 
 const mockFetchTrainers = trainersApi.fetchTrainers as jest.MockedFunction<
   typeof trainersApi.fetchTrainers
@@ -32,6 +33,9 @@ const mockFetchTrainerNutritionPlans = trainersApi.fetchTrainerNutritionPlans as
 >;
 const mockReassignMember = trainersApi.reassignMember as jest.MockedFunction<
   typeof trainersApi.reassignMember
+>;
+const mockFetchTrainerOverviewStats = trainersApi.fetchTrainerOverviewStats as jest.MockedFunction<
+  typeof trainersApi.fetchTrainerOverviewStats
 >;
 
 const MOCK_TRAINER: TrainerListItem = {
@@ -78,6 +82,32 @@ const MOCK_NUTRITION_PLANS: TrainerTemplateItem[] = [
   { id: 'np1', name: 'Cut Diet', dayCount: 7, createdAt: '2026-01-02T00:00:00.000Z' },
 ];
 
+const MOCK_OVERVIEW_STATS: TrainerOverviewStats = {
+  memberCount: 3,
+  sessionsThisMonth: 12,
+  templateCount: 5,
+  activeMembersThisMonth: 2,
+  newPRsThisMonth: 1,
+  avgStreakDays: 10,
+  weeklySchedule: [
+    { day: 'Mon', count: 2 },
+    { day: 'Tue', count: 3 },
+    { day: 'Wed', count: 1 },
+    { day: 'Thu', count: 2 },
+    { day: 'Fri', count: 4 },
+    { day: 'Sat', count: 0 },
+    { day: 'Sun', count: 0 },
+  ],
+  sessionsTrend: [
+    { month: '2025-12', count: 8 },
+    { month: '2026-01', count: 10 },
+    { month: '2026-02', count: 9 },
+    { month: '2026-03', count: 14 },
+    { month: '2026-04', count: 16 },
+    { month: '2026-05', count: 12 },
+  ],
+};
+
 function resetStore() {
   useTrainersStore.setState({
     trainers: [],
@@ -98,6 +128,9 @@ function resetStore() {
     trainerNutritionPlans: [],
     trainerNutritionPlansLoading: false,
     trainerNutritionPlansError: null,
+    overviewStats: null,
+    overviewStatsLoading: false,
+    overviewStatsError: null,
   });
 }
 
@@ -227,6 +260,30 @@ describe('useTrainersStore', () => {
 
       expect(mockReassignMember).toHaveBeenCalledWith('tr1', 'm1', 'tr2');
       expect(mockFetchTrainerMembers).toHaveBeenCalledWith('tr1');
+    });
+  });
+
+  describe('fetchTrainerOverviewStats', () => {
+    it('stores stats and clears loading on success', async () => {
+      mockFetchTrainerOverviewStats.mockResolvedValueOnce(MOCK_OVERVIEW_STATS);
+
+      await useTrainersStore.getState().fetchTrainerOverviewStats('tr1');
+
+      const state = useTrainersStore.getState();
+      expect(state.overviewStats).toEqual(MOCK_OVERVIEW_STATS);
+      expect(state.overviewStatsLoading).toBe(false);
+      expect(state.overviewStatsError).toBeNull();
+    });
+
+    it('sets overviewStatsError and clears overviewStatsLoading on failure', async () => {
+      mockFetchTrainerOverviewStats.mockRejectedValueOnce(new Error('Server error'));
+
+      await useTrainersStore.getState().fetchTrainerOverviewStats('tr1');
+
+      const state = useTrainersStore.getState();
+      expect(state.overviewStats).toBeNull();
+      expect(state.overviewStatsLoading).toBe(false);
+      expect(state.overviewStatsError).toBe('Server error');
     });
   });
 });
