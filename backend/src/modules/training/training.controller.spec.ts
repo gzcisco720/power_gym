@@ -49,6 +49,10 @@ describe('TrainingController', () => {
     getHistory: jest.Mock;
     getProgress: jest.Mock;
     getExerciseHistory: jest.Mock;
+    getMemberPlan: jest.Mock;
+    startMemberSession: jest.Mock;
+    patchMemberSet: jest.Mock;
+    finishMemberSession: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -65,6 +69,10 @@ describe('TrainingController', () => {
       getExerciseHistory: jest
         .fn()
         .mockResolvedValue({ exerciseId: '', exerciseName: '', sessions: [] }),
+      getMemberPlan: jest.fn().mockResolvedValue(null),
+      startMemberSession: jest.fn().mockResolvedValue({ _id: SESSION_ID }),
+      patchMemberSet: jest.fn().mockResolvedValue({ _id: SESSION_ID }),
+      finishMemberSession: jest.fn().mockResolvedValue({ _id: SESSION_ID }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -177,6 +185,55 @@ describe('TrainingController', () => {
       await controller.getProgress(req, MEMBER_ID);
 
       expect(service.getProgress).toHaveBeenCalledWith(
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+      );
+    });
+  });
+
+  describe('getMemberPlan', () => {
+    it('delegates to service with memberId, caller sub and role', async () => {
+      const req = { user: trainerUser } as RequestWithUser & Request;
+      const mockRes = {
+        setHeader: jest.fn(),
+        send: jest.fn(),
+      };
+
+      await controller.getMemberPlan(req, MEMBER_ID, mockRes as never);
+
+      expect(service.getMemberPlan).toHaveBeenCalledWith(
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+      );
+    });
+  });
+
+  describe('startMemberSession', () => {
+    it('delegates to service with memberId, dto.dayNumber, caller sub and role', async () => {
+      const req = { user: trainerUser } as RequestWithUser & Request;
+      const dto = { dayNumber: 1 };
+
+      await controller.startMemberSession(req, MEMBER_ID, dto);
+
+      expect(service.startMemberSession).toHaveBeenCalledWith(
+        MEMBER_ID,
+        1,
+        TRAINER_ID,
+        'trainer',
+      );
+    });
+  });
+
+  describe('finishMemberSession', () => {
+    it('delegates to service with sessionId, memberId, caller sub and role', async () => {
+      const req = { user: trainerUser } as RequestWithUser & Request;
+
+      await controller.finishMemberSession(req, MEMBER_ID, SESSION_ID);
+
+      expect(service.finishMemberSession).toHaveBeenCalledWith(
+        SESSION_ID,
         MEMBER_ID,
         TRAINER_ID,
         'trainer',

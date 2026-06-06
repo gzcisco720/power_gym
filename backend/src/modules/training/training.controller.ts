@@ -85,6 +85,75 @@ export class TrainingController {
     );
   }
 
+  @Get('members/:memberId/plan')
+  @Roles('owner', 'trainer')
+  async getMemberPlan(
+    @Request() req: RequestWithUser,
+    @Param('memberId') memberId: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const plan = await this.trainingService.getMemberPlan(
+      memberId,
+      req.user.sub,
+      req.user.role,
+    );
+    if (plan === null) {
+      res.setHeader('Content-Type', 'application/json');
+      res.send('null');
+      return;
+    }
+    return plan;
+  }
+
+  @Post('members/:memberId/sessions')
+  @HttpCode(HttpStatus.CREATED)
+  @Roles('owner', 'trainer')
+  startMemberSession(
+    @Request() req: RequestWithUser,
+    @Param('memberId') memberId: string,
+    @Body() dto: StartSessionDto,
+  ) {
+    return this.trainingService.startMemberSession(
+      memberId,
+      dto.dayNumber,
+      req.user.sub,
+      req.user.role,
+    );
+  }
+
+  @Patch('members/:memberId/sessions/:id/sets')
+  @Roles('owner', 'trainer')
+  patchMemberSet(
+    @Request() req: RequestWithUser,
+    @Param('memberId') memberId: string,
+    @Param('id') id: string,
+    @Body() dto: PatchSetDto,
+  ) {
+    return this.trainingService.patchMemberSet(
+      id,
+      memberId,
+      req.user.sub,
+      req.user.role,
+      dto,
+    );
+  }
+
+  @Post('members/:memberId/sessions/:id/finish')
+  @HttpCode(HttpStatus.OK)
+  @Roles('owner', 'trainer')
+  finishMemberSession(
+    @Request() req: RequestWithUser,
+    @Param('memberId') memberId: string,
+    @Param('id') id: string,
+  ) {
+    return this.trainingService.finishMemberSession(
+      id,
+      memberId,
+      req.user.sub,
+      req.user.role,
+    );
+  }
+
   @Get('members/:memberId/history')
   @Roles('owner', 'trainer')
   getHistory(

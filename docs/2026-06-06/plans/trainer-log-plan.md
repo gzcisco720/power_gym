@@ -71,29 +71,29 @@ cross-app: `backend/` (NestJS training endpoints) + `mobile/` (React Native trai
 **Sprint Contract**:
 
 *Unit tests (training.service.spec.ts):*
-- [ ] `TrainingService > getMemberPlan > returns the member's active MemberPlan when caller is the assigned trainer`
-- [ ] `TrainingService > getMemberPlan > returns null when the member has no active plan`
-- [ ] `TrainingService > getMemberPlan > throws NotFoundException when trainer is not the member's assigned trainer`
-- [ ] `TrainingService > startMemberSession > creates a WorkoutSession with one set per prescribed set and sets loggedBy to the caller id`
-- [ ] `TrainingService > startMemberSession > throws NotFoundException when the member has no active plan`
-- [ ] `TrainingService > patchMemberSet > updates actualReps/actualWeight/completedAt on the matching set and returns the session`
-- [ ] `TrainingService > patchMemberSet > throws BadRequestException when the session is already completed`
-- [ ] `TrainingService > finishMemberSession > sets completedAt and returns the session`
-- [ ] `TrainingService > finishMemberSession > throws NotFoundException when the session does not belong to the member`
+- [x] `TrainingService > getMemberPlan > returns the member's active MemberPlan when caller is the assigned trainer`
+- [x] `TrainingService > getMemberPlan > returns null when the member has no active plan`
+- [x] `TrainingService > getMemberPlan > throws NotFoundException when trainer is not the member's assigned trainer`
+- [x] `TrainingService > startMemberSession > creates a WorkoutSession with one set per prescribed set and sets loggedBy to the caller id`
+- [x] `TrainingService > startMemberSession > throws NotFoundException when the member has no active plan`
+- [x] `TrainingService > patchMemberSet > updates actualReps/actualWeight/completedAt on the matching set and returns the session`
+- [x] `TrainingService > patchMemberSet > throws BadRequestException when the session is already completed`
+- [x] `TrainingService > finishMemberSession > sets completedAt and returns the session`
+- [x] `TrainingService > finishMemberSession > throws NotFoundException when the session does not belong to the member`
 
 *Unit tests (training.controller.spec.ts):*
-- [ ] `TrainingController > getMemberPlan > delegates to service with memberId, caller sub and role`
-- [ ] `TrainingController > startMemberSession > delegates to service with memberId, dto.dayNumber, caller sub and role`
-- [ ] `TrainingController > finishMemberSession > delegates to service with sessionId, memberId, caller sub and role`
+- [x] `TrainingController > getMemberPlan > delegates to service with memberId, caller sub and role`
+- [x] `TrainingController > startMemberSession > delegates to service with memberId, dto.dayNumber, caller sub and role`
+- [x] `TrainingController > finishMemberSession > delegates to service with sessionId, memberId, caller sub and role`
 
 *Integration (backend/test/training.e2e-spec.ts):*
-- [ ] `GET /training/members/:memberId/plan` as assigned trainer → 200 with the active plan body (name + days)
-- [ ] `GET /training/members/:memberId/plan` as `member` role → 403 (role guard)
-- [ ] `GET /training/members/:memberId/plan` as other-trainer (member not theirs) → 404
-- [ ] `POST /training/members/:memberId/sessions` as assigned trainer with `{ dayNumber: 1 }` → 201 with a WorkoutSession whose `loggedBy` equals the trainer id
-- [ ] `PATCH /training/members/:memberId/sessions/:id/sets` as assigned trainer with a valid set → 200 and that set has a non-null `completedAt`
-- [ ] `POST /training/members/:memberId/sessions/:id/finish` as assigned trainer → 200 and the returned session has a non-null `completedAt`
-- [ ] `POST /training/members/:memberId/sessions/:id/finish` on an already-finished session → 400
+- [x] `GET /training/members/:memberId/plan` as assigned trainer → 200 with the active plan body (name + days)
+- [x] `GET /training/members/:memberId/plan` as `member` role → 403 (role guard)
+- [x] `GET /training/members/:memberId/plan` as other-trainer (member not theirs) → 404
+- [x] `POST /training/members/:memberId/sessions` as assigned trainer with `{ dayNumber: 1 }` → 201 with a WorkoutSession whose `loggedBy` equals the trainer id
+- [x] `PATCH /training/members/:memberId/sessions/:id/sets` as assigned trainer with a valid set → 200 and that set has a non-null `completedAt`
+- [x] `POST /training/members/:memberId/sessions/:id/finish` as assigned trainer → 200 and the returned session has a non-null `completedAt`
+- [x] `POST /training/members/:memberId/sessions/:id/finish` on an already-finished session → 400
 
 **TDD sequence**:
 1. Write failing service + controller unit tests → Red
@@ -102,7 +102,7 @@ cross-app: `backend/` (NestJS training endpoints) + `mobile/` (React Native trai
 
 **Dependencies**: None.
 
-**Status**: Not Started
+**Status**: Complete
 
 ---
 

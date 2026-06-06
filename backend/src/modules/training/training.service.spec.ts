@@ -613,6 +613,197 @@ describe('TrainingService', () => {
     });
   });
 
+  // ─── getMemberPlan ────────────────────────────────────────────────────────────
+
+  describe('getMemberPlan', () => {
+    it("returns the member's active MemberPlan when caller is the assigned trainer", async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+      memberPlanModel.findOne.mockResolvedValue(sampleActivePlan);
+
+      const result = await service.getMemberPlan(
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+      );
+
+      expect(result).toEqual(sampleActivePlan);
+      expect(memberPlanModel.findOne).toHaveBeenCalledWith({
+        memberId: new Types.ObjectId(MEMBER_ID),
+        isActive: true,
+      });
+    });
+
+    it('returns null when the member has no active plan', async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+      memberPlanModel.findOne.mockResolvedValue(null);
+
+      const result = await service.getMemberPlan(
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+      );
+
+      expect(result).toBeNull();
+    });
+
+    it("throws NotFoundException when trainer is not the member's assigned trainer", async () => {
+      userModel.findById.mockResolvedValue({
+        ...sampleMember,
+        trainerId: new Types.ObjectId(OTHER_TRAINER_ID),
+      });
+
+      await expect(
+        service.getMemberPlan(MEMBER_ID, TRAINER_ID, 'trainer'),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // ─── startMemberSession ───────────────────────────────────────────────────────
+
+  describe('startMemberSession', () => {
+    it('creates a WorkoutSession with one set per prescribed set and sets loggedBy to the caller id', async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+      memberPlanModel.findOne.mockResolvedValue(sampleActivePlan);
+      const sessionWithLoggedBy = {
+        ...sampleSession,
+        loggedBy: new Types.ObjectId(TRAINER_ID),
+      };
+      workoutSessionModel.create.mockResolvedValue(sessionWithLoggedBy);
+
+      const result = await service.startMemberSession(
+        MEMBER_ID,
+        1,
+        TRAINER_ID,
+        'trainer',
+      );
+
+      type CreateCallArg = {
+        sets: Array<{
+          setNumber: number;
+          actualReps: null;
+          actualWeight: null;
+          completedAt: null;
+        }>;
+        loggedBy: Types.ObjectId;
+      };
+      const rawCall = workoutSessionModel.create.mock.calls[0] as [
+        CreateCallArg,
+      ];
+      const createArg = rawCall[0];
+      expect(createArg.sets).toHaveLength(3);
+      expect(createArg.loggedBy).toEqual(new Types.ObjectId(TRAINER_ID));
+      expect(result).toEqual(sessionWithLoggedBy);
+    });
+
+    it('throws NotFoundException when the member has no active plan', async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+      memberPlanModel.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.startMemberSession(MEMBER_ID, 1, TRAINER_ID, 'trainer'),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // ─── patchMemberSet ───────────────────────────────────────────────────────────
+
+  describe('patchMemberSet', () => {
+    it('updates actualReps/actualWeight/completedAt on the matching set and returns the session', async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+      const sessionDoc = {
+        ...sampleSession,
+        sets: sampleSession.sets.map((s) => ({ ...s })),
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      workoutSessionModel.findById.mockResolvedValue(sessionDoc);
+
+      const result = await service.patchMemberSet(
+        SESSION_ID,
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+        {
+          setNumber: 1,
+          exerciseId: EXERCISE_ID,
+          actualReps: 10,
+          actualWeight: 80,
+        },
+      );
+
+      const patchedSet = sessionDoc.sets.find(
+        (s: { setNumber: number; exerciseId: { toString: () => string } }) =>
+          s.setNumber === 1 && s.exerciseId.toString() === EXERCISE_ID,
+      );
+      expect(patchedSet?.actualReps).toBe(10);
+      expect(patchedSet?.actualWeight).toBe(80);
+      expect(patchedSet?.completedAt).toBeTruthy();
+      expect(sessionDoc.save).toHaveBeenCalled();
+      expect(result).toEqual(sessionDoc);
+    });
+
+    it('throws BadRequestException when the session is already completed', async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+      workoutSessionModel.findById.mockResolvedValue({
+        ...sampleSession,
+        memberId: new Types.ObjectId(MEMBER_ID),
+        completedAt: new Date(),
+      });
+
+      await expect(
+        service.patchMemberSet(SESSION_ID, MEMBER_ID, TRAINER_ID, 'trainer', {
+          setNumber: 1,
+          exerciseId: EXERCISE_ID,
+          actualReps: 10,
+          actualWeight: null,
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  // ─── finishMemberSession ──────────────────────────────────────────────────────
+
+  describe('finishMemberSession', () => {
+    it('sets completedAt and returns the session', async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+      const sessionDoc = {
+        ...sampleSession,
+        memberId: new Types.ObjectId(MEMBER_ID),
+        completedAt: null,
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      workoutSessionModel.findById.mockResolvedValue(sessionDoc);
+
+      const result = await service.finishMemberSession(
+        SESSION_ID,
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+      );
+
+      expect(sessionDoc.completedAt).toBeTruthy();
+      expect(sessionDoc.save).toHaveBeenCalled();
+      expect(result).toEqual(sessionDoc);
+    });
+
+    it('throws NotFoundException when the session does not belong to the member', async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+      workoutSessionModel.findById.mockResolvedValue({
+        ...sampleSession,
+        memberId: new Types.ObjectId(), // different member
+        completedAt: null,
+      });
+
+      await expect(
+        service.finishMemberSession(
+          SESSION_ID,
+          MEMBER_ID,
+          TRAINER_ID,
+          'trainer',
+        ),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
   // ─── getExerciseHistory ───────────────────────────────────────────────────────
 
   describe('getExerciseHistory', () => {

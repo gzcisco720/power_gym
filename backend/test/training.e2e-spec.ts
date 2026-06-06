@@ -674,6 +674,178 @@ describe('Training (e2e)', () => {
     });
   });
 
+  // ─── GET /training/members/:memberId/plan ─────────────────────────────────────
+
+  describe('GET /training/members/:memberId/plan', () => {
+    beforeAll(async () => {
+      // Ensure member has an active plan via dev seed
+      await request(app.getHttpServer())
+        .post('/training/dev/seed')
+        .send({
+          memberEmail: MEMBER_EMAIL,
+          ownerEmail: OWNER_EMAIL,
+          templateId,
+        })
+        .expect(200);
+    });
+
+    it('assigned trainer → 200 with active plan body (name + days)', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/training/members/${memberId}/plan`)
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(200);
+
+      const body = res.body as Record<string, unknown>;
+      expect(body).toHaveProperty('name', 'E2E Push Day');
+      expect(Array.isArray(body.days)).toBe(true);
+    });
+
+    it('member role → 403', async () => {
+      await request(app.getHttpServer())
+        .get(`/training/members/${memberId}/plan`)
+        .set('Authorization', `Bearer ${memberToken}`)
+        .expect(403);
+    });
+
+    it('other-trainer (member not theirs) → 404', async () => {
+      await request(app.getHttpServer())
+        .get(`/training/members/${memberId}/plan`)
+        .set('Authorization', `Bearer ${otherTrainerToken}`)
+        .expect(404);
+    });
+  });
+
+  // ─── POST /training/members/:memberId/sessions ────────────────────────────────
+
+  describe('POST /training/members/:memberId/sessions', () => {
+    it('assigned trainer with { dayNumber: 1 } → 201 with WorkoutSession where loggedBy equals trainer id', async () => {
+      // Ensure member has an active plan
+      await request(app.getHttpServer())
+        .post('/training/dev/seed')
+        .send({
+          memberEmail: MEMBER_EMAIL,
+          ownerEmail: OWNER_EMAIL,
+          templateId,
+        })
+        .expect(200);
+
+      const loginRes = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ email: TRAINER_EMAIL, password: TEST_PASSWORD })
+        .expect(201);
+      const trainerId = (
+        loginRes.body as { accessToken: string; user: { id: string } }
+      ).user.id;
+
+      const res = await request(app.getHttpServer())
+        .post(`/training/members/${memberId}/sessions`)
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .send({ dayNumber: 1 })
+        .expect(201);
+
+      const body = res.body as Record<string, unknown>;
+      expect(body).toHaveProperty('_id');
+      expect(body).toHaveProperty('dayNumber', 1);
+      expect(body.loggedBy).toBe(trainerId);
+    });
+  });
+
+  // ─── PATCH /training/members/:memberId/sessions/:id/sets ─────────────────────
+
+  describe('PATCH /training/members/:memberId/sessions/:id/sets', () => {
+    let trainerSessionId: string;
+
+    beforeAll(async () => {
+      // Ensure member has an active plan
+      await request(app.getHttpServer())
+        .post('/training/dev/seed')
+        .send({
+          memberEmail: MEMBER_EMAIL,
+          ownerEmail: OWNER_EMAIL,
+          templateId,
+        })
+        .expect(200);
+
+      // Start a trainer session
+      const res = await request(app.getHttpServer())
+        .post(`/training/members/${memberId}/sessions`)
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .send({ dayNumber: 1 })
+        .expect(201);
+      trainerSessionId = (res.body as { _id: string })._id;
+    });
+
+    it('assigned trainer with valid set → 200 and that set has non-null completedAt', async () => {
+      const res = await request(app.getHttpServer())
+        .patch(
+          `/training/members/${memberId}/sessions/${trainerSessionId}/sets`,
+        )
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .send({
+          setNumber: 1,
+          exerciseId: exerciseId.toString(),
+          actualReps: 10,
+          actualWeight: 80,
+        })
+        .expect(200);
+
+      const body = res.body as Record<string, unknown>;
+      const sets = body.sets as Array<Record<string, unknown>>;
+      const patchedSet = sets.find(
+        (s) => s.setNumber === 1 && s.exerciseId === exerciseId.toString(),
+      );
+      expect(patchedSet).toBeDefined();
+      expect(patchedSet?.completedAt).not.toBeNull();
+    });
+  });
+
+  // ─── POST /training/members/:memberId/sessions/:id/finish ─────────────────────
+
+  describe('POST /training/members/:memberId/sessions/:id/finish', () => {
+    let trainerFinishSessionId: string;
+
+    beforeAll(async () => {
+      // Ensure member has an active plan
+      await request(app.getHttpServer())
+        .post('/training/dev/seed')
+        .send({
+          memberEmail: MEMBER_EMAIL,
+          ownerEmail: OWNER_EMAIL,
+          templateId,
+        })
+        .expect(200);
+
+      // Start a trainer session for finishing
+      const res = await request(app.getHttpServer())
+        .post(`/training/members/${memberId}/sessions`)
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .send({ dayNumber: 1 })
+        .expect(201);
+      trainerFinishSessionId = (res.body as { _id: string })._id;
+    });
+
+    it('assigned trainer → 200 and session has non-null completedAt', async () => {
+      const res = await request(app.getHttpServer())
+        .post(
+          `/training/members/${memberId}/sessions/${trainerFinishSessionId}/finish`,
+        )
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(200);
+
+      const body = res.body as Record<string, unknown>;
+      expect(body.completedAt).not.toBeNull();
+    });
+
+    it('already-finished session → 400', async () => {
+      await request(app.getHttpServer())
+        .post(
+          `/training/members/${memberId}/sessions/${trainerFinishSessionId}/finish`,
+        )
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(400);
+    });
+  });
+
   // ─── validDay is used ─────────────────────────────────────────────────────────
   // Reference to silence unused var lint warning:
   void validDay;
