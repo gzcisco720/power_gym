@@ -6,7 +6,6 @@ Sprint Contract plans only. One row per active plan.
 
 | Feature | Plan File | Status |
 |---|---|---|
-| Trainer Log for Member (Mobile) | [2026-06-06/plans/trainer-log-plan.md](2026-06-06/plans/trainer-log-plan.md) | In Progress |
 
 ## Management Files
 
