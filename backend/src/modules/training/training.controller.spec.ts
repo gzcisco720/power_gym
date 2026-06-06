@@ -55,6 +55,10 @@ describe('TrainingController', () => {
     finishMemberSession: jest.Mock;
     getSelfSessions: jest.Mock;
     getSelfSession: jest.Mock;
+    addSet: jest.Mock;
+    deleteSet: jest.Mock;
+    addMemberSet: jest.Mock;
+    deleteMemberSet: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -77,6 +81,10 @@ describe('TrainingController', () => {
       finishMemberSession: jest.fn().mockResolvedValue({ _id: SESSION_ID }),
       getSelfSessions: jest.fn().mockResolvedValue([]),
       getSelfSession: jest.fn().mockResolvedValue({ _id: SESSION_ID }),
+      addSet: jest.fn().mockResolvedValue({ _id: SESSION_ID }),
+      deleteSet: jest.fn().mockResolvedValue({ _id: SESSION_ID }),
+      addMemberSet: jest.fn().mockResolvedValue({ _id: SESSION_ID }),
+      deleteMemberSet: jest.fn().mockResolvedValue({ _id: SESSION_ID }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -162,9 +170,13 @@ describe('TrainingController', () => {
     it('delegates to service with sessionId and memberId', async () => {
       const req = { user: memberUser } as RequestWithUser & Request;
 
-      await controller.finishSession(req, SESSION_ID);
+      await controller.finishSession(req, SESSION_ID, {});
 
-      expect(service.finishSession).toHaveBeenCalledWith(SESSION_ID, MEMBER_ID);
+      expect(service.finishSession).toHaveBeenCalledWith(
+        SESSION_ID,
+        MEMBER_ID,
+        undefined,
+      );
     });
   });
 
@@ -234,13 +246,14 @@ describe('TrainingController', () => {
     it('delegates to service with sessionId, memberId, caller sub and role', async () => {
       const req = { user: trainerUser } as RequestWithUser & Request;
 
-      await controller.finishMemberSession(req, MEMBER_ID, SESSION_ID);
+      await controller.finishMemberSession(req, MEMBER_ID, SESSION_ID, {});
 
       expect(service.finishMemberSession).toHaveBeenCalledWith(
         SESSION_ID,
         MEMBER_ID,
         TRAINER_ID,
         'trainer',
+        undefined,
       );
     });
   });
@@ -277,7 +290,128 @@ describe('TrainingController', () => {
 
       await controller.getSelfSession(req, SESSION_ID);
 
-      expect(service.getSelfSession).toHaveBeenCalledWith(SESSION_ID, TRAINER_ID);
+      expect(service.getSelfSession).toHaveBeenCalledWith(
+        SESSION_ID,
+        TRAINER_ID,
+      );
+    });
+  });
+
+  describe('finishSession (with rpe)', () => {
+    it('passes rpe from body to service', async () => {
+      const req = { user: memberUser } as RequestWithUser & Request;
+
+      await controller.finishSession(req, SESSION_ID, { rpe: 8 });
+
+      expect(service.finishSession).toHaveBeenCalledWith(
+        SESSION_ID,
+        MEMBER_ID,
+        8,
+      );
+    });
+
+    it('passes undefined rpe when body is empty', async () => {
+      const req = { user: memberUser } as RequestWithUser & Request;
+
+      await controller.finishSession(req, SESSION_ID, {});
+
+      expect(service.finishSession).toHaveBeenCalledWith(
+        SESSION_ID,
+        MEMBER_ID,
+        undefined,
+      );
+    });
+  });
+
+  describe('addSet', () => {
+    it('delegates to service with sessionId, memberId, exerciseId', async () => {
+      const req = { user: memberUser } as RequestWithUser & Request;
+      const EXERCISE_ID = new Types.ObjectId().toString();
+
+      await controller.addSet(req, SESSION_ID, { exerciseId: EXERCISE_ID });
+
+      expect(service.addSet).toHaveBeenCalledWith(
+        SESSION_ID,
+        MEMBER_ID,
+        EXERCISE_ID,
+      );
+    });
+  });
+
+  describe('deleteSet', () => {
+    it('delegates to service with sessionId, memberId, exerciseId, setNumber', async () => {
+      const req = { user: memberUser } as RequestWithUser & Request;
+      const EXERCISE_ID = new Types.ObjectId().toString();
+
+      await controller.deleteSet(req, SESSION_ID, {
+        exerciseId: EXERCISE_ID,
+        setNumber: 4,
+      });
+
+      expect(service.deleteSet).toHaveBeenCalledWith(
+        SESSION_ID,
+        MEMBER_ID,
+        EXERCISE_ID,
+        4,
+      );
+    });
+  });
+
+  describe('finishMemberSession (with rpe)', () => {
+    it('passes rpe from body to service', async () => {
+      const req = { user: trainerUser } as RequestWithUser & Request;
+
+      await controller.finishMemberSession(req, MEMBER_ID, SESSION_ID, {
+        rpe: 7,
+      });
+
+      expect(service.finishMemberSession).toHaveBeenCalledWith(
+        SESSION_ID,
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+        7,
+      );
+    });
+  });
+
+  describe('addMemberSet', () => {
+    it('delegates to service with all scoped params', async () => {
+      const req = { user: trainerUser } as RequestWithUser & Request;
+      const EXERCISE_ID = new Types.ObjectId().toString();
+
+      await controller.addMemberSet(req, MEMBER_ID, SESSION_ID, {
+        exerciseId: EXERCISE_ID,
+      });
+
+      expect(service.addMemberSet).toHaveBeenCalledWith(
+        SESSION_ID,
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+        EXERCISE_ID,
+      );
+    });
+  });
+
+  describe('deleteMemberSet', () => {
+    it('delegates to service with all scoped params', async () => {
+      const req = { user: trainerUser } as RequestWithUser & Request;
+      const EXERCISE_ID = new Types.ObjectId().toString();
+
+      await controller.deleteMemberSet(req, MEMBER_ID, SESSION_ID, {
+        exerciseId: EXERCISE_ID,
+        setNumber: 4,
+      });
+
+      expect(service.deleteMemberSet).toHaveBeenCalledWith(
+        SESSION_ID,
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+        EXERCISE_ID,
+        4,
+      );
     });
   });
 });

@@ -192,6 +192,7 @@ export class TrainingService {
   async finishSession(
     sessionId: string,
     memberId: string,
+    rpe?: number,
   ): Promise<WorkoutSessionDocument> {
     const session = await this.workoutSessionModel.findById(sessionId);
 
@@ -203,7 +204,93 @@ export class TrainingService {
       throw new BadRequestException('Session is already completed');
     }
 
+    if (rpe !== undefined) {
+      session.rpe = rpe;
+    }
     session.completedAt = new Date();
+    await session.save();
+    return session;
+  }
+
+  async addSet(
+    sessionId: string,
+    memberId: string,
+    exerciseId: string,
+  ): Promise<WorkoutSessionDocument> {
+    const session = await this.workoutSessionModel.findById(sessionId);
+
+    if (!session || session.memberId.toString() !== memberId) {
+      throw new NotFoundException('Session not found');
+    }
+
+    if (session.completedAt !== null) {
+      throw new BadRequestException('Session is already completed');
+    }
+
+    const exerciseSets = session.sets.filter(
+      (s) => s.exerciseId.toString() === exerciseId,
+    );
+
+    if (exerciseSets.length === 0) {
+      throw new NotFoundException('Exercise not found in session');
+    }
+
+    const maxSetNumber = Math.max(...exerciseSets.map((s) => s.setNumber));
+    const reference = exerciseSets[0];
+
+    session.sets.push({
+      exerciseId: new Types.ObjectId(exerciseId),
+      exerciseName: reference.exerciseName,
+      groupId: reference.groupId,
+      isSuperset: reference.isSuperset,
+      isBodyweight: reference.isBodyweight,
+      setNumber: maxSetNumber + 1,
+      prescribedRepsMin: reference.prescribedRepsMin,
+      prescribedRepsMax: reference.prescribedRepsMax,
+      isExtraSet: true,
+      actualReps: null,
+      actualWeight: null,
+      completedAt: null,
+    });
+
+    session.lastActivityAt = new Date();
+    await session.save();
+    return session;
+  }
+
+  async deleteSet(
+    sessionId: string,
+    memberId: string,
+    exerciseId: string,
+    setNumber: number,
+  ): Promise<WorkoutSessionDocument> {
+    const session = await this.workoutSessionModel.findById(sessionId);
+
+    if (!session || session.memberId.toString() !== memberId) {
+      throw new NotFoundException('Session not found');
+    }
+
+    if (session.completedAt !== null) {
+      throw new BadRequestException('Session is already completed');
+    }
+
+    const targetIdx = session.sets.findIndex(
+      (s) =>
+        s.exerciseId.toString() === exerciseId && s.setNumber === setNumber,
+    );
+
+    if (targetIdx === -1) {
+      throw new NotFoundException('Set not found');
+    }
+
+    const target = session.sets[targetIdx];
+
+    if (!target.isExtraSet) {
+      throw new BadRequestException('Cannot delete a prescribed set');
+    }
+
+    session.sets.splice(targetIdx, 1);
+    session.lastActivityAt = new Date();
     await session.save();
     return session;
   }
@@ -356,6 +443,7 @@ export class TrainingService {
     memberId: string,
     callerId: string,
     callerRole: UserRole,
+    rpe?: number,
   ): Promise<WorkoutSessionDocument> {
     await this.resolveScopedMember(memberId, callerId, callerRole);
 
@@ -369,9 +457,35 @@ export class TrainingService {
       throw new BadRequestException('Session is already completed');
     }
 
+    if (rpe !== undefined) {
+      session.rpe = rpe;
+    }
     session.completedAt = new Date();
     await session.save();
     return session;
+  }
+
+  async addMemberSet(
+    sessionId: string,
+    memberId: string,
+    callerId: string,
+    callerRole: UserRole,
+    exerciseId: string,
+  ): Promise<WorkoutSessionDocument> {
+    await this.resolveScopedMember(memberId, callerId, callerRole);
+    return this.addSet(sessionId, memberId, exerciseId);
+  }
+
+  async deleteMemberSet(
+    sessionId: string,
+    memberId: string,
+    callerId: string,
+    callerRole: UserRole,
+    exerciseId: string,
+    setNumber: number,
+  ): Promise<WorkoutSessionDocument> {
+    await this.resolveScopedMember(memberId, callerId, callerRole);
+    return this.deleteSet(sessionId, memberId, exerciseId, setNumber);
   }
 
   async getHistory(

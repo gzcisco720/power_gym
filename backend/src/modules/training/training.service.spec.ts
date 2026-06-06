@@ -842,8 +842,14 @@ describe('TrainingService', () => {
 
     it('orders results newest-first by completedAt', async () => {
       const callerId = TRAINER_ID;
-      const older = { _id: new Types.ObjectId(), completedAt: new Date('2024-01-01') };
-      const newer = { _id: new Types.ObjectId(), completedAt: new Date('2024-06-01') };
+      const older = {
+        _id: new Types.ObjectId(),
+        completedAt: new Date('2024-01-01'),
+      };
+      const newer = {
+        _id: new Types.ObjectId(),
+        completedAt: new Date('2024-06-01'),
+      };
       const mockQuery = {
         sort: jest.fn().mockResolvedValue([newer, older]),
       };
@@ -1042,6 +1048,158 @@ describe('TrainingService', () => {
       expect(result.sessions[0].date).toBe(
         sessions[0].completedAt.toISOString().slice(0, 10),
       );
+    });
+  });
+
+  // ─── finishSession (with rpe) ─────────────────────────────────────────────────
+
+  describe('finishSession > rpe', () => {
+    it('persists rpe when provided', async () => {
+      const sessionDoc = {
+        ...sampleSession,
+        memberId: new Types.ObjectId(MEMBER_ID),
+        completedAt: null,
+        rpe: null,
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      workoutSessionModel.findById.mockResolvedValue(sessionDoc);
+
+      await service.finishSession(SESSION_ID, MEMBER_ID, 8);
+
+      expect(sessionDoc.rpe).toBe(8);
+      expect(sessionDoc.completedAt).toBeTruthy();
+      expect(sessionDoc.save).toHaveBeenCalled();
+    });
+
+    it('leaves rpe null when omitted', async () => {
+      const sessionDoc = {
+        ...sampleSession,
+        memberId: new Types.ObjectId(MEMBER_ID),
+        completedAt: null,
+        rpe: null,
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      workoutSessionModel.findById.mockResolvedValue(sessionDoc);
+
+      await service.finishSession(SESSION_ID, MEMBER_ID);
+
+      expect(sessionDoc.rpe).toBeNull();
+      expect(sessionDoc.completedAt).toBeTruthy();
+    });
+
+    it('throws BadRequestException when session already completed', async () => {
+      workoutSessionModel.findById.mockResolvedValue({
+        ...sampleSession,
+        memberId: new Types.ObjectId(MEMBER_ID),
+        completedAt: new Date(),
+      });
+
+      await expect(
+        service.finishSession(SESSION_ID, MEMBER_ID, 5),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  // ─── addSet ───────────────────────────────────────────────────────────────────
+
+  describe('addSet', () => {
+    it('appends an isExtraSet set with setNumber one greater than the exercise current max', async () => {
+      const sessionDoc = {
+        ...sampleSession,
+        memberId: new Types.ObjectId(MEMBER_ID),
+        completedAt: null,
+        sets: sampleSession.sets.map((s) => ({ ...s })),
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      workoutSessionModel.findById.mockResolvedValue(sessionDoc);
+
+      await service.addSet(SESSION_ID, MEMBER_ID, EXERCISE_ID);
+
+      // Max setNumber for EXERCISE_ID in sampleSession is 3 → new set should be 4
+      const newSet = sessionDoc.sets.find(
+        (s: {
+          setNumber: number;
+          isExtraSet: boolean;
+          exerciseId: { toString: () => string };
+        }) => s.setNumber === 4 && s.isExtraSet === true,
+      );
+      expect(newSet).toBeDefined();
+      expect(newSet?.exerciseId.toString()).toBe(EXERCISE_ID);
+      expect(sessionDoc.save).toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException when the exerciseId is not part of the session', async () => {
+      const sessionDoc = {
+        ...sampleSession,
+        memberId: new Types.ObjectId(MEMBER_ID),
+        completedAt: null,
+        sets: sampleSession.sets.map((s) => ({ ...s })),
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      workoutSessionModel.findById.mockResolvedValue(sessionDoc);
+
+      const UNKNOWN_EXERCISE = new Types.ObjectId().toString();
+      await expect(
+        service.addSet(SESSION_ID, MEMBER_ID, UNKNOWN_EXERCISE),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // ─── deleteSet ────────────────────────────────────────────────────────────────
+
+  describe('deleteSet', () => {
+    it('removes the matching extra set and returns the updated session', async () => {
+      const extraSet = {
+        exerciseId: new Types.ObjectId(EXERCISE_ID),
+        exerciseName: 'Bench Press',
+        groupId: 'g1',
+        isSuperset: false,
+        isBodyweight: false,
+        setNumber: 4,
+        prescribedRepsMin: 8,
+        prescribedRepsMax: 12,
+        isExtraSet: true,
+        actualReps: null,
+        actualWeight: null,
+        completedAt: null,
+      };
+      const sessionDoc = {
+        ...sampleSession,
+        memberId: new Types.ObjectId(MEMBER_ID),
+        completedAt: null,
+        sets: [...sampleSession.sets.map((s) => ({ ...s })), extraSet],
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      workoutSessionModel.findById.mockResolvedValue(sessionDoc);
+
+      await service.deleteSet(SESSION_ID, MEMBER_ID, EXERCISE_ID, 4);
+
+      expect(
+        sessionDoc.sets.find(
+          (s: {
+            setNumber: number;
+            exerciseId: { toString: () => string };
+            isExtraSet: boolean;
+          }) => s.setNumber === 4 && s.exerciseId.toString() === EXERCISE_ID,
+        ),
+      ).toBeUndefined();
+      expect(sessionDoc.save).toHaveBeenCalled();
+    });
+
+    it('throws BadRequestException when targeting a prescribed (non-extra) set', async () => {
+      const sessionDoc = {
+        ...sampleSession,
+        memberId: new Types.ObjectId(MEMBER_ID),
+        completedAt: null,
+        sets: sampleSession.sets.map((s) => ({ ...s })),
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      workoutSessionModel.findById.mockResolvedValue(sessionDoc);
+
+      // setNumber 1 for EXERCISE_ID is prescribed (isExtraSet: false)
+      await expect(
+        service.deleteSet(SESSION_ID, MEMBER_ID, EXERCISE_ID, 1),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -20,6 +21,9 @@ import { TrainingService } from './training.service';
 import { AssignPlanDto } from './dto/assign-plan.dto';
 import { StartSessionDto } from './dto/start-session.dto';
 import { PatchSetDto } from './dto/patch-set.dto';
+import { FinishSessionDto } from './dto/finish-session.dto';
+import { AddSetDto } from './dto/add-set.dto';
+import { DeleteSetDto } from './dto/delete-set.dto';
 
 interface RequestWithUser extends Request {
   user: JwtUser;
@@ -65,8 +69,39 @@ export class TrainingController {
   @Post('sessions/:id/finish')
   @HttpCode(HttpStatus.OK)
   @Roles('member')
-  finishSession(@Request() req: RequestWithUser, @Param('id') id: string) {
-    return this.trainingService.finishSession(id, req.user.sub);
+  finishSession(
+    @Request() req: RequestWithUser,
+    @Param('id') id: string,
+    @Body() dto: FinishSessionDto,
+  ) {
+    return this.trainingService.finishSession(id, req.user.sub, dto.rpe);
+  }
+
+  @Post('sessions/:id/sets/add')
+  @HttpCode(HttpStatus.OK)
+  @Roles('member')
+  addSet(
+    @Request() req: RequestWithUser,
+    @Param('id') id: string,
+    @Body() dto: AddSetDto,
+  ) {
+    return this.trainingService.addSet(id, req.user.sub, dto.exerciseId);
+  }
+
+  @Delete('sessions/:id/sets')
+  @HttpCode(HttpStatus.OK)
+  @Roles('member')
+  deleteSet(
+    @Request() req: RequestWithUser,
+    @Param('id') id: string,
+    @Body() dto: DeleteSetDto,
+  ) {
+    return this.trainingService.deleteSet(
+      id,
+      req.user.sub,
+      dto.exerciseId,
+      dto.setNumber,
+    );
   }
 
   @Get('self/sessions')
@@ -77,10 +112,7 @@ export class TrainingController {
 
   @Get('self/sessions/:id')
   @Roles('owner', 'trainer')
-  getSelfSession(
-    @Request() req: RequestWithUser,
-    @Param('id') id: string,
-  ) {
+  getSelfSession(@Request() req: RequestWithUser, @Param('id') id: string) {
     return this.trainingService.getSelfSession(id, req.user.sub);
   }
 
@@ -160,12 +192,51 @@ export class TrainingController {
     @Request() req: RequestWithUser,
     @Param('memberId') memberId: string,
     @Param('id') id: string,
+    @Body() dto: FinishSessionDto,
   ) {
     return this.trainingService.finishMemberSession(
       id,
       memberId,
       req.user.sub,
       req.user.role,
+      dto.rpe,
+    );
+  }
+
+  @Post('members/:memberId/sessions/:id/sets/add')
+  @HttpCode(HttpStatus.OK)
+  @Roles('owner', 'trainer')
+  addMemberSet(
+    @Request() req: RequestWithUser,
+    @Param('memberId') memberId: string,
+    @Param('id') id: string,
+    @Body() dto: AddSetDto,
+  ) {
+    return this.trainingService.addMemberSet(
+      id,
+      memberId,
+      req.user.sub,
+      req.user.role,
+      dto.exerciseId,
+    );
+  }
+
+  @Delete('members/:memberId/sessions/:id/sets')
+  @HttpCode(HttpStatus.OK)
+  @Roles('owner', 'trainer')
+  deleteMemberSet(
+    @Request() req: RequestWithUser,
+    @Param('memberId') memberId: string,
+    @Param('id') id: string,
+    @Body() dto: DeleteSetDto,
+  ) {
+    return this.trainingService.deleteMemberSet(
+      id,
+      memberId,
+      req.user.sub,
+      req.user.role,
+      dto.exerciseId,
+      dto.setNumber,
     );
   }
 

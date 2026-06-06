@@ -17,10 +17,7 @@ import {
   MemberNutritionPlan,
   MemberNutritionPlanDocument,
 } from '../../common/models/member-nutrition-plan.model';
-import {
-  CheckIn,
-  CheckInDocument,
-} from '../../common/models/check-in.model';
+import { CheckIn, CheckInDocument } from '../../common/models/check-in.model';
 import { User, UserDocument } from '../../common/models/user.model';
 
 export interface JourneySessionSummary {
@@ -339,7 +336,10 @@ export class JourneyService {
         .sort({ completedAt: -1 })
         .lean(),
       this.bodyTestModel
-        .find({ memberId: memberOid, ...(cursorDate ? { date: { $lt: cursorDate } } : {}) })
+        .find({
+          memberId: memberOid,
+          ...(cursorDate ? { date: { $lt: cursorDate } } : {}),
+        })
         .sort({ date: -1 })
         .lean(),
       this.checkInModel
@@ -387,8 +387,7 @@ export class JourneyService {
         ci.energy,
         ci.digestion,
       ] as number[];
-      const wellnessAvg =
-        fields.reduce((sum, v) => sum + v, 0) / fields.length;
+      const wellnessAvg = fields.reduce((sum, v) => sum + v, 0) / fields.length;
       raw.push({
         id: ci._id.toString(),
         type: 'check_in',
@@ -433,7 +432,9 @@ export class JourneyService {
     return { items: page, nextCursor };
   }
 
-  private computeStreakMilestones(sortedDates: string[]): StreakMilestoneItem[] {
+  private computeStreakMilestones(
+    sortedDates: string[],
+  ): StreakMilestoneItem[] {
     if (sortedDates.length === 0) return [];
 
     // Build date set
@@ -460,7 +461,9 @@ export class JourneyService {
           // That is the date at index (i - threshold + 1) from the current date walk-back.
           // Simpler: emit milestone keyed by the crossing date, deduplicate.
           const milestoneDate = new Date(uniqueDates[i] + 'T00:00:00Z');
-          milestoneDate.setUTCDate(milestoneDate.getUTCDate() - (streak - threshold));
+          milestoneDate.setUTCDate(
+            milestoneDate.getUTCDate() - (streak - threshold),
+          );
           const key = `${milestoneDate.toISOString().slice(0, 10)}-${threshold}`;
           if (!emittedMilestones.has(key)) {
             emittedMilestones.add(key);

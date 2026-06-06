@@ -887,7 +887,7 @@ describe('Training (e2e)', () => {
       );
 
       const trainerUser = await userModel.findOne({ email: TRAINER_EMAIL });
-      const trainerObjectId = trainerUser!._id as Types.ObjectId;
+      const trainerObjectId = trainerUser!._id;
       const fakePlanId = new Types.ObjectId();
 
       const session = await wsModel.create({
@@ -959,7 +959,7 @@ describe('Training (e2e)', () => {
         getModelToken(WorkoutSession.name),
       );
       const trainerUser = await userModel.findOne({ email: TRAINER_EMAIL });
-      const trainerObjectId = trainerUser!._id as Types.ObjectId;
+      const trainerObjectId = trainerUser!._id;
       const fakePlanId = new Types.ObjectId();
 
       const session = await wsModel.create({
@@ -1012,6 +1012,135 @@ describe('Training (e2e)', () => {
         .get(`/training/self/sessions/${selfSessionId}`)
         .set('Authorization', `Bearer ${otherTrainerToken}`)
         .expect(404);
+    });
+  });
+
+  // ─── POST /training/sessions/:id/finish with rpe ─────────────────────────────
+
+  describe('POST /training/sessions/:id/finish with rpe', () => {
+    let rpeSessionId: string;
+
+    beforeAll(async () => {
+      await request(app.getHttpServer())
+        .post('/training/dev/seed')
+        .send({
+          memberEmail: MEMBER_EMAIL,
+          ownerEmail: OWNER_EMAIL,
+          templateId,
+        })
+        .expect(200);
+
+      const res = await request(app.getHttpServer())
+        .post('/training/sessions')
+        .set('Authorization', `Bearer ${memberToken}`)
+        .send({ dayNumber: 1 })
+        .expect(201);
+      rpeSessionId = (res.body as { _id: string })._id;
+    });
+
+    it('{ rpe: 8 } as owning member → 200 and response rpe equals 8', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/training/sessions/${rpeSessionId}/finish`)
+        .set('Authorization', `Bearer ${memberToken}`)
+        .send({ rpe: 8 })
+        .expect(200);
+
+      expect((res.body as Record<string, unknown>).rpe).toBe(8);
+    });
+
+    it('{ rpe: 11 } → 400 (validation)', async () => {
+      // Start a fresh session for the validation test
+      await request(app.getHttpServer())
+        .post('/training/dev/seed')
+        .send({
+          memberEmail: MEMBER_EMAIL,
+          ownerEmail: OWNER_EMAIL,
+          templateId,
+        })
+        .expect(200);
+
+      const startRes = await request(app.getHttpServer())
+        .post('/training/sessions')
+        .set('Authorization', `Bearer ${memberToken}`)
+        .send({ dayNumber: 1 })
+        .expect(201);
+      const invalidRpeSessionId = (startRes.body as { _id: string })._id;
+
+      await request(app.getHttpServer())
+        .post(`/training/sessions/${invalidRpeSessionId}/finish`)
+        .set('Authorization', `Bearer ${memberToken}`)
+        .send({ rpe: 11 })
+        .expect(400);
+    });
+  });
+
+  // ─── POST /training/sessions/:id/sets/add and DELETE .../sets ─────────────────
+
+  describe('add/delete sets', () => {
+    let addDelSessionId: string;
+
+    beforeAll(async () => {
+      await request(app.getHttpServer())
+        .post('/training/dev/seed')
+        .send({
+          memberEmail: MEMBER_EMAIL,
+          ownerEmail: OWNER_EMAIL,
+          templateId,
+        })
+        .expect(200);
+
+      const res = await request(app.getHttpServer())
+        .post('/training/sessions')
+        .set('Authorization', `Bearer ${memberToken}`)
+        .send({ dayNumber: 1 })
+        .expect(201);
+      addDelSessionId = (res.body as { _id: string })._id;
+    });
+
+    it('POST .../sets/add then PATCH .../sets logging that set → both 200, set appears completed', async () => {
+      // Add an extra set
+      const addRes = await request(app.getHttpServer())
+        .post(`/training/sessions/${addDelSessionId}/sets/add`)
+        .set('Authorization', `Bearer ${memberToken}`)
+        .send({ exerciseId: exerciseId.toString() })
+        .expect(200);
+
+      const sets = (addRes.body as Record<string, unknown>).sets as Array<
+        Record<string, unknown>
+      >;
+      const extraSet = sets.find((s) => s.isExtraSet === true);
+      expect(extraSet).toBeDefined();
+      const extraSetNumber = extraSet?.setNumber as number;
+
+      // Log the extra set
+      const patchRes = await request(app.getHttpServer())
+        .patch(`/training/sessions/${addDelSessionId}/sets`)
+        .set('Authorization', `Bearer ${memberToken}`)
+        .send({
+          setNumber: extraSetNumber,
+          exerciseId: exerciseId.toString(),
+          actualReps: 10,
+          actualWeight: 80,
+        })
+        .expect(200);
+
+      const updatedSets = (patchRes.body as Record<string, unknown>)
+        .sets as Array<Record<string, unknown>>;
+      const loggedExtra = updatedSets.find(
+        (s) => s.setNumber === extraSetNumber && s.isExtraSet === true,
+      );
+      expect(loggedExtra?.completedAt).not.toBeNull();
+    });
+
+    it('DELETE .../sets for a prescribed set → 400', async () => {
+      await request(app.getHttpServer())
+        .delete(`/training/sessions/${addDelSessionId}/sets`)
+        .set('Authorization', `Bearer ${memberToken}`)
+        .send({
+          exerciseId: exerciseId.toString(),
+          setNumber: 1,
+        })
+        .expect(400);
     });
   });
 

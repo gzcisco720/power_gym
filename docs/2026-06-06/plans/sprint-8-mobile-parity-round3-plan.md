@@ -173,16 +173,16 @@ Mirror all three on the `members/:memberId/...` trainer-scoped routes.
 2. Implement `rpe` on finish + `addSet`/`deleteSet` and DTOs → Green
 3. Wire controller routes + integration tests → passes
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Stage 2 Checkpoint
-- [ ] finish-session.dto.ts (create)
-- [ ] delete-set.dto.ts (create)
-- [ ] patch-set.dto.ts (add isExtraSet)
-- [ ] TrainingService unit tests (Red)
-- [ ] TrainingService implementation (Green)
-- [ ] TrainingController routes + controller tests
-- [ ] Integration tests in training.e2e-spec.ts
+- [x] finish-session.dto.ts (create)
+- [x] add-set.dto.ts (create)
+- [x] delete-set.dto.ts (create)
+- [x] patch-set.dto.ts (add isExtraSet)
+- [x] TrainingService unit tests (Red → Green)
+- [x] TrainingController routes + controller tests
+- [x] Integration tests in training.e2e-spec.ts
 
 ---
 

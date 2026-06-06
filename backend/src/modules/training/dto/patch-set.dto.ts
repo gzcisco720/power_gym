@@ -1,12 +1,13 @@
 import {
+  IsBoolean,
   IsInt,
   IsMongoId,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsPositive,
   IsString,
   Min,
-  IsOptional,
 } from 'class-validator';
 
 export class PatchSetDto {
@@ -27,4 +28,8 @@ export class PatchSetDto {
   @IsNumber()
   @Min(0)
   actualWeight: number | null;
+
+  @IsOptional()
+  @IsBoolean()
+  isExtraSet?: boolean;
 }

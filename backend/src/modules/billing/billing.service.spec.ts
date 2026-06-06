@@ -240,9 +240,7 @@ describe('BillingService', () => {
       });
       userModelMock.find.mockReturnValue({
         lean: () =>
-          Promise.resolve([
-            makeUser(memberId, { trainerId, role: 'member' }),
-          ]),
+          Promise.resolve([makeUser(memberId, { trainerId, role: 'member' })]),
       });
 
       const from = new Date(Date.now() - 7 * 86400000).toISOString();
@@ -291,7 +289,6 @@ describe('BillingService', () => {
     it('allows an owner to fetch any member billing without scoping check', async () => {
       const memberId = new Types.ObjectId();
       const ownerId = new Types.ObjectId();
-      const trainerId = new Types.ObjectId();
       const st = makeServiceType({ pricePerSession: 100 });
       const session = makeSession({
         memberId,

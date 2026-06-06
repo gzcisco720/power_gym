@@ -28,12 +28,9 @@ import {
 } from '../src/common/email/email.service';
 import {
   WorkoutSession,
-  WorkoutSessionSchema,
   WorkoutSessionDocument,
 } from '../src/common/models/workout-session.model';
-import {
-  JourneyTimelineItem,
-} from '../src/modules/journey/journey.service';
+import { JourneyTimelineItem } from '../src/modules/journey/journey.service';
 
 interface JourneySessionSummary {
   _id: string;
@@ -212,9 +209,8 @@ describe('Journey (e2e)', () => {
       .post('/auth/login')
       .send({ email: TIMELINE_MEMBER_EMAIL, password: TEST_PASSWORD })
       .expect(201);
-    timelineMemberToken = (
-      timelineMemberLogin.body as { accessToken: string }
-    ).accessToken;
+    timelineMemberToken = (timelineMemberLogin.body as { accessToken: string })
+      .accessToken;
   });
 
   afterAll(async () => {
@@ -280,9 +276,7 @@ describe('Journey (e2e)', () => {
 
   describe('GET /journey/timeline', () => {
     it('no token → 401', async () => {
-      await request(app.getHttpServer())
-        .get('/journey/timeline')
-        .expect(401);
+      await request(app.getHttpServer()).get('/journey/timeline').expect(401);
     });
 
     it('trainer token (forbidden role) → 403', async () => {
@@ -298,7 +292,10 @@ describe('Journey (e2e)', () => {
         .set('Authorization', `Bearer ${emptyMemberToken}`)
         .expect(200);
 
-      const body = res.body as { items: JourneyTimelineItem[]; nextCursor: string | null };
+      const body = res.body as {
+        items: JourneyTimelineItem[];
+        nextCursor: string | null;
+      };
       expect(body).toHaveProperty('items');
       expect(body).toHaveProperty('nextCursor');
       expect(Array.isArray(body.items)).toBe(true);
@@ -356,7 +353,10 @@ describe('Journey (e2e)', () => {
         .set('Authorization', `Bearer ${timelineMemberToken}`)
         .expect(200);
 
-      const body = res.body as { items: JourneyTimelineItem[]; nextCursor: string | null };
+      const body = res.body as {
+        items: JourneyTimelineItem[];
+        nextCursor: string | null;
+      };
       expect(body.items.length).toBeGreaterThan(0);
 
       // Verify descending date order
@@ -374,16 +374,24 @@ describe('Journey (e2e)', () => {
         .set('Authorization', `Bearer ${timelineMemberToken}`)
         .expect(200);
 
-      const page1 = page1Res.body as { items: JourneyTimelineItem[]; nextCursor: string | null };
+      const page1 = page1Res.body as {
+        items: JourneyTimelineItem[];
+        nextCursor: string | null;
+      };
       expect(page1.items).toHaveLength(2);
       expect(page1.nextCursor).not.toBeNull();
 
       const page2Res = await request(app.getHttpServer())
-        .get(`/journey/timeline?limit=2&cursor=${encodeURIComponent(page1.nextCursor!)}`)
+        .get(
+          `/journey/timeline?limit=2&cursor=${encodeURIComponent(page1.nextCursor!)}`,
+        )
         .set('Authorization', `Bearer ${timelineMemberToken}`)
         .expect(200);
 
-      const page2 = page2Res.body as { items: JourneyTimelineItem[]; nextCursor: string | null };
+      const page2 = page2Res.body as {
+        items: JourneyTimelineItem[];
+        nextCursor: string | null;
+      };
       expect(page2.items.length).toBeGreaterThan(0);
 
       // No duplicate ids across the two pages
