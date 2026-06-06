@@ -319,6 +319,7 @@ export function TrainerDashboard() {
                       }}
                       accessibilityLabel={`Review check-in for ${ci.memberName}`}
                       accessibilityRole="button"
+                      testID={`review-checkin-${ci.checkinId}`}
                     >
                       <Text className="text-[11px] text-primary ml-1">Review →</Text>
                     </Pressable>

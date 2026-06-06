@@ -63,10 +63,10 @@ describe('Trainer Dashboard: navigation wiring', () => {
       .scroll(200, 'down');
 
     // Tap the Review button on the first pending check-in
-    await waitFor(element(by.label('Review →')).atIndex(0))
+    await waitFor(element(by.id(/^review-checkin-/)).atIndex(0))
       .toBeVisible()
       .withTimeout(10000);
-    await element(by.label('Review →')).atIndex(0).tap();
+    await element(by.id(/^review-checkin-/)).atIndex(0).tap();
 
     // The Check-in Detail screen should open
     await waitFor(element(by.id('screen-CheckInDetail'))).toBeVisible().withTimeout(15000);
