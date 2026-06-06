@@ -314,6 +314,14 @@ describe('Training (e2e)', () => {
       expect(body).toHaveProperty('name', 'E2E Push Day');
     });
 
+    it('invalid templateId (non-MongoId string) → 400', async () => {
+      await request(app.getHttpServer())
+        .post(`/training/members/${memberId}/assign-plan`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({ templateId: 'not-a-valid-id' })
+        .expect(400);
+    });
+
     it('trainer not owning member → 404 (trainer template scoping)', async () => {
       // trainer does not own otherMember; also trainer does not own the template
       // Let's test trainer assigning to a member who belongs to another trainer
@@ -324,6 +332,24 @@ describe('Training (e2e)', () => {
         .expect(404);
 
       expect(res.status).toBe(404);
+    });
+
+    it('after assign, GET /training/members/:memberId/plan (assigned trainer) → 200 returns newly assigned plan name', async () => {
+      // Ensure the member has the owner-assigned plan from the earlier test
+      // Re-assign to guarantee state
+      await request(app.getHttpServer())
+        .post(`/training/members/${memberId}/assign-plan`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({ templateId })
+        .expect(201);
+
+      const res = await request(app.getHttpServer())
+        .get(`/training/members/${memberId}/plan`)
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(200);
+
+      const body = res.body as Record<string, unknown>;
+      expect(body).toHaveProperty('name', 'E2E Push Day');
     });
   });
 

@@ -256,6 +256,14 @@ describe('TrainingService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
+    it('throws NotFoundException when templateId does not exist', async () => {
+      planTemplateModel.findById.mockResolvedValue(null);
+
+      await expect(
+        service.assignPlan(MEMBER_ID, TEMPLATE_ID, OWNER_ID, 'owner'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
     it('trainer assigning to a member of another trainer throws NotFoundException', async () => {
       // Template IS owned by TRAINER_ID in this scenario
       const trainerOwnedTemplate = {
