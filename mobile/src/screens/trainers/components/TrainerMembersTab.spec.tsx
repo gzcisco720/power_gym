@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
@@ -68,7 +68,7 @@ describe('TrainerMembersTab', () => {
   it('renders each member streak, sessionsThisMonth, and a status badge', () => {
     setupStoreMock({ trainerMembers: MOCK_MEMBERS });
 
-    const { getByText, getAllByText } = render(
+    const { getByText } = render(
       <TrainerMembersTab trainerId="tr1" />,
     );
 

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Pressable, Modal, ActivityIndicator } from 'react-native';
+
+const COLORS = { primary: '#4f46e5' } as const;
 import { useTrainersStore } from '../../../stores/trainers.store';
 import { TrainerMemberMetrics } from '../../../types/trainers';
 
@@ -92,7 +94,7 @@ function ReassignMemberSheet({
           </Text>
 
           {reassigning ? (
-            <ActivityIndicator color="#4f46e5" />
+            <ActivityIndicator color={COLORS.primary} />
           ) : otherTrainers.length === 0 ? (
             <Text className="text-[13px] text-foreground/65 text-center py-4">
               No other trainers available.
