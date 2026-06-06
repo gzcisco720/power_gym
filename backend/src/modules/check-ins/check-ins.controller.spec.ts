@@ -32,6 +32,7 @@ describe('CheckInsController', () => {
     getUploadSignature: jest.Mock;
     findByMemberScoped: jest.Mock;
     findOneByMemberScoped: jest.Mock;
+    findPhotosForMemberScoped: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -45,6 +46,7 @@ describe('CheckInsController', () => {
       findOneByMemberScoped: jest
         .fn()
         .mockResolvedValue({ _id: 'check-in-id' }),
+      findPhotosForMemberScoped: jest.fn().mockResolvedValue([]),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -96,6 +98,29 @@ describe('CheckInsController', () => {
         CHECK_IN_ID,
         req.user.sub,
         req.user.role,
+      );
+    });
+  });
+
+  describe('findMemberPhotos', () => {
+    it('delegates to service with memberId, caller id, and caller role', async () => {
+      const callerId = new Types.ObjectId().toString();
+      const req: RequestWithUser & Request = {
+        user: {
+          sub: callerId,
+          role: 'trainer',
+          firstName: 'Test',
+          lastName: 'Trainer',
+          trainerId: null,
+        },
+      } as RequestWithUser & Request;
+
+      await controller.findMemberPhotos(req, MEMBER_ID_2);
+
+      expect(service.findPhotosForMemberScoped).toHaveBeenCalledWith(
+        MEMBER_ID_2,
+        callerId,
+        'trainer',
       );
     });
   });

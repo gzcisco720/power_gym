@@ -230,6 +230,157 @@ describe('CheckInsService', () => {
     });
   });
 
+  describe('findPhotosForMemberScoped', () => {
+    const checkInId1 = new Types.ObjectId();
+    const checkInId2 = new Types.ObjectId();
+    const OWNER_ID = new Types.ObjectId().toString();
+
+    const memberDoc = {
+      _id: new Types.ObjectId(MEMBER_ID),
+      role: 'member' as const,
+      trainerId: new Types.ObjectId(TRAINER_ID),
+    };
+
+    it('flattens each check-in photos[] into one item per URL with key, photoUrl, submittedAt, and weight', async () => {
+      userModel.findById.mockResolvedValue(memberDoc);
+      const date1 = new Date('2024-03-01T10:00:00Z');
+      const date2 = new Date('2024-03-08T10:00:00Z');
+      checkInModel.find.mockReturnValue({
+        sort: jest.fn().mockResolvedValue([
+          {
+            _id: checkInId2,
+            photos: ['http://example.com/b.jpg'],
+            submittedAt: date2,
+            weight: 75.5,
+          },
+          {
+            _id: checkInId1,
+            photos: ['http://example.com/a1.jpg', 'http://example.com/a2.jpg'],
+            submittedAt: date1,
+            weight: null,
+          },
+        ]),
+      });
+
+      const result = await service.findPhotosForMemberScoped(
+        MEMBER_ID,
+        OWNER_ID,
+        'owner',
+      );
+
+      expect(result).toHaveLength(3);
+      expect(result[0]).toEqual({
+        key: `${checkInId2.toString()}-0`,
+        photoUrl: 'http://example.com/b.jpg',
+        submittedAt: date2.toISOString(),
+        weight: 75.5,
+      });
+      expect(result[1]).toEqual({
+        key: `${checkInId1.toString()}-0`,
+        photoUrl: 'http://example.com/a1.jpg',
+        submittedAt: date1.toISOString(),
+        weight: null,
+      });
+      expect(result[2]).toEqual({
+        key: `${checkInId1.toString()}-1`,
+        photoUrl: 'http://example.com/a2.jpg',
+        submittedAt: date1.toISOString(),
+        weight: null,
+      });
+    });
+
+    it('returns items ordered newest-first by submittedAt', async () => {
+      userModel.findById.mockResolvedValue(memberDoc);
+      const older = new Date('2024-01-01T00:00:00Z');
+      const newer = new Date('2024-02-01T00:00:00Z');
+      checkInModel.find.mockReturnValue({
+        sort: jest.fn().mockResolvedValue([
+          {
+            _id: checkInId2,
+            photos: ['http://example.com/newer.jpg'],
+            submittedAt: newer,
+            weight: null,
+          },
+          {
+            _id: checkInId1,
+            photos: ['http://example.com/older.jpg'],
+            submittedAt: older,
+            weight: null,
+          },
+        ]),
+      });
+
+      const result = await service.findPhotosForMemberScoped(
+        MEMBER_ID,
+        OWNER_ID,
+        'owner',
+      );
+
+      expect(result[0].photoUrl).toBe('http://example.com/newer.jpg');
+      expect(result[1].photoUrl).toBe('http://example.com/older.jpg');
+    });
+
+    it('excludes check-ins with an empty photos array', async () => {
+      userModel.findById.mockResolvedValue(memberDoc);
+      const date = new Date('2024-03-01T10:00:00Z');
+      checkInModel.find.mockReturnValue({
+        sort: jest.fn().mockResolvedValue([
+          {
+            _id: checkInId1,
+            photos: [],
+            submittedAt: date,
+            weight: 70,
+          },
+          {
+            _id: checkInId2,
+            photos: ['http://example.com/photo.jpg'],
+            submittedAt: date,
+            weight: null,
+          },
+        ]),
+      });
+
+      const result = await service.findPhotosForMemberScoped(
+        MEMBER_ID,
+        OWNER_ID,
+        'owner',
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].photoUrl).toBe('http://example.com/photo.jpg');
+    });
+
+    it('throws NotFoundException when a trainer requests a member not assigned to them', async () => {
+      const differentTrainerId = new Types.ObjectId().toString();
+      userModel.findById.mockResolvedValue(memberDoc);
+
+      await expect(
+        service.findPhotosForMemberScoped(
+          MEMBER_ID,
+          differentTrainerId,
+          'trainer',
+        ),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('returns [] when the member has check-ins but none contain photos', async () => {
+      userModel.findById.mockResolvedValue(memberDoc);
+      checkInModel.find.mockReturnValue({
+        sort: jest.fn().mockResolvedValue([
+          { _id: checkInId1, photos: [], submittedAt: new Date(), weight: null },
+        ]),
+      });
+
+      const result = await service.findPhotosForMemberScoped(
+        MEMBER_ID,
+        OWNER_ID,
+        'owner',
+      );
+
+      expect(result).toEqual([]);
+    });
+  });
+
   describe('getUploadSignature', () => {
     it('returns config with folder "check-ins"', () => {
       const result = service.getUploadSignature();

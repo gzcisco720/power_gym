@@ -45,6 +45,19 @@ export class CheckInsController {
     return this.checkInsService.getUploadSignature();
   }
 
+  @Get('members/:memberId/photos')
+  @Roles('owner', 'trainer')
+  findMemberPhotos(
+    @Request() req: RequestWithUser,
+    @Param('memberId') memberId: string,
+  ) {
+    return this.checkInsService.findPhotosForMemberScoped(
+      memberId,
+      req.user.sub,
+      req.user.role,
+    );
+  }
+
   @Get('members/:memberId')
   @Roles('owner', 'trainer')
   findMemberCheckIns(

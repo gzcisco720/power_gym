@@ -101,6 +101,47 @@ export class CheckInsService {
       .sort({ submittedAt: -1 });
   }
 
+  async findPhotosForMemberScoped(
+    memberId: string,
+    requesterId: string,
+    requesterRole: UserRole,
+  ): Promise<
+    {
+      key: string;
+      photoUrl: string;
+      submittedAt: string;
+      weight: number | null;
+    }[]
+  > {
+    await this.resolveAndScopeMember(memberId, requesterId, requesterRole);
+
+    const checkIns = await this.checkInModel
+      .find({ memberId: new Types.ObjectId(memberId) })
+      .sort({ submittedAt: -1 });
+
+    const items: {
+      key: string;
+      photoUrl: string;
+      submittedAt: string;
+      weight: number | null;
+    }[] = [];
+
+    for (const checkIn of checkIns) {
+      if (!checkIn.photos || checkIn.photos.length === 0) continue;
+      const checkInId = (checkIn._id as Types.ObjectId).toString();
+      checkIn.photos.forEach((photoUrl, index) => {
+        items.push({
+          key: `${checkInId}-${index}`,
+          photoUrl,
+          submittedAt: checkIn.submittedAt.toISOString(),
+          weight: checkIn.weight ?? null,
+        });
+      });
+    }
+
+    return items;
+  }
+
   async findOneByMemberScoped(
     memberId: string,
     checkInId: string,

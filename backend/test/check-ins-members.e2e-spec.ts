@@ -99,6 +99,7 @@ describe('CheckIns member-scoped endpoints (e2e)', () => {
   let memberId: string;
   let checkInId: string;
   let otherCheckInId: string;
+  let noPhotosMemberId: string;
 
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
@@ -175,14 +176,47 @@ describe('CheckIns member-scoped endpoints (e2e)', () => {
       trainerId: otherTrainerObjId,
     });
 
-    // Seed a check-in for the member
+    // Seed a check-in for the member (newest, with photos)
     const checkIn = await checkInModel.create({
       ...validCheckInBody,
       memberId: memberObjId,
       trainerId: trainerObjId,
-      submittedAt: new Date(),
+      submittedAt: new Date(Date.now() + 1000),
+      photos: ['https://example.com/photo1.jpg', 'https://example.com/photo2.jpg'],
+      weight: 80,
     });
     checkInId = (checkIn._id as Types.ObjectId).toString();
+
+    // Seed an older check-in for the member (no photos, so excluded from photos list)
+    await checkInModel.create({
+      ...validCheckInBody,
+      memberId: memberObjId,
+      trainerId: trainerObjId,
+      submittedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      photos: [],
+      weight: null,
+    });
+
+    // Seed a member with only no-photo check-ins (assigned to trainer)
+    const noPhotosMemberObjId = new Types.ObjectId();
+    noPhotosMemberId = noPhotosMemberObjId.toString();
+    await userModel.create({
+      _id: noPhotosMemberObjId,
+      firstName: 'CI',
+      lastName: 'NoPhotos',
+      email: 'ci-members-no-photos@example.com',
+      passwordHash,
+      role: 'member',
+      trainerId: trainerObjId,
+    });
+    await checkInModel.create({
+      ...validCheckInBody,
+      memberId: noPhotosMemberObjId,
+      trainerId: trainerObjId,
+      submittedAt: new Date(),
+      photos: [],
+      weight: null,
+    });
 
     // Seed a check-in for the other member
     const otherCheckIn = await checkInModel.create({
@@ -299,6 +333,59 @@ describe('CheckIns member-scoped endpoints (e2e)', () => {
         .get(`/check-ins/members/${memberId}/${otherCheckInId}`)
         .set('Authorization', `Bearer ${ownerToken}`)
         .expect(404);
+    });
+  });
+
+  // ─── GET /check-ins/members/:memberId/photos ─────────────────────────────────
+
+  describe('GET /check-ins/members/:memberId/photos', () => {
+    it("member's trainer → 200 with a flattened array whose first item is the newest photo", async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/check-ins/members/${memberId}/photos`)
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(200);
+
+      const body = res.body as Record<string, unknown>[];
+      expect(Array.isArray(body)).toBe(true);
+      expect(body.length).toBeGreaterThanOrEqual(1);
+      const first = body[0];
+      expect(first).toHaveProperty('key');
+      expect(first).toHaveProperty('photoUrl');
+      expect(first).toHaveProperty('submittedAt');
+      expect(first).toHaveProperty('weight');
+      // The newest check-in photos should appear first
+      expect(first.photoUrl).toBe('https://example.com/photo1.jpg');
+    });
+
+    it('no JWT → 401', async () => {
+      await request(app.getHttpServer())
+        .get(`/check-ins/members/${memberId}/photos`)
+        .expect(401);
+    });
+
+    it('member role → 403', async () => {
+      await request(app.getHttpServer())
+        .get(`/check-ins/members/${memberId}/photos`)
+        .set('Authorization', `Bearer ${memberToken}`)
+        .expect(403);
+    });
+
+    it('trainer for a member not assigned to them → 404', async () => {
+      await request(app.getHttpServer())
+        .get(`/check-ins/members/${memberId}/photos`)
+        .set('Authorization', `Bearer ${otherTrainerToken}`)
+        .expect(404);
+    });
+
+    it('member with no check-in photos → 200 with empty array', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/check-ins/members/${noPhotosMemberId}/photos`)
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(200);
+
+      const body = res.body as unknown[];
+      expect(Array.isArray(body)).toBe(true);
+      expect(body).toHaveLength(0);
     });
   });
 
