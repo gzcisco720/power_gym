@@ -574,6 +574,106 @@ describe('Training (e2e)', () => {
     });
   });
 
+  // ─── GET /training/members/:memberId/progress ─────────────────────────────────
+
+  describe('GET /training/members/:memberId/progress', () => {
+    beforeAll(async () => {
+      // Ensure at least one completed session exists for the member
+      await request(app.getHttpServer())
+        .post('/training/dev/seed')
+        .send({
+          memberEmail: MEMBER_EMAIL,
+          ownerEmail: OWNER_EMAIL,
+          templateId,
+          seedCompletedSession: true,
+        })
+        .expect(200);
+    });
+
+    it('no token → 401', async () => {
+      await request(app.getHttpServer())
+        .get(`/training/members/${memberId}/progress`)
+        .expect(401);
+    });
+
+    it('member role → 403', async () => {
+      await request(app.getHttpServer())
+        .get(`/training/members/${memberId}/progress`)
+        .set('Authorization', `Bearer ${memberToken}`)
+        .expect(403);
+    });
+
+    it('trainer NOT assigned to member → 404', async () => {
+      await request(app.getHttpServer())
+        .get(`/training/members/${memberId}/progress`)
+        .set('Authorization', `Bearer ${otherTrainerToken}`)
+        .expect(404);
+    });
+
+    it("member's trainer → 200 with heatmapDates and exercises arrays", async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/training/members/${memberId}/progress`)
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(200);
+
+      const body = res.body as {
+        heatmapDates: string[];
+        exercises: { exerciseId: string; exerciseName: string }[];
+      };
+      expect(Array.isArray(body.heatmapDates)).toBe(true);
+      expect(Array.isArray(body.exercises)).toBe(true);
+      // At least one completed session was seeded today
+      expect(body.heatmapDates.length).toBeGreaterThanOrEqual(1);
+      // Bench Press exercise should appear
+      const benchPress = body.exercises.find(
+        (e) => e.exerciseName === 'Bench Press',
+      );
+      expect(benchPress).toBeDefined();
+      expect(benchPress?.exerciseId).toBe(exerciseId.toString());
+    });
+  });
+
+  // ─── GET /training/members/:memberId/exercise/:exerciseId ─────────────────────
+
+  describe('GET /training/members/:memberId/exercise/:exerciseId', () => {
+    it("member's trainer → 200 with sessions array with numeric estimatedOneRepMax", async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/training/members/${memberId}/exercise/${exerciseId.toString()}`)
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(200);
+
+      const body = res.body as {
+        exerciseId: string;
+        exerciseName: string;
+        sessions: {
+          sessionId: string;
+          date: string;
+          sets: { setNumber: number; weight: number; reps: number }[];
+          estimatedOneRepMax: number;
+        }[];
+      };
+      expect(body.exerciseId).toBe(exerciseId.toString());
+      expect(Array.isArray(body.sessions)).toBe(true);
+      expect(body.sessions.length).toBeGreaterThanOrEqual(1);
+      const session = body.sessions[0];
+      expect(typeof session.estimatedOneRepMax).toBe('number');
+      // Seeded sets: weight=80, reps=10 → 1RM = round(80 * (1 + 10/30)) = round(106.67) = 107
+      expect(session.estimatedOneRepMax).toBe(107);
+      expect(session.sets.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('owner → 200', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/training/members/${memberId}/exercise/${exerciseId.toString()}`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .expect(200);
+
+      expect(
+        Array.isArray((res.body as { sessions: unknown[] }).sessions),
+      ).toBe(true);
+    });
+  });
+
   // ─── validDay is used ─────────────────────────────────────────────────────────
   // Reference to silence unused var lint warning:
   void validDay;

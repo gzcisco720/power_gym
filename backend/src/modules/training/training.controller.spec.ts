@@ -47,6 +47,8 @@ describe('TrainingController', () => {
     patchSet: jest.Mock;
     finishSession: jest.Mock;
     getHistory: jest.Mock;
+    getProgress: jest.Mock;
+    getExerciseHistory: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -57,6 +59,12 @@ describe('TrainingController', () => {
       patchSet: jest.fn().mockResolvedValue({ _id: SESSION_ID }),
       finishSession: jest.fn().mockResolvedValue({ _id: SESSION_ID }),
       getHistory: jest.fn().mockResolvedValue([]),
+      getProgress: jest
+        .fn()
+        .mockResolvedValue({ heatmapDates: [], exercises: [] }),
+      getExerciseHistory: jest
+        .fn()
+        .mockResolvedValue({ exerciseId: '', exerciseName: '', sessions: [] }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -158,6 +166,36 @@ describe('TrainingController', () => {
         MEMBER_ID,
         OWNER_ID,
         'owner',
+      );
+    });
+  });
+
+  describe('getProgress', () => {
+    it('delegates to service with memberId, req.user.sub, req.user.role', async () => {
+      const req = { user: trainerUser } as RequestWithUser & Request;
+
+      await controller.getProgress(req, MEMBER_ID);
+
+      expect(service.getProgress).toHaveBeenCalledWith(
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+      );
+    });
+  });
+
+  describe('getExerciseHistory', () => {
+    it('delegates to service with memberId, exerciseId, req.user.sub, req.user.role', async () => {
+      const req = { user: trainerUser } as RequestWithUser & Request;
+      const EXERCISE_ID = new Types.ObjectId().toString();
+
+      await controller.getExerciseHistory(req, MEMBER_ID, EXERCISE_ID);
+
+      expect(service.getExerciseHistory).toHaveBeenCalledWith(
+        MEMBER_ID,
+        EXERCISE_ID,
+        TRAINER_ID,
+        'trainer',
       );
     });
   });

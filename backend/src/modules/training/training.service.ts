@@ -208,11 +208,11 @@ export class TrainingService {
     return session;
   }
 
-  async getHistory(
+  private async resolveScopedMember(
     memberId: string,
     callerId: string,
     callerRole: UserRole,
-  ): Promise<WorkoutSessionDocument[]> {
+  ): Promise<void> {
     const member = await this.userModel.findById(memberId);
 
     if (!member || member.role !== 'member') {
@@ -225,6 +225,14 @@ export class TrainingService {
         throw new NotFoundException('Member not found');
       }
     }
+  }
+
+  async getHistory(
+    memberId: string,
+    callerId: string,
+    callerRole: UserRole,
+  ): Promise<WorkoutSessionDocument[]> {
+    await this.resolveScopedMember(memberId, callerId, callerRole);
 
     return this.workoutSessionModel
       .find({
@@ -232,5 +240,125 @@ export class TrainingService {
         completedAt: { $ne: null },
       })
       .sort({ startedAt: -1 });
+  }
+
+  async getProgress(
+    memberId: string,
+    callerId: string,
+    callerRole: UserRole,
+  ): Promise<{
+    heatmapDates: string[];
+    exercises: { exerciseId: string; exerciseName: string }[];
+  }> {
+    await this.resolveScopedMember(memberId, callerId, callerRole);
+
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 90);
+
+    const sessions = await this.workoutSessionModel
+      .find({
+        memberId: new Types.ObjectId(memberId),
+        completedAt: { $ne: null },
+      })
+      .sort({ completedAt: -1 });
+
+    const dateSet = new Set<string>();
+    const exerciseMap = new Map<string, string>();
+
+    for (const session of sessions) {
+      const completedAt = session.completedAt as Date;
+      if (completedAt >= cutoff) {
+        dateSet.add(completedAt.toISOString().slice(0, 10));
+      }
+
+      for (const set of session.sets) {
+        const exId = set.exerciseId.toString();
+        if (!exerciseMap.has(exId)) {
+          exerciseMap.set(exId, set.exerciseName);
+        }
+      }
+    }
+
+    const exercises = Array.from(exerciseMap.entries())
+      .map(([exerciseId, exerciseName]) => ({ exerciseId, exerciseName }))
+      .sort((a, b) => a.exerciseName.localeCompare(b.exerciseName));
+
+    return {
+      heatmapDates: Array.from(dateSet),
+      exercises,
+    };
+  }
+
+  async getExerciseHistory(
+    memberId: string,
+    exerciseId: string,
+    callerId: string,
+    callerRole: UserRole,
+  ): Promise<{
+    exerciseId: string;
+    exerciseName: string;
+    sessions: {
+      sessionId: string;
+      date: string;
+      sets: { setNumber: number; weight: number; reps: number }[];
+      estimatedOneRepMax: number;
+    }[];
+  }> {
+    await this.resolveScopedMember(memberId, callerId, callerRole);
+
+    const allSessions = await this.workoutSessionModel
+      .find({
+        memberId: new Types.ObjectId(memberId),
+        completedAt: { $ne: null },
+      })
+      .sort({ completedAt: -1 });
+
+    let exerciseName = '';
+    const result: {
+      sessionId: string;
+      date: string;
+      sets: { setNumber: number; weight: number; reps: number }[];
+      estimatedOneRepMax: number;
+    }[] = [];
+
+    for (const session of allSessions) {
+      const qualifyingSets = session.sets.filter(
+        (s) =>
+          s.exerciseId.toString() === exerciseId &&
+          s.actualWeight !== null &&
+          s.actualReps !== null,
+      );
+
+      if (qualifyingSets.length === 0) continue;
+
+      if (!exerciseName && qualifyingSets[0].exerciseName) {
+        exerciseName = qualifyingSets[0].exerciseName;
+      }
+
+      const sets = qualifyingSets.map((s) => ({
+        setNumber: s.setNumber,
+        weight: s.actualWeight as number,
+        reps: s.actualReps as number,
+      }));
+
+      const maxOneRM = Math.max(
+        ...sets.map((s) => Math.round(s.weight * (1 + s.reps / 30))),
+      );
+
+      result.push({
+        sessionId: session._id.toString(),
+        date: (session.completedAt as Date).toISOString().slice(0, 10),
+        sets,
+        estimatedOneRepMax: maxOneRM,
+      });
+
+      if (result.length === 5) break;
+    }
+
+    return {
+      exerciseId,
+      exerciseName,
+      sessions: result,
+    };
   }
 }

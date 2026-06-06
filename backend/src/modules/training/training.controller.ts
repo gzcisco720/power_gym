@@ -97,4 +97,32 @@ export class TrainingController {
       req.user.role,
     );
   }
+
+  @Get('members/:memberId/progress')
+  @Roles('owner', 'trainer')
+  getProgress(
+    @Request() req: RequestWithUser,
+    @Param('memberId') memberId: string,
+  ) {
+    return this.trainingService.getProgress(
+      memberId,
+      req.user.sub,
+      req.user.role,
+    );
+  }
+
+  @Get('members/:memberId/exercise/:exerciseId')
+  @Roles('owner', 'trainer')
+  getExerciseHistory(
+    @Request() req: RequestWithUser,
+    @Param('memberId') memberId: string,
+    @Param('exerciseId') exerciseId: string,
+  ) {
+    return this.trainingService.getExerciseHistory(
+      memberId,
+      exerciseId,
+      req.user.sub,
+      req.user.role,
+    );
+  }
 }

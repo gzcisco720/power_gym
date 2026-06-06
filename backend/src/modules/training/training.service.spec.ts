@@ -465,4 +465,291 @@ describe('TrainingService', () => {
       ).rejects.toThrow(NotFoundException);
     });
   });
+
+  // ─── getProgress ──────────────────────────────────────────────────────────────
+
+  describe('getProgress', () => {
+    it('returns distinct YYYY-MM-DD heatmapDates only for sessions completed within the last 90 days', async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+
+      const now = new Date();
+      const recent1 = new Date(now);
+      recent1.setDate(recent1.getDate() - 5);
+      const recent2 = new Date(now);
+      recent2.setDate(recent2.getDate() - 10);
+      const tooOld = new Date(now);
+      tooOld.setDate(tooOld.getDate() - 100);
+
+      const recentDate1Str = recent1.toISOString().slice(0, 10);
+      const recentDate2Str = recent2.toISOString().slice(0, 10);
+
+      const sessions = [
+        {
+          _id: new Types.ObjectId(),
+          memberId: new Types.ObjectId(MEMBER_ID),
+          completedAt: recent1,
+          sets: [
+            {
+              exerciseId: new Types.ObjectId(EXERCISE_ID),
+              exerciseName: 'Back Squat',
+              actualWeight: 100,
+              actualReps: 5,
+            },
+          ],
+        },
+        // Same day as recent1 — should produce one date entry
+        {
+          _id: new Types.ObjectId(),
+          memberId: new Types.ObjectId(MEMBER_ID),
+          completedAt: recent1,
+          sets: [
+            {
+              exerciseId: new Types.ObjectId(EXERCISE_ID),
+              exerciseName: 'Back Squat',
+              actualWeight: 90,
+              actualReps: 8,
+            },
+          ],
+        },
+        {
+          _id: new Types.ObjectId(),
+          memberId: new Types.ObjectId(MEMBER_ID),
+          completedAt: recent2,
+          sets: [],
+        },
+        // Too old — should be excluded
+        {
+          _id: new Types.ObjectId(),
+          memberId: new Types.ObjectId(MEMBER_ID),
+          completedAt: tooOld,
+          sets: [],
+        },
+      ];
+
+      const mockQuery = {
+        sort: jest.fn().mockResolvedValue(sessions),
+      };
+      workoutSessionModel.find.mockReturnValue(mockQuery);
+
+      const result = await service.getProgress(
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+      );
+
+      expect(result.heatmapDates).toContain(recentDate1Str);
+      expect(result.heatmapDates).toContain(recentDate2Str);
+      // The too-old date must not appear
+      expect(result.heatmapDates).not.toContain(
+        tooOld.toISOString().slice(0, 10),
+      );
+      // Two sessions on same day → one date entry
+      expect(
+        result.heatmapDates.filter((d) => d === recentDate1Str).length,
+      ).toBe(1);
+    });
+
+    it('returns distinct exercises sorted by exerciseName ascending', async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+
+      const squat = new Types.ObjectId();
+      const bench = new Types.ObjectId();
+
+      const sessions = [
+        {
+          _id: new Types.ObjectId(),
+          completedAt: new Date(),
+          sets: [
+            {
+              exerciseId: squat,
+              exerciseName: 'Squat',
+              actualWeight: 100,
+              actualReps: 5,
+            },
+            {
+              exerciseId: bench,
+              exerciseName: 'Bench Press',
+              actualWeight: 80,
+              actualReps: 8,
+            },
+            // Duplicate exerciseId — should collapse to one entry
+            {
+              exerciseId: squat,
+              exerciseName: 'Squat',
+              actualWeight: 95,
+              actualReps: 6,
+            },
+          ],
+        },
+      ];
+
+      const mockQuery = {
+        sort: jest.fn().mockResolvedValue(sessions),
+      };
+      workoutSessionModel.find.mockReturnValue(mockQuery);
+
+      const result = await service.getProgress(
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+      );
+
+      expect(result.exercises).toHaveLength(2);
+      expect(result.exercises[0].exerciseName).toBe('Bench Press');
+      expect(result.exercises[1].exerciseName).toBe('Squat');
+      expect(result.exercises[0].exerciseId).toBe(bench.toString());
+      expect(result.exercises[1].exerciseId).toBe(squat.toString());
+    });
+
+    it('throws NotFoundException when caller is a trainer not assigned to the member', async () => {
+      userModel.findById.mockResolvedValue({
+        ...sampleMember,
+        trainerId: new Types.ObjectId(OTHER_TRAINER_ID),
+      });
+
+      await expect(
+        service.getProgress(MEMBER_ID, TRAINER_ID, 'trainer'),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // ─── getExerciseHistory ───────────────────────────────────────────────────────
+
+  describe('getExerciseHistory', () => {
+    it('computes estimatedOneRepMax as round(weight × (1 + reps/30)) taking the session max', async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+
+      const targetExerciseId = new Types.ObjectId(EXERCISE_ID);
+      const sessionDate = new Date();
+
+      const sessions = [
+        {
+          _id: new Types.ObjectId(SESSION_ID),
+          completedAt: sessionDate,
+          sets: [
+            // set 1: 100kg × 5 reps → 1RM = round(100 * (1 + 5/30)) = round(116.67) = 117
+            {
+              exerciseId: targetExerciseId,
+              exerciseName: 'Back Squat',
+              setNumber: 1,
+              actualWeight: 100,
+              actualReps: 5,
+            },
+            // set 2: 90kg × 3 reps → 1RM = round(90 * (1 + 3/30)) = round(99) = 99
+            // max for this session = 117
+            {
+              exerciseId: targetExerciseId,
+              exerciseName: 'Back Squat',
+              setNumber: 2,
+              actualWeight: 90,
+              actualReps: 3,
+            },
+          ],
+        },
+      ];
+
+      const mockQuery = {
+        sort: jest.fn().mockResolvedValue(sessions),
+      };
+      workoutSessionModel.find.mockReturnValue(mockQuery);
+
+      const result = await service.getExerciseHistory(
+        MEMBER_ID,
+        EXERCISE_ID,
+        TRAINER_ID,
+        'trainer',
+      );
+
+      expect(result.sessions).toHaveLength(1);
+      expect(result.sessions[0].estimatedOneRepMax).toBe(117);
+      expect(result.sessions[0].sets).toHaveLength(2);
+      expect(result.sessions[0].sets[0].setNumber).toBe(1);
+      expect(result.sessions[0].sets[0].weight).toBe(100);
+      expect(result.sessions[0].sets[0].reps).toBe(5);
+    });
+
+    it('returns at most 5 sessions ordered by completedAt descending and omits sessions with no qualifying sets for the exercise', async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+
+      const targetExerciseId = new Types.ObjectId(EXERCISE_ID);
+      const otherExerciseId = new Types.ObjectId();
+
+      // Create 7 sessions: 6 with the target exercise (sorted newest first),
+      // plus 1 with only null-weight sets (should be omitted),
+      // plus 1 with only sets for a different exercise (should be omitted)
+      const now = new Date();
+      const sessions = Array.from({ length: 6 }, (_, i) => {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i); // newest first
+        return {
+          _id: new Types.ObjectId(),
+          completedAt: date,
+          sets: [
+            {
+              exerciseId: targetExerciseId,
+              exerciseName: 'Back Squat',
+              setNumber: 1,
+              actualWeight: 100 - i * 5,
+              actualReps: 5,
+            },
+          ],
+        };
+      });
+
+      // Session with null actualWeight — should be omitted
+      const nullWeightSession = {
+        _id: new Types.ObjectId(),
+        completedAt: new Date(now.getTime() - 7 * 86400000),
+        sets: [
+          {
+            exerciseId: targetExerciseId,
+            exerciseName: 'Back Squat',
+            setNumber: 1,
+            actualWeight: null,
+            actualReps: 5,
+          },
+        ],
+      };
+
+      // Session with only a different exercise — should be omitted
+      const wrongExerciseSession = {
+        _id: new Types.ObjectId(),
+        completedAt: new Date(now.getTime() - 8 * 86400000),
+        sets: [
+          {
+            exerciseId: otherExerciseId,
+            exerciseName: 'Bench Press',
+            setNumber: 1,
+            actualWeight: 80,
+            actualReps: 8,
+          },
+        ],
+      };
+
+      const allSessions = [
+        ...sessions,
+        nullWeightSession,
+        wrongExerciseSession,
+      ];
+
+      const mockQuery = {
+        sort: jest.fn().mockResolvedValue(allSessions),
+      };
+      workoutSessionModel.find.mockReturnValue(mockQuery);
+
+      const result = await service.getExerciseHistory(
+        MEMBER_ID,
+        EXERCISE_ID,
+        TRAINER_ID,
+        'trainer',
+      );
+
+      // Only 5 most recent sessions with qualifying sets
+      expect(result.sessions).toHaveLength(5);
+      // Sessions are ordered newest first (index 0 = most recent)
+      expect(result.sessions[0].date).toBe(
+        sessions[0].completedAt.toISOString().slice(0, 10),
+      );
+    });
+  });
 });
