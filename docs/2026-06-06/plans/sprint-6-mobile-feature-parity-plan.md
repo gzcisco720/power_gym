@@ -149,7 +149,13 @@ Ordered newest-first by `submittedAt`. `key` = `${checkInId}-${photoIndex}`.
 3. Wire the tab into `MemberDetailScreen` `TABS` array + render branch; write failing screen unit test → Green
 4. Write Detox spec; build + run against the simulator → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 2 Checkpoint
+- [x] `useMemberPhotosStore > fetchPhotos` unit tests
+- [x] `MemberPhotosTab` unit tests (grid, empty state, tap-modal)
+- [x] `MemberDetailScreen` Photos tab unit test
+- [x] `mobile/e2e/trainer/member-photos.spec.ts` Detox E2E spec
 
 ---
 

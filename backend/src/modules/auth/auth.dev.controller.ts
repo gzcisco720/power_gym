@@ -57,6 +57,10 @@ class SeedUserRoleDto {
   @IsOptional()
   @IsBoolean()
   seedMembers?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  seedPhotos?: boolean;
 }
 
 /**
@@ -116,7 +120,7 @@ export class AuthDevController {
     }
 
     if (dto.seedMembers) {
-      await this.seedMembersData(dto.email, dto.role);
+      await this.seedMembersData(dto.email, dto.role, dto.seedPhotos !== false);
     }
 
     return { ok: true };
@@ -204,6 +208,7 @@ export class AuthDevController {
   private async seedMembersData(
     userEmail: string,
     role: 'owner' | 'trainer' | 'member',
+    withPhotos = true,
   ) {
     if (role === 'member') return;
 
@@ -244,7 +249,7 @@ export class AuthDevController {
       targetBodyFatPct: null,
     });
 
-    // Check-in
+    // Check-in (photos array is populated when withPhotos is true, for E2E test coverage)
     await this.checkInModel.create({
       memberId,
       trainerId: userId,
@@ -257,6 +262,10 @@ export class AuthDevController {
       energy: 6,
       digestion: 8,
       stuckToDiet: 'yes',
+      weight: 80,
+      photos: withPhotos
+        ? ['https://via.placeholder.com/400x400.png?text=Check-in+Photo']
+        : [],
     });
 
     // Active injury

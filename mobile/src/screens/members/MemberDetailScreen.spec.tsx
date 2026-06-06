@@ -22,6 +22,19 @@ jest.mock('../../stores/members.store', () => ({
   useMembersStore: jest.fn(),
 }));
 
+jest.mock('../../stores/member-photos.store', () => ({
+  useMemberPhotosStore: jest.fn((selector) => {
+    const state = {
+      photosByMember: { mem1: [] },
+      loadingByMember: { mem1: false },
+      errorByMember: { mem1: null },
+      fetchPhotos: jest.fn().mockResolvedValue(undefined),
+    };
+    if (typeof selector === 'function') return selector(state);
+    return state;
+  }),
+}));
+
 // ── Imports ───────────────────────────────────────────────────────────────────
 
 import { useRoute } from '@react-navigation/native';
@@ -244,6 +257,28 @@ describe('MemberDetailScreen', () => {
     fireEvent.press(getByTestId('member-detail-tab-bodytests'));
 
     expect(getByTestId('member-detail-tab-bodytests')).toBeTruthy();
+  });
+
+  it('renders the Photos tab button and shows MemberPhotosTab content when it is selected', () => {
+    setupRoute('mem1');
+    const member = makeMember();
+    const detail: DetailSlice = {
+      overview: makeOverview(),
+      bodyTests: [],
+      injuries: [],
+      medications: [],
+    };
+    setupStore(makeStoreState('mem1', member, detail));
+
+    const { getByTestId } = render(<MemberDetailScreen />);
+
+    // Photos tab button is visible
+    expect(getByTestId('member-detail-tab-photos')).toBeTruthy();
+
+    // Tap the Photos tab — the empty state should appear (no photos seeded)
+    fireEvent.press(getByTestId('member-detail-tab-photos'));
+
+    expect(getByTestId('photos-empty-state')).toBeTruthy();
   });
 });
 

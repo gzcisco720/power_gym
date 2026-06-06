@@ -26,6 +26,13 @@ export interface CheckIn {
   createdAt: string;
 }
 
+export interface MemberPhoto {
+  key: string;
+  photoUrl: string;
+  submittedAt: string; // ISO
+  weight: number | null;
+}
+
 export interface CreateCheckInDto {
   sleepQuality: number;
   stress: number;
