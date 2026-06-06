@@ -89,3 +89,10 @@ export interface CreateFoodDto {
   macrosPer100g: FoodMacros;
   servings?: FoodServing[];
 }
+
+export interface UpdateFoodDto {
+  name?: string;
+  brand?: string | null;
+  macrosPer100g?: FoodMacros;
+  servings?: FoodServing[];
+}

@@ -113,13 +113,13 @@ cross-app: `backend/` (PATCH + DELETE endpoints) and `mobile/` (data layer, scre
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `foodsApi > updateFood > PATCHes /foods/:id with the dto and returns response.data` (mock `apiClient.patch`)
-- [ ] `foodsApi > deleteFood > DELETEs /foods/:id` (mock `apiClient.delete`)
-- [ ] `useFoodsStore > update > replaces the matching food in results by _id and clears loading on success`
-- [ ] `useFoodsStore > update > sets error and clears loading when the api rejects`
-- [ ] `useFoodsStore > remove > filters the deleted food out of results on success`
-- [ ] `useFoodsStore > remove > sets error and clears loading when the api rejects`
-- [ ] `useFoodsStore > search > still populates results and clears loading` (regression — existing test must keep passing)
+- [x] `foodsApi > updateFood > PATCHes /foods/:id with the dto and returns response.data` (mock `apiClient.patch`)
+- [x] `foodsApi > deleteFood > DELETEs /foods/:id` (mock `apiClient.delete`)
+- [x] `useFoodsStore > update > replaces the matching food in results by _id and clears loading on success`
+- [x] `useFoodsStore > update > sets error and clears loading when the api rejects`
+- [x] `useFoodsStore > remove > filters the deleted food out of results on success`
+- [x] `useFoodsStore > remove > sets error and clears loading when the api rejects`
+- [x] `useFoodsStore > search > still populates results and clears loading` (regression — existing test must keep passing)
 
 *Integration:*
 - [ ] (covered at unit level for `mobile/` data layer; no Detox here — E2E lives in Stage 4)
@@ -131,7 +131,7 @@ cross-app: `backend/` (PATCH + DELETE endpoints) and `mobile/` (data layer, scre
 
 **Dependencies**: Stage 1 (endpoints must exist for the contract to be meaningful, though unit tests mock `apiClient`).
 
-**Status**: Not Started
+**Status**: Complete
 
 ---
 
