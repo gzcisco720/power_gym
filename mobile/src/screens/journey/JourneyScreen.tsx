@@ -1,24 +1,43 @@
-import React, { useEffect } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import React, { useCallback, useEffect } from 'react';
+import { View, Text, FlatList, ActivityIndicator } from 'react-native';
 import { Screen } from '../../components/Screen';
 import { useJourneyStore } from '../../stores/journey.store';
-import { JourneySummary } from '../../types/journey';
+import { JourneyTimelineItem } from '../../types/journey';
+import { JourneySummaryHeader } from './components/JourneySummaryHeader';
+import { TimelineNode } from './components/TimelineNode';
 
-function isEmptySummary(summary: JourneySummary): boolean {
-  const hasAnySessions = summary.recentSessions.length > 0;
-  const hasAnyBodyTests = summary.bodyTests.length > 0;
-  const hasAnyLoggedDay = summary.nutritionDays.some((d) => d.logged);
-  return summary.workoutStreak === 0 && !hasAnySessions && !hasAnyBodyTests && !hasAnyLoggedDay;
+function findMemberSince(items: JourneyTimelineItem[]): string | null {
+  const joined = items.find((i) => i.type === 'joined');
+  return joined ? joined.date : null;
 }
 
 export function JourneyScreen() {
   const summary = useJourneyStore((s) => s.summary);
   const loading = useJourneyStore((s) => s.loading);
+  const items = useJourneyStore((s) => s.items);
+  const nextCursor = useJourneyStore((s) => s.nextCursor);
+  const loadingMore = useJourneyStore((s) => s.loadingMore);
   const fetchSummary = useJourneyStore((s) => s.fetchSummary);
+  const fetchTimeline = useJourneyStore((s) => s.fetchTimeline);
+  const fetchMore = useJourneyStore((s) => s.fetchMore);
 
   useEffect(() => {
     void fetchSummary();
-  }, [fetchSummary]);
+    void fetchTimeline();
+  }, [fetchSummary, fetchTimeline]);
+
+  const handleEndReached = useCallback(() => {
+    if (nextCursor && !loadingMore) {
+      void fetchMore();
+    }
+  }, [nextCursor, loadingMore, fetchMore]);
+
+  const memberSince = findMemberSince(items);
+  const totalBodyTests = summary ? summary.bodyTests.length : 0;
+  const totalSessions = summary ? summary.recentSessions.length : 0;
+  const currentStreak = summary ? summary.workoutStreak : 0;
+
+  const isEmpty = !loading && items.length === 0 && summary !== null;
 
   return (
     <Screen testID="screen-Journey">
@@ -34,15 +53,13 @@ export function JourneyScreen() {
         </View>
       </View>
 
-      {loading ? (
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <View className="px-4 py-4 gap-2">
-            {[0, 1, 2, 3].map((i) => (
-              <View key={i} className="rounded-xl bg-muted h-16 opacity-60" />
-            ))}
-          </View>
-        </ScrollView>
-      ) : summary !== null && isEmptySummary(summary) ? (
+      {loading && items.length === 0 ? (
+        <View className="px-4 py-4 gap-2">
+          {[0, 1, 2, 3].map((i) => (
+            <View key={i} className="rounded-xl bg-muted h-16 opacity-60" />
+          ))}
+        </View>
+      ) : isEmpty ? (
         <View testID="journey-empty" className="flex-1 items-center justify-center px-4">
           <Text className="text-[15px] font-semibold text-foreground text-center">
             No activity yet
@@ -51,112 +68,37 @@ export function JourneyScreen() {
             Complete a workout, log your nutrition, or take a body test to see your journey here.
           </Text>
         </View>
-      ) : summary !== null ? (
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <View className="px-4 py-4 gap-6">
-            {/* Streak */}
-            <View>
-              <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65 mb-2">
-                Workout Streak
-              </Text>
-              <View
-                testID="journey-streak"
-                className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-3 flex-row items-center gap-2"
-              >
-                <Text className="text-2xl font-semibold tabular-nums text-foreground">
-                  {summary.workoutStreak}
-                </Text>
-                <Text className="text-sm text-foreground/65">
-                  {summary.workoutStreak === 1 ? 'day' : 'days'} in a row
-                </Text>
+      ) : (
+        <FlatList
+          testID="journey-timeline-list"
+          data={items}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ padding: 16, gap: 12 }}
+          ListHeaderComponent={
+            memberSince ? (
+              <View className="mb-2">
+                <JourneySummaryHeader
+                  totalSessions={totalSessions}
+                  currentStreak={currentStreak}
+                  totalBodyTests={totalBodyTests}
+                  memberSince={memberSince}
+                />
               </View>
-            </View>
-
-            {/* Recent Sessions */}
-            {summary.recentSessions.length > 0 ? (
-              <View>
-                <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65 mb-2">
-                  Recent Sessions
-                </Text>
-                <View className="gap-1.5">
-                  {summary.recentSessions.map((session) => (
-                    <View
-                      key={session._id}
-                      testID={`journey-session-${session._id}`}
-                      className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 flex-row items-center justify-between"
-                    >
-                      <Text className="text-sm font-medium text-foreground flex-1" numberOfLines={1}>
-                        {session.dayName}
-                      </Text>
-                      <Text className="text-xs text-foreground/65 ml-2">
-                        {session.completedSetCount} {session.completedSetCount === 1 ? 'set' : 'sets'}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
+            ) : null
+          }
+          renderItem={({ item }) => <TimelineNode item={item} />}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.3}
+          ListFooterComponent={
+            loadingMore ? (
+              <View className="py-4 items-center">
+                <ActivityIndicator />
               </View>
-            ) : null}
-
-            {/* Nutrition Days */}
-            {summary.nutritionDays.length > 0 ? (
-              <View>
-                <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65 mb-2">
-                  Nutrition (Last 7 Days)
-                </Text>
-                <View className="gap-1.5">
-                  {summary.nutritionDays.map((day) => (
-                    <View
-                      key={day.date}
-                      testID={`journey-nutrition-day-${day.date}`}
-                      className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 flex-row items-center justify-between"
-                    >
-                      <Text className="text-sm font-medium text-foreground">{day.date}</Text>
-                      <View className="flex-row items-center gap-2">
-                        {day.logged ? (
-                          <Text className="text-xs text-foreground/65">
-                            {day.loggedKcal} kcal
-                          </Text>
-                        ) : null}
-                        {day.targetMet ? (
-                          <Text className="text-xs font-medium text-emerald-300">Met</Text>
-                        ) : day.logged ? (
-                          <Text className="text-xs text-foreground/40">Missed</Text>
-                        ) : (
-                          <Text className="text-xs text-foreground/40">—</Text>
-                        )}
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            ) : null}
-
-            {/* Body Tests */}
-            {summary.bodyTests.length > 0 ? (
-              <View>
-                <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65 mb-2">
-                  Body Composition Trend
-                </Text>
-                <View className="gap-1.5">
-                  {summary.bodyTests.map((test) => (
-                    <View
-                      key={test._id}
-                      testID={`journey-body-test-${test._id}`}
-                      className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 flex-row items-center justify-between"
-                    >
-                      <Text className="text-sm font-medium text-foreground">{test.date.slice(0, 10)}</Text>
-                      <View className="flex-row items-center gap-3">
-                        <Text className="text-xs text-foreground/65">{test.weight} kg</Text>
-                        <Text className="text-xs text-foreground/65">{test.bodyFatPct}%</Text>
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            ) : null}
-          </View>
-        </ScrollView>
-      ) : null}
+            ) : null
+          }
+        />
+      )}
     </Screen>
   );
 }

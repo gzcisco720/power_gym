@@ -30,3 +30,49 @@ export interface JourneySummary {
   nutritionDays: JourneyNutritionDay[]; // exactly 7, oldest → newest
   bodyTests: JourneyBodyTestPoint[]; // up to 10, most recent first
 }
+
+// ── Timeline ──────────────────────────────────────────────────────────────────
+
+interface TimelineBase {
+  id: string;
+  date: string; // ISO string
+}
+
+export interface TimelineSessionCompleted extends TimelineBase {
+  type: 'session_completed';
+  dayName: string;
+  completedSetCount: number;
+}
+
+export interface TimelineBodyTest extends TimelineBase {
+  type: 'body_test';
+  weight: number;
+  bodyFatPct: number;
+}
+
+export interface TimelineCheckIn extends TimelineBase {
+  type: 'check_in';
+  wellnessAvg: number;
+}
+
+export interface TimelineStreakMilestone extends TimelineBase {
+  type: 'streak_milestone';
+  days: number;
+}
+
+export interface TimelineJoined extends TimelineBase {
+  type: 'joined';
+}
+
+export type JourneyTimelineItem =
+  | TimelineSessionCompleted
+  | TimelineBodyTest
+  | TimelineCheckIn
+  | TimelineStreakMilestone
+  | TimelineJoined;
+
+// GET /journey/timeline response.
+export interface JourneyTimelinePage {
+  items: JourneyTimelineItem[];
+  nextCursor: string | null;
+}

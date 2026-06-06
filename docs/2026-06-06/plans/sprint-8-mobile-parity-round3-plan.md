@@ -378,12 +378,12 @@ Add `fetchJourneyTimeline(cursor)` to journey.api; journey.store gains `items`, 
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `journeyStore > fetchTimeline > populates items and nextCursor from the first page`
-- [ ] `journeyStore > fetchMore > appends the next page's items and updates nextCursor`
-- [ ] `journeyStore > fetchMore > is a no-op when nextCursor is null`
-- [ ] `TimelineNode > renders > renders the correct label and data for a session_completed item`
-- [ ] `TimelineNode > renders > renders the streak day count for a streak_milestone item`
-- [ ] `JourneySummaryHeader > renders > shows total sessions, current streak, total body tests, and member-since date`
+- [x] `journeyStore > fetchTimeline > populates items and nextCursor from the first page`
+- [x] `journeyStore > fetchMore > appends the next page's items and updates nextCursor`
+- [x] `journeyStore > fetchMore > is a no-op when nextCursor is null`
+- [x] `TimelineNode > renders > renders the correct label and data for a session_completed item`
+- [x] `TimelineNode > renders > renders the streak day count for a streak_milestone item`
+- [x] `JourneySummaryHeader > renders > shows total sessions, current streak, total body tests, and member-since date`
 
 *E2E (Detox):*
 - [ ] Member opens Journey → summary header and a chronological list of timeline nodes are visible
@@ -394,4 +394,14 @@ Add `fetchJourneyTimeline(cursor)` to journey.api; journey.store gains `items`, 
 2. Implement paginated store + TimelineNode + summary header, rebuild JourneyScreen → Green
 3. Write Detox spec, run against simulator → passes
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 8 Checkpoint
+- [x] types/journey.ts — JourneyTimelineItem, JourneyTimelinePage
+- [x] journey.api.ts — fetchJourneyTimeline
+- [x] journey.store.ts — items, nextCursor, loadingMore, fetchTimeline, fetchMore
+- [x] TimelineNode.tsx
+- [x] JourneySummaryHeader.tsx
+- [x] JourneyScreen.tsx rebuild
+- [x] journey-timeline.spec.tsx (store + component unit tests)
+- [x] mobile/e2e/member/journey-timeline.spec.ts (Detox E2E)
