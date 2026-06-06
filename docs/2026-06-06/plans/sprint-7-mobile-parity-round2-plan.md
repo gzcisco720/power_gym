@@ -178,23 +178,23 @@ Response shapes:
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `TrainersService > getTrainerMembers > returns members of the trainer each with streak, sessionsThisMonth, and a status of active|needs-attn|no-plan`
-- [ ] `TrainersService > getTrainerMembers > derives status no-plan when the member has no active plan, active when streak>0, needs-attn otherwise`
-- [ ] `TrainersService > getTrainerMembers > throws NotFoundException when the id is not a trainer`
-- [ ] `TrainersService > getTrainerSessions > returns only sessions whose trainerId matches the target trainer`
-- [ ] `TrainersService > getTrainerTrainingPlans > returns only plan templates created by the target trainer`
-- [ ] `TrainersService > getTrainerNutritionPlans > returns only nutrition templates created by the target trainer`
-- [ ] `TrainersService > reassignMember > updates the member's trainerId to the new trainer and returns the updated member`
-- [ ] `TrainersService > reassignMember > throws NotFoundException when the member is not currently assigned to the path trainer`
-- [ ] `TrainersController > getTrainerMembers > delegates to service with the trainer id`
-- [ ] `TrainersController > reassignMember > delegates to service with current trainerId, memberId, and target trainerId`
+- [x] `TrainersService > getTrainerMembers > returns members of the trainer each with streak, sessionsThisMonth, and a status of active|needs-attn|no-plan`
+- [x] `TrainersService > getTrainerMembers > derives status no-plan when the member has no active plan, active when streak>0, needs-attn otherwise`
+- [x] `TrainersService > getTrainerMembers > throws NotFoundException when the id is not a trainer`
+- [x] `TrainersService > getTrainerSessions > returns only sessions whose trainerId matches the target trainer`
+- [x] `TrainersService > getTrainerTrainingPlans > returns only plan templates created by the target trainer`
+- [x] `TrainersService > getTrainerNutritionPlans > returns only nutrition templates created by the target trainer`
+- [x] `TrainersService > reassignMember > updates the member's trainerId to the new trainer and returns the updated member`
+- [x] `TrainersService > reassignMember > throws NotFoundException when the member is not currently assigned to the path trainer`
+- [x] `TrainersController > getTrainerMembers > delegates to service with the trainer id`
+- [x] `TrainersController > reassignMember > delegates to service with current trainerId, memberId, and target trainerId`
 
 *Integration (`backend/test/trainers.e2e-spec.ts`):*
-- [ ] `GET /trainers/:id/members` as owner → 200 with first member carrying numeric streak and sessionsThisMonth and a valid status
-- [ ] `GET /trainers/:id/training-plans` as owner → 200 with only that trainer's templates
-- [ ] `GET /trainers/:id/sessions` as a `trainer` role → 403
-- [ ] `PATCH /trainers/:id/members/:memberId/reassign` as owner with a valid target trainer → 200 and a follow-up `GET /trainers/:newTrainerId/members` includes that member
-- [ ] `GET /trainers/:id/members` with no JWT → 401
+- [x] `GET /trainers/:id/members` as owner → 200 with first member carrying numeric streak and sessionsThisMonth and a valid status
+- [x] `GET /trainers/:id/training-plans` as owner → 200 with only that trainer's templates
+- [x] `GET /trainers/:id/sessions` as a `trainer` role → 403
+- [x] `PATCH /trainers/:id/members/:memberId/reassign` as owner with a valid target trainer → 200 and a follow-up `GET /trainers/:newTrainerId/members` includes that member
+- [x] `GET /trainers/:id/members` with no JWT → 401
 
 **TDD sequence**:
 1. Write failing service unit tests (metrics, scoping, reassign) → Red
@@ -202,7 +202,7 @@ Response shapes:
 3. Write failing controller unit tests → implement `@Get`/`@Patch` handlers under `@Roles('owner')` → Green
 4. Extend integration spec covering 200/401/403/404 + reassign round-trip → passes against the real Nest test stack
 
-**Status**: Not Started
+**Status**: Complete
 
 ## Stage 2: Backend — Member Billing + Self-nutrition endpoints
 

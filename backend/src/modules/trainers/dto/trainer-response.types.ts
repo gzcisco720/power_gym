@@ -19,3 +19,29 @@ export interface TrainerDetailResponse {
   joinDate: string; // ISO string from createdAt
   members: TrainerMember[];
 }
+
+export interface TrainerMemberMetrics {
+  id: string;
+  name: string;
+  email: string;
+  streak: number;
+  sessionsThisMonth: number;
+  status: 'active' | 'needs-attn' | 'no-plan';
+}
+
+export interface TrainerSessionItem {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  memberNames: string[];
+  serviceTypeName: string | null;
+  status: string;
+}
+
+export interface TrainerTemplateItem {
+  id: string;
+  name: string;
+  dayCount: number;
+  createdAt: string;
+}

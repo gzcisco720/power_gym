@@ -23,6 +23,11 @@ import {
   UserDocument,
 } from '../src/common/models/user.model';
 import {
+  PlanTemplate,
+  PlanTemplateSchema,
+  PlanTemplateDocument,
+} from '../src/common/models/plan-template.model';
+import {
   IEmailService,
   EMAIL_SERVICE,
 } from '../src/common/email/email.service';
@@ -32,6 +37,7 @@ const TRAINER1_EMAIL = 'trainers-e2e-trainer1@example.com';
 const TRAINER2_EMAIL = 'trainers-e2e-trainer2@example.com';
 const MEMBER_EMAIL = 'trainers-e2e-member@example.com';
 const MEMBER_ROLE_EMAIL = 'trainers-e2e-memberrole@example.com';
+const TRAINER1_LOGIN_EMAIL = 'trainers-e2e-trainer1-login@example.com';
 const TEST_PASSWORD = 'Password1';
 
 async function buildApp(
@@ -42,7 +48,10 @@ async function buildApp(
     imports: [
       ConfigModule.forRoot({ isGlobal: true }),
       MongooseModule.forRoot(uri),
-      MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+      MongooseModule.forFeature([
+        { name: User.name, schema: UserSchema },
+        { name: PlanTemplate.name, schema: PlanTemplateSchema },
+      ]),
       ServeStaticModule.forRoot({
         rootPath: join(process.cwd(), 'public'),
         serveRoot: '/',
@@ -74,10 +83,13 @@ describe('Trainers (e2e)', () => {
   let module: TestingModule;
   let mongod: MongoMemoryServer;
   let userModel: Model<UserDocument>;
+  let planTemplateModel: Model<PlanTemplateDocument>;
   let ownerToken: string;
   let memberToken: string;
+  let trainerToken: string;
   let trainer1Id: string;
   let trainer2Id: string;
+  let member1Id: string;
 
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
@@ -87,6 +99,9 @@ describe('Trainers (e2e)', () => {
     ({ app, module } = await buildApp(uri, mockEmail));
 
     userModel = module.get<Model<UserDocument>>(getModelToken(User.name));
+    planTemplateModel = module.get<Model<PlanTemplateDocument>>(
+      getModelToken(PlanTemplate.name),
+    );
 
     const passwordHash = await bcrypt.hash(TEST_PASSWORD, 10);
 
@@ -113,7 +128,7 @@ describe('Trainers (e2e)', () => {
     });
     trainer1Id = trainer1Doc._id.toString();
 
-    // Create trainer2 (will have 0 members)
+    // Create trainer2 (will have 0 members, used as reassign target)
     const trainer2Doc = await userModel.create({
       _id: new Types.ObjectId(),
       firstName: 'Bob',
@@ -125,8 +140,19 @@ describe('Trainers (e2e)', () => {
     });
     trainer2Id = trainer2Doc._id.toString();
 
-    // Create 2 members assigned to trainer1
+    // Create a trainer that can log in (to test 403 on trainer-role)
     await userModel.create({
+      _id: new Types.ObjectId(),
+      firstName: 'Login',
+      lastName: 'Trainer',
+      email: TRAINER1_LOGIN_EMAIL,
+      passwordHash,
+      role: 'trainer',
+      trainerId: null,
+    });
+
+    // Create 2 members assigned to trainer1
+    const member1Doc = await userModel.create({
       _id: new Types.ObjectId(),
       firstName: 'Alice',
       lastName: 'Member',
@@ -135,6 +161,7 @@ describe('Trainers (e2e)', () => {
       role: 'member',
       trainerId: new Types.ObjectId(trainer1Id),
     });
+    member1Id = member1Doc._id.toString();
 
     await userModel.create({
       _id: new Types.ObjectId(),
@@ -157,6 +184,18 @@ describe('Trainers (e2e)', () => {
       trainerId: null,
     });
 
+    // Seed a plan template created by trainer1
+    await planTemplateModel.create({
+      _id: new Types.ObjectId(),
+      name: 'Trainer1 Strength Plan',
+      description: null,
+      createdBy: new Types.ObjectId(trainer1Id),
+      days: [
+        { dayNumber: 1, name: 'Push Day', exercises: [] },
+        { dayNumber: 2, name: 'Pull Day', exercises: [] },
+      ],
+    });
+
     // Login owner
     const ownerLogin = await request(app.getHttpServer())
       .post('/auth/login')
@@ -170,6 +209,13 @@ describe('Trainers (e2e)', () => {
       .send({ email: MEMBER_ROLE_EMAIL, password: TEST_PASSWORD })
       .expect(201);
     memberToken = (memberLogin.body as { accessToken: string }).accessToken;
+
+    // Login trainer
+    const trainerLogin = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: TRAINER1_LOGIN_EMAIL, password: TEST_PASSWORD })
+      .expect(201);
+    trainerToken = (trainerLogin.body as { accessToken: string }).accessToken;
   });
 
   afterAll(async () => {
@@ -259,6 +305,107 @@ describe('Trainers (e2e)', () => {
         .get(`/trainers/${trainer1Id}`)
         .set('Authorization', `Bearer ${memberToken}`)
         .expect(403);
+    });
+  });
+
+  // ─── GET /trainers/:id/members ────────────────────────────────────────────────
+
+  describe('GET /trainers/:id/members', () => {
+    it('owner → 200 with members carrying numeric streak and sessionsThisMonth and a valid status', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/trainers/${trainer1Id}/members`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .expect(200);
+
+      const body = res.body as Array<Record<string, unknown>>;
+      expect(Array.isArray(body)).toBe(true);
+      expect(body.length).toBeGreaterThanOrEqual(1);
+
+      const member = body[0];
+      expect(member).toHaveProperty('id');
+      expect(member).toHaveProperty('name');
+      expect(member).toHaveProperty('email');
+      expect(typeof member.streak).toBe('number');
+      expect(typeof member.sessionsThisMonth).toBe('number');
+      expect(['active', 'needs-attn', 'no-plan']).toContain(member.status);
+    });
+
+    it('no JWT → 401', async () => {
+      await request(app.getHttpServer())
+        .get(`/trainers/${trainer1Id}/members`)
+        .expect(401);
+    });
+  });
+
+  // ─── GET /trainers/:id/training-plans ─────────────────────────────────────────
+
+  describe('GET /trainers/:id/training-plans', () => {
+    it('owner → 200 with only that trainer\'s templates', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/trainers/${trainer1Id}/training-plans`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .expect(200);
+
+      const body = res.body as Array<Record<string, unknown>>;
+      expect(Array.isArray(body)).toBe(true);
+      expect(body.length).toBeGreaterThanOrEqual(1);
+
+      const plan = body[0];
+      expect(plan).toHaveProperty('id');
+      expect(plan).toHaveProperty('name', 'Trainer1 Strength Plan');
+      expect(plan).toHaveProperty('dayCount', 2);
+      expect(plan).toHaveProperty('createdAt');
+    });
+
+    it('trainer2 (no templates) → 200 with empty array', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/trainers/${trainer2Id}/training-plans`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .expect(200);
+
+      expect(res.body).toEqual([]);
+    });
+  });
+
+  // ─── GET /trainers/:id/sessions as trainer role → 403 ────────────────────────
+
+  describe('GET /trainers/:id/sessions', () => {
+    it('trainer role → 403', async () => {
+      await request(app.getHttpServer())
+        .get(`/trainers/${trainer1Id}/sessions`)
+        .set('Authorization', `Bearer ${trainerToken}`)
+        .expect(403);
+    });
+  });
+
+  // ─── PATCH /trainers/:id/members/:memberId/reassign ───────────────────────────
+
+  describe('PATCH /trainers/:id/members/:memberId/reassign', () => {
+    it('owner with valid target trainer → 200 and follow-up GET includes member in new trainer list', async () => {
+      // Reassign member1 from trainer1 to trainer2
+      await request(app.getHttpServer())
+        .patch(`/trainers/${trainer1Id}/members/${member1Id}/reassign`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({ trainerId: trainer2Id })
+        .expect(200);
+
+      // Verify member now appears under trainer2
+      const res = await request(app.getHttpServer())
+        .get(`/trainers/${trainer2Id}/members`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .expect(200);
+
+      const members = res.body as Array<{ id: string }>;
+      expect(members.some((m) => m.id === member1Id)).toBe(true);
+    });
+
+    it('wrong current trainer → 404', async () => {
+      const nonMemberId = new Types.ObjectId().toString();
+      await request(app.getHttpServer())
+        .patch(`/trainers/${trainer1Id}/members/${nonMemberId}/reassign`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({ trainerId: trainer2Id })
+        .expect(404);
     });
   });
 });
