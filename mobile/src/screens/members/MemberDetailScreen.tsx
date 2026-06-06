@@ -14,6 +14,7 @@ import { MemberTrainingTab } from './tabs/MemberTrainingTab';
 import { MemberNutritionTab } from './tabs/MemberNutritionTab';
 import { MemberProgressTab } from './tabs/MemberProgressTab';
 import { MemberPhotosTab } from './tabs/MemberPhotosTab';
+import { MemberBillingTab } from './tabs/MemberBillingTab';
 import { AssignPlanSheet } from './AssignPlanSheet';
 import { AssignNutritionPlanSheet } from './AssignNutritionPlanSheet';
 import { AppStackParamList } from '../../navigation/index';
@@ -24,7 +25,7 @@ import { CheckIn } from '../../types/check-ins';
 type DetailRouteProp = RouteProp<AppStackParamList, 'MemberDetail'>;
 type Nav = NativeStackNavigationProp<AppStackParamList>;
 
-type TabId = 'overview' | 'bodytests' | 'health' | 'checkins' | 'training' | 'nutrition' | 'progress' | 'photos';
+type TabId = 'overview' | 'bodytests' | 'health' | 'checkins' | 'training' | 'nutrition' | 'progress' | 'photos' | 'billing';
 
 const TABS: { id: TabId; label: string; testID: string }[] = [
   { id: 'overview', label: 'Overview', testID: 'member-detail-tab-overview' },
@@ -35,6 +36,7 @@ const TABS: { id: TabId; label: string; testID: string }[] = [
   { id: 'nutrition', label: 'Nutrition', testID: 'member-detail-tab-nutrition' },
   { id: 'progress', label: 'Progress', testID: 'member-detail-tab-progress' },
   { id: 'photos', label: 'Photos', testID: 'member-detail-tab-photos' },
+  { id: 'billing', label: 'Billing', testID: 'member-detail-tab-billing' },
 ];
 
 export function MemberDetailScreen() {
@@ -167,6 +169,9 @@ export function MemberDetailScreen() {
           ) : null}
           {activeTab === 'photos' ? (
             <MemberPhotosTab memberId={memberId} />
+          ) : null}
+          {activeTab === 'billing' ? (
+            <MemberBillingTab memberId={memberId} />
           ) : null}
         </>
       )}

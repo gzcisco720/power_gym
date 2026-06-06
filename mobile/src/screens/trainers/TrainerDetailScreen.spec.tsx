@@ -40,7 +40,7 @@ function makeDetail(overrides: Partial<TrainerDetail> = {}): TrainerDetail {
   };
 }
 
-function makeStoreState(overrides: Partial<ReturnType<typeof useTrainersStore>> = {}) {
+function makeStoreState(overrides: Record<string, unknown> = {}) {
   return {
     trainers: [],
     loading: false,
@@ -48,13 +48,30 @@ function makeStoreState(overrides: Partial<ReturnType<typeof useTrainersStore>> 
     detail: null,
     detailLoading: false,
     detailError: null,
+    trainerMembers: [],
+    trainerMembersLoading: false,
+    trainerMembersError: null,
+    trainerSessions: [],
+    trainerSessionsLoading: false,
+    trainerSessionsError: null,
+    trainerTrainingPlans: [],
+    trainerTrainingPlansLoading: false,
+    trainerTrainingPlansError: null,
+    trainerNutritionPlans: [],
+    trainerNutritionPlansLoading: false,
+    trainerNutritionPlansError: null,
     fetchTrainers: jest.fn(),
     fetchTrainerDetail: jest.fn(),
+    fetchTrainerMembers: jest.fn(),
+    fetchTrainerSessions: jest.fn(),
+    fetchTrainerTrainingPlans: jest.fn(),
+    fetchTrainerNutritionPlans: jest.fn(),
+    reassignMember: jest.fn(),
     ...overrides,
   };
 }
 
-function setupStoreMock(overrides: Partial<ReturnType<typeof useTrainersStore>> = {}) {
+function setupStoreMock(overrides: Record<string, unknown> = {}) {
   const state = makeStoreState(overrides);
   mockUseTrainersStore.mockImplementation(
     (selector?: (s: ReturnType<typeof useTrainersStore>) => unknown) => {
@@ -107,19 +124,24 @@ describe('TrainerDetailScreen', () => {
     expect(getByText(/Jun.*2023|2023.*Jun/)).toBeTruthy();
   });
 
-  it('tapping Members tab renders a MemberRow per detail member', () => {
+  it('tapping Members tab renders store-based member rows', () => {
     setupRoute('trainer1', 'Alice Smith');
     const detail = makeDetail();
-    setupStoreMock({ detail });
+    setupStoreMock({
+      detail,
+      trainerMembers: [
+        { id: 'm1', name: 'John Doe', email: 'john@example.com', streak: 3, sessionsThisMonth: 8, status: 'active' },
+      ],
+    });
 
     const { getByTestId, getByText } = render(<TrainerDetailScreen />);
 
     // Tap Members tab
     fireEvent.press(getByTestId('trainer-detail-tab-members'));
 
-    // Should show each member
+    // Store-based member row should appear
     expect(getByText('John Doe')).toBeTruthy();
-    expect(getByText('Jane Doe')).toBeTruthy();
+    expect(getByTestId('trainer-member-row-m1')).toBeTruthy();
   });
 
   it('renders trainer name in header', () => {
@@ -129,5 +151,18 @@ describe('TrainerDetailScreen', () => {
     const { getByText } = render(<TrainerDetailScreen />);
 
     expect(getByText('Alice Smith')).toBeTruthy();
+  });
+
+  it('shows 5 tab buttons: Overview, Members, Calendar, Training, Nutrition', () => {
+    setupRoute('trainer1', 'Alice Smith');
+    setupStoreMock();
+
+    const { getByTestId } = render(<TrainerDetailScreen />);
+
+    expect(getByTestId('trainer-detail-tab-overview')).toBeTruthy();
+    expect(getByTestId('trainer-detail-tab-members')).toBeTruthy();
+    expect(getByTestId('trainer-detail-tab-calendar')).toBeTruthy();
+    expect(getByTestId('trainer-detail-tab-training')).toBeTruthy();
+    expect(getByTestId('trainer-detail-tab-nutrition')).toBeTruthy();
   });
 });

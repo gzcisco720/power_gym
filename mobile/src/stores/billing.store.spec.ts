@@ -1,6 +1,7 @@
 jest.mock('../lib/api/billing.api', () => ({
   getMySummary: jest.fn(),
   getBillingSummary: jest.fn(),
+  getMemberBilling: jest.fn(),
 }));
 
 import * as billingApi from '../lib/api/billing.api';
@@ -9,6 +10,7 @@ import { MyBillingResponse, BillingSummaryResponse } from '../types/billing';
 
 const mockGetMySummary = billingApi.getMySummary as jest.MockedFunction<typeof billingApi.getMySummary>;
 const mockGetBillingSummary = billingApi.getBillingSummary as jest.MockedFunction<typeof billingApi.getBillingSummary>;
+const mockGetMemberBilling = billingApi.getMemberBilling as jest.MockedFunction<typeof billingApi.getMemberBilling>;
 
 const FROM = '2026-06-01T00:00:00.000Z';
 const TO = '2026-06-30T23:59:59.999Z';
@@ -62,6 +64,9 @@ function resetStore() {
     summaryLoading: false,
     myError: null,
     summaryError: null,
+    memberData: null,
+    memberLoading: false,
+    memberError: null,
   });
 }
 
@@ -153,6 +158,30 @@ describe('useBillingStore', () => {
       expect(state.period.to.getMinutes()).toBe(59);
       expect(state.period.to.getSeconds()).toBe(59);
       expect(state.period.to.getMilliseconds()).toBe(999);
+    });
+  });
+
+  describe('fetchMember', () => {
+    it('populates memberData and clears memberLoading on success', async () => {
+      mockGetMemberBilling.mockResolvedValueOnce(MOCK_MY_BILLING);
+
+      await useBillingStore.getState().fetchMember('mem1', FROM, TO);
+
+      const state = useBillingStore.getState();
+      expect(state.memberData).toEqual(MOCK_MY_BILLING);
+      expect(state.memberLoading).toBe(false);
+      expect(state.memberError).toBeNull();
+    });
+
+    it('sets memberError on api failure', async () => {
+      mockGetMemberBilling.mockRejectedValueOnce(new Error('Request failed'));
+
+      await useBillingStore.getState().fetchMember('mem1', FROM, TO);
+
+      const state = useBillingStore.getState();
+      expect(state.memberLoading).toBe(false);
+      expect(state.memberError).toBe('Request failed');
+      expect(state.memberData).toBeNull();
     });
   });
 });

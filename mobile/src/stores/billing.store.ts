@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getMySummary, getBillingSummary } from '../lib/api/billing.api';
+import { getMySummary, getBillingSummary, getMemberBilling } from '../lib/api/billing.api';
 import { BillingPeriod, MyBillingResponse, BillingSummaryResponse } from '../types/billing';
 
 function buildPeriod(year: number, month: number): BillingPeriod {
@@ -22,10 +22,14 @@ interface BillingState {
   summaryData: BillingSummaryResponse | null;
   summaryLoading: boolean;
   summaryError: string | null;
+  memberData: MyBillingResponse | null;
+  memberLoading: boolean;
+  memberError: string | null;
 
   setPeriod(direction: 'prev' | 'next'): void;
   fetchMy(from: string, to: string): Promise<void>;
   fetchSummary(from: string, to: string): Promise<void>;
+  fetchMember(memberId: string, from: string, to: string): Promise<void>;
 }
 
 export const useBillingStore = create<BillingState>((set, get) => ({
@@ -36,6 +40,9 @@ export const useBillingStore = create<BillingState>((set, get) => ({
   summaryData: null,
   summaryLoading: false,
   summaryError: null,
+  memberData: null,
+  memberLoading: false,
+  memberError: null,
 
   setPeriod(direction: 'prev' | 'next'): void {
     const { period } = get();
@@ -65,6 +72,17 @@ export const useBillingStore = create<BillingState>((set, get) => ({
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       set({ summaryLoading: false, summaryError: message });
+    }
+  },
+
+  async fetchMember(memberId: string, from: string, to: string): Promise<void> {
+    set({ memberLoading: true, memberError: null });
+    try {
+      const memberData = await getMemberBilling(memberId, from, to);
+      set({ memberData, memberLoading: false });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      set({ memberLoading: false, memberError: message });
     }
   },
 }));

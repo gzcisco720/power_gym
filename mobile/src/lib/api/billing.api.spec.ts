@@ -5,7 +5,7 @@ jest.mock('./client', () => ({
 }));
 
 import { apiClient } from './client';
-import { getMySummary, getBillingSummary } from './billing.api';
+import { getMySummary, getBillingSummary, getMemberBilling } from './billing.api';
 import { MyBillingResponse, BillingSummaryResponse } from '../../types/billing';
 
 const mockGet = apiClient.get as jest.MockedFunction<typeof apiClient.get>;
@@ -85,6 +85,19 @@ describe('billing.api', () => {
         params: { from: FROM, to: TO },
       });
       expect(result).toEqual(MOCK_SUMMARY);
+    });
+  });
+
+  describe('getMemberBilling', () => {
+    it('calls GET /billing/members/:memberId with from and to params and returns the response body', async () => {
+      mockGet.mockResolvedValueOnce({ data: MOCK_MY_BILLING });
+
+      const result = await getMemberBilling('mem1', FROM, TO);
+
+      expect(mockGet).toHaveBeenCalledWith('/billing/members/mem1', {
+        params: { from: FROM, to: TO },
+      });
+      expect(result).toEqual(MOCK_MY_BILLING);
     });
   });
 });

@@ -1,20 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, ScrollView } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { useTrainersStore } from '../../stores/trainers.store';
 import { TrainerOverviewTab } from './components/TrainerOverviewTab';
 import { TrainerMembersTab } from './components/TrainerMembersTab';
+import { TrainerCalendarTab } from './components/TrainerCalendarTab';
+import { TrainerTrainingPlansTab } from './components/TrainerTrainingPlansTab';
+import { TrainerNutritionPlansTab } from './components/TrainerNutritionPlansTab';
 import { AppStackParamList } from '../../navigation/index';
 
 type DetailRouteProp = RouteProp<AppStackParamList, 'TrainerDetail'>;
 
-type TabId = 'overview' | 'members';
+type TabId = 'overview' | 'members' | 'calendar' | 'training' | 'nutrition';
 
 const TABS: { id: TabId; label: string; testID: string }[] = [
   { id: 'overview', label: 'Overview', testID: 'trainer-detail-tab-overview' },
   { id: 'members', label: 'Members', testID: 'trainer-detail-tab-members' },
+  { id: 'calendar', label: 'Calendar', testID: 'trainer-detail-tab-calendar' },
+  { id: 'training', label: 'Training', testID: 'trainer-detail-tab-training' },
+  { id: 'nutrition', label: 'Nutrition', testID: 'trainer-detail-tab-nutrition' },
 ];
 
 export function TrainerDetailScreen() {
@@ -43,8 +49,13 @@ export function TrainerDetailScreen() {
         </View>
       ) : null}
 
-      {/* Tab bar */}
-      <View className="flex-row border-b border-foreground/[.06] bg-background">
+      {/* Tab bar — scrollable to accommodate 5 tabs */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        className="flex-grow-0 border-b border-foreground/[.06] bg-background"
+        contentContainerStyle={{ flexDirection: 'row' }}
+      >
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
@@ -55,7 +66,7 @@ export function TrainerDetailScreen() {
               accessibilityLabel={tab.label}
               accessibilityRole="tab"
               accessibilityState={{ selected: isActive }}
-              className={`flex-1 items-center py-2.5 border-b-2 ${
+              className={`items-center px-4 py-2.5 border-b-2 ${
                 isActive ? 'border-primary' : 'border-transparent'
               }`}
             >
@@ -69,7 +80,7 @@ export function TrainerDetailScreen() {
             </Pressable>
           );
         })}
-      </View>
+      </ScrollView>
 
       {/* Tab content */}
       {detailLoading || !detail ? (
@@ -84,7 +95,16 @@ export function TrainerDetailScreen() {
             <TrainerOverviewTab detail={detail} />
           ) : null}
           {activeTab === 'members' ? (
-            <TrainerMembersTab members={detail.members} />
+            <TrainerMembersTab trainerId={trainerId} />
+          ) : null}
+          {activeTab === 'calendar' ? (
+            <TrainerCalendarTab trainerId={trainerId} />
+          ) : null}
+          {activeTab === 'training' ? (
+            <TrainerTrainingPlansTab trainerId={trainerId} />
+          ) : null}
+          {activeTab === 'nutrition' ? (
+            <TrainerNutritionPlansTab trainerId={trainerId} />
           ) : null}
         </>
       )}

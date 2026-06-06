@@ -272,9 +272,20 @@ Response shapes:
 2. Write failing component tests for each tab → implement tab components + register them in TrainerDetailScreen → Green
 3. `/simplify` (mobile) → write Detox spec → run against simulator → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 3 Checkpoint
+- [x] trainers.store new slices + api fetchers (unit tests + impl)
+- [x] TrainerMembersTab with metrics + reassign (unit tests + impl)
+- [x] TrainerCalendarTab (unit tests + impl)
+- [x] TrainerTrainingPlansTab (unit tests + impl)
+- [x] TrainerNutritionPlansTab (unit tests + impl)
+- [x] ReassignMemberSheet (impl)
+- [x] TrainerDetailScreen 5-tab expansion
+- [x] Detox E2E (owner/trainer-hub.spec.ts)
 
 ## Stage 4: Mobile — Member Billing tab (Gap 2)
+
 
 **Goal**: MemberDetailScreen has a 9th Billing tab showing sessions completed, amount, and the per-session lines for the selected period, with prev/next month navigation.
 
@@ -296,7 +307,14 @@ Response shapes:
 2. Write failing `MemberBillingTab` tests → implement tab + register in MemberDetailScreen TABS → Green
 3. `/simplify` → write Detox spec → run against simulator → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 4 Checkpoint
+- [x] billing.api `getMemberBilling` + api spec
+- [x] billing.store `fetchMember` + store spec
+- [x] MemberBillingTab component + spec
+- [x] MemberDetailScreen Billing tab registration
+- [x] Detox E2E spec
 
 ## Stage 5: Mobile — Nutrition free-entry (Gap 3)
 

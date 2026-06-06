@@ -14,3 +14,14 @@ export async function getBillingSummary(from: string, to: string): Promise<Billi
   });
   return response.data;
 }
+
+export async function getMemberBilling(
+  memberId: string,
+  from: string,
+  to: string,
+): Promise<MyBillingResponse> {
+  const response = await apiClient.get<MyBillingResponse>(`/billing/members/${memberId}`, {
+    params: { from, to },
+  });
+  return response.data;
+}
