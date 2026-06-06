@@ -6,7 +6,6 @@ Sprint Contract plans only. One row per active plan.
 
 | Feature | Plan File | Status |
 |---|---|---|
-| Member Check-ins Tab (Mobile) | [2026-06-06/plans/member-check-ins-plan.md](2026-06-06/plans/member-check-ins-plan.md) | In Progress |
 | Trainer Log for Member (Mobile) | [2026-06-06/plans/trainer-log-plan.md](2026-06-06/plans/trainer-log-plan.md) | In Progress |
 | Member Progress Tab (Mobile) | [2026-06-06/plans/member-progress-plan.md](2026-06-06/plans/member-progress-plan.md) | In Progress |
 
