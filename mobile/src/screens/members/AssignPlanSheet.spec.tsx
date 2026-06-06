@@ -74,6 +74,22 @@ beforeEach(() => {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('AssignPlanSheet', () => {
+  it('renders the empty-state message when the templates list is empty', () => {
+    setupStore([]);
+
+    const { getByText, queryByTestId } = render(
+      <AssignPlanSheet
+        testID="assign-plan-sheet"
+        memberId="mem1"
+        onAssigned={jest.fn()}
+        onClose={jest.fn()}
+      />,
+    );
+
+    expect(getByText('No training templates available.')).toBeTruthy();
+    expect(queryByTestId('template-result-Strength Plan')).toBeNull();
+  });
+
   it('renders a template-result-{name} row per template and calls assignPlan on tap', async () => {
     const templates = [
       makeTemplate({ _id: 'tpl1', name: 'Strength Plan' }),

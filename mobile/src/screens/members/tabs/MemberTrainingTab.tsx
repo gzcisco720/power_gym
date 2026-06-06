@@ -53,6 +53,10 @@ export function MemberTrainingTab({ memberId, memberName, activePlan, onAssignPr
     navigation.navigate('TrainerWorkoutSession', { memberId, memberName });
   }
 
+  // Prefer activePlan prop (updated immediately after assignment) over the
+  // internally-fetched memberPlan so Log Session day buttons appear without remount.
+  const logPlan = activePlan ?? memberPlan;
+
   return (
     <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
       <View className="px-4 py-4 gap-4">
@@ -91,14 +95,14 @@ export function MemberTrainingTab({ memberId, memberName, activePlan, onAssignPr
           )}
         </View>
 
-        {/* Log Session section — shown when a plan with days is fetched */}
-        {memberPlan && memberPlan.days.length > 0 ? (
+        {/* Log Session section — shown when a plan with days is available */}
+        {logPlan && logPlan.days.length > 0 ? (
           <View className="gap-2">
             <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
               Log Session
             </Text>
             <View className="flex-row flex-wrap gap-2">
-              {memberPlan.days.map((day) => (
+              {logPlan.days.map((day) => (
                 <Pressable
                   key={day.dayNumber}
                   testID={`log-session-day-${day.dayNumber}`}

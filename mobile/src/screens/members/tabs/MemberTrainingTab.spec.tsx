@@ -31,7 +31,7 @@ jest.mock('../../../stores/training.store', () => ({
 
 // ── Imports ───────────────────────────────────────────────────────────────────
 
-import { WorkoutSession, ActivePlan, SessionSet } from '../../../types/training';
+import { WorkoutSession, ActivePlan, SessionSet, PlanDay } from '../../../types/training';
 import { MemberTrainingTab } from './MemberTrainingTab';
 
 function makeSet(overrides: Partial<SessionSet> = {}): SessionSet {
@@ -62,6 +62,15 @@ function makeSession(overrides: Partial<WorkoutSession> = {}): WorkoutSession {
     startedAt: '2026-06-04T10:00:00.000Z',
     completedAt: '2026-06-04T11:00:00.000Z',
     sets: [makeSet()],
+    ...overrides,
+  };
+}
+
+function makeDay(overrides: Partial<PlanDay> = {}): PlanDay {
+  return {
+    dayNumber: 1,
+    name: 'Day 1 - Push',
+    exercises: [],
     ...overrides,
   };
 }
@@ -134,5 +143,55 @@ describe('MemberTrainingTab', () => {
     expect(getByTestId('assign-plan-button')).toBeTruthy();
     fireEvent.press(getByTestId('assign-plan-button'));
     expect(onAssignPress).toHaveBeenCalled();
+  });
+
+  it('renders the Reassign button when activePlan is non-null and shows the plan name', () => {
+    mockFetchMemberHistory.mockResolvedValue([]);
+    const plan = makePlan({ name: 'Push Pull Legs' });
+
+    const { getByText, getByTestId } = render(
+      <MemberTrainingTab
+        memberId="mem1"
+        memberName="Alice Smith"
+        activePlan={plan}
+        onAssignPress={jest.fn()}
+      />,
+    );
+
+    expect(getByText('Push Pull Legs')).toBeTruthy();
+    expect(getByTestId('assign-plan-button')).toBeTruthy();
+  });
+
+  it('when activePlan prop changes to a plan with days, log-session-day-N buttons become visible without remount', async () => {
+    mockFetchMemberHistory.mockResolvedValue([]);
+
+    const { queryByTestId, rerender } = render(
+      <MemberTrainingTab
+        memberId="mem1"
+        memberName="Alice Smith"
+        activePlan={null}
+        onAssignPress={jest.fn()}
+      />,
+    );
+
+    expect(queryByTestId('log-session-day-1')).toBeNull();
+
+    const planWithDays = makePlan({
+      days: [makeDay({ dayNumber: 1 }), makeDay({ dayNumber: 2, name: 'Day 2 - Pull' })],
+    });
+
+    await act(async () => {
+      rerender(
+        <MemberTrainingTab
+          memberId="mem1"
+          memberName="Alice Smith"
+          activePlan={planWithDays}
+          onAssignPress={jest.fn()}
+        />,
+      );
+    });
+
+    expect(queryByTestId('log-session-day-1')).not.toBeNull();
+    expect(queryByTestId('log-session-day-2')).not.toBeNull();
   });
 });
