@@ -106,4 +106,33 @@ describe('Owner: Services management', () => {
     // Sheet stays open — no service created
     await detoxExpect(element(by.id('service-name-input'))).toBeVisible();
   });
+
+  it('empty state: shows "No services added yet." when account has no services', async () => {
+    // Use a fresh owner account with no services so the list is guaranteed empty
+    const emptyOwnerEmail = 'owner-services-empty@powergym.com';
+    const emptyOwnerPassword = 'OwnerPass123!';
+
+    await fetch(`${API_URL}/auth/dev/seed-user-role`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emptyOwnerEmail, password: emptyOwnerPassword, role: 'owner' }),
+    });
+
+    // Re-launch with the empty owner account
+    await device.launchApp({ newInstance: true });
+    await device.disableSynchronization();
+
+    await waitFor(element(by.id('login-email-input'))).toBeVisible().withTimeout(15000);
+    await element(by.id('login-email-input')).typeText(emptyOwnerEmail);
+    await element(by.id('login-password-input')).typeText(emptyOwnerPassword);
+    await element(by.id('login-sign-in-button')).tap();
+
+    await waitFor(element(by.id('drawer-hamburger'))).toBeVisible().withTimeout(15000);
+    await element(by.id('drawer-hamburger')).tap();
+    await waitFor(element(by.id('drawer-item-Services'))).toBeVisible().withTimeout(10000);
+    await element(by.id('drawer-item-Services')).tap();
+
+    await waitFor(element(by.id('services-empty-state'))).toBeVisible().withTimeout(8000);
+    await detoxExpect(element(by.text('No services added yet.'))).toBeVisible();
+  });
 });

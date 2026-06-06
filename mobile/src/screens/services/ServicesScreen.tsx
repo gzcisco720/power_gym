@@ -28,13 +28,13 @@ export function ServicesScreen() {
   function renderEmpty() {
     if (items.length === 0) {
       return (
-        <Text className="text-[13px] text-foreground/65 text-center mt-8">
+        <Text testID="services-empty-state" className="text-[13px] text-foreground/65 text-center mt-8">
           No services added yet.
         </Text>
       );
     }
     return (
-      <Text className="text-[13px] text-foreground/65 text-center mt-8">
+      <Text testID="services-empty-state" className="text-[13px] text-foreground/65 text-center mt-8">
         No services match this filter.
       </Text>
     );
