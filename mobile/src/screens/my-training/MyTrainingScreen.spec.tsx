@@ -239,4 +239,16 @@ describe('MyTrainingScreen', () => {
 
     expect(getByTestId('history-empty')).toBeTruthy();
   });
+
+  it('shows activity-strip with 14 cells and this-month stats when sessions exist', () => {
+    setupTrainingStore(makePlan());
+    const sessions = [
+      makeSelfSession({ _id: 's1', completedAt: new Date().toISOString(), setCount: 9, rpe: 8 }),
+    ];
+    setupSelfTrainingStore(sessions);
+
+    const { getByTestId } = render(<MyTrainingScreen />);
+    expect(getByTestId('activity-strip')).toBeTruthy();
+    expect(getByTestId('activity-strip-sessions')).toBeTruthy();
+  });
 });

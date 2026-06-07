@@ -30,6 +30,29 @@ export function MyTrainingScreen() {
   const sessions = useSelfTrainingStore((s) => s.sessions);
   const fetchSessions = useSelfTrainingStore((s) => s.fetchSessions);
 
+  // Activity strip — last 14 days heatmap + this-month stats
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthSessions = sessions.filter((s) => new Date(s.completedAt) >= startOfMonth);
+  const monthSessionCount = monthSessions.length;
+  const monthSetCount = monthSessions.reduce((sum, s) => sum + s.setCount, 0);
+  const rpeValues = monthSessions.map((s) => s.rpe).filter((r): r is number => r !== null);
+  const monthAvgRpe = rpeValues.length > 0
+    ? rpeValues.reduce((a, b) => a + b, 0) / rpeValues.length
+    : null;
+
+  const last14Days: boolean[] = Array.from({ length: 14 }, (_, i) => {
+    const day = new Date(now);
+    day.setDate(now.getDate() - (13 - i));
+    day.setHours(0, 0, 0, 0);
+    const nextDay = new Date(day);
+    nextDay.setDate(day.getDate() + 1);
+    return sessions.some((s) => {
+      const d = new Date(s.completedAt);
+      return d >= day && d < nextDay;
+    });
+  });
+
   const [activeTab, setActiveTab] = useState<ViewTab>('Plan');
 
   useEffect(() => {
@@ -65,6 +88,49 @@ export function MyTrainingScreen() {
           ) : null}
         </View>
       </View>
+
+      {/* Activity strip — last 14 days + this-month stats */}
+      {sessions.length > 0 && (
+        <View
+          testID="activity-strip"
+          className="flex-row items-center justify-between px-4 py-2 border-b border-foreground/[.06]"
+        >
+          <View className="flex-row items-center gap-2">
+            <Text className="text-[10px] uppercase tracking-[1.5px] font-bold text-foreground/65">
+              14d
+            </Text>
+            <View className="flex-row gap-[3px]">
+              {last14Days.map((on, i) => (
+                <View
+                  key={i}
+                  className={`w-3 h-3 rounded-sm ${on ? 'bg-emerald-500/65' : 'bg-foreground/[0.08]'}`}
+                />
+              ))}
+            </View>
+          </View>
+          <View className="flex-row items-center gap-3">
+            <Text
+              testID="activity-strip-sessions"
+              className="text-[11px] text-foreground/65 tabular-nums"
+            >
+              <Text className="text-foreground font-semibold">{monthSessionCount}</Text>
+              {' sessions'}
+            </Text>
+            {monthSetCount > 0 && (
+              <Text className="text-[11px] text-foreground/65 tabular-nums">
+                <Text className="text-foreground font-semibold">{monthSetCount}</Text>
+                {' sets'}
+              </Text>
+            )}
+            {monthAvgRpe !== null && (
+              <Text className="text-[11px] text-foreground/65 tabular-nums">
+                <Text className="text-foreground font-semibold">{monthAvgRpe.toFixed(1)}</Text>
+                {' RPE'}
+              </Text>
+            )}
+          </View>
+        </View>
+      )}
 
       {/* Segmented view switch */}
       <View className="flex-row border-b border-foreground/[.06] px-4">
