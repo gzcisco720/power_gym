@@ -198,7 +198,7 @@ export function CheckInScreen() {
           {/* History section */}
           <View className="gap-2">
             <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
-              Past Check-Ins
+              {items.length > 0 ? `Past Check-Ins (${items.length})` : 'Past Check-Ins'}
             </Text>
 
             {loading ? (
