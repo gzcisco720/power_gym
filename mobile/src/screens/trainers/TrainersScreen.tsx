@@ -39,6 +39,11 @@ export function TrainersScreen() {
     setRemoveTarget(null);
   }, [removeTarget, removeTrainer]);
 
+  const totalCount = trainers.length;
+  const avgMembers = totalCount === 0
+    ? 0
+    : Math.round(trainers.reduce((sum, t) => sum + t.memberCount, 0) / totalCount);
+
   return (
     <Screen testID="screen-Trainers">
       {/* Header */}
@@ -50,6 +55,30 @@ export function TrainersScreen() {
           <Text className="mt-0.5 text-[12px] text-foreground/65">Manage your trainers</Text>
         </View>
       </View>
+
+      {/* Stats strip */}
+      {totalCount > 0 && (
+        <View className="flex-row px-4 py-2 gap-4 border-b border-foreground/[.06]">
+          <View className="flex-row items-center gap-1.5">
+            <Text
+              testID="stats-total-trainers"
+              className="text-sm font-semibold text-foreground tabular-nums"
+            >
+              {String(totalCount)}
+            </Text>
+            <Text className="text-xs text-foreground/65">Trainers</Text>
+          </View>
+          <View className="flex-row items-center gap-1.5">
+            <Text
+              testID="stats-avg-members"
+              className="text-sm font-semibold text-foreground tabular-nums"
+            >
+              {String(avgMembers)}
+            </Text>
+            <Text className="text-xs text-foreground/65">Avg members</Text>
+          </View>
+        </View>
+      )}
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="px-4 py-4 gap-1.5">

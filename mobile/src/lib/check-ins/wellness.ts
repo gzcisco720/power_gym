@@ -103,6 +103,38 @@ export function wellnessAvg(checkIn: CheckIn): string {
   return (sum / 7).toFixed(1);
 }
 
+export interface Achievements {
+  weightLost: number | null;
+  weightFirst: number | null;
+  weightLatest: number | null;
+  currentStreak: number;
+  totalCheckIns: number;
+  dietStreak: number;
+}
+
+/** Computes achievement stats from a newest-first list of check-ins. */
+export function computeAchievements(items: CheckIn[]): Achievements {
+  const totalCheckIns = items.length;
+
+  const withWeight = items.filter((c) => c.weight !== null);
+  const weightLatest = withWeight[0]?.weight ?? null;
+  const weightFirst = withWeight[withWeight.length - 1]?.weight ?? null;
+  const weightLost =
+    weightFirst !== null && weightLatest !== null && weightFirst > weightLatest
+      ? Math.round((weightFirst - weightLatest) * 10) / 10
+      : null;
+
+  const currentStreak = computeCheckInStreakWeeks(items);
+
+  let dietStreak = 0;
+  for (const c of items) {
+    if (c.stuckToDiet === 'yes') dietStreak++;
+    else break;
+  }
+
+  return { weightLost, weightFirst, weightLatest, currentStreak, totalCheckIns, dietStreak };
+}
+
 export interface ConsistencyCell {
   weekStart: string;
   hasCheckIn: boolean;

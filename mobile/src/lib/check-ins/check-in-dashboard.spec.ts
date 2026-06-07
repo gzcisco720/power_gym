@@ -10,6 +10,7 @@ import {
   latestPhotos,
   wellnessAvg,
   computeConsistencyHeatmap,
+  computeAchievements,
 } from './wellness';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -171,6 +172,42 @@ describe('wellness > computeConsistencyHeatmap', () => {
   it('marks cells without check-ins as hasCheckIn=false', () => {
     const result = computeConsistencyHeatmap([], 8);
     expect(result.every((c) => !c.hasCheckIn)).toBe(true);
+  });
+});
+
+// ── computeAchievements ───────────────────────────────────────────────────────
+
+describe('wellness > computeAchievements', () => {
+  it('returns weightLost when the earliest weight-bearing check-in is heavier than the latest', () => {
+    const items = [
+      makeCheckIn({ _id: 'c1', submittedAt: weeksAgo(0), weight: 75 }),
+      makeCheckIn({ _id: 'c2', submittedAt: weeksAgo(4), weight: 80 }),
+    ];
+    const result = computeAchievements(items);
+    expect(result.weightLost).toBe(5); // 80 - 75
+  });
+
+  it('returns null weightLost when latest weight is heavier than first', () => {
+    const items = [
+      makeCheckIn({ _id: 'c1', submittedAt: weeksAgo(0), weight: 85 }),
+      makeCheckIn({ _id: 'c2', submittedAt: weeksAgo(4), weight: 80 }),
+    ];
+    expect(computeAchievements(items).weightLost).toBeNull();
+  });
+
+  it('returns dietStreak counting consecutive leading yes values', () => {
+    const items = [
+      makeCheckIn({ stuckToDiet: 'yes' }),
+      makeCheckIn({ stuckToDiet: 'yes' }),
+      makeCheckIn({ stuckToDiet: 'no' }),
+      makeCheckIn({ stuckToDiet: 'yes' }),
+    ];
+    expect(computeAchievements(items).dietStreak).toBe(2);
+  });
+
+  it('returns totalCheckIns equal to items length', () => {
+    const items = [makeCheckIn(), makeCheckIn({ _id: 'c2' }), makeCheckIn({ _id: 'c3' })];
+    expect(computeAchievements(items).totalCheckIns).toBe(3);
   });
 });
 

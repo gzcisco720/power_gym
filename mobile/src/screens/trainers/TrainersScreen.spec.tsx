@@ -96,6 +96,19 @@ describe('TrainersScreen', () => {
     expect(getByTestId('screen-Trainers')).toBeTruthy();
   });
 
+  it('stats strip shows total trainer count and avg members per trainer', () => {
+    const trainers = [
+      makeTrainer({ id: 't1', memberCount: 4 }),
+      makeTrainer({ id: 't2', memberCount: 2 }),
+    ];
+    setupStoreMock({ trainers });
+
+    const { getByTestId } = render(<TrainersScreen />);
+    expect(getByTestId('stats-total-trainers').props.children).toBe('2');
+    // avg = (4+2)/2 = 3
+    expect(getByTestId('stats-avg-members').props.children).toBe('3');
+  });
+
   it('shows a Remove button on each trainer row', () => {
     const trainers = [
       makeTrainer({ id: 't1', name: 'Alice Smith' }),

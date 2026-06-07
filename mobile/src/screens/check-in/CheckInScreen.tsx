@@ -14,6 +14,7 @@ import { CompareCard } from './components/CompareCard';
 import {
   computeCheckInStreakWeeks,
   computeConsistencyHeatmap,
+  computeAchievements,
   latestWithBodyMetrics,
   latestPhotos,
 } from '../../lib/check-ins/wellness';
@@ -74,6 +75,7 @@ export function CheckInScreen() {
 
   // Derived data for the rich sections
   const streakWeeks = computeCheckInStreakWeeks(items);
+  const achievements = computeAchievements(items);
   const bodyMetricsCheckIn = latestWithBodyMetrics(items);
   const recentPhotos = latestPhotos(items, 6);
   const compareCheckIn = items[1] ?? null;
@@ -160,7 +162,12 @@ export function CheckInScreen() {
           {/* Rich sections — only shown when data exists */}
           {!loading && items.length > 0 && (
             <>
-              <AchievementsSection streakWeeks={streakWeeks} />
+              <AchievementsSection
+                streakWeeks={streakWeeks}
+                weightLost={achievements.weightLost}
+                dietStreak={achievements.dietStreak}
+                totalCheckIns={achievements.totalCheckIns}
+              />
 
               {latestCheckIn && (
                 <WellnessBreakdownSection checkIn={latestCheckIn} />
