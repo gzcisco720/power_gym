@@ -351,6 +351,36 @@ export class NutritionService {
     });
   }
 
+  async getMyHistory(memberId: string): Promise<{ date: string; logged: boolean; loggedKcal: number }[]> {
+    // Last 14 days (oldest first)
+    const days = Array.from({ length: 14 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (13 - i));
+      return d.toISOString().slice(0, 10);
+    });
+
+    const logs = await this.nutritionDailyLogModel
+      .find({
+        memberId: new Types.ObjectId(memberId),
+        date: { $gte: days[0], $lte: days[13] },
+      })
+      .lean();
+
+    const logMap = new Map(logs.map((l) => [l.date, l]));
+
+    return days.map((date) => {
+      const log = logMap.get(date);
+      if (!log) return { date, logged: false, loggedKcal: 0 };
+
+      const loggedKcal = (
+        log.meals as Array<{ items: Array<{ kcal: number }> }>
+      ).reduce((sum, meal) =>
+        sum + meal.items.reduce((s, item) => s + item.kcal, 0), 0);
+
+      return { date, logged: true, loggedKcal };
+    });
+  }
+
   async getHistory(
     memberId: string,
     callerId: string,

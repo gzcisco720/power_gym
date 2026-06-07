@@ -15,8 +15,20 @@ export function MyNutritionScreen() {
   const plan = useNutritionStore((s) => s.plan);
   const todayLog = useNutritionStore((s) => s.todayLog);
   const summary = useNutritionStore((s) => s.summary);
+  const history = useNutritionStore((s) => s.history);
   const loading = useNutritionStore((s) => s.loading);
   const fetchToday = useNutritionStore((s) => s.fetchToday);
+
+  // Activity stats
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const todayISO = now.toISOString().slice(0, 10);
+  const monthDays = history.filter((d) => d.date >= startOfMonth.toISOString().slice(0, 10) && d.date <= todayISO);
+  const loggedMonthDays = monthDays.filter((d) => d.logged);
+  const monthDaysLogged = loggedMonthDays.length;
+  const avgKcal = monthDaysLogged > 0
+    ? Math.round(loggedMonthDays.reduce((s, d) => s + d.loggedKcal, 0) / monthDaysLogged)
+    : null;
 
   useEffect(() => {
     void fetchToday();
@@ -35,6 +47,43 @@ export function MyNutritionScreen() {
           ) : null}
         </View>
       </View>
+
+      {/* Activity strip — last 14 days + this-month stats (shown when history exists) */}
+      {history.length > 0 && (
+        <View
+          testID="nutrition-activity-strip"
+          className="flex-row items-center justify-between px-4 py-2 border-b border-foreground/[.06]"
+        >
+          <View className="flex-row items-center gap-2">
+            <Text className="text-[10px] uppercase tracking-[1.5px] font-bold text-foreground/65">
+              14d
+            </Text>
+            <View className="flex-row gap-[3px]">
+              {history.map((day) => (
+                <View
+                  key={day.date}
+                  className={`w-3 h-3 rounded-sm ${day.logged ? 'bg-emerald-500/65' : 'bg-foreground/[0.08]'}`}
+                />
+              ))}
+            </View>
+          </View>
+          <View className="flex-row items-center gap-3">
+            <Text
+              testID="nutrition-strip-days-logged"
+              className="text-[11px] text-foreground/65 tabular-nums"
+            >
+              <Text className="text-foreground font-semibold">{monthDaysLogged}</Text>
+              {' days'}
+            </Text>
+            {avgKcal !== null && (
+              <Text className="text-[11px] text-foreground/65 tabular-nums">
+                <Text className="text-foreground font-semibold">{avgKcal}</Text>
+                {' avg kcal'}
+              </Text>
+            )}
+          </View>
+        </View>
+      )}
 
       {loading ? (
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>

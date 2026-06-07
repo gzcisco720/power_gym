@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -107,6 +108,32 @@ export class UsersService {
     }
 
     user.passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+    await user.save();
+  }
+
+  async changeEmail(
+    userId: string,
+    newEmail: string,
+    currentPassword: string,
+  ): Promise<void> {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isMatch) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    const existing = await this.userModel
+      .findOne({ email: newEmail, _id: { $ne: userId } })
+      .lean();
+    if (existing) {
+      throw new ConflictException('Email already in use');
+    }
+
+    user.email = newEmail;
     await user.save();
   }
 

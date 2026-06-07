@@ -4,6 +4,8 @@ import {
   fetchToday as apiFetchToday,
   logFood as apiLogFood,
   fetchTodaySummary as apiFetchTodaySummary,
+  fetchMyNutritionHistory as apiFetchMyNutritionHistory,
+  NutritionHistoryDay,
 } from '../lib/api/nutrition.api';
 import {
   ActiveNutritionPlan,
@@ -16,6 +18,7 @@ interface NutritionState {
   plan: ActiveNutritionPlan | null;
   todayLog: NutritionDailyLog | null;
   summary: MacroSummary | null;
+  history: NutritionHistoryDay[];
   loading: boolean;
   error: string | null;
 
@@ -28,18 +31,20 @@ export const useNutritionStore = create<NutritionState>((set, get) => ({
   plan: null,
   todayLog: null,
   summary: null,
+  history: [],
   loading: false,
   error: null,
 
   async fetchToday(): Promise<void> {
     set({ loading: true, error: null });
     try {
-      const [plan, todayLog, summary] = await Promise.all([
+      const [plan, todayLog, summary, history] = await Promise.all([
         apiFetchMyNutritionPlan(),
         apiFetchToday(),
         apiFetchTodaySummary(),
+        apiFetchMyNutritionHistory().catch(() => [] as NutritionHistoryDay[]),
       ]);
-      set({ plan, todayLog, summary, loading: false });
+      set({ plan, todayLog, summary, history, loading: false });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       set({ loading: false, error: message });

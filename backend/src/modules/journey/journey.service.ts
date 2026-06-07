@@ -56,6 +56,20 @@ interface TimelineItemBase {
   date: string;
 }
 
+export type MilestoneTagColor = 'gold' | 'green' | 'indigo';
+
+export interface MilestoneTag {
+  label: string;
+  color: MilestoneTagColor;
+}
+
+export interface MilestoneInfo {
+  emoji: string;
+  title: string;
+  tags: MilestoneTag[];
+  photos: string[]; // up to 3 check-in photo URLs near the test date
+}
+
 interface SessionCompletedItem extends TimelineItemBase {
   type: 'session_completed';
   dayName: string;
@@ -64,8 +78,14 @@ interface SessionCompletedItem extends TimelineItemBase {
 
 interface BodyTestItem extends TimelineItemBase {
   type: 'body_test';
+  testNumber: number;
   weight: number;
   bodyFatPct: number;
+  leanMassKg: number;
+  fatMassKg: number;
+  deltaBodyFatPct: number | null;
+  deltaWeight: number | null;
+  milestone: MilestoneInfo | null;
 }
 
 interface CheckInItem extends TimelineItemBase {
@@ -99,7 +119,161 @@ export interface GetTimelineOptions {
   limit?: number;
 }
 
-const STREAK_MILESTONES = [7, 14, 30, 60, 100];
+// ─── Milestone detection (ported from web milestone-calculator.ts) ────────────
+
+interface BodyTestSnapshot {
+  date: Date;
+  bodyFatPct: number;
+  weight: number;
+  leanMassKg: number;
+  targetBodyFatPct: number | null;
+  targetWeight: number | null;
+}
+
+interface MilestoneTrigger {
+  type: 'goal_reached' | 'significant_change' | 'personal_best' | 'time_milestone' | 'checkin_streak';
+  label: string;
+  color: MilestoneTagColor;
+}
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const SEVEN_DAYS_MS = 7 * MS_PER_DAY;
+const FOURTEEN_DAYS_MS = 14 * MS_PER_DAY;
+const TIME_ANNIVERSARIES_MONTHS = [3, 6, 12];
+const STREAK_THRESHOLDS = [30, 60, 100];
+const STREAK_MILESTONES_DAYS = [7, 14, 30, 60, 100];
+
+function addMonths(date: Date, months: number): Date {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + months);
+  return d;
+}
+
+function evaluateMilestone(
+  index: number,
+  tests: BodyTestSnapshot[],
+  checkInDates: Date[],
+): MilestoneTrigger[] {
+  const triggers: MilestoneTrigger[] = [];
+  const test = tests[index];
+  const prev = index > 0 ? tests[index - 1] : null;
+  const earlier = tests.slice(0, index);
+
+  // Time milestone
+  if (index === 0) {
+    triggers.push({ type: 'time_milestone', label: 'Journey begins', color: 'indigo' });
+  } else {
+    const firstDate = tests[0].date;
+    for (const months of TIME_ANNIVERSARIES_MONTHS) {
+      const anniversary = addMonths(firstDate, months);
+      if (Math.abs(test.date.getTime() - anniversary.getTime()) <= SEVEN_DAYS_MS) {
+        triggers.push({ type: 'time_milestone', label: `${months === 12 ? '1-year' : `${months}-month`} milestone`, color: 'indigo' });
+        break;
+      }
+    }
+  }
+
+  // Goal reached
+  if (test.targetBodyFatPct !== null && test.bodyFatPct <= test.targetBodyFatPct) {
+    const alreadyReached = earlier.some(
+      (t) => t.targetBodyFatPct !== null && t.bodyFatPct <= t.targetBodyFatPct,
+    );
+    if (!alreadyReached) {
+      triggers.push({ type: 'goal_reached', label: '🎯 Body fat goal reached', color: 'gold' });
+    }
+  }
+  if (test.targetWeight !== null && test.weight <= test.targetWeight) {
+    const alreadyReached = earlier.some(
+      (t) => t.targetWeight !== null && t.weight <= t.targetWeight,
+    );
+    if (!alreadyReached) {
+      triggers.push({ type: 'goal_reached', label: '🎯 Weight goal reached', color: 'gold' });
+    }
+  }
+
+  // Significant change
+  if (prev) {
+    if (prev.bodyFatPct - test.bodyFatPct >= 1.0) {
+      triggers.push({ type: 'significant_change', label: `⬇ Body fat −${(prev.bodyFatPct - test.bodyFatPct).toFixed(1)}%`, color: 'green' });
+    }
+    if (Math.abs(test.weight - prev.weight) >= 2.0) {
+      triggers.push({ type: 'significant_change', label: `Weight change ${Math.abs(test.weight - prev.weight).toFixed(1)} kg`, color: 'green' });
+    }
+  }
+
+  // Personal best
+  const lowestBf = earlier.length > 0 ? Math.min(...earlier.map((t) => t.bodyFatPct)) : Infinity;
+  if (test.bodyFatPct < lowestBf) {
+    triggers.push({ type: 'personal_best', label: '🥇 All-time low body fat', color: 'indigo' });
+  }
+  const highestLean = earlier.length > 0 ? Math.max(...earlier.map((t) => t.leanMassKg)) : -Infinity;
+  if (test.leanMassKg > highestLean) {
+    triggers.push({ type: 'personal_best', label: '🏅 All-time high lean mass', color: 'indigo' });
+  }
+
+  // Check-in streak
+  const streakDates = STREAK_THRESHOLDS.flatMap((n) =>
+    checkInDates.length >= n ? [{ count: n, date: checkInDates[n - 1] }] : [],
+  );
+  const nearbyStreaks = streakDates.filter(
+    ({ date }) => Math.abs(date.getTime() - test.date.getTime()) <= SEVEN_DAYS_MS,
+  );
+  if (nearbyStreaks.length > 0) {
+    const best = nearbyStreaks.reduce((b, s) => (s.count > b.count ? s : b));
+    triggers.push({ type: 'checkin_streak', label: `✅ ${best.count} check-in streak`, color: 'green' });
+  }
+
+  return triggers;
+}
+
+const EMOJI_PRIORITY: MilestoneTrigger['type'][] = [
+  'goal_reached', 'time_milestone', 'personal_best', 'significant_change', 'checkin_streak',
+];
+
+function selectEmoji(triggers: MilestoneTrigger[]): string {
+  const map: Record<MilestoneTrigger['type'], string> = {
+    goal_reached: '🏆',
+    time_milestone: '🌟',
+    personal_best: '🥇',
+    significant_change: '⬇️',
+    checkin_streak: '✅',
+  };
+  const top = EMOJI_PRIORITY.find((p) => triggers.some((t) => t.type === p));
+  return top ? map[top] : '⭐';
+}
+
+function buildMilestoneTitle(triggers: MilestoneTrigger[]): string {
+  const top = EMOJI_PRIORITY.find((p) => triggers.some((t) => t.type === p));
+  switch (top) {
+    case 'goal_reached': return 'Goal achieved';
+    case 'time_milestone': return triggers.find((t) => t.type === 'time_milestone')!.label;
+    case 'personal_best': return 'New personal record';
+    case 'significant_change': return 'Significant progress';
+    case 'checkin_streak': return triggers.find((t) => t.type === 'checkin_streak')!.label;
+    default: return 'Milestone';
+  }
+}
+
+// Find up to `max` check-in photos within ±14 days of testDate
+function findPhotosNear(
+  testDate: Date,
+  checkIns: { submittedAt: Date; photos: string[] }[],
+  max: number,
+): string[] {
+  const result: string[] = [];
+  for (const ci of checkIns) {
+    if (Math.abs(ci.submittedAt.getTime() - testDate.getTime()) <= FOURTEEN_DAYS_MS) {
+      for (const p of ci.photos) {
+        if (result.length >= max) break;
+        result.push(p);
+      }
+    }
+    if (result.length >= max) break;
+  }
+  return result;
+}
+
+const STREAK_MILESTONES_SET = new Set(STREAK_MILESTONES_DAYS);
 
 function toLocalDateStr(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -147,7 +321,6 @@ export class JourneyService {
     const todayStr = getDateStrOffset(0);
     const yesterdayStr = getDateStrOffset(-1);
 
-    // Determine start point
     let streak = 0;
     let startStr: string;
     if (dateSet.has(todayStr)) {
@@ -158,7 +331,6 @@ export class JourneyService {
       return 0;
     }
 
-    // Walk backwards from startStr
     const startDate = new Date(startStr + 'T00:00:00Z');
     let cursor = startDate;
     while (true) {
@@ -193,7 +365,6 @@ export class JourneyService {
   }
 
   async getNutritionDays(memberId: string): Promise<JourneyNutritionDay[]> {
-    // Build the 7-day window: [today-6 .. today]
     const days: string[] = Array.from({ length: 7 }, (_, i) =>
       getDateStrOffset(i - 6),
     );
@@ -208,7 +379,6 @@ export class JourneyService {
       })
       .lean();
 
-    // Collect unique planIds from logs so we can batch-load plans
     const planIdSet = new Set<string>();
     for (const log of logs) {
       if (log.planId) {
@@ -216,7 +386,6 @@ export class JourneyService {
       }
     }
 
-    // Load all referenced plans in one query
     const plans = await this.memberNutritionPlanModel
       .find({
         _id: { $in: Array.from(planIdSet).map((id) => new Types.ObjectId(id)) },
@@ -233,13 +402,7 @@ export class JourneyService {
     return days.map((date) => {
       const log = logMap.get(date);
       if (!log) {
-        return {
-          date,
-          logged: false,
-          loggedKcal: 0,
-          targetKcal: 0,
-          targetMet: false,
-        };
+        return { date, logged: false, loggedKcal: 0, targetKcal: 0, targetMet: false };
       }
 
       const loggedKcal = (
@@ -250,7 +413,6 @@ export class JourneyService {
         0,
       );
 
-      // Resolve targetKcal from the referenced nutrition plan day-type
       let targetKcal = 0;
       if (log.planId) {
         const plan = planMap.get(log.planId.toString());
@@ -273,13 +435,7 @@ export class JourneyService {
 
       const targetMet = targetKcal > 0 && loggedKcal >= targetKcal;
 
-      return {
-        date,
-        logged: true,
-        loggedKcal,
-        targetKcal,
-        targetMet,
-      };
+      return { date, logged: true, loggedKcal, targetKcal, targetMet };
     });
   }
 
@@ -319,15 +475,14 @@ export class JourneyService {
 
     const memberOid = new Types.ObjectId(memberId);
 
-    // Build date filter for all queries
     const dateFilter: Record<string, Date> = {};
     if (cursorDate) {
       dateFilter['$lt'] = cursorDate;
     }
 
-    // Fetch all source data concurrently (no per-page filtering at DB level — we
-    // load enough to build milestones, then paginate in memory)
-    const [sessions, bodyTests, checkIns, user] = await Promise.all([
+    // Fetch all source data concurrently. Fetch ALL check-ins and body tests
+    // (not cursor-filtered) so milestone detection has the full picture.
+    const [sessions, allBodyTests, allCheckIns, user] = await Promise.all([
       this.workoutSessionModel
         .find({
           memberId: memberOid,
@@ -335,22 +490,35 @@ export class JourneyService {
         })
         .sort({ completedAt: -1 })
         .lean(),
+      // ALL body tests ascending — needed for milestone detection
       this.bodyTestModel
-        .find({
-          memberId: memberOid,
-          ...(cursorDate ? { date: { $lt: cursorDate } } : {}),
-        })
-        .sort({ date: -1 })
+        .find({ memberId: memberOid })
+        .sort({ date: 1 })
         .lean(),
+      // ALL check-ins ascending — for milestone detection + timeline items
       this.checkInModel
-        .find({
-          memberId: memberOid,
-          ...(cursorDate ? { submittedAt: { $lt: cursorDate } } : {}),
-        })
-        .sort({ submittedAt: -1 })
+        .find({ memberId: memberOid })
+        .sort({ submittedAt: 1 })
         .lean(),
       this.userModel.findById(memberOid).select('createdAt').lean(),
     ]);
+
+    // Build milestone snapshots from all body tests (sorted ascending)
+    const snapshots: BodyTestSnapshot[] = allBodyTests.map((bt) => ({
+      date: bt.date,
+      bodyFatPct: bt.bodyFatPct,
+      weight: bt.weight,
+      leanMassKg: bt.leanMassKg,
+      targetBodyFatPct: bt.targetBodyFatPct ?? null,
+      targetWeight: bt.targetWeight ?? null,
+    }));
+
+    const checkInDates = allCheckIns.map((ci) => ci.submittedAt);
+
+    // Cursor-filtered check-ins for timeline items (newest first)
+    const checkIns = cursorDate
+      ? allCheckIns.filter((ci) => ci.submittedAt < cursorDate).reverse()
+      : [...allCheckIns].reverse();
 
     // Build raw items list
     const raw: JourneyTimelineItem[] = [];
@@ -367,24 +535,64 @@ export class JourneyService {
       });
     }
 
-    for (const bt of bodyTests) {
+    // Body tests — enrich with milestone data
+    for (const bt of allBodyTests) {
+      // Only include tests within cursor filter
+      if (cursorDate && bt.date >= cursorDate) continue;
+
+      const globalIndex = allBodyTests.findIndex(
+        (t) => t._id.toString() === bt._id.toString(),
+      );
+      const prev = globalIndex > 0 ? allBodyTests[globalIndex - 1] : null;
+
+      const triggers = evaluateMilestone(globalIndex, snapshots, checkInDates);
+      const milestone: MilestoneInfo | null =
+        triggers.length > 0
+          ? {
+              emoji: selectEmoji(triggers),
+              title: buildMilestoneTitle(triggers),
+              tags: triggers.map((t) => ({ label: t.label, color: t.color })),
+              photos: findPhotosNear(
+                bt.date,
+                allCheckIns.map((ci) => ({
+                  submittedAt: ci.submittedAt,
+                  photos: (ci.photos as string[]) ?? [],
+                })),
+                3,
+              ),
+            }
+          : null;
+
       raw.push({
         id: bt._id.toString(),
         type: 'body_test',
         date: bt.date.toISOString(),
+        testNumber: globalIndex + 1,
         weight: bt.weight,
         bodyFatPct: bt.bodyFatPct,
+        leanMassKg: bt.leanMassKg,
+        fatMassKg: bt.fatMassKg,
+        deltaBodyFatPct:
+          prev !== null
+            ? Math.round((bt.bodyFatPct - prev.bodyFatPct) * 10) / 10
+            : null,
+        deltaWeight:
+          prev !== null
+            ? Math.round((bt.weight - prev.weight) * 10) / 10
+            : null,
+        milestone,
       });
     }
 
     for (const ci of checkIns) {
+      // Corrected wellness avg: invert stress and fatigue
       const fields = [
         ci.sleepQuality,
-        ci.stress,
-        ci.fatigue,
-        ci.hunger,
-        ci.recovery,
         ci.energy,
+        ci.recovery,
+        10 - ci.stress,
+        10 - ci.fatigue,
+        ci.hunger,
         ci.digestion,
       ] as number[];
       const wellnessAvg = fields.reduce((sum, v) => sum + v, 0) / fields.length;
@@ -396,20 +604,15 @@ export class JourneyService {
       });
     }
 
-    // Compute streak milestones from ALL sessions (need unconstrained set for
-    // milestone detection). When paginating we only need milestones whose dates
-    // are before the cursor, but we already filtered sessions by cursor so the
-    // sessions array is the right set.
+    // Streak milestones
     const completedDates = sessions
       .filter((s) => s.completedAt)
       .map((s) => (s.completedAt as Date).toISOString().slice(0, 10))
-      .sort(); // ascending
+      .sort();
 
     const milestoneItems = this.computeStreakMilestones(completedDates);
     raw.push(...milestoneItems);
 
-    // Add joined item (member's createdAt) only on the final page or when there
-    // is no cursor (i.e. first/only page and we're not mid-pagination past it)
     if (user) {
       const joinedDate = (user as unknown as { createdAt: Date }).createdAt;
       if (!cursorDate || joinedDate < cursorDate) {
@@ -421,10 +624,8 @@ export class JourneyService {
       }
     }
 
-    // Sort all items newest-first
     raw.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-    // Paginate
     const page = raw.slice(0, limit);
     const hasMore = raw.length > limit;
     const nextCursor = hasMore ? page[page.length - 1].date : null;
@@ -437,16 +638,13 @@ export class JourneyService {
   ): StreakMilestoneItem[] {
     if (sortedDates.length === 0) return [];
 
-    // Build date set
     const dateSet = new Set(sortedDates);
-    const uniqueDates = [...dateSet].sort(); // ascending
+    const uniqueDates = [...dateSet].sort();
 
-    // Walk through each date and compute the streak length ending on that date
     const milestones: StreakMilestoneItem[] = [];
-    const emittedMilestones = new Set<string>(); // "date-days" to avoid dupes
+    const emittedMilestones = new Set<string>();
 
     for (let i = 0; i < uniqueDates.length; i++) {
-      // Compute streak ending at uniqueDates[i]
       let streak = 0;
       let cursor = new Date(uniqueDates[i] + 'T00:00:00Z');
       while (dateSet.has(cursor.toISOString().slice(0, 10))) {
@@ -455,11 +653,8 @@ export class JourneyService {
         cursor.setUTCDate(cursor.getUTCDate() - 1);
       }
 
-      for (const threshold of STREAK_MILESTONES) {
+      for (const threshold of STREAK_MILESTONES_SET) {
         if (streak >= threshold) {
-          // The milestone occurred on the day the streak first crossed this threshold.
-          // That is the date at index (i - threshold + 1) from the current date walk-back.
-          // Simpler: emit milestone keyed by the crossing date, deduplicate.
           const milestoneDate = new Date(uniqueDates[i] + 'T00:00:00Z');
           milestoneDate.setUTCDate(
             milestoneDate.getUTCDate() - (streak - threshold),

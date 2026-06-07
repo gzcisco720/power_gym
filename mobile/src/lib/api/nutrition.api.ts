@@ -40,6 +40,17 @@ export async function assignNutritionPlan(
   return response.data;
 }
 
+export interface NutritionHistoryDay {
+  date: string;
+  logged: boolean;
+  loggedKcal: number;
+}
+
+export async function fetchMyNutritionHistory(): Promise<NutritionHistoryDay[]> {
+  const response = await apiClient.get<NutritionHistoryDay[]>('/nutrition/my-history');
+  return response.data;
+}
+
 export async function fetchMemberNutritionHistory(memberId: string): Promise<NutritionDailyLog[]> {
   const response = await apiClient.get<NutritionDailyLog[]>(`/nutrition/members/${memberId}/history`);
   return response.data;

@@ -102,6 +102,7 @@ function setupStore(
     plan,
     todayLog,
     summary,
+    history: [] as { date: string; logged: boolean; loggedKcal: number }[],
     loading,
     error: null,
     fetchToday: mockFetchToday,

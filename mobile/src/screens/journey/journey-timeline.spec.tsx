@@ -43,8 +43,14 @@ const ITEM_BODY_TEST: JourneyTimelineItem = {
   id: 'bt-1',
   type: 'body_test',
   date: '2026-06-04T08:00:00.000Z',
+  testNumber: 2,
   weight: 80.5,
   bodyFatPct: 15.2,
+  leanMassKg: 64.1,
+  fatMassKg: 16.4,
+  deltaBodyFatPct: -0.5,
+  deltaWeight: -1.2,
+  milestone: null,
 };
 
 const ITEM_STREAK: JourneyTimelineItem = {
@@ -152,7 +158,7 @@ describe('TimelineNode > renders', () => {
     );
 
     expect(getByTestId('timeline-node-streak-7')).toBeTruthy();
-    expect(getByText('7-day streak')).toBeTruthy();
+    expect(getByText('7-day streak 🔥')).toBeTruthy();
   });
 });
 

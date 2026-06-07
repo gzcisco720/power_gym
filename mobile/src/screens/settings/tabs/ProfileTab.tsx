@@ -3,7 +3,7 @@ import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator } from 
 import * as ImagePicker from 'expo-image-picker';
 import { useProfileStore } from '../../../stores/profile.store';
 import { validateProfile } from '../../../lib/validation/profile';
-import { uploadAvatar, UpdateProfileDto, ProfileData } from '../../../lib/api/profile.api';
+import { uploadAvatar, changeEmail, UpdateProfileDto, ProfileData } from '../../../lib/api/profile.api';
 
 type UserRole = 'owner' | 'trainer' | 'member';
 
@@ -77,6 +77,13 @@ export function ProfileTab({ role }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  const [emailEditing, setEmailEditing] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [emailPassword, setEmailPassword] = useState('');
+  const [emailSaving, setEmailSaving] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [emailSuccess, setEmailSuccess] = useState(false);
 
   useEffect(() => {
     if (!profile) {
@@ -219,14 +226,95 @@ export function ProfileTab({ role }: Props) {
           ) : null}
         </View>
 
-        {/* Email — display only */}
+        {/* Email */}
         <View className="gap-1.5">
-          <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
-            Email
-          </Text>
-          <Text className="text-sm text-foreground/65 px-3 py-2">
-            {profile?.email ?? '—'}
-          </Text>
+          <View className="flex-row items-center justify-between">
+            <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
+              Email
+            </Text>
+            {!emailEditing && (
+              <Pressable
+                testID="email-change-button"
+                onPress={() => { setEmailEditing(true); setEmailError(null); setEmailSuccess(false); setNewEmail(''); setEmailPassword(''); }}
+                accessibilityLabel="Change email"
+                accessibilityRole="button"
+              >
+                <Text className="text-xs text-primary-light">Change</Text>
+              </Pressable>
+            )}
+          </View>
+          {emailEditing ? (
+            <View className="gap-2">
+              <TextInput
+                testID="email-new-input"
+                value={newEmail}
+                onChangeText={setNewEmail}
+                className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
+                placeholderTextColor="#616161"
+                placeholder="New email address"
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+              <TextInput
+                testID="email-password-input"
+                value={emailPassword}
+                onChangeText={setEmailPassword}
+                className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
+                placeholderTextColor="#616161"
+                placeholder="Current password"
+                secureTextEntry
+              />
+              {emailError ? (
+                <Text className="text-xs text-destructive">{emailError}</Text>
+              ) : null}
+              {emailSuccess ? (
+                <Text testID="email-change-success" className="text-xs text-emerald-300">Email updated successfully</Text>
+              ) : null}
+              <View className="flex-row gap-2">
+                <Pressable
+                  onPress={() => setEmailEditing(false)}
+                  accessibilityLabel="Cancel email change"
+                  className="flex-1 py-2 rounded-xl bg-muted items-center"
+                >
+                  <Text className="text-sm text-foreground/65">Cancel</Text>
+                </Pressable>
+                <Pressable
+                  testID="email-save-button"
+                  onPress={async () => {
+                    if (!newEmail.includes('@')) { setEmailError('Enter a valid email'); return; }
+                    if (!emailPassword) { setEmailError('Enter your current password'); return; }
+                    setEmailSaving(true); setEmailError(null);
+                    try {
+                      await changeEmail(newEmail, emailPassword);
+                      await fetchProfile();
+                      setEmailSuccess(true);
+                      setEmailEditing(false);
+                    } catch (err) {
+                      const msg = err instanceof Error ? err.message : '';
+                      if (msg.includes('409') || msg.includes('Conflict')) {
+                        setEmailError('Email already in use');
+                      } else if (msg.includes('400') || msg.includes('password')) {
+                        setEmailError('Current password is incorrect');
+                      } else {
+                        setEmailError('Failed to update email');
+                      }
+                    } finally {
+                      setEmailSaving(false);
+                    }
+                  }}
+                  disabled={emailSaving}
+                  accessibilityLabel="Save new email"
+                  className={`flex-1 py-2 rounded-xl items-center ${emailSaving ? 'bg-primary/40' : 'bg-primary'}`}
+                >
+                  <Text className="text-sm font-semibold text-foreground">{emailSaving ? 'Saving…' : 'Save'}</Text>
+                </Pressable>
+              </View>
+            </View>
+          ) : (
+            <Text className="text-sm text-foreground/65 px-3 py-2">
+              {profile?.email ?? '—'}
+            </Text>
+          )}
         </View>
 
         {/* Date of Birth */}

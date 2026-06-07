@@ -17,6 +17,7 @@ import { fileUploadOptions } from '../../common/upload/file-upload.options';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { UpdateEmailDto } from './dto/update-email.dto';
 
 interface RequestWithUser extends Request {
   user: JwtUser;
@@ -38,6 +39,18 @@ export class UsersController {
     @Body() dto: UpdateProfileDto,
   ) {
     return this.usersService.updateProfile(req.user.sub, dto);
+  }
+
+  @Patch('me/email')
+  changeEmail(
+    @Request() req: RequestWithUser,
+    @Body() dto: UpdateEmailDto,
+  ) {
+    return this.usersService.changeEmail(
+      req.user.sub,
+      dto.email,
+      dto.currentPassword,
+    );
   }
 
   @Patch('me/password')

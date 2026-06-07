@@ -30,6 +30,10 @@ export async function updateProfile(dto: UpdateProfileDto): Promise<ProfileData>
   return response.data;
 }
 
+export async function changeEmail(newEmail: string, currentPassword: string): Promise<void> {
+  await apiClient.patch('/users/me/email', { email: newEmail, currentPassword });
+}
+
 export async function uploadAvatar(fileUri: string): Promise<{ avatarUrl: string }> {
   const formData = new FormData();
   const filename = fileUri.split('/').pop() ?? 'avatar.jpg';

@@ -5,6 +5,7 @@ jest.mock('../lib/api/nutrition.api', () => ({
   fetchTodaySummary: jest.fn(),
   assignNutritionPlan: jest.fn(),
   fetchMemberNutritionHistory: jest.fn(),
+  fetchMyNutritionHistory: jest.fn(),
 }));
 
 import * as nutritionApi from '../lib/api/nutrition.api';
@@ -23,6 +24,9 @@ const mockFetchToday = nutritionApi.fetchToday as jest.MockedFunction<typeof nut
 const mockLogFood = nutritionApi.logFood as jest.MockedFunction<typeof nutritionApi.logFood>;
 const mockFetchTodaySummary = nutritionApi.fetchTodaySummary as jest.MockedFunction<
   typeof nutritionApi.fetchTodaySummary
+>;
+const mockFetchMyNutritionHistory = nutritionApi.fetchMyNutritionHistory as jest.MockedFunction<
+  typeof nutritionApi.fetchMyNutritionHistory
 >;
 
 const MOCK_PLAN: ActiveNutritionPlan = {
@@ -75,7 +79,7 @@ const EMPTY_LOG: NutritionDailyLog = {
 };
 
 function resetStore() {
-  useNutritionStore.setState({ plan: null, todayLog: null, summary: null, loading: false, error: null });
+  useNutritionStore.setState({ plan: null, todayLog: null, summary: null, history: [], loading: false, error: null });
 }
 
 beforeEach(() => {
@@ -89,6 +93,7 @@ describe('useNutritionStore', () => {
       mockFetchMyNutritionPlan.mockResolvedValueOnce(MOCK_PLAN);
       mockFetchToday.mockResolvedValueOnce(MOCK_LOG);
       mockFetchTodaySummary.mockResolvedValueOnce(MOCK_SUMMARY);
+      mockFetchMyNutritionHistory.mockResolvedValueOnce([]);
 
       await useNutritionStore.getState().fetchToday();
 
@@ -102,6 +107,7 @@ describe('useNutritionStore', () => {
 
     it('sets error and clears loading when the API rejects', async () => {
       mockFetchMyNutritionPlan.mockRejectedValueOnce(new Error('Network error'));
+      mockFetchMyNutritionHistory.mockResolvedValueOnce([]);
 
       await useNutritionStore.getState().fetchToday();
 
@@ -190,6 +196,7 @@ describe('useNutritionStore', () => {
       mockFetchMyNutritionPlan.mockResolvedValueOnce(MOCK_PLAN);
       mockFetchToday.mockResolvedValueOnce(MOCK_LOG);
       mockFetchTodaySummary.mockResolvedValueOnce(MOCK_SUMMARY);
+      mockFetchMyNutritionHistory.mockResolvedValueOnce([]);
 
       await useNutritionStore.getState().fetchToday();
 
@@ -236,3 +243,4 @@ void mockFetchMyNutritionPlan;
 void mockFetchToday;
 void mockLogFood;
 void mockFetchTodaySummary;
+void mockFetchMyNutritionHistory;

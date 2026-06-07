@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 import { UsersService } from './users.service';
@@ -17,6 +17,7 @@ describe('UsersService', () => {
   const mockUserModel = {
     findById: jest.fn(),
     findByIdAndUpdate: jest.fn(),
+    findOne: jest.fn(),
   };
 
   const mockUserProfileModel = {
@@ -195,6 +196,38 @@ describe('UsersService', () => {
       const newHash = mockUser.passwordHash;
       const isValid = await bcrypt.compare(newPassword, newHash);
       expect(isValid).toBe(true);
+    });
+  });
+
+  // ─── changeEmail ─────────────────────────────────────────────────────────────
+
+  describe('changeEmail', () => {
+    it('throws BadRequestException when currentPassword does not match', async () => {
+      const hash = await bcrypt.hash('correct', 10);
+      mockUserModel.findById.mockResolvedValue({ _id: userId, email: 'old@example.com', passwordHash: hash, save: jest.fn() });
+
+      await expect(service.changeEmail(userId.toString(), 'new@example.com', 'wrong')).rejects.toThrow(BadRequestException);
+    });
+
+    it('throws ConflictException when email is already in use by another user', async () => {
+      const hash = await bcrypt.hash('pass', 10);
+      mockUserModel.findById.mockResolvedValue({ _id: userId, email: 'old@example.com', passwordHash: hash, save: jest.fn() });
+      mockUserModel.findOne.mockReturnValue({ lean: () => Promise.resolve({ _id: 'other-id' }) });
+
+      await expect(service.changeEmail(userId.toString(), 'taken@example.com', 'pass')).rejects.toThrow(ConflictException);
+    });
+
+    it('saves the new email when password matches and email is free', async () => {
+      const hash = await bcrypt.hash('pass', 10);
+      const mockSave = jest.fn();
+      const mockUser = { _id: userId, email: 'old@example.com', passwordHash: hash, save: mockSave };
+      mockUserModel.findById.mockResolvedValue(mockUser);
+      mockUserModel.findOne.mockReturnValue({ lean: () => Promise.resolve(null) });
+
+      await service.changeEmail(userId.toString(), 'new@example.com', 'pass');
+
+      expect(mockUser.email).toBe('new@example.com');
+      expect(mockSave).toHaveBeenCalled();
     });
   });
 

@@ -394,6 +394,10 @@ describe('JourneyService', () => {
       date: d,
       weight: 75,
       bodyFatPct: 15,
+      leanMassKg: 60,
+      fatMassKg: 15,
+      targetBodyFatPct: null,
+      targetWeight: null,
     };
   }
 
@@ -411,6 +415,7 @@ describe('JourneyService', () => {
       recovery: 8,
       energy: 7,
       digestion: 8,
+      photos: [],
     };
   }
 
@@ -435,6 +440,8 @@ describe('JourneyService', () => {
         lean: jest.fn().mockResolvedValue(checkIns),
       }),
     });
+    // Also set up the second check-in query used for cursor-filtered items
+    // (single mock via mockReturnValue applies to all calls on this fn)
     userModel.findById.mockReturnValue({
       select: jest.fn().mockReturnValue({
         lean: jest.fn().mockResolvedValue({ createdAt }),
@@ -511,9 +518,7 @@ describe('JourneyService', () => {
       );
       // Should have exactly one milestone for 7 days
       expect(milestones).toHaveLength(1);
-      expect(
-        (milestones[0] as { type: string; days: number }).days,
-      ).toBe(7);
+      expect((milestones[0] as { type: string; days: number }).days).toBe(7);
     });
 
     it('always includes a joined item as the oldest entry', async () => {

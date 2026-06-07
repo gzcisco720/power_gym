@@ -44,10 +44,30 @@ export interface TimelineSessionCompleted extends TimelineBase {
   completedSetCount: number;
 }
 
+export type MilestoneTagColor = 'gold' | 'green' | 'indigo';
+
+export interface MilestoneTag {
+  label: string;
+  color: MilestoneTagColor;
+}
+
+export interface MilestoneInfo {
+  emoji: string;
+  title: string;
+  tags: MilestoneTag[];
+  photos: string[];
+}
+
 export interface TimelineBodyTest extends TimelineBase {
   type: 'body_test';
+  testNumber: number;
   weight: number;
   bodyFatPct: number;
+  leanMassKg: number;
+  fatMassKg: number;
+  deltaBodyFatPct: number | null;
+  deltaWeight: number | null;
+  milestone: MilestoneInfo | null;
 }
 
 export interface TimelineCheckIn extends TimelineBase {

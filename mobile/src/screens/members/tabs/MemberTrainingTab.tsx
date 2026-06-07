@@ -37,6 +37,11 @@ function formatDate(iso: string): string {
   });
 }
 
+function monthKey(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+
 /** Compute total volume (kg) for completed sets only. */
 function computeVolume(session: WorkoutSession): number {
   return session.sets.reduce((sum, set) => {
@@ -221,44 +226,62 @@ export function MemberTrainingTab({ memberId, memberName, activePlan, onAssignPr
             <Text className="text-[13px] text-foreground/65 text-center mt-2">
               No completed workouts yet.
             </Text>
-          ) : (
-            history.map((session) => {
-              const volume = computeVolume(session);
-              const accentClass = accentColorForDay(session.dayName);
-              return (
-                <View
-                  key={session._id}
-                  testID={`history-session-${session._id}`}
-                  className="rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden"
-                >
-                  {/* Accent bar */}
-                  <View
-                    testID={`accent-bar-${session._id}`}
-                    className={accentClass}
-                    style={{ height: 4 }}
-                  />
-                  <View className="px-3 py-2">
-                    <View className="flex-row items-center justify-between">
-                      <Text className="text-sm font-medium text-foreground flex-1" numberOfLines={1}>
-                        {session.dayName}
-                      </Text>
-                      <Text className="text-xs text-foreground/65 ml-2">
-                        {session.completedAt ? formatDate(session.completedAt) : ''}
-                      </Text>
-                    </View>
-                    <View className="flex-row items-center gap-2 mt-0.5">
-                      <Text className="text-xs text-foreground/65">
-                        {`${session.sets.length} sets`}
-                      </Text>
-                      {volume > 0 ? (
-                        <Text className="text-xs text-foreground/65">{`${volume} kg`}</Text>
-                      ) : null}
-                    </View>
-                  </View>
+          ) : (() => {
+              // Group sessions by month
+              const groups: { month: string; sessions: WorkoutSession[] }[] = [];
+              for (const session of history) {
+                const mk = session.completedAt ? monthKey(session.completedAt) : 'Unknown';
+                const last = groups[groups.length - 1];
+                if (last && last.month === mk) {
+                  last.sessions.push(session);
+                } else {
+                  groups.push({ month: mk, sessions: [session] });
+                }
+              }
+              return groups.map(({ month, sessions: monthSessions }) => (
+                <View key={month} className="gap-1.5">
+                  <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/40 mt-1">
+                    {month}
+                  </Text>
+                  {monthSessions.map((session) => {
+                    const volume = computeVolume(session);
+                    const accentClass = accentColorForDay(session.dayName);
+                    return (
+                      <View
+                        key={session._id}
+                        testID={`history-session-${session._id}`}
+                        className="rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden"
+                      >
+                        <View
+                          testID={`accent-bar-${session._id}`}
+                          className={accentClass}
+                          style={{ height: 4 }}
+                        />
+                        <View className="px-3 py-2">
+                          <View className="flex-row items-center justify-between">
+                            <Text className="text-sm font-medium text-foreground flex-1" numberOfLines={1}>
+                              {session.dayName}
+                            </Text>
+                            <Text className="text-xs text-foreground/65 ml-2">
+                              {session.completedAt ? formatDate(session.completedAt) : ''}
+                            </Text>
+                          </View>
+                          <View className="flex-row items-center gap-2 mt-0.5">
+                            <Text className="text-xs text-foreground/65">
+                              {`${session.sets.length} sets`}
+                            </Text>
+                            {volume > 0 ? (
+                              <Text className="text-xs text-foreground/65">{`${volume} kg`}</Text>
+                            ) : null}
+                          </View>
+                        </View>
+                      </View>
+                    );
+                  })}
                 </View>
-              );
-            })
-          )}
+              ));
+            })()
+          }
         </View>
       </View>
     </ScrollView>

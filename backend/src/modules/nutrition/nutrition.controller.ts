@@ -63,6 +63,12 @@ export class NutritionController {
     return this.nutritionService.getSummary(req.user.sub);
   }
 
+  @Get('my-history')
+  @Roles('member')
+  getMyHistory(@Request() req: RequestWithUser) {
+    return this.nutritionService.getMyHistory(req.user.sub);
+  }
+
   @Post('members/:memberId/assign-plan')
   @HttpCode(HttpStatus.CREATED)
   @Roles('owner', 'trainer')
