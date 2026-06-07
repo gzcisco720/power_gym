@@ -147,7 +147,7 @@ export function MemberOverviewTab({ overviewStats, onNavigateToTab }: MemberOver
           </Text>
           <View className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-3">
             {overviewStats?.activePlan ? (
-              <View className="flex-row items-center justify-between">
+              <View testID="active-plan-card" className="flex-row items-center justify-between">
                 <Text className="text-sm font-medium text-foreground">
                   {overviewStats.activePlan.name}
                 </Text>

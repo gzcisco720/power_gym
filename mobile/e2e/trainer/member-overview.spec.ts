@@ -26,11 +26,19 @@ import { device, element, by, expect as detoxExpect, waitFor } from 'detox';
 const TS = Date.now();
 const TRAINER_EMAIL = `trainer-member-overview-${TS}@powergym.com`;
 const TRAINER_PASSWORD = 'TrainerPass123!';
+
+// Member WITH seeded overview stats (sessions, body tests, active plan, injuries, medications)
 const MEMBER_EMAIL = `member-overview-${TS}@powergym.com`;
 const MEMBER_PASSWORD = 'MemberPass123!';
+
+// Member WITHOUT any seeded overview stats (no active plan)
+const MEMBER_NO_PLAN_EMAIL = `member-overview-noplan-${TS}@powergym.com`;
+const MEMBER_NO_PLAN_PASSWORD = 'MemberPass123!';
+
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 let memberId: string;
+let memberNoPlanId: string;
 
 async function seedUsers() {
   // Seed trainer
@@ -44,7 +52,7 @@ async function seedUsers() {
     }),
   });
 
-  // Seed member assigned to the trainer
+  // Seed member WITH overview stats, assigned to the trainer
   const memberRes = await fetch(`${API_URL}/auth/dev/seed-user-role`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -58,12 +66,27 @@ async function seedUsers() {
   const memberData = (await memberRes.json()) as { id: string };
   memberId = memberData.id;
 
-  // Seed overview stats for the member (sessions, body tests, PR, etc.)
+  // Seed overview stats (sessions, body tests, active plan, injuries, medications)
   await fetch(`${API_URL}/members/dev/seed-overview-stats`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ memberId }),
   });
+
+  // Seed member WITHOUT overview stats, assigned to the same trainer
+  const memberNoPlanRes = await fetch(`${API_URL}/auth/dev/seed-user-role`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: MEMBER_NO_PLAN_EMAIL,
+      password: MEMBER_NO_PLAN_PASSWORD,
+      role: 'member',
+      trainerEmail: TRAINER_EMAIL,
+    }),
+  });
+  const memberNoPlanData = (await memberNoPlanRes.json()) as { id: string };
+  memberNoPlanId = memberNoPlanData.id;
+  // No seed-overview-stats call — this member has no active plan
 }
 
 async function loginAsTrainer() {
@@ -79,17 +102,17 @@ async function loginAsTrainer() {
   await waitFor(element(by.id('home-screen'))).toBeVisible().withTimeout(15000);
 }
 
-async function navigateToMemberOverview() {
-  // Navigate to Members screen via drawer
+async function navigateToMembersScreen() {
   await waitFor(element(by.id('drawer-hamburger'))).toBeVisible().withTimeout(10000);
   await element(by.id('drawer-hamburger')).tap();
   await waitFor(element(by.id('drawer-item-Members'))).toBeVisible().withTimeout(10000);
   await element(by.id('drawer-item-Members')).tap();
   await waitFor(element(by.id('screen-Members'))).toBeVisible().withTimeout(10000);
+}
 
-  // Tap the seeded member row
-  await waitFor(element(by.id(`member-row-${memberId}`))).toBeVisible().withTimeout(10000);
-  await element(by.id(`member-row-${memberId}`)).tap();
+async function navigateToMemberOverview(targetMemberId: string) {
+  await waitFor(element(by.id(`member-row-${targetMemberId}`))).toBeVisible().withTimeout(10000);
+  await element(by.id(`member-row-${targetMemberId}`)).tap();
   await waitFor(element(by.id('screen-MemberDetail'))).toBeVisible().withTimeout(10000);
 
   // Overview tab is active by default
@@ -103,10 +126,12 @@ describe('Trainer: Member Detail — Overview tab', () => {
 
   beforeEach(async () => {
     await loginAsTrainer();
-    await navigateToMemberOverview();
+    await navigateToMembersScreen();
   });
 
   it('shows KPI strip, Active Plan card, Health panel, and training heatmap with seeded data', async () => {
+    await navigateToMemberOverview(memberId);
+
     // KPI strip: sessions this month cell
     await waitFor(element(by.id('kpi-sessions'))).toBeVisible().withTimeout(10000);
     await detoxExpect(element(by.id('kpi-sessions'))).toBeVisible();
@@ -115,9 +140,9 @@ describe('Trainer: Member Detail — Overview tab', () => {
     await waitFor(element(by.id('kpi-weight-value'))).toBeVisible().withTimeout(5000);
     await detoxExpect(element(by.id('kpi-weight-value'))).toBeVisible();
 
-    // Active Plan card — "No plan assigned" since no plan was seeded
-    await waitFor(element(by.id('active-plan-empty'))).toBeVisible().withTimeout(5000);
-    await detoxExpect(element(by.id('active-plan-empty'))).toBeVisible();
+    // Active Plan card — populated state (not empty, plan was seeded)
+    await waitFor(element(by.id('active-plan-card'))).toBeVisible().withTimeout(5000);
+    await detoxExpect(element(by.id('active-plan-card'))).toBeVisible();
 
     // Health panel: injury and medication counts
     await waitFor(element(by.id('health-injury-count'))).toBeVisible().withTimeout(5000);
@@ -134,7 +159,9 @@ describe('Trainer: Member Detail — Overview tab', () => {
   });
 
   it('shows "No plan assigned" when the member has no active training plan', async () => {
-    // Active Plan card shows placeholder
+    await navigateToMemberOverview(memberNoPlanId);
+
+    // Active Plan card shows the empty placeholder
     await waitFor(element(by.id('active-plan-empty'))).toBeVisible().withTimeout(10000);
     await detoxExpect(element(by.id('active-plan-empty'))).toBeVisible();
   });
