@@ -83,6 +83,7 @@ describe('CheckInScreen', () => {
     );
     const { getByTestId, queryByTestId } = render(<CheckInScreen />);
     expect(getByTestId('checkin-submitted-label')).toBeTruthy();
+    expect(getByTestId('checkin-this-week-avg')).toBeTruthy();
     expect(queryByTestId('checkin-start-button')).toBeNull();
   });
 
@@ -93,9 +94,10 @@ describe('CheckInScreen', () => {
     mockUseCheckInsStore.mockReturnValue(
       makeStoreState({ items: [checkIn], hasCheckedInThisWeek: jest.fn(() => true) }),
     );
-    const { getByTestId, getByText } = render(<CheckInScreen />);
+    const { getByTestId } = render(<CheckInScreen />);
     expect(getByTestId('checkin-history-item-ci-1')).toBeTruthy();
-    expect(getByText('6.4')).toBeTruthy();
+    // Wellness avg shows in the this-week card and in the history row
+    expect(getByTestId('checkin-this-week-avg').props.children).toBe('6.4');
   });
 
   it('shows a consistency heatmap with cells when items exist', () => {

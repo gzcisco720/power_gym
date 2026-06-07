@@ -31,17 +31,6 @@ function formatDate(iso: string): string {
   });
 }
 
-function formatSubmittedAt(iso: string): string {
-  const date = new Date(iso);
-  return date.toLocaleDateString('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 
 function calcWellnessAvg(checkIn: CheckIn): string {
   const sum =
@@ -113,15 +102,34 @@ export function CheckInScreen() {
               This Week
             </Text>
             {submitted ? (
-              <View className="gap-1">
-                <Text testID="checkin-submitted-label" className="text-sm font-semibold text-emerald-300">
-                  Submitted ✓
-                </Text>
-                {latestCheckIn ? (
-                  <Text className="text-xs text-foreground/65">
-                    {formatSubmittedAt(latestCheckIn.submittedAt)}
+              <View className="gap-2">
+                <View className="flex-row items-center gap-1.5">
+                  <View className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <Text testID="checkin-submitted-label" className="text-xs text-foreground/45">
+                    {'Submitted this week'}
+                    {latestCheckIn
+                      ? ` · ${new Date(latestCheckIn.submittedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
+                      : ''}
                   </Text>
-                ) : null}
+                </View>
+                {latestCheckIn && (
+                  <View className="flex-row gap-2">
+                    <View className="flex-1 bg-foreground/[0.05] rounded-lg px-3 py-2 items-center">
+                      <Text testID="checkin-this-week-avg" className="text-sm font-bold text-primary-light tabular-nums">
+                        {calcWellnessAvg(latestCheckIn)}
+                      </Text>
+                      <Text className="text-[10px] text-foreground/35 mt-0.5">Wellness</Text>
+                    </View>
+                    {latestCheckIn.weight !== null && (
+                      <View className="flex-1 bg-foreground/[0.05] rounded-lg px-3 py-2 items-center">
+                        <Text testID="checkin-this-week-weight" className="text-sm font-bold text-foreground tabular-nums">
+                          {latestCheckIn.weight}
+                        </Text>
+                        <Text className="text-[10px] text-foreground/35 mt-0.5">kg</Text>
+                      </View>
+                    )}
+                  </View>
+                )}
               </View>
             ) : (
               <Pressable
