@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
@@ -39,6 +39,7 @@ function makeStoreState(overrides: Partial<ReturnType<typeof useTrainersStore>> 
     detailError: null,
     fetchTrainers: jest.fn(),
     fetchTrainerDetail: jest.fn(),
+    removeTrainer: jest.fn(),
     ...overrides,
   };
 }
@@ -93,5 +94,28 @@ describe('TrainersScreen', () => {
 
     // Screen root testID must be present
     expect(getByTestId('screen-Trainers')).toBeTruthy();
+  });
+
+  it('shows a Remove button on each trainer row', () => {
+    const trainers = [
+      makeTrainer({ id: 't1', name: 'Alice Smith' }),
+    ];
+    setupStoreMock({ trainers });
+
+    const { getByTestId } = render(<TrainersScreen />);
+
+    expect(getByTestId('remove-trainer-btn-t1')).toBeTruthy();
+  });
+
+  it('tapping Remove opens a confirmation dialog warning about member unassignment', () => {
+    const trainers = [
+      makeTrainer({ id: 't1', name: 'Alice Smith', memberCount: 3 }),
+    ];
+    setupStoreMock({ trainers });
+
+    const { getByTestId, getByText } = render(<TrainersScreen />);
+    fireEvent.press(getByTestId('remove-trainer-btn-t1'));
+
+    expect(getByText('3 members will become unassigned')).toBeTruthy();
   });
 });

@@ -38,3 +38,7 @@ export async function fetchMemberOverviewStats(id: string): Promise<MemberOvervi
   const response = await apiClient.get<MemberOverviewStats>(`/members/${id}/overview-stats`);
   return response.data;
 }
+
+export async function assignTrainer(memberId: string, trainerId: string | null): Promise<void> {
+  await apiClient.patch(`/members/${memberId}/assign-trainer`, { trainerId });
+}

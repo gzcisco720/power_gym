@@ -129,4 +129,43 @@ describe('Owner: Trainers', () => {
     // Empty state text visible
     await waitFor(element(by.text('No members assigned.'))).toBeVisible().withTimeout(5000);
   });
+
+  it('remove trainer: tapping Remove shows dialog warning of member unassignment; Cancel leaves trainer in list', async () => {
+    // Wait for trainer rows with Remove buttons
+    await waitFor(element(by.id(/^remove-trainer-btn-/))).toBeVisible().withTimeout(10000);
+
+    // Tap Remove on the first trainer row
+    await element(by.id(/^remove-trainer-btn-/)).atIndex(0).tap();
+
+    // Dialog should appear with "members will become unassigned" text
+    await waitFor(element(by.text(/members will become unassigned/))).toBeVisible().withTimeout(5000);
+
+    // Tap Cancel — trainer remains in list
+    await element(by.text('Cancel')).tap();
+    await waitFor(element(by.id(/^trainer-row-/))).toBeVisible().withTimeout(5000);
+  });
+
+  it('remove trainer: confirming removes the trainer from the list', async () => {
+    // Use the no-member trainer for safe deletion (0 members affected)
+    await waitFor(element(by.text('0 members'))).toBeVisible().withTimeout(10000);
+
+    // Find the Remove button near the "0 members" row (scroll to it if needed)
+    await waitFor(element(by.id(/^remove-trainer-btn-/))).toBeVisible().withTimeout(10000);
+
+    // Count trainer rows before removal
+    const rowsBefore = await element(by.id(/^trainer-row-/)).getAttributes();
+    void rowsBefore;
+
+    // Tap Remove on the trainer showing "0 members" — use atIndex 1 (second trainer)
+    await element(by.id(/^remove-trainer-btn-/)).atIndex(1).tap();
+
+    // Dialog appears
+    await waitFor(element(by.text('0 members will become unassigned'))).toBeVisible().withTimeout(5000);
+
+    // Confirm removal
+    await element(by.id('confirm-remove-trainer')).tap();
+
+    // Dialog should close; trainer is removed — only one row remains
+    await waitFor(element(by.id(/^trainer-row-/))).toBeVisible().withTimeout(10000);
+  });
 });

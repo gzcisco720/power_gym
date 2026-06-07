@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { ActivePlan, WorkoutSession, PatchSetInput, SelfSessionSummary, SelfSessionDetail } from '../../types/training';
+import { ActivePlan, WorkoutSession, PatchSetInput, SelfSessionSummary, SelfSessionDetail, PersonalBest, ActiveSessionInfo, ExerciseHistoryPoint } from '../../types/training';
 
 export async function fetchMyPlan(): Promise<ActivePlan | null> {
   const response = await apiClient.get<ActivePlan | null>('/training/my-plan');
@@ -76,6 +76,21 @@ export async function finishMemberSession(memberId: string, sessionId: string): 
 
 export async function fetchSelfSessions(): Promise<SelfSessionSummary[]> {
   const response = await apiClient.get<SelfSessionSummary[]>('/training/self/sessions');
+  return response.data;
+}
+
+export async function fetchMemberPersonalBests(memberId: string): Promise<PersonalBest[]> {
+  const response = await apiClient.get<PersonalBest[]>(`/training/members/${memberId}/personal-bests`);
+  return response.data;
+}
+
+export async function fetchMemberActiveSession(memberId: string): Promise<ActiveSessionInfo | null> {
+  const response = await apiClient.get<ActiveSessionInfo | null>(`/training/members/${memberId}/active-session`);
+  return response.data;
+}
+
+export async function fetchMemberExerciseHistory(memberId: string, exerciseId: string): Promise<ExerciseHistoryPoint[]> {
+  const response = await apiClient.get<ExerciseHistoryPoint[]>(`/training/members/${memberId}/exercise/${exerciseId}`);
   return response.data;
 }
 

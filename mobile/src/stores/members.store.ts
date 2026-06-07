@@ -7,6 +7,7 @@ import {
   fetchMemberMedications,
   fetchMemberCheckIns,
   fetchMemberOverviewStats,
+  assignTrainer as apiAssignTrainer,
 } from '../lib/api/members.api';
 import { Member, MemberOverview, MemberOverviewStats } from '../types/members';
 import { BodyTest } from '../types/body-tests';
@@ -32,11 +33,15 @@ interface MembersState {
   detailError: string | null;
 
   searchQuery: string;
+  trainerFilter: string | null;
 
   fetchMembers(): Promise<void>;
   fetchMemberDetail(id: string): Promise<void>;
   filteredMembers(): Member[];
   setSearchQuery(query: string): void;
+  setTrainerFilter(trainerId: string | null): void;
+  assignTrainer(memberId: string, trainerId: string): Promise<void>;
+  unassignTrainer(memberId: string): Promise<void>;
 }
 
 export const useMembersStore = create<MembersState>((set, get) => ({
@@ -49,6 +54,7 @@ export const useMembersStore = create<MembersState>((set, get) => ({
   detailError: null,
 
   searchQuery: '',
+  trainerFilter: null,
 
   async fetchMembers(): Promise<void> {
     set({ loading: true, error: null });
@@ -95,5 +101,27 @@ export const useMembersStore = create<MembersState>((set, get) => ({
 
   setSearchQuery(query: string): void {
     set({ searchQuery: query });
+  },
+
+  setTrainerFilter(trainerId: string | null): void {
+    set({ trainerFilter: trainerId });
+  },
+
+  async assignTrainer(memberId: string, trainerId: string): Promise<void> {
+    await apiAssignTrainer(memberId, trainerId);
+    set((state) => ({
+      members: state.members.map((m) =>
+        m.id === memberId ? { ...m, trainerId } : m,
+      ),
+    }));
+  },
+
+  async unassignTrainer(memberId: string): Promise<void> {
+    await apiAssignTrainer(memberId, null);
+    set((state) => ({
+      members: state.members.map((m) =>
+        m.id === memberId ? { ...m, trainerId: null, trainerName: null } : m,
+      ),
+    }));
   },
 }));

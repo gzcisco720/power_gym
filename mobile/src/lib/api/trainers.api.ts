@@ -52,3 +52,8 @@ export async function reassignMember(
     trainerId: targetTrainerId,
   });
 }
+
+export async function removeTrainer(trainerId: string): Promise<{ affectedMemberCount: number }> {
+  const response = await apiClient.delete<{ affectedMemberCount: number }>(`/trainers/${trainerId}`);
+  return response.data;
+}

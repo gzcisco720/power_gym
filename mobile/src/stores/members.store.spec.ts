@@ -6,11 +6,14 @@ jest.mock('../lib/api/members.api', () => ({
   fetchMemberMedications: jest.fn(),
   fetchMemberCheckIns: jest.fn(),
   fetchMemberOverviewStats: jest.fn(),
+  assignTrainer: jest.fn(),
 }));
 
 import * as membersApi from '../lib/api/members.api';
 import { useMembersStore } from './members.store';
 import { Member, MemberOverview } from '../types/members';
+
+const mockAssignTrainer = membersApi.assignTrainer as jest.MockedFunction<typeof membersApi.assignTrainer>;
 import { BodyTest } from '../types/body-tests';
 import { Injury, Medication } from '../types/health';
 import { CheckIn } from '../types/check-ins';
@@ -243,6 +246,35 @@ describe('useMembersStore', () => {
       const state = useMembersStore.getState();
       const filtered = state.filteredMembers();
       expect(filtered).toEqual([MOCK_MEMBER_1, MOCK_MEMBER_2]);
+    });
+  });
+
+  describe('assignTrainer', () => {
+    it('calls assign-trainer api and updates the member trainer in local state', async () => {
+      useMembersStore.setState({ members: [MOCK_MEMBER_1, MOCK_MEMBER_2] });
+      mockAssignTrainer.mockResolvedValueOnce(undefined);
+
+      await useMembersStore.getState().assignTrainer('mem1', 'trainer2');
+
+      expect(mockAssignTrainer).toHaveBeenCalledWith('mem1', 'trainer2');
+      const state = useMembersStore.getState();
+      const updated = state.members.find((m) => m.id === 'mem1');
+      expect(updated?.trainerId).toBe('trainer2');
+    });
+  });
+
+  describe('unassignTrainer', () => {
+    it('calls assign-trainer api with null and clears the member trainer', async () => {
+      useMembersStore.setState({ members: [MOCK_MEMBER_1, MOCK_MEMBER_2] });
+      mockAssignTrainer.mockResolvedValueOnce(undefined);
+
+      await useMembersStore.getState().unassignTrainer('mem1');
+
+      expect(mockAssignTrainer).toHaveBeenCalledWith('mem1', null);
+      const state = useMembersStore.getState();
+      const updated = state.members.find((m) => m.id === 'mem1');
+      expect(updated?.trainerId).toBeNull();
+      expect(updated?.trainerName).toBeNull();
     });
   });
 });

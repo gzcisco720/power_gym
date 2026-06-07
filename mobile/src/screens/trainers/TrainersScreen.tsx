@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, ScrollView, Pressable, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
@@ -15,6 +15,9 @@ export function TrainersScreen() {
   const fetchTrainers = useTrainersStore((s) => s.fetchTrainers);
   const trainers = useTrainersStore((s) => s.trainers);
   const loading = useTrainersStore((s) => s.loading);
+  const removeTrainer = useTrainersStore((s) => s.removeTrainer);
+
+  const [removeTarget, setRemoveTarget] = useState<TrainerListItem | null>(null);
 
   useEffect(() => {
     void fetchTrainers();
@@ -29,6 +32,12 @@ export function TrainersScreen() {
     },
     [navigation],
   );
+
+  const handleRemoveConfirm = useCallback(async () => {
+    if (!removeTarget) return;
+    await removeTrainer(removeTarget.id);
+    setRemoveTarget(null);
+  }, [removeTarget, removeTrainer]);
 
   return (
     <Screen testID="screen-Trainers">
@@ -56,11 +65,62 @@ export function TrainersScreen() {
             </Text>
           ) : (
             trainers.map((trainer) => (
-              <TrainerRow key={trainer.id} trainer={trainer} onPress={handleRowPress} />
+              <View key={trainer.id} className="gap-1">
+                <TrainerRow trainer={trainer} onPress={handleRowPress} />
+                <Pressable
+                  testID={`remove-trainer-btn-${trainer.id}`}
+                  onPress={() => setRemoveTarget(trainer)}
+                  accessibilityLabel={`Remove ${trainer.name}`}
+                  accessibilityRole="button"
+                  className="rounded-lg bg-destructive/10 px-3 py-1.5 items-center"
+                >
+                  <Text className="text-xs font-medium text-destructive">Remove</Text>
+                </Pressable>
+              </View>
             ))
           )}
         </View>
       </ScrollView>
+
+      {/* Remove confirmation dialog */}
+      {removeTarget !== null && (
+        <Modal
+          visible
+          transparent
+          animationType="fade"
+          onRequestClose={() => setRemoveTarget(null)}
+        >
+          <View className="flex-1 justify-center items-center bg-background/80 px-6">
+            <View className="w-full rounded-2xl bg-card ring-1 ring-foreground/10 p-5 gap-4">
+              <Text className="text-[15px] font-semibold text-foreground">Remove trainer?</Text>
+              <Text className="text-[13px] text-foreground/65">
+                {removeTarget.memberCount === 1
+                  ? '1 member will become unassigned'
+                  : `${removeTarget.memberCount} members will become unassigned`}
+              </Text>
+              <View className="flex-row gap-2">
+                <Pressable
+                  onPress={() => setRemoveTarget(null)}
+                  accessibilityLabel="Cancel remove trainer"
+                  accessibilityRole="button"
+                  className="flex-1 rounded-xl bg-muted px-3 py-2.5 items-center"
+                >
+                  <Text className="text-sm font-medium text-foreground/65">Cancel</Text>
+                </Pressable>
+                <Pressable
+                  testID="confirm-remove-trainer"
+                  onPress={() => void handleRemoveConfirm()}
+                  accessibilityLabel="Confirm remove trainer"
+                  accessibilityRole="button"
+                  className="flex-1 rounded-xl bg-destructive/10 px-3 py-2.5 items-center"
+                >
+                  <Text className="text-sm font-medium text-destructive">Remove</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
     </Screen>
   );
 }

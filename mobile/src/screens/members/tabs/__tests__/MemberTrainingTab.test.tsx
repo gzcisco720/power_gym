@@ -24,6 +24,17 @@ const mockFetchMemberHistory = jest.fn();
 jest.mock('../../../../lib/api/training.api', () => ({
   fetchMemberHistory: (...args: Parameters<typeof mockFetchMemberHistory>) =>
     mockFetchMemberHistory(...args),
+  fetchMemberPersonalBests: jest.fn().mockResolvedValue([]),
+  fetchMemberActiveSession: jest.fn().mockResolvedValue(null),
+  fetchMemberExerciseHistory: jest.fn().mockResolvedValue([]),
+}));
+
+jest.mock('../components/PersonalBestsGrid', () => ({
+  PersonalBestsGrid: () => null,
+}));
+
+jest.mock('../components/StrengthProgressChart', () => ({
+  StrengthProgressChart: () => null,
 }));
 
 jest.mock('../../../../stores/training.store', () => ({

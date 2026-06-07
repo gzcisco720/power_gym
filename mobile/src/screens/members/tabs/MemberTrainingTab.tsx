@@ -2,10 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { fetchMemberHistory } from '../../../lib/api/training.api';
+import {
+  fetchMemberHistory,
+  fetchMemberPersonalBests,
+  fetchMemberActiveSession,
+} from '../../../lib/api/training.api';
 import { useTrainingStore } from '../../../stores/training.store';
-import { WorkoutSession, ActivePlan, PlanDay } from '../../../types/training';
+import {
+  WorkoutSession,
+  ActivePlan,
+  PlanDay,
+  PersonalBest,
+  ActiveSessionInfo,
+} from '../../../types/training';
 import { AppStackParamList } from '../../../navigation/index';
+import { PersonalBestsGrid } from './components/PersonalBestsGrid';
+import { StrengthProgressChart } from './components/StrengthProgressChart';
 
 type Nav = NativeStackNavigationProp<AppStackParamList>;
 
@@ -25,11 +37,34 @@ function formatDate(iso: string): string {
   });
 }
 
+/** Compute total volume (kg) for completed sets only. */
+function computeVolume(session: WorkoutSession): number {
+  return session.sets.reduce((sum, set) => {
+    if (set.completedAt !== null && set.actualWeight !== null && set.actualReps !== null) {
+      return sum + set.actualWeight * set.actualReps;
+    }
+    return sum;
+  }, 0);
+}
+
+/** Map day name keyword to accent color class. */
+function accentColorForDay(dayName: string): string {
+  const lower = dayName.toLowerCase();
+  if (lower.includes('push')) return 'bg-indigo-500/20';
+  if (lower.includes('pull')) return 'bg-emerald-500/20';
+  if (lower.includes('leg')) return 'bg-amber-500/20';
+  if (lower.includes('upper')) return 'bg-pink-500/20';
+  if (lower.includes('lower')) return 'bg-rose-500/20';
+  return 'bg-muted';
+}
+
 export function MemberTrainingTab({ memberId, memberName, activePlan, onAssignPress }: MemberTrainingTabProps) {
   const navigation = useNavigation<Nav>();
   const [history, setHistory] = useState<WorkoutSession[]>([]);
   const [loading, setLoading] = useState(false);
   const [memberPlan, setMemberPlan] = useState<ActivePlan | null>(null);
+  const [personalBests, setPersonalBests] = useState<PersonalBest[]>([]);
+  const [activeSession, setActiveSession] = useState<ActiveSessionInfo | null>(null);
 
   const fetchMemberPlan = useTrainingStore((s) => s.fetchMemberPlan);
   const startMemberSession = useTrainingStore((s) => s.startMemberSession);
@@ -40,6 +75,14 @@ export function MemberTrainingTab({ memberId, memberName, activePlan, onAssignPr
       .then((sessions) => setHistory(sessions))
       .catch(() => setHistory([]))
       .finally(() => setLoading(false));
+
+    fetchMemberPersonalBests(memberId)
+      .then((prs) => setPersonalBests(prs))
+      .catch(() => setPersonalBests([]));
+
+    fetchMemberActiveSession(memberId)
+      .then((session) => setActiveSession(session))
+      .catch(() => setActiveSession(null));
   }, [memberId]);
 
   useEffect(() => {
@@ -57,9 +100,35 @@ export function MemberTrainingTab({ memberId, memberName, activePlan, onAssignPr
   // internally-fetched memberPlan so Log Session day buttons appear without remount.
   const logPlan = activePlan ?? memberPlan;
 
+  // Exercise list for the strength chart exercise selector
+  const exercises = (logPlan?.days ?? []).flatMap((day) =>
+    day.exercises.map((ex) => ({ exerciseId: ex.exerciseId, exerciseName: ex.exerciseName })),
+  );
+
   return (
     <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
       <View className="px-4 py-4 gap-4">
+        {/* Active session continue banner */}
+        {activeSession !== null ? (
+          <Pressable
+            testID="active-session-banner"
+            accessibilityRole="button"
+            accessibilityLabel="Continue active session"
+            onPress={() => navigation.navigate('TrainerWorkoutSession', { memberId, memberName })}
+            className="rounded-xl bg-primary/15 ring-1 ring-primary/30 px-3 py-2 flex-row items-center justify-between"
+          >
+            <View className="flex-1">
+              <Text className="text-xs font-semibold text-primary-light">
+                Session In Progress
+              </Text>
+              <Text className="text-sm font-medium text-foreground mt-0.5" numberOfLines={1}>
+                {activeSession.dayName}
+              </Text>
+            </View>
+            <Text className="text-xs font-semibold text-primary-light ml-2">Continue →</Text>
+          </Pressable>
+        ) : null}
+
         {/* Active plan section */}
         <View className="gap-2">
           <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
@@ -118,6 +187,24 @@ export function MemberTrainingTab({ memberId, memberName, activePlan, onAssignPr
           </View>
         ) : null}
 
+        {/* Personal Bests section */}
+        <View className="gap-2">
+          <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
+            Personal Bests
+          </Text>
+          <PersonalBestsGrid personalBests={personalBests} />
+        </View>
+
+        {/* Strength Progress Chart */}
+        {exercises.length > 0 ? (
+          <View className="gap-2">
+            <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
+              Strength Progress
+            </Text>
+            <StrengthProgressChart memberId={memberId} exercises={exercises} />
+          </View>
+        ) : null}
+
         {/* Workout history section */}
         <View className="gap-2">
           <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
@@ -135,25 +222,42 @@ export function MemberTrainingTab({ memberId, memberName, activePlan, onAssignPr
               No completed workouts yet.
             </Text>
           ) : (
-            history.map((session) => (
-              <View
-                key={session._id}
-                testID={`history-session-${session._id}`}
-                className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2"
-              >
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-sm font-medium text-foreground flex-1" numberOfLines={1}>
-                    {session.dayName}
-                  </Text>
-                  <Text className="text-xs text-foreground/65 ml-2">
-                    {session.completedAt ? formatDate(session.completedAt) : ''}
-                  </Text>
+            history.map((session) => {
+              const volume = computeVolume(session);
+              const accentClass = accentColorForDay(session.dayName);
+              return (
+                <View
+                  key={session._id}
+                  testID={`history-session-${session._id}`}
+                  className="rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden"
+                >
+                  {/* Accent bar */}
+                  <View
+                    testID={`accent-bar-${session._id}`}
+                    className={accentClass}
+                    style={{ height: 4 }}
+                  />
+                  <View className="px-3 py-2">
+                    <View className="flex-row items-center justify-between">
+                      <Text className="text-sm font-medium text-foreground flex-1" numberOfLines={1}>
+                        {session.dayName}
+                      </Text>
+                      <Text className="text-xs text-foreground/65 ml-2">
+                        {session.completedAt ? formatDate(session.completedAt) : ''}
+                      </Text>
+                    </View>
+                    <View className="flex-row items-center gap-2 mt-0.5">
+                      <Text className="text-xs text-foreground/65">
+                        {`${session.sets.length} sets`}
+                      </Text>
+                      {volume > 0 ? (
+                        <Text className="text-xs text-foreground/65">{`${volume} kg`}</Text>
+                      ) : null}
+                    </View>
+                  </View>
                 </View>
-                <Text className="text-xs text-foreground/65 mt-0.5">
-                  {`${session.sets.length} sets`}
-                </Text>
-              </View>
-            ))
+              );
+            })
           )}
         </View>
       </View>

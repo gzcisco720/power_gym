@@ -7,6 +7,7 @@ jest.mock('../lib/api/trainers.api', () => ({
   fetchTrainerNutritionPlans: jest.fn(),
   fetchTrainerOverviewStats: jest.fn(),
   reassignMember: jest.fn(),
+  removeTrainer: jest.fn(),
 }));
 
 import * as trainersApi from '../lib/api/trainers.api';
@@ -36,6 +37,9 @@ const mockReassignMember = trainersApi.reassignMember as jest.MockedFunction<
 >;
 const mockFetchTrainerOverviewStats = trainersApi.fetchTrainerOverviewStats as jest.MockedFunction<
   typeof trainersApi.fetchTrainerOverviewStats
+>;
+const mockRemoveTrainer = trainersApi.removeTrainer as jest.MockedFunction<
+  typeof trainersApi.removeTrainer
 >;
 
 const MOCK_TRAINER: TrainerListItem = {
@@ -284,6 +288,20 @@ describe('useTrainersStore', () => {
       expect(state.overviewStats).toBeNull();
       expect(state.overviewStatsLoading).toBe(false);
       expect(state.overviewStatsError).toBe('Server error');
+    });
+  });
+
+  describe('removeTrainer', () => {
+    it('calls DELETE api and removes the trainer from local list', async () => {
+      useTrainersStore.setState({ trainers: [MOCK_TRAINER, { ...MOCK_TRAINER, id: 'tr2', name: 'Bob' }] });
+      mockRemoveTrainer.mockResolvedValueOnce({ affectedMemberCount: 2 });
+
+      await useTrainersStore.getState().removeTrainer('tr1');
+
+      expect(mockRemoveTrainer).toHaveBeenCalledWith('tr1');
+      const state = useTrainersStore.getState();
+      expect(state.trainers).toHaveLength(1);
+      expect(state.trainers[0].id).toBe('tr2');
     });
   });
 });

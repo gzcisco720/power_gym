@@ -109,3 +109,34 @@ export interface SelfSessionDetail {
   rpe: number | null;
   note: string | null;
 }
+
+// GET /training/members/:memberId/personal-bests
+export interface PersonalBest {
+  exerciseId: string;
+  exerciseName: string;
+  bestWeight: number;
+  bestReps: number;
+  estimatedOneRM: number;
+  achievedAt: string; // ISO
+}
+
+// GET /training/members/:memberId/active-session
+export interface ActiveSessionInfo {
+  sessionId: string;
+  dayName: string;
+  startedAt: string; // ISO
+}
+
+// GET /training/members/:memberId/exercise/:exerciseId — one point per session
+export interface ExerciseHistoryPoint {
+  date: string; // YYYY-MM-DD
+  estimatedOneRM: number;
+  weight: number;
+  reps: number;
+}
+
+// Minimal exercise ref used in the strength chart exercise selector
+export interface ExerciseRef {
+  exerciseId: string;
+  exerciseName: string;
+}

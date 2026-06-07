@@ -8,6 +8,7 @@ import {
   fetchTrainerNutritionPlans as apiFetchTrainerNutritionPlans,
   fetchTrainerOverviewStats as apiFetchTrainerOverviewStats,
   reassignMember as apiReassignMember,
+  removeTrainer as apiRemoveTrainer,
 } from '../lib/api/trainers.api';
 import {
   TrainerListItem,
@@ -55,6 +56,7 @@ interface TrainersState {
   fetchTrainerNutritionPlans(id: string): Promise<void>;
   fetchTrainerOverviewStats(id: string): Promise<void>;
   reassignMember(currentTrainerId: string, memberId: string, targetTrainerId: string): Promise<void>;
+  removeTrainer(trainerId: string): Promise<{ affectedMemberCount: number }>;
 }
 
 export const useTrainersStore = create<TrainersState>((set, get) => ({
@@ -166,5 +168,13 @@ export const useTrainersStore = create<TrainersState>((set, get) => ({
   async reassignMember(currentTrainerId: string, memberId: string, targetTrainerId: string): Promise<void> {
     await apiReassignMember(currentTrainerId, memberId, targetTrainerId);
     await get().fetchTrainerMembers(currentTrainerId);
+  },
+
+  async removeTrainer(trainerId: string): Promise<{ affectedMemberCount: number }> {
+    const result = await apiRemoveTrainer(trainerId);
+    set((state) => ({
+      trainers: state.trainers.filter((t) => t.id !== trainerId),
+    }));
+    return result;
   },
 }));

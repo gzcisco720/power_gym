@@ -196,7 +196,16 @@ These were confirmed by reading the code on 2026-06-07. They override the assump
 2. Add api fns (`fetchMemberPersonalBests`, `fetchMemberExerciseHistory` via existing endpoint, `fetchMemberActiveSession`), components, wire into tab → Green
 3. Detox spec against simulator → pass; then design-reviewer on the tab + new components
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 3 Checkpoint
+- [x] `PersonalBestsGrid > renders > shows exercise name, "best kg × reps", and "est. 1RM" for each PR`
+- [x] `StrengthProgressChart > selects exercise > refetches history and renders a line point per session`
+- [x] `MemberTrainingTab > volume > computes total volume = sum(actualWeight×actualReps) over completed sets for a history row`
+- [x] `MemberTrainingTab > accent bar > maps day name keyword to color (push→indigo, pull→emerald, leg→amber, upper→pink, lower→rose, default→muted)`
+- [x] `MemberTrainingTab > active session > renders Continue banner only when an in-progress session exists`
+- [x] API functions: `fetchMemberPersonalBests`, `fetchMemberActiveSession`, `fetchMemberExerciseHistory`
+- [x] Detox E2E: `mobile/e2e/trainer/member-training-rich.spec.ts` (PRs grid, strength chart exercise selector, active-session continue banner)
 
 ---
 
@@ -276,15 +285,24 @@ These were confirmed by reading the code on 2026-06-07. They override the assump
 - [ ] `trainers.store > removeTrainer > calls DELETE api and removes the trainer from local list`
 
 *Integration / E2E:*
-- [ ] (Detox `mobile/e2e/owner/member-assign.spec.ts`) Owner taps Reassign on a member, picks a trainer in the sheet → toast confirms; member now appears under the new trainer filter
-- [ ] (Detox extend `mobile/e2e/owner/trainers.spec.ts`) Owner taps Remove on a trainer → dialog warns of "X members will become unassigned"; confirming removes the trainer from the list (and Cancel leaves it)
+- [x] (Detox `mobile/e2e/owner/member-assign.spec.ts`) Owner taps Reassign on a member, picks a trainer in the sheet → toast confirms; member now appears under the new trainer filter
+- [x] (Detox extend `mobile/e2e/owner/trainers.spec.ts`) Owner taps Remove on a trainer → dialog warns of "X members will become unassigned"; confirming removes the trainer from the list (and Cancel leaves it)
 
 **TDD sequence**:
 1. Failing Jest tests → Red
 2. Add api fns + store methods, ReassignTrainerSheet, filter row, unassign dialog, trainer Remove dialog → Green
 3. Detox specs → pass; design-reviewer on both screens + sheet
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 6 Checkpoint
+- [x] `members.store > assignTrainer`
+- [x] `members.store > unassignTrainer`
+- [x] `trainers.store > removeTrainer`
+- [x] `MembersScreen > trainer filter chip`
+- [x] `MembersScreen > unassign button conditional`
+- [x] Detox `mobile/e2e/owner/member-assign.spec.ts`
+- [x] Detox `mobile/e2e/owner/trainers.spec.ts` extended with Remove tests
 
 ---
 
