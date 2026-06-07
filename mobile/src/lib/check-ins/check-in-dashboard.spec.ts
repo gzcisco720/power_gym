@@ -95,6 +95,10 @@ describe('wellness > wellnessBreakdown', () => {
     const sleepEntry = result.find((e) => e.label === 'Sleep Quality');
     expect(sleepEntry).toBeDefined();
     expect(sleepEntry?.value).toBe(8);
+    expect(sleepEntry?.inverted).toBe(false);
+
+    const stressEntry = result.find((e) => e.label === 'Stress ↓');
+    expect(stressEntry?.inverted).toBe(true);
 
     const digestEntry = result.find((e) => e.label === 'Digestion');
     expect(digestEntry?.value).toBe(9);

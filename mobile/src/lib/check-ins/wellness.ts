@@ -1,13 +1,13 @@
 import { CheckIn } from '../../types/check-ins';
 
-const WELLNESS_FIELDS: { key: keyof CheckIn; label: string }[] = [
-  { key: 'sleepQuality', label: 'Sleep Quality' },
-  { key: 'energy', label: 'Energy' },
-  { key: 'recovery', label: 'Recovery' },
-  { key: 'stress', label: 'Stress' },
-  { key: 'fatigue', label: 'Fatigue' },
-  { key: 'hunger', label: 'Hunger' },
-  { key: 'digestion', label: 'Digestion' },
+const WELLNESS_FIELDS: { key: keyof CheckIn; label: string; inverted: boolean }[] = [
+  { key: 'sleepQuality', label: 'Sleep Quality', inverted: false },
+  { key: 'energy', label: 'Energy', inverted: false },
+  { key: 'recovery', label: 'Recovery', inverted: false },
+  { key: 'stress', label: 'Stress ↓', inverted: true },
+  { key: 'fatigue', label: 'Fatigue ↓', inverted: true },
+  { key: 'hunger', label: 'Hunger', inverted: false },
+  { key: 'digestion', label: 'Digestion', inverted: false },
 ];
 
 /** ISO week number (Monday-based) for a given date. */
@@ -52,11 +52,13 @@ export function computeCheckInStreakWeeks(items: CheckIn[]): number {
 
 /**
  * Returns 7 labeled wellness values from a single check-in.
+ * `inverted: true` means a lower value is healthier (stress, fatigue).
  */
-export function wellnessBreakdown(checkIn: CheckIn): { label: string; value: number }[] {
-  return WELLNESS_FIELDS.map(({ key, label }) => ({
+export function wellnessBreakdown(checkIn: CheckIn): { label: string; value: number; inverted: boolean }[] {
+  return WELLNESS_FIELDS.map(({ key, label, inverted }) => ({
     label,
     value: checkIn[key] as number,
+    inverted,
   }));
 }
 
