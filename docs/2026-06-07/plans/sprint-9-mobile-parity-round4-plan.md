@@ -231,7 +231,15 @@ These were confirmed by reading the code on 2026-06-07. They override the assump
 2. Add schedule api/store, form, chart, heatmap, list enrichment → Green
 3. Detox extension → pass; design-reviewer on tab + new components
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 4 Checkpoint
+- [x] `check-in-schedule.store > fetchSchedule > populates schedule and clears loading on success`
+- [x] `CheckInScheduleForm > save button > disabled until a field changes (dirty), enabled after editing dayOfWeek/hour/active`
+- [x] `WellnessTrendChart > data > plots avg of the 7 sliders per check-in for up to the last 12 entries`
+- [x] `DietComplianceHeatmap > colors > maps stuckToDiet yes→emerald, partial→amber, no→rose for up to 16 squares`
+- [x] `MemberCheckInsTab > list row > shows weight when non-null, diet badge text (On track/Partial/Off track), and photo count when photos.length > 0`
+- [ ] Detox E2E: extend `mobile/e2e/trainer/member-check-ins.spec.ts` (schedule form save, wellness chart/heatmap edge case)
 
 ---
 

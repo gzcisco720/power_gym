@@ -148,6 +148,7 @@ export function MemberDetailScreen() {
           ) : null}
           {activeTab === 'checkins' ? (
             <MemberCheckInsTab
+              memberId={memberId}
               checkIns={detail.checkIns}
               onPressCheckIn={(c: CheckIn) => navigation.navigate('CheckInDetail', { checkIn: c })}
             />

@@ -25,6 +25,9 @@
  * via the dev endpoint, the edge case uses the "tab re-render" substitution: switch away
  * from the Check-ins tab and switch back, then assert the list re-renders without error
  * (the check-in row is still visible and the screen has not crashed).
+ *
+ * SCHEDULE FORM: Tests saving a schedule via the form. The save button is only enabled
+ * when a field changes (dirty). The test changes the hour and taps Save.
  */
 
 import { device, element, by, expect as detoxExpect, waitFor } from 'detox';
@@ -86,6 +89,28 @@ describe('Trainer: Member Check-ins flow', () => {
     await element(by.id(/^member-checkin-item-/)).tap();
     await waitFor(element(by.id('screen-CheckInDetail'))).toBeVisible().withTimeout(8000);
     await detoxExpect(element(by.id('screen-CheckInDetail'))).toBeVisible();
+  });
+
+  it('schedule form: changing the hour and tapping Save stores the schedule', async () => {
+    // The schedule form is always visible — wait for it
+    await waitFor(element(by.id('schedule-save-button'))).toBeVisible().withTimeout(8000);
+
+    // Change the hour input to make the form dirty
+    await element(by.id('schedule-hour-input')).clearText();
+    await element(by.id('schedule-hour-input')).typeText('8');
+
+    // Save button should now be enabled and tappable
+    await waitFor(element(by.id('schedule-save-button'))).toBeVisible().withTimeout(5000);
+    await element(by.id('schedule-save-button')).tap();
+
+    // After save, form should reset to non-dirty (save button disabled again)
+    // Navigate away and back to verify persistence
+    await element(by.id('member-detail-tab-overview')).tap();
+    await element(by.id('member-detail-tab-checkins')).tap();
+
+    // Form should be visible again with the saved value
+    await waitFor(element(by.id('schedule-hour-input'))).toBeVisible().withTimeout(8000);
+    await detoxExpect(element(by.id('schedule-hour-input'))).toHaveText('8');
   });
 
   it('edge case (tab re-render substitution): switching tabs and returning to Check-ins re-renders without error', async () => {

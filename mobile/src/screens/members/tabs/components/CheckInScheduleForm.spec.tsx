@@ -50,8 +50,9 @@ describe('CheckInScheduleForm', () => {
       <CheckInScheduleForm memberId="mem1" />,
     );
 
+    // Initial active is true (default), toggle to false to make it dirty
     await act(async () => {
-      fireEvent(getByTestId('schedule-active-switch'), 'valueChange', true);
+      fireEvent(getByTestId('schedule-active-switch'), 'valueChange', false);
     });
 
     const saveBtn = getByTestId('schedule-save-button');

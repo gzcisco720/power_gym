@@ -1,3 +1,19 @@
+// Mock LineChart which uses react-native-svg (native module not available in Jest)
+jest.mock('react-native-gifted-charts', () => ({
+  LineChart: ({ data, testID }: { data: { value: number }[]; testID?: string }) => {
+    const { View, Text } = require('react-native');
+    return (
+      <View testID={testID ?? 'line-chart'}>
+        {data.map((point: { value: number }, i: number) => (
+          <Text key={i} testID={`chart-point-${i}`}>
+            {String(point.value)}
+          </Text>
+        ))}
+      </View>
+    );
+  },
+}));
+
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { WellnessTrendChart } from './WellnessTrendChart';
@@ -39,7 +55,6 @@ describe('WellnessTrendChart', () => {
     );
 
     const { getByTestId } = render(<WellnessTrendChart checkIns={checkIns} />);
-    // Chart container should be visible
     expect(getByTestId('wellness-trend-chart')).toBeTruthy();
   });
 
@@ -56,13 +71,11 @@ describe('WellnessTrendChart', () => {
         digestion: 9,
       }),
     );
-    // avg = (6+4+5+6+7+8+9)/7 ≈ 6.43
 
     const { getByTestId } = render(<WellnessTrendChart checkIns={checkIns} />);
     expect(getByTestId('wellness-trend-chart')).toBeTruthy();
-    // verify data points label: 5 data points
     expect(getByTestId('wellness-data-count')).toBeTruthy();
-    // text should show "5 entries"
+    expect(getByTestId('wellness-data-count').props.children).toBe('5 entries');
   });
 
   it('uses at most the last 12 check-ins when given more than 12', () => {
@@ -71,7 +84,6 @@ describe('WellnessTrendChart', () => {
     );
 
     const { getByTestId } = render(<WellnessTrendChart checkIns={checkIns} />);
-    // should cap at 12 data points — shown in label
     const countEl = getByTestId('wellness-data-count');
     expect(countEl.props.children).toBe('12 entries');
   });
