@@ -33,6 +33,8 @@ describe('CheckInsController', () => {
     findByMemberScoped: jest.Mock;
     findOneByMemberScoped: jest.Mock;
     findPhotosForMemberScoped: jest.Mock;
+    getSchedule: jest.Mock;
+    updateSchedule: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -47,6 +49,8 @@ describe('CheckInsController', () => {
         .fn()
         .mockResolvedValue({ _id: 'check-in-id' }),
       findPhotosForMemberScoped: jest.fn().mockResolvedValue([]),
+      getSchedule: jest.fn().mockResolvedValue(null),
+      updateSchedule: jest.fn().mockResolvedValue({}),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -140,6 +144,54 @@ describe('CheckInsController', () => {
       await controller.create(req, validDto);
 
       expect(service.create).toHaveBeenCalledWith(validDto, MEMBER_ID);
+    });
+  });
+
+  describe('getSchedule', () => {
+    it('delegates to service.getSchedule with memberId, sub, and role', async () => {
+      const callerId = new Types.ObjectId().toString();
+      const req: RequestWithUser & Request = {
+        user: {
+          sub: callerId,
+          role: 'trainer',
+          firstName: 'T',
+          lastName: 'R',
+          trainerId: null,
+        },
+      } as RequestWithUser & Request;
+
+      await controller.getSchedule(req, MEMBER_ID_2);
+
+      expect(service.getSchedule).toHaveBeenCalledWith(
+        MEMBER_ID_2,
+        callerId,
+        'trainer',
+      );
+    });
+  });
+
+  describe('updateSchedule', () => {
+    it('delegates to service.updateSchedule with memberId, sub, role, and dto', async () => {
+      const callerId = new Types.ObjectId().toString();
+      const req: RequestWithUser & Request = {
+        user: {
+          sub: callerId,
+          role: 'trainer',
+          firstName: 'T',
+          lastName: 'R',
+          trainerId: null,
+        },
+      } as RequestWithUser & Request;
+      const dto = { dayOfWeek: 1, hour: 9, active: true };
+
+      await controller.updateSchedule(req, MEMBER_ID_2, dto as never);
+
+      expect(service.updateSchedule).toHaveBeenCalledWith(
+        MEMBER_ID_2,
+        callerId,
+        'trainer',
+        dto,
+      );
     });
   });
 });

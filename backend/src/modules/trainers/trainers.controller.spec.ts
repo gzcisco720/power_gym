@@ -82,6 +82,7 @@ describe('TrainersController', () => {
     getTrainerTrainingPlans: jest.Mock;
     getTrainerNutritionPlans: jest.Mock;
     reassignMember: jest.Mock;
+    remove: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -98,6 +99,7 @@ describe('TrainersController', () => {
         name: 'Alice Lee',
         email: 'alice@example.com',
       }),
+      remove: jest.fn().mockResolvedValue({ affectedMemberCount: 2 }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -185,6 +187,15 @@ describe('TrainersController', () => {
       await controller.getOverviewStats(TRAINER_ID);
 
       expect(service.getOverviewStats).toHaveBeenCalledWith(TRAINER_ID);
+    });
+  });
+
+  describe('remove', () => {
+    it('delegates to service.remove with the trainer id and returns the result', async () => {
+      const result = await controller.remove(TRAINER_ID);
+
+      expect(service.remove).toHaveBeenCalledWith(TRAINER_ID);
+      expect(result).toEqual({ affectedMemberCount: 2 });
     });
   });
 });

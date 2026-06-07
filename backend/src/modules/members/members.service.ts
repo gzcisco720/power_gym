@@ -286,6 +286,29 @@ export class MembersService {
     };
   }
 
+  async assignTrainer(
+    memberId: string,
+    trainerId: string | null,
+  ): Promise<{ id: string; name: string; email: string; trainerId: string | null }> {
+    const member = await this.userModel.findById(memberId);
+    if (!member || member.role !== 'member') {
+      throw new NotFoundException('Member not found');
+    }
+
+    const updated = await this.userModel.findByIdAndUpdate(
+      new Types.ObjectId(memberId),
+      { trainerId: trainerId ? new Types.ObjectId(trainerId) : null },
+      { returnDocument: 'after' },
+    );
+
+    return {
+      id: memberId,
+      name: `${updated!.firstName} ${updated!.lastName}`,
+      email: updated!.email,
+      trainerId: updated!.trainerId ? updated!.trainerId.toString() : null,
+    };
+  }
+
   /**
    * Resolves the member by id, verifies they have the 'member' role,
    * and for trainer requests verifies the member belongs to that trainer.

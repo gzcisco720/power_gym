@@ -1,9 +1,18 @@
-import { Controller, Get, Param, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { JwtUser } from '../auth/strategies/jwt.strategy';
 import { MembersService } from './members.service';
+import { AssignTrainerDto } from './dto/assign-trainer.dto';
 
 interface RequestWithUser extends Request {
   user: JwtUser;
@@ -47,5 +56,11 @@ export class MembersController {
   @Get(':id/medications')
   getMedications(@Request() req: RequestWithUser, @Param('id') id: string) {
     return this.membersService.getMedications(id, req.user.sub, req.user.role);
+  }
+
+  @Patch(':id/assign-trainer')
+  @Roles('owner')
+  assignTrainer(@Param('id') id: string, @Body() dto: AssignTrainerDto) {
+    return this.membersService.assignTrainer(id, dto.trainerId);
   }
 }

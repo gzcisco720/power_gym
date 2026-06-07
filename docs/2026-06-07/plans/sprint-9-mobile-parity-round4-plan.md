@@ -118,7 +118,21 @@ These were confirmed by reading the code on 2026-06-07. They override the assump
 2. Add `CheckInConfig` model (matching web shape, collection `CheckInConfig`), DTOs, service methods, controller routes → Green
 3. Write/extend integration specs against the real Nest app → pass
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 1 Checkpoint
+- [x] `CheckInsService > getSchedule > returns existing CheckInConfig for a member the trainer owns`
+- [x] `CheckInsService > getSchedule > returns null when no config exists for the member`
+- [x] `CheckInsService > updateSchedule > upserts CheckInConfig with dayOfWeek/hour/active and defaults minute to 0`
+- [x] `CheckInsService > updateSchedule > throws NotFoundException when member is not under the requesting trainer`
+- [x] `MembersService > assignTrainer > sets member.trainerId to the given trainer id`
+- [x] `MembersService > assignTrainer > sets member.trainerId to null when trainerId is null (unassign)`
+- [x] `TrainersService > remove > unassigns all members of the trainer (sets trainerId null) and returns affectedMemberCount`
+- [x] `TrainersService > remove > throws NotFoundException when trainer id does not exist`
+- [x] Integration: `PUT /check-ins/members/:memberId/schedule` + `GET` round-trip
+- [x] Integration: `GET /check-ins/members/:memberId/schedule` 404 for non-owning trainer, 401 unauthenticated
+- [x] Integration: `PATCH /members/:id/assign-trainer` owner assign/unassign + 400 malformed + 403 trainer
+- [x] Integration: `DELETE /trainers/:id` owner 200 with affectedMemberCount + 403 trainer + 404 nonexistent
 
 ---
 

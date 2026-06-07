@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -15,6 +16,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { JwtUser } from '../auth/strategies/jwt.strategy';
 import { CheckInsService } from './check-ins.service';
 import { CreateCheckInDto } from './dto/create-check-in.dto';
+import { UpdateCheckInScheduleDto } from './dto/update-check-in-schedule.dto';
 
 interface RequestWithUser extends Request {
   user: JwtUser;
@@ -43,6 +45,35 @@ export class CheckInsController {
   @HttpCode(HttpStatus.OK)
   getUploadSignature() {
     return this.checkInsService.getUploadSignature();
+  }
+
+  @Get('members/:memberId/schedule')
+  @Roles('owner', 'trainer')
+  getSchedule(
+    @Request() req: RequestWithUser,
+    @Param('memberId') memberId: string,
+  ) {
+    return this.checkInsService.getSchedule(
+      memberId,
+      req.user.sub,
+      req.user.role,
+    );
+  }
+
+  @Put('members/:memberId/schedule')
+  @Roles('owner', 'trainer')
+  @HttpCode(HttpStatus.OK)
+  updateSchedule(
+    @Request() req: RequestWithUser,
+    @Param('memberId') memberId: string,
+    @Body() dto: UpdateCheckInScheduleDto,
+  ) {
+    return this.checkInsService.updateSchedule(
+      memberId,
+      req.user.sub,
+      req.user.role,
+      dto,
+    );
   }
 
   @Get('members/:memberId/photos')

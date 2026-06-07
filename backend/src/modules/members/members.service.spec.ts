@@ -51,6 +51,7 @@ describe('MembersService', () => {
   let userModel: {
     find: jest.Mock;
     findById: jest.Mock;
+    findByIdAndUpdate: jest.Mock;
     findOne: jest.Mock;
   };
   let bodyTestModel: {
@@ -81,6 +82,7 @@ describe('MembersService', () => {
     userModel = {
       find: jest.fn(),
       findById: jest.fn(),
+      findByIdAndUpdate: jest.fn(),
       findOne: jest.fn(),
     };
     bodyTestModel = {
@@ -366,6 +368,50 @@ describe('MembersService', () => {
         { status?: string },
       ];
       expect(findCall[0].status).toBe('active');
+    });
+  });
+
+  // ─── assignTrainer ───────────────────────────────────────────────────────────
+
+  describe('assignTrainer', () => {
+    it('sets member.trainerId to the given trainer id', async () => {
+      const member = makeMember(MEMBER_ID, null);
+      const updated = { ...member, trainerId: new Types.ObjectId(TRAINER_ID) };
+      userModel.findById.mockResolvedValue(member);
+      userModel.findByIdAndUpdate.mockResolvedValue(updated);
+
+      const result = await service.assignTrainer(MEMBER_ID, TRAINER_ID);
+
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        new Types.ObjectId(MEMBER_ID),
+        { trainerId: new Types.ObjectId(TRAINER_ID) },
+        { returnDocument: 'after' },
+      );
+      expect(result.trainerId).toBe(TRAINER_ID);
+    });
+
+    it('sets member.trainerId to null when trainerId is null (unassign)', async () => {
+      const member = makeMember(MEMBER_ID, TRAINER_ID);
+      const updated = { ...member, trainerId: null };
+      userModel.findById.mockResolvedValue(member);
+      userModel.findByIdAndUpdate.mockResolvedValue(updated);
+
+      const result = await service.assignTrainer(MEMBER_ID, null);
+
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        new Types.ObjectId(MEMBER_ID),
+        { trainerId: null },
+        { returnDocument: 'after' },
+      );
+      expect(result.trainerId).toBeNull();
+    });
+
+    it('throws NotFoundException when member does not exist', async () => {
+      userModel.findById.mockResolvedValue(null);
+
+      await expect(service.assignTrainer(MEMBER_ID, null)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

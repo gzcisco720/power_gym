@@ -432,6 +432,28 @@ export class TrainersService {
     }));
   }
 
+  async remove(trainerId: string): Promise<{ affectedMemberCount: number }> {
+    const trainer = await this.userModel.findById(trainerId);
+    if (!trainer || trainer.role !== 'trainer') {
+      throw new NotFoundException('Trainer not found');
+    }
+
+    const members = await this.userModel.find({
+      role: 'member',
+      trainerId: new Types.ObjectId(trainerId),
+    });
+
+    await Promise.all(
+      members.map((m) =>
+        this.userModel.findByIdAndUpdate(m._id, { trainerId: null }),
+      ),
+    );
+
+    await this.userModel.findOneAndDelete({ _id: new Types.ObjectId(trainerId) });
+
+    return { affectedMemberCount: members.length };
+  }
+
   async reassignMember(
     currentTrainerId: string,
     memberId: string,

@@ -8,8 +8,13 @@ import { ConfigService } from '@nestjs/config';
 import { Model, Types } from 'mongoose';
 import * as crypto from 'crypto';
 import { CheckIn, CheckInDocument } from '../../common/models/check-in.model';
+import {
+  CheckInConfig,
+  CheckInConfigDocument,
+} from '../../common/models/check-in-config.model';
 import { User, UserDocument, UserRole } from '../../common/models/user.model';
 import { CreateCheckInDto } from './dto/create-check-in.dto';
+import { UpdateCheckInScheduleDto } from './dto/update-check-in-schedule.dto';
 
 type CloudinaryUploadConfig = {
   provider: 'cloudinary';
@@ -47,6 +52,8 @@ export class CheckInsService {
   constructor(
     @InjectModel(CheckIn.name)
     private readonly checkInModel: Model<CheckInDocument>,
+    @InjectModel(CheckInConfig.name)
+    private readonly checkInConfigModel: Model<CheckInConfigDocument>,
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
     private readonly configService: ConfigService,
@@ -128,7 +135,7 @@ export class CheckInsService {
 
     for (const checkIn of checkIns) {
       if (!checkIn.photos || checkIn.photos.length === 0) continue;
-      const checkInId = (checkIn._id as Types.ObjectId).toString();
+      const checkInId = checkIn._id.toString();
       checkIn.photos.forEach((photoUrl, index) => {
         items.push({
           key: `${checkInId}-${index}`,
@@ -159,6 +166,43 @@ export class CheckInsService {
     }
 
     return checkIn;
+  }
+
+  async getSchedule(
+    memberId: string,
+    requesterId: string,
+    requesterRole: UserRole,
+  ): Promise<CheckInConfigDocument | null> {
+    await this.resolveAndScopeMember(memberId, requesterId, requesterRole);
+    return this.checkInConfigModel.findOne({
+      memberId: new Types.ObjectId(memberId),
+    });
+  }
+
+  async updateSchedule(
+    memberId: string,
+    requesterId: string,
+    requesterRole: UserRole,
+    dto: UpdateCheckInScheduleDto,
+  ): Promise<CheckInConfigDocument> {
+    const member = await this.resolveAndScopeMember(
+      memberId,
+      requesterId,
+      requesterRole,
+    );
+
+    return this.checkInConfigModel.findOneAndUpdate(
+      { memberId: new Types.ObjectId(memberId) },
+      {
+        memberId: new Types.ObjectId(memberId),
+        trainerId: member.trainerId ?? new Types.ObjectId(requesterId),
+        dayOfWeek: dto.dayOfWeek,
+        hour: dto.hour,
+        minute: dto.minute ?? 0,
+        active: dto.active,
+      },
+      { upsert: true, returnDocument: 'after' },
+    ) as Promise<CheckInConfigDocument>;
   }
 
   private async resolveAndScopeMember(

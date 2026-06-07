@@ -59,6 +59,7 @@ describe('TrainersService', () => {
     findById: jest.Mock;
     findByIdAndUpdate: jest.Mock;
     findOne: jest.Mock;
+    findOneAndDelete: jest.Mock;
   };
   let workoutSessionModel: {
     find: jest.Mock;
@@ -89,6 +90,7 @@ describe('TrainersService', () => {
       findById: jest.fn(),
       findByIdAndUpdate: jest.fn(),
       findOne: jest.fn(),
+      findOneAndDelete: jest.fn(),
     };
     workoutSessionModel = {
       find: jest.fn(),
@@ -708,6 +710,34 @@ describe('TrainersService', () => {
       await expect(
         service.reassignMember(TRAINER_ID, MEMBER1_ID, TRAINER2_ID),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // ─── remove ───────────────────────────────────────────────────────────────────
+
+  describe('remove', () => {
+    it('unassigns all members of the trainer (sets trainerId null) and returns affectedMemberCount', async () => {
+      const trainer = makeTrainer(TRAINER_ID);
+      const member1 = makeMember(MEMBER1_ID, TRAINER_ID);
+      const member2 = makeMember(MEMBER2_ID, TRAINER_ID);
+
+      userModel.findById.mockResolvedValue(trainer);
+      userModel.find.mockResolvedValue([member1, member2]);
+      userModel.findByIdAndUpdate.mockResolvedValue(null);
+      userModel.findOneAndDelete = jest.fn().mockResolvedValue(trainer);
+
+      const result = await service.remove(TRAINER_ID);
+
+      expect(result.affectedMemberCount).toBe(2);
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledTimes(2);
+    });
+
+    it('throws NotFoundException when trainer id does not exist', async () => {
+      userModel.findById.mockResolvedValue(null);
+
+      await expect(service.remove(TRAINER_ID)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

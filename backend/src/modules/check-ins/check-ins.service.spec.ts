@@ -5,6 +5,7 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { CheckInsService } from './check-ins.service';
 import { CheckIn } from '../../common/models/check-in.model';
+import { CheckInConfig } from '../../common/models/check-in-config.model';
 import { User } from '../../common/models/user.model';
 
 const MEMBER_ID = new Types.ObjectId().toString();
@@ -29,6 +30,10 @@ describe('CheckInsService', () => {
     create: jest.Mock;
     sort: jest.Mock;
   };
+  let checkInConfigModel: {
+    findOne: jest.Mock;
+    findOneAndUpdate: jest.Mock;
+  };
   let userModel: { findById: jest.Mock };
   let configService: { get: jest.Mock };
 
@@ -39,6 +44,10 @@ describe('CheckInsService', () => {
       findOne: jest.fn(),
       create: jest.fn(),
       sort: sortMock,
+    };
+    checkInConfigModel = {
+      findOne: jest.fn(),
+      findOneAndUpdate: jest.fn(),
     };
     userModel = {
       findById: jest.fn(),
@@ -51,6 +60,10 @@ describe('CheckInsService', () => {
       providers: [
         CheckInsService,
         { provide: getModelToken(CheckIn.name), useValue: checkInModel },
+        {
+          provide: getModelToken(CheckInConfig.name),
+          useValue: checkInConfigModel,
+        },
         { provide: getModelToken(User.name), useValue: userModel },
         { provide: ConfigService, useValue: configService },
       ],
@@ -367,7 +380,12 @@ describe('CheckInsService', () => {
       userModel.findById.mockResolvedValue(memberDoc);
       checkInModel.find.mockReturnValue({
         sort: jest.fn().mockResolvedValue([
-          { _id: checkInId1, photos: [], submittedAt: new Date(), weight: null },
+          {
+            _id: checkInId1,
+            photos: [],
+            submittedAt: new Date(),
+            weight: null,
+          },
         ]),
       });
 
@@ -378,6 +396,114 @@ describe('CheckInsService', () => {
       );
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('getSchedule', () => {
+    it('returns existing CheckInConfig for a member the trainer owns', async () => {
+      const config = {
+        memberId: new Types.ObjectId(MEMBER_ID),
+        trainerId: new Types.ObjectId(TRAINER_ID),
+        dayOfWeek: 1,
+        hour: 9,
+        minute: 0,
+        active: true,
+      };
+      userModel.findById.mockResolvedValue({
+        _id: new Types.ObjectId(MEMBER_ID),
+        role: 'member',
+        trainerId: new Types.ObjectId(TRAINER_ID),
+      });
+      checkInConfigModel.findOne.mockResolvedValue(config);
+
+      const result = await service.getSchedule(MEMBER_ID, TRAINER_ID, 'trainer');
+
+      expect(checkInConfigModel.findOne).toHaveBeenCalledWith({
+        memberId: new Types.ObjectId(MEMBER_ID),
+      });
+      expect(result).toEqual(config);
+    });
+
+    it('returns null when no config exists for the member', async () => {
+      userModel.findById.mockResolvedValue({
+        _id: new Types.ObjectId(MEMBER_ID),
+        role: 'member',
+        trainerId: new Types.ObjectId(TRAINER_ID),
+      });
+      checkInConfigModel.findOne.mockResolvedValue(null);
+
+      const result = await service.getSchedule(MEMBER_ID, TRAINER_ID, 'trainer');
+
+      expect(result).toBeNull();
+    });
+
+    it('throws NotFoundException when member is not under the requesting trainer', async () => {
+      const differentTrainerId = new Types.ObjectId().toString();
+      userModel.findById.mockResolvedValue({
+        _id: new Types.ObjectId(MEMBER_ID),
+        role: 'member',
+        trainerId: new Types.ObjectId(TRAINER_ID),
+      });
+
+      await expect(
+        service.getSchedule(MEMBER_ID, differentTrainerId, 'trainer'),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('updateSchedule', () => {
+    it('upserts CheckInConfig with dayOfWeek/hour/active and defaults minute to 0', async () => {
+      const saved = {
+        memberId: new Types.ObjectId(MEMBER_ID),
+        trainerId: new Types.ObjectId(TRAINER_ID),
+        dayOfWeek: 1,
+        hour: 9,
+        minute: 0,
+        active: true,
+      };
+      userModel.findById.mockResolvedValue({
+        _id: new Types.ObjectId(MEMBER_ID),
+        role: 'member',
+        trainerId: new Types.ObjectId(TRAINER_ID),
+      });
+      checkInConfigModel.findOneAndUpdate.mockResolvedValue(saved);
+
+      const result = await service.updateSchedule(
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+        { dayOfWeek: 1, hour: 9, active: true },
+      );
+
+      expect(checkInConfigModel.findOneAndUpdate).toHaveBeenCalledWith(
+        { memberId: new Types.ObjectId(MEMBER_ID) },
+        expect.objectContaining({
+          dayOfWeek: 1,
+          hour: 9,
+          minute: 0,
+          active: true,
+          trainerId: new Types.ObjectId(TRAINER_ID),
+        }),
+        { upsert: true, returnDocument: 'after' },
+      );
+      expect(result).toEqual(saved);
+    });
+
+    it('throws NotFoundException when member is not under the requesting trainer', async () => {
+      const differentTrainerId = new Types.ObjectId().toString();
+      userModel.findById.mockResolvedValue({
+        _id: new Types.ObjectId(MEMBER_ID),
+        role: 'member',
+        trainerId: new Types.ObjectId(TRAINER_ID),
+      });
+
+      await expect(
+        service.updateSchedule(MEMBER_ID, differentTrainerId, 'trainer', {
+          dayOfWeek: 1,
+          hour: 9,
+          active: true,
+        }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 

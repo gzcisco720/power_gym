@@ -1,4 +1,12 @@
-import { Controller, Get, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Param,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -51,6 +59,11 @@ export class TrainersController {
     @Body() dto: ReassignMemberDto,
   ) {
     return this.trainersService.reassignMember(id, memberId, dto.trainerId);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.trainersService.remove(id);
   }
 
   @Get(':id')

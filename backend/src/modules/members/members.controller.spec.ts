@@ -22,6 +22,7 @@ describe('MembersController', () => {
     getBodyTests: jest.Mock;
     getInjuries: jest.Mock;
     getMedications: jest.Mock;
+    assignTrainer: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -32,6 +33,7 @@ describe('MembersController', () => {
       getBodyTests: jest.fn().mockResolvedValue([]),
       getInjuries: jest.fn().mockResolvedValue([]),
       getMedications: jest.fn().mockResolvedValue([]),
+      assignTrainer: jest.fn().mockResolvedValue({}),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -103,6 +105,20 @@ describe('MembersController', () => {
         REQUESTER_ID,
         'owner',
       );
+    });
+
+    it('assignTrainer passes member id and trainerId from body to the service', async () => {
+      await controller.assignTrainer(MEMBER_ID, {
+        trainerId: TRAINER_ID,
+      });
+
+      expect(service.assignTrainer).toHaveBeenCalledWith(MEMBER_ID, TRAINER_ID);
+    });
+
+    it('assignTrainer passes null trainerId when unassigning', async () => {
+      await controller.assignTrainer(MEMBER_ID, { trainerId: null });
+
+      expect(service.assignTrainer).toHaveBeenCalledWith(MEMBER_ID, null);
     });
   });
 });

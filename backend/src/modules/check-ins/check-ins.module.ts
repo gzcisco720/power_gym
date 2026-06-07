@@ -4,6 +4,10 @@ import { CheckInsController } from './check-ins.controller';
 import { CheckInsDevController } from './check-ins.dev.controller';
 import { CheckInsService } from './check-ins.service';
 import { CheckIn, CheckInSchema } from '../../common/models/check-in.model';
+import {
+  CheckInConfig,
+  CheckInConfigSchema,
+} from '../../common/models/check-in-config.model';
 import { User, UserSchema } from '../../common/models/user.model';
 
 const devControllers =
@@ -13,6 +17,7 @@ const devControllers =
   imports: [
     MongooseModule.forFeature([
       { name: CheckIn.name, schema: CheckInSchema },
+      { name: CheckInConfig.name, schema: CheckInConfigSchema },
       { name: User.name, schema: UserSchema },
     ]),
   ],
