@@ -97,4 +97,21 @@ describe('Member: Check-In flow', () => {
     // the "Submitted ✓" label instead of the start button.
     await detoxExpect(element(by.id('checkin-start-button'))).not.toBeVisible();
   });
+
+  it('history row shows diet badge after submitting a check-in with stuckToDiet=yes', async () => {
+    // Submit a check-in with "yes" diet selection
+    await element(by.id('checkin-start-button')).tap();
+    await waitFor(element(by.id('screen-CheckInForm'))).toBeVisible().withTimeout(10000);
+
+    await element(by.id('checkin-diet-yes')).tap();
+    await element(by.id('checkin-form-submit-button')).tap();
+
+    // Wait for navigation back to CheckInScreen
+    await waitFor(element(by.id('checkin-submitted-label'))).toBeVisible().withTimeout(10000);
+
+    // At least one history row must show the diet badge
+    // The badge for stuckToDiet=yes is "On track"
+    await waitFor(element(by.text('On track'))).toBeVisible().withTimeout(8000);
+    await detoxExpect(element(by.text('On track'))).toBeVisible();
+  });
 });

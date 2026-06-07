@@ -112,4 +112,52 @@ describe('CheckInScreen', () => {
     fireEvent.press(getByTestId('checkin-history-item-ci-2'));
     expect(mockNavigate).toHaveBeenCalledWith('CheckInDetail', { checkIn });
   });
+
+  it('history row shows diet badge "On track" for stuckToDiet=yes', () => {
+    const checkIn = makeCheckIn({ _id: 'ci-3', stuckToDiet: 'yes', weight: null });
+    mockUseCheckInsStore.mockReturnValue(
+      makeStoreState({ items: [checkIn], hasCheckedInThisWeek: jest.fn(() => true) }),
+    );
+    const { getByTestId } = render(<CheckInScreen />);
+    expect(getByTestId('checkin-diet-badge-ci-3')).toBeTruthy();
+    expect(getByTestId('checkin-diet-badge-ci-3').props.children).toBe('On track');
+  });
+
+  it('history row shows diet badge "Partial" for stuckToDiet=partial', () => {
+    const checkIn = makeCheckIn({ _id: 'ci-4', stuckToDiet: 'partial', weight: null });
+    mockUseCheckInsStore.mockReturnValue(
+      makeStoreState({ items: [checkIn], hasCheckedInThisWeek: jest.fn(() => true) }),
+    );
+    const { getByTestId } = render(<CheckInScreen />);
+    expect(getByTestId('checkin-diet-badge-ci-4').props.children).toBe('Partial');
+  });
+
+  it('history row shows diet badge "Off track" for stuckToDiet=no', () => {
+    const checkIn = makeCheckIn({ _id: 'ci-5', stuckToDiet: 'no', weight: null });
+    mockUseCheckInsStore.mockReturnValue(
+      makeStoreState({ items: [checkIn], hasCheckedInThisWeek: jest.fn(() => true) }),
+    );
+    const { getByTestId } = render(<CheckInScreen />);
+    expect(getByTestId('checkin-diet-badge-ci-5').props.children).toBe('Off track');
+  });
+
+  it('history row shows weight "X kg" when weight is non-null', () => {
+    const checkIn = makeCheckIn({ _id: 'ci-6', weight: 85.5, stuckToDiet: 'yes' });
+    mockUseCheckInsStore.mockReturnValue(
+      makeStoreState({ items: [checkIn], hasCheckedInThisWeek: jest.fn(() => true) }),
+    );
+    const { getByTestId } = render(<CheckInScreen />);
+    const weightEl = getByTestId('checkin-weight-ci-6');
+    expect(weightEl).toBeTruthy();
+    expect(weightEl.props.children).toContain('85.5');
+  });
+
+  it('history row does not show weight element when weight is null', () => {
+    const checkIn = makeCheckIn({ _id: 'ci-7', weight: null, stuckToDiet: 'yes' });
+    mockUseCheckInsStore.mockReturnValue(
+      makeStoreState({ items: [checkIn], hasCheckedInThisWeek: jest.fn(() => true) }),
+    );
+    const { queryByTestId } = render(<CheckInScreen />);
+    expect(queryByTestId('checkin-weight-ci-7')).toBeNull();
+  });
 });

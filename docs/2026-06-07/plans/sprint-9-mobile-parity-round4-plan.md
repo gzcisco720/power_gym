@@ -248,7 +248,17 @@ These were confirmed by reading the code on 2026-06-07. They override the assump
 2. Add nutrition member-plan api fn, tab sections, and CheckInScreen row enrichment → Green
 3. Detox specs → pass; design-reviewer on both screens
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 5 Checkpoint
+- [x] `fetchMemberNutritionPlan` API fn (`mobile/src/lib/api/nutrition.api.ts`)
+- [x] `MemberNutritionTab > day type cards > renders kcal target and protein/carbs/fat target badges`
+- [x] `MemberNutritionTab > target sum > computes day type macro target as sum of meals[].items[] macros`
+- [x] `MemberNutritionTab > log row > shows actual kcal/macros beside dimmed target values`
+- [x] `MemberNutritionTab > logged indicator > shows "Logged" emerald indicator only when ≥1 meal item`
+- [x] `CheckInScreen > history row > shows diet badge (On track/Partial/Off track) and weight when non-null`
+- [x] Detox `mobile/e2e/trainer/member-nutrition-rich.spec.ts` (golden path + edge case)
+- [x] Detox extend `mobile/e2e/member/check-in.spec.ts` (diet badge after submit)
 
 ---
 

@@ -89,6 +89,14 @@ export interface AssignNutritionPlanInput {
   templateId: string;
 }
 
+// GET /nutrition/members/:memberId/plan (trainer/owner scoped)
+// Returns the raw plan document with dayTypes — no todayDayTypeName
+export interface MemberNutritionPlan {
+  _id: string;
+  name: string;
+  dayTypes: DayType[];
+}
+
 // Freestyle (plan-independent) self-nutrition log item
 export interface SelfNutritionItem {
   foodName: string;

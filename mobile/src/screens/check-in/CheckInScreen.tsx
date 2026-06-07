@@ -53,6 +53,18 @@ function calcWellnessAvg(checkIn: CheckIn): string {
   return (sum / 7).toFixed(1);
 }
 
+const DIET_LABEL: Record<CheckIn['stuckToDiet'], string> = {
+  yes: 'On track',
+  partial: 'Partial',
+  no: 'Off track',
+};
+
+const DIET_STYLE: Record<CheckIn['stuckToDiet'], string> = {
+  yes: 'text-emerald-300',
+  partial: 'text-amber-300',
+  no: 'text-rose-300',
+};
+
 export function CheckInScreen() {
   const navigation = useNavigation<CheckInScreenNav>();
   const { items, loading, fetchCheckIns, hasCheckedInThisWeek } = useCheckInsStore();
@@ -169,14 +181,32 @@ export function CheckInScreen() {
                   onPress={() => handleHistoryRowPress(checkIn)}
                   accessibilityLabel={`Check-in from ${formatDate(checkIn.submittedAt)}`}
                   accessibilityRole="button"
-                  className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 flex-row items-center justify-between"
+                  className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2"
                 >
-                  <Text className="text-sm font-medium text-foreground">
-                    {formatDate(checkIn.submittedAt)}
-                  </Text>
-                  <Text className="text-sm font-semibold text-primary-light">
-                    {calcWellnessAvg(checkIn)}
-                  </Text>
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-sm font-medium text-foreground">
+                      {formatDate(checkIn.submittedAt)}
+                    </Text>
+                    <Text className="text-sm font-semibold text-primary-light">
+                      {calcWellnessAvg(checkIn)}
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center gap-2 mt-0.5">
+                    <Text
+                      testID={`checkin-diet-badge-${checkIn._id}`}
+                      className={`text-xs font-medium ${DIET_STYLE[checkIn.stuckToDiet]}`}
+                    >
+                      {DIET_LABEL[checkIn.stuckToDiet]}
+                    </Text>
+                    {checkIn.weight !== null ? (
+                      <Text
+                        testID={`checkin-weight-${checkIn._id}`}
+                        className="text-xs text-foreground/65"
+                      >
+                        {`${checkIn.weight} kg`}
+                      </Text>
+                    ) : null}
+                  </View>
                 </Pressable>
               ))
             )}

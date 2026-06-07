@@ -4,6 +4,7 @@ import {
   NutritionDailyLog,
   MacroSummary,
   LogFoodInput,
+  MemberNutritionPlan,
   SelfNutritionLog,
   LogSelfFoodInput,
 } from '../../types/nutrition';
@@ -41,6 +42,11 @@ export async function assignNutritionPlan(
 
 export async function fetchMemberNutritionHistory(memberId: string): Promise<NutritionDailyLog[]> {
   const response = await apiClient.get<NutritionDailyLog[]>(`/nutrition/members/${memberId}/history`);
+  return response.data;
+}
+
+export async function fetchMemberNutritionPlan(memberId: string): Promise<MemberNutritionPlan | null> {
+  const response = await apiClient.get<MemberNutritionPlan | null>(`/nutrition/members/${memberId}/plan`);
   return response.data;
 }
 
