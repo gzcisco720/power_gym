@@ -287,10 +287,18 @@ export class NutritionService {
     });
 
     if (!log) {
-      return { date: todayStr, items: [], totals: { kcal: 0, protein: 0, carbs: 0, fat: 0 } };
+      return {
+        date: todayStr,
+        items: [],
+        totals: { kcal: 0, protein: 0, carbs: 0, fat: 0 },
+      };
     }
 
-    return { date: log.date, items: log.items, totals: this.computeSelfTotals(log.items) };
+    return {
+      date: log.date,
+      items: log.items,
+      totals: this.computeSelfTotals(log.items),
+    };
   }
 
   async logSelfFood(
@@ -313,7 +321,34 @@ export class NutritionService {
       { upsert: true, returnDocument: 'after' },
     );
 
-    return { date: log.date, items: log.items, totals: this.computeSelfTotals(log.items) };
+    return {
+      date: log.date,
+      items: log.items,
+      totals: this.computeSelfTotals(log.items),
+    };
+  }
+
+  async getMemberPlan(
+    memberId: string,
+    callerId: string,
+    callerRole: UserRole,
+  ): Promise<MemberNutritionPlanDocument | null> {
+    const member = await this.userModel.findById(memberId);
+    if (!member || member.role !== 'member') {
+      throw new NotFoundException('Member not found');
+    }
+
+    if (callerRole === 'trainer') {
+      const assignedTrainerId = member.trainerId?.toString() ?? null;
+      if (assignedTrainerId !== callerId) {
+        throw new NotFoundException('Member not found');
+      }
+    }
+
+    return this.memberNutritionPlanModel.findOne({
+      memberId: new Types.ObjectId(memberId),
+      isActive: true,
+    });
   }
 
   async getHistory(

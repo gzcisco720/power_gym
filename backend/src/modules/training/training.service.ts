@@ -18,6 +18,10 @@ import {
   PlanTemplateDocument,
 } from '../../common/models/plan-template.model';
 import { User, UserDocument, UserRole } from '../../common/models/user.model';
+import {
+  PersonalBest,
+  PersonalBestDocument,
+} from '../../common/models/personal-best.model';
 import { PatchSetDto } from './dto/patch-set.dto';
 
 @Injectable()
@@ -31,6 +35,8 @@ export class TrainingService {
     private readonly planTemplateModel: Model<PlanTemplateDocument>,
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
+    @InjectModel(PersonalBest.name)
+    private readonly personalBestModel: Model<PersonalBestDocument>,
   ) {}
 
   async getMyPlan(memberId: string): Promise<MemberPlanDocument | null> {
@@ -635,13 +641,41 @@ export class TrainingService {
         estimatedOneRepMax: maxOneRM,
       });
 
-      if (result.length === 5) break;
+      if (result.length === 20) break;
     }
+
+    // Reverse to chronological order (oldest first) for chart x-axis
+    result.reverse();
 
     return {
       exerciseId,
       exerciseName,
       sessions: result,
     };
+  }
+
+  async getPersonalBests(
+    memberId: string,
+    callerId: string,
+    callerRole: UserRole,
+  ): Promise<PersonalBestDocument[]> {
+    await this.resolveScopedMember(memberId, callerId, callerRole);
+
+    return this.personalBestModel
+      .find({ memberId: new Types.ObjectId(memberId) })
+      .sort({ estimatedOneRM: -1 });
+  }
+
+  async getActiveSession(
+    memberId: string,
+    callerId: string,
+    callerRole: UserRole,
+  ): Promise<WorkoutSessionDocument | null> {
+    await this.resolveScopedMember(memberId, callerId, callerRole);
+
+    return this.workoutSessionModel.findOne({
+      memberId: new Types.ObjectId(memberId),
+      completedAt: null,
+    });
   }
 }

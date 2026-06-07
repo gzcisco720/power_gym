@@ -7,6 +7,7 @@ import { MemberPlan } from '../../common/models/member-plan.model';
 import { WorkoutSession } from '../../common/models/workout-session.model';
 import { PlanTemplate } from '../../common/models/plan-template.model';
 import { User } from '../../common/models/user.model';
+import { PersonalBest } from '../../common/models/personal-best.model';
 
 const OWNER_ID = new Types.ObjectId().toString();
 const TRAINER_ID = new Types.ObjectId().toString();
@@ -129,6 +130,7 @@ describe('TrainingService', () => {
   let workoutSessionModel: {
     findById: jest.Mock;
     find: jest.Mock;
+    findOne: jest.Mock;
     create: jest.Mock;
   };
   let planTemplateModel: {
@@ -136,6 +138,10 @@ describe('TrainingService', () => {
   };
   let userModel: {
     findById: jest.Mock;
+  };
+  let personalBestModel: {
+    find: jest.Mock;
+    findOne: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -149,6 +155,7 @@ describe('TrainingService', () => {
     workoutSessionModel = {
       findById: jest.fn(),
       find: jest.fn(),
+      findOne: jest.fn(),
       create: jest.fn(),
     };
 
@@ -158,6 +165,11 @@ describe('TrainingService', () => {
 
     userModel = {
       findById: jest.fn(),
+    };
+
+    personalBestModel = {
+      find: jest.fn(),
+      findOne: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -173,6 +185,10 @@ describe('TrainingService', () => {
           useValue: planTemplateModel,
         },
         { provide: getModelToken(User.name), useValue: userModel },
+        {
+          provide: getModelToken(PersonalBest.name),
+          useValue: personalBestModel,
+        },
       ],
     }).compile();
 
@@ -966,19 +982,17 @@ describe('TrainingService', () => {
       expect(result.sessions[0].sets[0].reps).toBe(5);
     });
 
-    it('returns at most 5 sessions ordered by completedAt descending and omits sessions with no qualifying sets for the exercise', async () => {
+    it('returns up to 20 sessions ordered chronologically (oldest first) and omits sessions with no qualifying sets', async () => {
       userModel.findById.mockResolvedValue(sampleMember);
 
       const targetExerciseId = new Types.ObjectId(EXERCISE_ID);
       const otherExerciseId = new Types.ObjectId();
 
-      // Create 7 sessions: 6 with the target exercise (sorted newest first),
-      // plus 1 with only null-weight sets (should be omitted),
-      // plus 1 with only sets for a different exercise (should be omitted)
+      // Create 22 sessions with the target exercise (sorted newest first from DB)
       const now = new Date();
-      const sessions = Array.from({ length: 6 }, (_, i) => {
+      const sessions = Array.from({ length: 22 }, (_, i) => {
         const date = new Date(now);
-        date.setDate(date.getDate() - i); // newest first
+        date.setDate(date.getDate() - i); // newest first (i=0 is today)
         return {
           _id: new Types.ObjectId(),
           completedAt: date,
@@ -987,7 +1001,7 @@ describe('TrainingService', () => {
               exerciseId: targetExerciseId,
               exerciseName: 'Back Squat',
               setNumber: 1,
-              actualWeight: 100 - i * 5,
+              actualWeight: 100 - i,
               actualReps: 5,
             },
           ],
@@ -997,7 +1011,7 @@ describe('TrainingService', () => {
       // Session with null actualWeight — should be omitted
       const nullWeightSession = {
         _id: new Types.ObjectId(),
-        completedAt: new Date(now.getTime() - 7 * 86400000),
+        completedAt: new Date(now.getTime() - 23 * 86400000),
         sets: [
           {
             exerciseId: targetExerciseId,
@@ -1012,7 +1026,7 @@ describe('TrainingService', () => {
       // Session with only a different exercise — should be omitted
       const wrongExerciseSession = {
         _id: new Types.ObjectId(),
-        completedAt: new Date(now.getTime() - 8 * 86400000),
+        completedAt: new Date(now.getTime() - 24 * 86400000),
         sets: [
           {
             exerciseId: otherExerciseId,
@@ -1042,10 +1056,15 @@ describe('TrainingService', () => {
         'trainer',
       );
 
-      // Only 5 most recent sessions with qualifying sets
-      expect(result.sessions).toHaveLength(5);
-      // Sessions are ordered newest first (index 0 = most recent)
+      // Cap is 20, not 5
+      expect(result.sessions).toHaveLength(20);
+      // Sessions are returned chronologically (oldest first — index 0 = oldest of the 20)
+      // The 20 most recent are sessions[0..19] from the DB (newest first),
+      // reversed to chronological order means index 0 = sessions[19] (oldest of the 20)
       expect(result.sessions[0].date).toBe(
+        sessions[19].completedAt.toISOString().slice(0, 10),
+      );
+      expect(result.sessions[19].date).toBe(
         sessions[0].completedAt.toISOString().slice(0, 10),
       );
     });
@@ -1142,6 +1161,109 @@ describe('TrainingService', () => {
       await expect(
         service.addSet(SESSION_ID, MEMBER_ID, UNKNOWN_EXERCISE),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // ─── getPersonalBests ─────────────────────────────────────────────────────────
+
+  describe('getPersonalBests', () => {
+    it('returns member PRs sorted by estimatedOneRM descending', async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+
+      const prs = [
+        {
+          _id: new Types.ObjectId(),
+          memberId: new Types.ObjectId(MEMBER_ID),
+          exerciseId: new Types.ObjectId(),
+          exerciseName: 'Back Squat',
+          bestWeight: 140,
+          bestReps: 3,
+          estimatedOneRM: 154,
+          achievedAt: new Date(),
+          sessionId: new Types.ObjectId(),
+        },
+        {
+          _id: new Types.ObjectId(),
+          memberId: new Types.ObjectId(MEMBER_ID),
+          exerciseId: new Types.ObjectId(),
+          exerciseName: 'Bench Press',
+          bestWeight: 100,
+          bestReps: 5,
+          estimatedOneRM: 117,
+          achievedAt: new Date(),
+          sessionId: new Types.ObjectId(),
+        },
+      ];
+
+      const mockQuery = {
+        sort: jest.fn().mockResolvedValue(prs),
+      };
+      personalBestModel.find.mockReturnValue(mockQuery);
+
+      const result = await service.getPersonalBests(
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+      );
+
+      expect(personalBestModel.find).toHaveBeenCalledWith({
+        memberId: new Types.ObjectId(MEMBER_ID),
+      });
+      expect(mockQuery.sort).toHaveBeenCalledWith({ estimatedOneRM: -1 });
+      expect(result).toEqual(prs);
+    });
+
+    it('throws NotFoundException for a member outside trainer scope', async () => {
+      userModel.findById.mockResolvedValue({
+        ...sampleMember,
+        trainerId: new Types.ObjectId(OTHER_TRAINER_ID),
+      });
+
+      await expect(
+        service.getPersonalBests(MEMBER_ID, TRAINER_ID, 'trainer'),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // ─── getActiveSession ─────────────────────────────────────────────────────────
+
+  describe('getActiveSession', () => {
+    it('returns the session with completedAt null for the member', async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+
+      const activeSession = {
+        _id: new Types.ObjectId(SESSION_ID),
+        memberId: new Types.ObjectId(MEMBER_ID),
+        dayName: 'Day 1',
+        startedAt: new Date(),
+        completedAt: null,
+      };
+      workoutSessionModel.findOne.mockResolvedValue(activeSession);
+
+      const result = await service.getActiveSession(
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+      );
+
+      expect(workoutSessionModel.findOne).toHaveBeenCalledWith({
+        memberId: new Types.ObjectId(MEMBER_ID),
+        completedAt: null,
+      });
+      expect(result).toEqual(activeSession);
+    });
+
+    it('returns null when the member has no in-progress session', async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+      workoutSessionModel.findOne.mockResolvedValue(null);
+
+      const result = await service.getActiveSession(
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+      );
+
+      expect(result).toBeNull();
     });
   });
 

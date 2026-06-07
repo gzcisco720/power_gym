@@ -79,6 +79,26 @@ export class NutritionController {
     );
   }
 
+  @Get('members/:memberId/plan')
+  @Roles('owner', 'trainer')
+  async getMemberPlan(
+    @Request() req: RequestWithUser,
+    @Param('memberId') memberId: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const plan = await this.nutritionService.getMemberPlan(
+      memberId,
+      req.user.sub,
+      req.user.role,
+    );
+    if (plan === null) {
+      res.setHeader('Content-Type', 'application/json');
+      res.send('null');
+      return;
+    }
+    return plan;
+  }
+
   @Get('members/:memberId/history')
   @Roles('owner', 'trainer')
   getHistory(
@@ -101,10 +121,7 @@ export class NutritionController {
   @Post('self/today/items')
   @HttpCode(HttpStatus.OK)
   @Roles('member')
-  logSelfFood(
-    @Request() req: RequestWithUser,
-    @Body() dto: LogSelfFoodDto,
-  ) {
+  logSelfFood(@Request() req: RequestWithUser, @Body() dto: LogSelfFoodDto) {
     return this.nutritionService.logSelfFood(req.user.sub, dto);
   }
 }

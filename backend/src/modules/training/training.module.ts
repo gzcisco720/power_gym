@@ -16,6 +16,10 @@ import {
   PlanTemplateSchema,
 } from '../../common/models/plan-template.model';
 import { User, UserSchema } from '../../common/models/user.model';
+import {
+  PersonalBest,
+  PersonalBestSchema,
+} from '../../common/models/personal-best.model';
 
 const devControllers =
   process.env.NODE_ENV !== 'production' ? [TrainingDevController] : [];
@@ -27,6 +31,7 @@ const devControllers =
       { name: WorkoutSession.name, schema: WorkoutSessionSchema },
       { name: PlanTemplate.name, schema: PlanTemplateSchema },
       { name: User.name, schema: UserSchema },
+      { name: PersonalBest.name, schema: PersonalBestSchema },
     ]),
   ],
   controllers: [TrainingController, ...devControllers],

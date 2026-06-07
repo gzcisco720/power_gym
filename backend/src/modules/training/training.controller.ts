@@ -280,4 +280,37 @@ export class TrainingController {
       req.user.role,
     );
   }
+
+  @Get('members/:memberId/personal-bests')
+  @Roles('owner', 'trainer')
+  getPersonalBests(
+    @Request() req: RequestWithUser,
+    @Param('memberId') memberId: string,
+  ) {
+    return this.trainingService.getPersonalBests(
+      memberId,
+      req.user.sub,
+      req.user.role,
+    );
+  }
+
+  @Get('members/:memberId/active-session')
+  @Roles('owner', 'trainer')
+  async getActiveSession(
+    @Request() req: RequestWithUser,
+    @Param('memberId') memberId: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const session = await this.trainingService.getActiveSession(
+      memberId,
+      req.user.sub,
+      req.user.role,
+    );
+    if (session === null) {
+      res.setHeader('Content-Type', 'application/json');
+      res.send('null');
+      return;
+    }
+    return session;
+  }
 }

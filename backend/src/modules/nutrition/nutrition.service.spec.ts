@@ -399,6 +399,53 @@ describe('NutritionService', () => {
     });
   });
 
+  // ─── getMemberPlan ────────────────────────────────────────────────────────────
+
+  describe('getMemberPlan', () => {
+    it('returns the member active plan with dayTypes for an owned member', async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+      memberNutritionPlanModel.findOne.mockResolvedValue(sampleActivePlan);
+
+      const result = await service.getMemberPlan(
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+      );
+
+      expect(result).not.toBeNull();
+      expect(result!.dayTypes).toHaveLength(1);
+      expect(result!.dayTypes[0].name).toBe('High Carb');
+      expect(memberNutritionPlanModel.findOne).toHaveBeenCalledWith({
+        memberId: new Types.ObjectId(MEMBER_ID),
+        isActive: true,
+      });
+    });
+
+    it('returns null when the member has no active plan', async () => {
+      userModel.findById.mockResolvedValue(sampleMember);
+      memberNutritionPlanModel.findOne.mockResolvedValue(null);
+
+      const result = await service.getMemberPlan(
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+      );
+
+      expect(result).toBeNull();
+    });
+
+    it('throws NotFoundException when member is outside trainer scope', async () => {
+      userModel.findById.mockResolvedValue({
+        ...sampleMember,
+        trainerId: new Types.ObjectId(OTHER_TRAINER_ID),
+      });
+
+      await expect(
+        service.getMemberPlan(MEMBER_ID, TRAINER_ID, 'trainer'),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
   // ─── getHistory ───────────────────────────────────────────────────────────────
 
   describe('getHistory', () => {
