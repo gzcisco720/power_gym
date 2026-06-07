@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -169,6 +169,38 @@ describe('MembersScreen', () => {
     fireEvent.press(getByTestId('trainer-filter-chip-tr1'));
 
     expect(setTrainerFilter).toHaveBeenCalledWith('tr1');
+  });
+
+  it('toast-message is not rendered when no action has occurred', () => {
+    const member = makeMember({ id: 'mem1' });
+    setupStore(makeStoreState([member], { filteredMembers: jest.fn(() => [member]) }));
+
+    const { queryByTestId } = render(<MembersScreen />);
+
+    expect(queryByTestId('toast-message')).toBeNull();
+  });
+
+  it('reassign: toast-message shows "Trainer assigned" after picking a trainer in the sheet', async () => {
+    const assignTrainer = jest.fn().mockResolvedValue(undefined);
+    const trainer: TrainerListItem = { id: 'tr1', name: 'Bob Trainer', email: 'bob@example.com', memberCount: 2 };
+    makeTrainersStoreState([trainer]);
+
+    const member = makeMember({ id: 'mem1', trainerId: 'tr1', trainerName: 'Bob Trainer' });
+    setupStore(makeStoreState([member], { assignTrainer, filteredMembers: jest.fn(() => [member]) }));
+
+    const { getByTestId, queryByTestId } = render(<MembersScreen />);
+
+    expect(queryByTestId('toast-message')).toBeNull();
+
+    // Open reassign sheet
+    fireEvent.press(getByTestId('reassign-btn-mem1'));
+
+    // Pick the trainer option in the sheet and flush all async work
+    await act(async () => {
+      fireEvent.press(getByTestId('reassign-trainer-option-tr1'));
+    });
+
+    expect(getByTestId('toast-message').props.children).toBe('Trainer assigned');
   });
 
   it('unassign action: Unassign button is shown only when the member has a trainer assigned', () => {

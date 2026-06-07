@@ -37,6 +37,20 @@ export function MembersScreen() {
 
   const [reassignMember, setReassignMember] = useState<Member | null>(null);
   const [unassignTarget, setUnassignTarget] = useState<Member | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const toastTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = useCallback((message: string) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToastMessage(message);
+    toastTimerRef.current = setTimeout(() => setToastMessage(null), 2000);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     void fetchMembers();
@@ -56,20 +70,22 @@ export function MembersScreen() {
   );
 
   const handleReassignSelect = useCallback(
-    async (trainerId: string) => {
+    (trainerId: string) => {
       if (!reassignMember) return;
-      await assignTrainer(reassignMember.id, trainerId);
+      void assignTrainer(reassignMember.id, trainerId);
       setReassignMember(null);
+      showToast('Trainer assigned');
     },
-    [reassignMember, assignTrainer],
+    [reassignMember, assignTrainer, showToast],
   );
 
   const handleUnassignConfirm = useCallback(
     async (member: Member) => {
       await unassignTrainer(member.id);
       setUnassignTarget(null);
+      showToast('Member unassigned');
     },
-    [unassignTrainer],
+    [unassignTrainer, showToast],
   );
 
   return (
@@ -192,6 +208,20 @@ export function MembersScreen() {
           />
         )}
       </Modal>
+
+      {/* Toast feedback */}
+      {toastMessage !== null && (
+        <View
+          pointerEvents="none"
+          className="absolute bottom-8 left-0 right-0 items-center px-6"
+        >
+          <View className="rounded-xl bg-card ring-1 ring-foreground/10 px-4 py-2.5">
+            <Text testID="toast-message" className="text-sm font-medium text-foreground">
+              {toastMessage}
+            </Text>
+          </View>
+        </View>
+      )}
 
       {/* Unassign confirmation */}
       {unassignTarget !== null && (
