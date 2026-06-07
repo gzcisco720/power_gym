@@ -88,17 +88,6 @@ function makeSession(overrides: Partial<WorkoutSession> = {}): WorkoutSession {
   };
 }
 
-function makePlan(overrides: Partial<ActivePlan> = {}): ActivePlan {
-  return {
-    _id: 'plan1',
-    name: 'Strength Plan',
-    templateId: 'tpl1',
-    assignedAt: '2026-06-01T00:00:00.000Z',
-    days: [],
-    ...overrides,
-  };
-}
-
 const defaultProps = {
   memberId: 'mem1',
   memberName: 'Alice Smith',

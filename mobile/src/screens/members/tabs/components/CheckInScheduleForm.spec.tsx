@@ -3,7 +3,6 @@ import { render, fireEvent, act } from '@testing-library/react-native';
 import { CheckInScheduleForm } from './CheckInScheduleForm';
 
 const mockSave = jest.fn();
-const mockUpdate = jest.fn();
 
 jest.mock('../../../../stores/check-in-schedule.store', () => ({
   useCheckInScheduleStore: (selector: (s: {
