@@ -7,15 +7,16 @@ interface WellnessTrendChartProps {
   checkIns: CheckIn[];
 }
 
-/** Compute the average of the 7 wellness sliders for a single check-in. */
+/** Compute the average of the 7 wellness sliders for a single check-in.
+ * stress and fatigue are inverted (10-x) so higher stress lowers the score. */
 function wellnessAverage(checkIn: CheckIn): number {
   const sum =
     checkIn.sleepQuality +
-    checkIn.stress +
-    checkIn.fatigue +
-    checkIn.hunger +
-    checkIn.recovery +
     checkIn.energy +
+    checkIn.recovery +
+    (10 - checkIn.stress) +
+    (10 - checkIn.fatigue) +
+    checkIn.hunger +
     checkIn.digestion;
   return Math.round((sum / 7) * 10) / 10;
 }

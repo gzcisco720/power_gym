@@ -89,15 +89,48 @@ export function latestPhotos(items: CheckIn[], max: number): string[] {
   return all.slice(0, max);
 }
 
-/** Returns the average wellness score (0–10) for a check-in, rounded to 1dp. */
+/** Returns the average wellness score (0–10) for a check-in, rounded to 1dp.
+ * stress and fatigue are inverted (10-x) so higher stress/fatigue lowers the score. */
 export function wellnessAvg(checkIn: CheckIn): string {
   const sum =
     checkIn.sleepQuality +
     checkIn.energy +
     checkIn.recovery +
-    checkIn.stress +
-    checkIn.fatigue +
+    (10 - checkIn.stress) +
+    (10 - checkIn.fatigue) +
     checkIn.hunger +
     checkIn.digestion;
   return (sum / 7).toFixed(1);
+}
+
+export interface ConsistencyCell {
+  weekStart: string;
+  hasCheckIn: boolean;
+  isCurrentWeek: boolean;
+}
+
+/** Returns the last `weeks` weeks of check-in consistency cells, oldest-first.
+ * Uses Monday-based weeks. */
+export function computeConsistencyHeatmap(items: CheckIn[], weeks = 16): ConsistencyCell[] {
+  const now = new Date();
+  const day = now.getUTCDay();
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  const currentMonday = new Date(now);
+  currentMonday.setUTCDate(now.getUTCDate() + diffToMonday);
+  currentMonday.setUTCHours(0, 0, 0, 0);
+
+  const checkedInWeeks = new Set(items.map((c) => isoWeekKey(c.submittedAt)));
+
+  const cells: ConsistencyCell[] = [];
+  for (let i = weeks - 1; i >= 0; i--) {
+    const monday = new Date(currentMonday);
+    monday.setUTCDate(currentMonday.getUTCDate() - i * 7);
+    const weekKey = monday.toISOString().slice(0, 10);
+    cells.push({
+      weekStart: weekKey,
+      hasCheckIn: checkedInWeeks.has(weekKey),
+      isCurrentWeek: i === 0,
+    });
+  }
+  return cells;
 }

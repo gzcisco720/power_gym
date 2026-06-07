@@ -146,6 +146,20 @@ describe('MemberCheckInsTab', () => {
       );
       expect(queryByText(/photos/)).toBeNull();
     });
+
+    it('shows the wellness average score in each row', () => {
+      // sleepQuality:7 energy:6 recovery:7 stress:4→(10-4)=6 fatigue:5→(10-5)=5 hunger:6 digestion:8
+      // avg = (7+6+7+6+5+6+8)/7 = 45/7 ≈ 6.4
+      const checkIn = makeCheckIn({
+        _id: 'ci1',
+        sleepQuality: 7, energy: 6, recovery: 7, stress: 4, fatigue: 5, hunger: 6, digestion: 8,
+      });
+      const { getByTestId } = render(
+        <MemberCheckInsTab memberId="mem1" checkIns={[checkIn]} onPressCheckIn={jest.fn()} />,
+      );
+      const avgEl = getByTestId('checkin-row-avg-ci1');
+      expect(avgEl.props.children).toContain('6.4');
+    });
   });
 
   describe('wellness chart and heatmap visibility', () => {

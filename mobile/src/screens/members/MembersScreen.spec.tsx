@@ -171,6 +171,19 @@ describe('MembersScreen', () => {
     expect(setTrainerFilter).toHaveBeenCalledWith('tr1');
   });
 
+  it('stats strip shows total member count and unassigned count', () => {
+    const members = [
+      makeMember({ id: 'mem1', trainerId: 'tr1' }),
+      makeMember({ id: 'mem2', trainerId: null }),
+      makeMember({ id: 'mem3', trainerId: null }),
+    ];
+    setupStore(makeStoreState(members, { filteredMembers: jest.fn(() => members) }));
+
+    const { getByTestId } = render(<MembersScreen />);
+    expect(getByTestId('stats-total-members').props.children).toBe('3');
+    expect(getByTestId('stats-unassigned').props.children).toBe('2');
+  });
+
   it('toast-message is not rendered when no action has occurred', () => {
     const member = makeMember({ id: 'mem1' });
     setupStore(makeStoreState([member], { filteredMembers: jest.fn(() => [member]) }));

@@ -13,6 +13,7 @@ import { ProgressPhotosSection } from './components/ProgressPhotosSection';
 import { CompareCard } from './components/CompareCard';
 import {
   computeCheckInStreakWeeks,
+  computeConsistencyHeatmap,
   latestWithBodyMetrics,
   latestPhotos,
 } from '../../lib/check-ins/wellness';
@@ -46,8 +47,8 @@ function calcWellnessAvg(checkIn: CheckIn): string {
     checkIn.sleepQuality +
     checkIn.energy +
     checkIn.recovery +
-    checkIn.stress +
-    checkIn.fatigue +
+    (10 - checkIn.stress) +
+    (10 - checkIn.fatigue) +
     checkIn.hunger +
     checkIn.digestion;
   return (sum / 7).toFixed(1);
@@ -76,6 +77,7 @@ export function CheckInScreen() {
   const bodyMetricsCheckIn = latestWithBodyMetrics(items);
   const recentPhotos = latestPhotos(items, 6);
   const compareCheckIn = items[1] ?? null;
+  const heatmapCells = computeConsistencyHeatmap(items, 16);
 
   useEffect(() => {
     void fetchCheckIns();
@@ -132,6 +134,27 @@ export function CheckInScreen() {
                 </Text>
               </Pressable>
             )}
+
+            {/* Consistency heatmap — last 16 weeks */}
+            <View testID="consistency-heatmap" className="gap-1.5">
+              <Text className="text-[9px] uppercase tracking-widest text-foreground/40">
+                Consistency
+              </Text>
+              <View className="flex-row gap-[3px]">
+                {heatmapCells.map((cell) => (
+                  <View
+                    key={cell.weekStart}
+                    className={`w-[11px] h-[11px] rounded-sm ${
+                      cell.hasCheckIn
+                        ? 'bg-primary/70'
+                        : cell.isCurrentWeek
+                          ? 'bg-amber-400/35'
+                          : 'bg-foreground/[0.08]'
+                    }`}
+                  />
+                ))}
+              </View>
+            </View>
           </View>
 
           {/* Rich sections — only shown when data exists */}

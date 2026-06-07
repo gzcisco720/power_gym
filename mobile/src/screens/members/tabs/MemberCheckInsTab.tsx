@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { CheckIn, StuckToDiet } from '../../../types/check-ins';
+import { wellnessAvg } from '../../../lib/check-ins/wellness';
 import { CheckInScheduleForm } from './components/CheckInScheduleForm';
 import { WellnessTrendChart } from './components/WellnessTrendChart';
 import { DietComplianceHeatmap } from './components/DietComplianceHeatmap';
@@ -85,9 +86,17 @@ export function MemberCheckInsTab({ memberId, checkIns, onPressCheckIn }: Member
                   <Text className="text-sm font-medium text-foreground">
                     {formatDate(checkIn.submittedAt)}
                   </Text>
-                  {checkIn.weight !== null ? (
-                    <Text className="text-xs text-foreground/65">{`${checkIn.weight} kg`}</Text>
-                  ) : null}
+                  <View className="flex-row items-center gap-2">
+                    <Text
+                      testID={`checkin-row-avg-${checkIn._id}`}
+                      className="text-xs font-semibold text-primary-light tabular-nums"
+                    >
+                      {`${wellnessAvg(checkIn)}/10`}
+                    </Text>
+                    {checkIn.weight !== null ? (
+                      <Text className="text-xs text-foreground/65">{`${checkIn.weight} kg`}</Text>
+                    ) : null}
+                  </View>
                 </View>
 
                 <View className="flex-row items-center gap-2 mt-0.5 flex-wrap">

@@ -97,4 +97,66 @@ describe('MemberPhotosTab', () => {
     expect(getByTestId('photo-modal')).toBeTruthy();
     expect(getByTestId('photo-modal-weight')).toBeTruthy();
   });
+
+  describe('photo comparison', () => {
+    it('shows a Select button when 2 or more photos exist', () => {
+      buildStoreMock({
+        photos: [
+          makePhoto({ key: 'p1' }),
+          makePhoto({ key: 'p2' }),
+        ],
+      });
+      const { getByTestId } = render(<MemberPhotosTab memberId={MEMBER_ID} />);
+      expect(getByTestId('photos-select-button')).toBeTruthy();
+    });
+
+    it('does not show Select button when fewer than 2 photos', () => {
+      buildStoreMock({ photos: [makePhoto({ key: 'p1' })] });
+      const { queryByTestId } = render(<MemberPhotosTab memberId={MEMBER_ID} />);
+      expect(queryByTestId('photos-select-button')).toBeNull();
+    });
+
+    it('entering select mode shows Cancel and selection hint', () => {
+      buildStoreMock({
+        photos: [makePhoto({ key: 'p1' }), makePhoto({ key: 'p2' })],
+      });
+      const { getByTestId, queryByTestId } = render(<MemberPhotosTab memberId={MEMBER_ID} />);
+      fireEvent.press(getByTestId('photos-select-button'));
+      expect(getByTestId('photos-cancel-button')).toBeTruthy();
+      expect(queryByTestId('photos-select-button')).toBeNull();
+    });
+
+    it('shows Compare button only after 2 photos are selected', () => {
+      buildStoreMock({
+        photos: [makePhoto({ key: 'p1' }), makePhoto({ key: 'p2' })],
+      });
+      const { getByTestId, queryByTestId } = render(<MemberPhotosTab memberId={MEMBER_ID} />);
+      fireEvent.press(getByTestId('photos-select-button'));
+
+      // 0 selected: no compare button
+      expect(queryByTestId('photos-compare-button')).toBeNull();
+
+      // Select first
+      fireEvent.press(getByTestId('photo-item-p1'));
+      expect(queryByTestId('photos-compare-button')).toBeNull();
+
+      // Select second
+      fireEvent.press(getByTestId('photo-item-p2'));
+      expect(getByTestId('photos-compare-button')).toBeTruthy();
+    });
+
+    it('tapping Compare opens the compare modal', () => {
+      buildStoreMock({
+        photos: [makePhoto({ key: 'p1' }), makePhoto({ key: 'p2' })],
+      });
+      const { getByTestId, queryByTestId } = render(<MemberPhotosTab memberId={MEMBER_ID} />);
+      fireEvent.press(getByTestId('photos-select-button'));
+      fireEvent.press(getByTestId('photo-item-p1'));
+      fireEvent.press(getByTestId('photo-item-p2'));
+
+      expect(queryByTestId('photos-compare-modal')).toBeNull();
+      fireEvent.press(getByTestId('photos-compare-button'));
+      expect(getByTestId('photos-compare-modal')).toBeTruthy();
+    });
+  });
 });

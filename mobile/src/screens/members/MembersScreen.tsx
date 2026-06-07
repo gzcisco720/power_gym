@@ -57,10 +57,14 @@ export function MembersScreen() {
     void fetchTrainers();
   }, [fetchMembers, fetchTrainers]);
 
+  const allMembers = useMembersStore((s) => s.members);
   const baseMembers = filteredMembers();
   const members = trainerFilter
     ? baseMembers.filter((m) => m.trainerId === trainerFilter)
     : baseMembers;
+
+  const totalCount = allMembers.length;
+  const unassignedCount = allMembers.filter((m) => !m.trainerId).length;
 
   const handleCardPress = useCallback(
     (member: Member) => {
@@ -98,6 +102,30 @@ export function MembersScreen() {
           </Text>
           <Text className="mt-0.5 text-[12px] text-foreground/65">Manage your members</Text>
         </View>
+      </View>
+
+      {/* Stats strip */}
+      <View className="flex-row px-4 py-2 gap-4 border-b border-foreground/[.06]">
+        <View className="flex-row items-center gap-1.5">
+          <Text
+            testID="stats-total-members"
+            className="text-sm font-semibold text-foreground tabular-nums"
+          >
+            {String(totalCount)}
+          </Text>
+          <Text className="text-xs text-foreground/65">Total</Text>
+        </View>
+        {unassignedCount > 0 && (
+          <View className="flex-row items-center gap-1.5">
+            <Text
+              testID="stats-unassigned"
+              className="text-sm font-semibold text-amber-300 tabular-nums"
+            >
+              {String(unassignedCount)}
+            </Text>
+            <Text className="text-xs text-foreground/65">Unassigned</Text>
+          </View>
+        )}
       </View>
 
       {/* Search bar */}

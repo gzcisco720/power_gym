@@ -87,14 +87,24 @@ describe('CheckInScreen', () => {
   });
 
   it('renders a history row per item with the wellness score averaged to 1 decimal', () => {
-    // Average of 7+5+4+6+8+7+6 = 43 / 7 ≈ 6.1
+    // Formula: (sleepQuality + energy + recovery + (10-stress) + (10-fatigue) + hunger + digestion) / 7
+    // = (7 + 7 + 8 + 5 + 6 + 6 + 6) / 7 = 45/7 ≈ 6.4
     const checkIn = makeCheckIn({ _id: 'ci-1', sleepQuality: 7, stress: 5, fatigue: 4, hunger: 6, recovery: 8, energy: 7, digestion: 6 });
     mockUseCheckInsStore.mockReturnValue(
       makeStoreState({ items: [checkIn], hasCheckedInThisWeek: jest.fn(() => true) }),
     );
     const { getByTestId, getByText } = render(<CheckInScreen />);
     expect(getByTestId('checkin-history-item-ci-1')).toBeTruthy();
-    expect(getByText('6.1')).toBeTruthy();
+    expect(getByText('6.4')).toBeTruthy();
+  });
+
+  it('shows a consistency heatmap with cells when items exist', () => {
+    const checkIn = makeCheckIn({ _id: 'ci-1' });
+    mockUseCheckInsStore.mockReturnValue(
+      makeStoreState({ items: [checkIn], hasCheckedInThisWeek: jest.fn(() => true) }),
+    );
+    const { getByTestId } = render(<CheckInScreen />);
+    expect(getByTestId('consistency-heatmap')).toBeTruthy();
   });
 
   it('renders "No check-ins yet." when items is empty and not loading', () => {

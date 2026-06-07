@@ -8,6 +8,8 @@ import {
   wellnessBreakdown,
   latestWithBodyMetrics,
   latestPhotos,
+  wellnessAvg,
+  computeConsistencyHeatmap,
 } from './wellness';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -114,6 +116,61 @@ describe('wellness > latestWithBodyMetrics', () => {
     // items are newest-first (as stored in the check-ins store)
     const items = [noMetrics, newer, older];
     expect(latestWithBodyMetrics(items)?._id).toBe('c2');
+  });
+});
+
+// ── wellnessAvg ───────────────────────────────────────────────────────────────
+
+describe('wellness > wellnessAvg', () => {
+  it('inverts stress and fatigue so high stress lowers the average', () => {
+    // All fields at 5 except stress=10 (max stress, should reduce avg)
+    const highStress = makeCheckIn({
+      sleepQuality: 5, energy: 5, recovery: 5, stress: 10, fatigue: 5, hunger: 5, digestion: 5,
+    });
+    const lowStress = makeCheckIn({
+      sleepQuality: 5, energy: 5, recovery: 5, stress: 1, fatigue: 5, hunger: 5, digestion: 5,
+    });
+    // High stress should produce a LOWER wellness avg
+    expect(parseFloat(wellnessAvg(highStress))).toBeLessThan(parseFloat(wellnessAvg(lowStress)));
+  });
+
+  it('matches web formula: sum = sleepQuality + energy + recovery + (10-stress) + (10-fatigue) + hunger + digestion', () => {
+    const ci = makeCheckIn({
+      sleepQuality: 8, energy: 7, recovery: 8, stress: 3, fatigue: 2, hunger: 6, digestion: 7,
+    });
+    // expected: (8 + 7 + 8 + (10-3) + (10-2) + 6 + 7) / 7 = (8+7+8+7+8+6+7)/7 = 51/7 ≈ 7.3
+    const expected = ((8 + 7 + 8 + 7 + 8 + 6 + 7) / 7).toFixed(1);
+    expect(wellnessAvg(ci)).toBe(expected);
+  });
+});
+
+// ── computeConsistencyHeatmap ─────────────────────────────────────────────────
+
+describe('wellness > computeConsistencyHeatmap', () => {
+  it('returns exactly `weeks` cells', () => {
+    const result = computeConsistencyHeatmap([], 16);
+    expect(result).toHaveLength(16);
+  });
+
+  it('marks the last cell as current week', () => {
+    const result = computeConsistencyHeatmap([], 8);
+    expect(result[result.length - 1].isCurrentWeek).toBe(true);
+    expect(result[0].isCurrentWeek).toBe(false);
+  });
+
+  it('marks a cell hasCheckIn=true when a check-in falls in that week', () => {
+    // Use a date that definitely falls in a past week
+    const lastWeekIso = weeksAgo(1);
+    const items = [makeCheckIn({ submittedAt: lastWeekIso })];
+    const result = computeConsistencyHeatmap(items, 8);
+    // The second-to-last cell should correspond to last week
+    const secondToLast = result[result.length - 2];
+    expect(secondToLast.hasCheckIn).toBe(true);
+  });
+
+  it('marks cells without check-ins as hasCheckIn=false', () => {
+    const result = computeConsistencyHeatmap([], 8);
+    expect(result.every((c) => !c.hasCheckIn)).toBe(true);
   });
 });
 
