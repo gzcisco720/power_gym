@@ -225,9 +225,25 @@ export function CheckInScreen() {
                     <Text className="text-sm font-medium text-foreground">
                       {formatDate(checkIn.submittedAt)}
                     </Text>
-                    <Text className="text-sm font-semibold text-primary-light">
-                      {calcWellnessAvg(checkIn)}
-                    </Text>
+                    <View className="flex-row items-center gap-1.5">
+                      {/* 7 wellness dots — color-coded like web */}
+                      {[
+                        { v: checkIn.sleepQuality, inv: false },
+                        { v: checkIn.energy, inv: false },
+                        { v: checkIn.recovery, inv: false },
+                        { v: checkIn.stress, inv: true },
+                        { v: checkIn.fatigue, inv: true },
+                        { v: checkIn.hunger, inv: false },
+                        { v: checkIn.digestion, inv: false },
+                      ].map(({ v, inv }, i) => {
+                        const eff = inv ? 11 - v : v;
+                        const col = eff >= 7 ? 'bg-primary' : eff >= 5 ? 'bg-amber-400' : 'bg-rose-400';
+                        return <View key={i} className={`w-[5px] h-[5px] rounded-full ${col}`} />;
+                      })}
+                      <Text className="text-xs text-foreground/45 tabular-nums ml-0.5">
+                        {calcWellnessAvg(checkIn)}
+                      </Text>
+                    </View>
                   </View>
                   <View className="flex-row items-center gap-2 mt-0.5">
                     <Text
