@@ -95,7 +95,6 @@ describe('Member Training Extras (e2e)', () => {
   let trainerToken: string;
   let otherTrainerToken: string;
   let memberId: string;
-  let ownedMemberId: string;
 
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
@@ -156,7 +155,7 @@ describe('Member Training Extras (e2e)', () => {
     memberId = member._id.toString();
 
     // Member owned by owner directly (not a trainer's member)
-    const ownedMember = await userModel.create({
+    await userModel.create({
       _id: new Types.ObjectId(),
       firstName: 'MTE',
       lastName: 'OwnedMember',
@@ -165,8 +164,6 @@ describe('Member Training Extras (e2e)', () => {
       role: 'member',
       trainerId: owner._id,
     });
-    ownedMemberId = ownedMember._id.toString();
-
     const ownerLogin = await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: OWNER_EMAIL, password: TEST_PASSWORD })

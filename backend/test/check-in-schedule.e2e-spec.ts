@@ -71,7 +71,6 @@ describe('CheckIn Schedule endpoints (e2e)', () => {
   let userModel: Model<UserDocument>;
 
   let trainerToken: string;
-  let otherTrainerToken: string;
   let memberToken: string;
   let memberId: string;
   let otherMemberId: string;
@@ -151,7 +150,6 @@ describe('CheckIn Schedule endpoints (e2e)', () => {
     });
 
     trainerToken = await login('sched-trainer@example.com');
-    otherTrainerToken = await login('sched-other-trainer@example.com');
     memberToken = await login('sched-member-user@example.com');
   });
 
@@ -182,7 +180,11 @@ describe('CheckIn Schedule endpoints (e2e)', () => {
         .set('Authorization', `Bearer ${trainerToken}`);
 
       expect(getRes.status).toBe(200);
-      expect(getRes.body).toMatchObject({ dayOfWeek: 1, hour: 9, active: true });
+      expect(getRes.body).toMatchObject({
+        dayOfWeek: 1,
+        hour: 9,
+        active: true,
+      });
     });
 
     it('returns 401 when unauthenticated', async () => {
@@ -213,8 +215,9 @@ describe('CheckIn Schedule endpoints (e2e)', () => {
     });
 
     it('returns 401 when unauthenticated', async () => {
-      const res = await request(app.getHttpServer())
-        .get(`/check-ins/members/${memberId}/schedule`);
+      const res = await request(app.getHttpServer()).get(
+        `/check-ins/members/${memberId}/schedule`,
+      );
 
       expect(res.status).toBe(401);
     });

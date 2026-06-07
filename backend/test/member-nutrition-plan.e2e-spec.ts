@@ -113,7 +113,6 @@ describe('Member Nutrition Plan (e2e)', () => {
   let trainerToken: string;
   let otherTrainerToken: string;
   let memberId: string;
-  let ownerId: string;
   let trainerId: string;
 
   beforeAll(async () => {
@@ -130,7 +129,7 @@ describe('Member Nutrition Plan (e2e)', () => {
 
     const passwordHash = await bcrypt.hash(TEST_PASSWORD, 10);
 
-    const owner = await userModel.create({
+    await userModel.create({
       _id: new Types.ObjectId(),
       firstName: 'MNP',
       lastName: 'Owner',
@@ -139,8 +138,6 @@ describe('Member Nutrition Plan (e2e)', () => {
       role: 'owner',
       trainerId: null,
     });
-    ownerId = owner._id.toString();
-
     const trainer = await userModel.create({
       _id: new Types.ObjectId(),
       firstName: 'MNP',

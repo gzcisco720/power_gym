@@ -152,7 +152,7 @@ describe('PATCH /members/:id/assign-trainer (e2e)', () => {
       .send({ trainerId: null });
 
     expect(res.status).toBe(200);
-    expect(res.body.trainerId).toBeNull();
+    expect((res.body as { trainerId: null }).trainerId).toBeNull();
   });
 
   it('malformed body (non-mongoid non-null string) → 400', async () => {
