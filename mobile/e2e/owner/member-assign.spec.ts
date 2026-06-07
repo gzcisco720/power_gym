@@ -98,7 +98,10 @@ describe('Owner: Member Assign / Reassign / Unassign', () => {
     await waitFor(element(by.id(/^reassign-trainer-option-/))).toBeVisible().withTimeout(5000);
     await element(by.id(/^reassign-trainer-option-/)).atIndex(0).tap();
 
-    // Member card should still be visible (reassign succeeded)
+    // Toast confirms the reassignment
+    await waitFor(element(by.id('toast-message'))).toBeVisible().withTimeout(5000);
+
+    // Member card is still visible (reassign succeeded)
     await waitFor(element(by.id(/^member-card-/))).toBeVisible().withTimeout(10000);
   });
 
