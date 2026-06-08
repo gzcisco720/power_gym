@@ -176,8 +176,9 @@ describe('DELETE /trainers/:id (e2e)', () => {
 
   it('unauthenticated → 401', async () => {
     const nonexistentId = new Types.ObjectId().toString();
-    const res = await request(app.getHttpServer())
-      .delete(`/trainers/${nonexistentId}`);
+    const res = await request(app.getHttpServer()).delete(
+      `/trainers/${nonexistentId}`,
+    );
 
     expect(res.status).toBe(401);
   });

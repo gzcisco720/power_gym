@@ -184,7 +184,7 @@ describe('CheckInsController', () => {
       } as RequestWithUser & Request;
       const dto = { dayOfWeek: 1, hour: 9, active: true };
 
-      await controller.updateSchedule(req, MEMBER_ID_2, dto as never);
+      await controller.updateSchedule(req, MEMBER_ID_2, dto);
 
       expect(service.updateSchedule).toHaveBeenCalledWith(
         MEMBER_ID_2,

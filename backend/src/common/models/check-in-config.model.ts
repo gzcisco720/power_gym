@@ -29,4 +29,9 @@ export class CheckInConfig {
 
 export const CheckInConfigSchema = SchemaFactory.createForClass(CheckInConfig);
 CheckInConfigSchema.index({ memberId: 1 }, { unique: true });
-CheckInConfigSchema.index({ dayOfWeek: 1, hour: 1, active: 1, reminderSentAt: 1 });
+CheckInConfigSchema.index({
+  dayOfWeek: 1,
+  hour: 1,
+  active: 1,
+  reminderSentAt: 1,
+});

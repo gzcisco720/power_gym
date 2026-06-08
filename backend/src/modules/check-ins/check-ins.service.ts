@@ -202,7 +202,7 @@ export class CheckInsService {
         active: dto.active,
       },
       { upsert: true, returnDocument: 'after' },
-    ) as Promise<CheckInConfigDocument>;
+    );
   }
 
   private async resolveAndScopeMember(

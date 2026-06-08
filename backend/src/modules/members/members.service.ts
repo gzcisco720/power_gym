@@ -289,7 +289,12 @@ export class MembersService {
   async assignTrainer(
     memberId: string,
     trainerId: string | null,
-  ): Promise<{ id: string; name: string; email: string; trainerId: string | null }> {
+  ): Promise<{
+    id: string;
+    name: string;
+    email: string;
+    trainerId: string | null;
+  }> {
     const member = await this.userModel.findById(memberId);
     if (!member || member.role !== 'member') {
       throw new NotFoundException('Member not found');

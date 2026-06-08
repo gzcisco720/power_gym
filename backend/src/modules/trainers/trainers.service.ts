@@ -449,7 +449,9 @@ export class TrainersService {
       ),
     );
 
-    await this.userModel.findOneAndDelete({ _id: new Types.ObjectId(trainerId) });
+    await this.userModel.findOneAndDelete({
+      _id: new Types.ObjectId(trainerId),
+    });
 
     return { affectedMemberCount: members.length };
   }

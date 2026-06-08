@@ -416,7 +416,11 @@ describe('CheckInsService', () => {
       });
       checkInConfigModel.findOne.mockResolvedValue(config);
 
-      const result = await service.getSchedule(MEMBER_ID, TRAINER_ID, 'trainer');
+      const result = await service.getSchedule(
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+      );
 
       expect(checkInConfigModel.findOne).toHaveBeenCalledWith({
         memberId: new Types.ObjectId(MEMBER_ID),
@@ -432,7 +436,11 @@ describe('CheckInsService', () => {
       });
       checkInConfigModel.findOne.mockResolvedValue(null);
 
-      const result = await service.getSchedule(MEMBER_ID, TRAINER_ID, 'trainer');
+      const result = await service.getSchedule(
+        MEMBER_ID,
+        TRAINER_ID,
+        'trainer',
+      );
 
       expect(result).toBeNull();
     });

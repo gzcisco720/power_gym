@@ -182,7 +182,10 @@ describe('CheckIns member-scoped endpoints (e2e)', () => {
       memberId: memberObjId,
       trainerId: trainerObjId,
       submittedAt: new Date(Date.now() + 1000),
-      photos: ['https://example.com/photo1.jpg', 'https://example.com/photo2.jpg'],
+      photos: [
+        'https://example.com/photo1.jpg',
+        'https://example.com/photo2.jpg',
+      ],
       weight: 80,
     });
     checkInId = (checkIn._id as Types.ObjectId).toString();

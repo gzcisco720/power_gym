@@ -302,7 +302,7 @@ describe('Billing (e2e)', () => {
   // ─── GET /billing/members/:memberId ──────────────────────────────────────────
 
   describe('GET /billing/members/:memberId', () => {
-    it("trainer for the member → 200 with per-member billing shape", async () => {
+    it('trainer for the member → 200 with per-member billing shape', async () => {
       const res = await request(app.getHttpServer())
         .get(`/billing/members/${memberId.toString()}`)
         .query({ from: FROM, to: TO })
