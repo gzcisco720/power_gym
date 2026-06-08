@@ -46,8 +46,9 @@ function makeCheckIn(overrides: Partial<CheckIn> = {}): CheckIn {
 
 /** ISO date for N weeks before 2026-06-06 */
 function weeksAgo(n: number): string {
-  const d = new Date('2026-06-06T10:00:00.000Z');
+  const d = new Date();
   d.setUTCDate(d.getUTCDate() - n * 7);
+  d.setUTCHours(10, 0, 0, 0);
   return d.toISOString();
 }
 
