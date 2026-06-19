@@ -6,7 +6,6 @@ Sprint Contract plans only. One row per active plan.
 
 | Feature | Plan File | Status |
 |---|---|---|
-| Mobile UI Overhaul (Reusables migration) | [2026-06-19/plans/mobile-ui-overhaul-plan.md](2026-06-19/plans/mobile-ui-overhaul-plan.md) | In Progress |
 
 ## Management Files
 
