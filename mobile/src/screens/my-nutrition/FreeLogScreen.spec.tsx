@@ -181,4 +181,17 @@ describe('FreeLogScreen', () => {
     expect(getByTestId('free-log-item-0')).toBeTruthy();
     expect(getByTestId('free-log-total-kcal')).toBeTruthy();
   });
+
+
+  // Stage 10
+  it('submit > calls free-log with entered macros', async () => {
+    const chicken = makeFood({ name: 'Chicken Breast' });
+    setupSelfNutritionStore(makeLog());
+    setupFoodsStore([chicken]);
+    const { getByTestId } = render(<FreeLogScreen />);
+    await act(async () => { fireEvent.press(getByTestId('free-food-result-Chicken Breast')); });
+    fireEvent.changeText(getByTestId('free-log-quantity-input'), '150');
+    await act(async () => { fireEvent.press(getByTestId('free-log-confirm')); });
+    expect(mockLogFood).toHaveBeenCalledWith(expect.objectContaining({ foodName: 'Chicken Breast', quantityG: 150, kcal: expect.any(Number) }));
+  });
 });

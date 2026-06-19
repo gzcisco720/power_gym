@@ -250,4 +250,17 @@ describe('WorkoutSessionScreen', () => {
 
     expect(getByTestId('elapsed-timer')).toBeTruthy();
   });
+
+
+  // Stage 10
+  it('set complete > marks set done and calls log handler', async () => {
+    const session = makeSession();
+    setupStore(session);
+    setupRoute(session);
+    const { getByTestId } = render(<WorkoutSessionScreen />);
+    fireEvent.changeText(getByTestId('set-reps-ex1-1'), '10');
+    fireEvent.changeText(getByTestId('set-weight-ex1-1'), '80');
+    await act(async () => { fireEvent.press(getByTestId('log-set-ex1-1')); });
+    expect(mockLogSet).toHaveBeenCalledWith({ exerciseId: 'ex1', setNumber: 1, actualReps: 10, actualWeight: 80 });
+  });
 });

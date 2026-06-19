@@ -2,16 +2,16 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   Pressable,
-  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 import { useFoodsStore } from '../../stores/foods.store';
 import { useSelfNutritionStore } from '../../stores/self-nutrition.store';
 import { Food } from '../../types/nutrition-templates';
@@ -94,14 +94,13 @@ export function FreeLogScreen() {
 
       {/* Search input */}
       <View className="px-4 py-3 border-b border-foreground/[.06]">
-        <TextInput
+        <Input
           testID="free-log-food-search"
           value={query}
           onChangeText={handleQueryChange}
           placeholder="Search foods..."
-          placeholderTextColor="rgba(255,255,255,0.4)"
           accessibilityLabel="Search foods"
-          className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
+          className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground h-auto"
         />
       </View>
 
@@ -110,13 +109,13 @@ export function FreeLogScreen() {
         <View className="px-4 py-3 border-b border-foreground/[.06] gap-2">
           <Text className="text-sm font-semibold text-foreground">{selectedFood.name}</Text>
           <View className="flex-row items-center gap-3">
-            <TextInput
+            <Input
               testID="free-log-quantity-input"
               value={quantity}
               onChangeText={setQuantity}
               keyboardType="decimal-pad"
               accessibilityLabel="Quantity in grams"
-              className="flex-1 rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
+              className="flex-1 rounded-xl bg-input px-3 py-2.5 text-sm text-foreground h-auto"
             />
             <Text className="text-sm text-foreground/65">g</Text>
           </View>
@@ -132,24 +131,19 @@ export function FreeLogScreen() {
 
       {/* Log button */}
       <View className="px-4 py-3 border-b border-foreground/[.06]">
-        <Pressable
+        <Button
           testID="free-log-confirm"
           onPress={() => void handleConfirm()}
           disabled={logging}
           accessibilityLabel="Log food"
-          accessibilityRole="button"
-          className="rounded-xl bg-primary px-4 py-2.5 items-center"
+          className="rounded-xl bg-primary px-4 items-center h-auto py-2.5"
         >
-          {logging ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text className="text-sm font-semibold text-foreground">Log Food</Text>
-          )}
-        </Pressable>
+          <Text className="text-sm font-semibold text-foreground">Log Food</Text>
+        </Button>
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Today's logged items */}
+        {/* Today logged items */}
         {log && log.items.length > 0 ? (
           <View className="px-4 pt-4 gap-2">
             <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
@@ -166,8 +160,8 @@ export function FreeLogScreen() {
             </View>
             {log.items.map((item, index) => (
               <View
-                key={`${item.foodName}-${index}`}
-                testID={`free-log-item-${index}`}
+                key={item.foodName + '-' + index}
+                testID={"free-log-item-" + index}
                 className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 flex-row items-center justify-between"
               >
                 <Text className="text-sm font-medium text-foreground flex-1" numberOfLines={1}>
@@ -202,15 +196,14 @@ export function FreeLogScreen() {
             results.map((food) => (
               <Pressable
                 key={food._id}
-                testID={`free-food-result-${food.name}`}
+                testID={"free-food-result-" + food.name}
                 onPress={() => setSelectedFood(food)}
                 accessibilityLabel={food.name}
                 accessibilityRole="button"
-                className={`rounded-xl ring-1 px-3 py-2 flex-row items-center justify-between ${
-                  selectedFood?._id === food._id
-                    ? 'bg-primary/10 ring-primary/30'
-                    : 'bg-card ring-foreground/10'
-                }`}
+                className={food._id === (selectedFood && selectedFood._id)
+                    ? 'rounded-xl ring-1 px-3 py-2 flex-row items-center justify-between bg-primary/10 ring-primary/30'
+                    : 'rounded-xl ring-1 px-3 py-2 flex-row items-center justify-between bg-card ring-foreground/10'
+                }
               >
                 <Text className="text-sm font-medium text-foreground flex-1" numberOfLines={1}>
                   {food.name}

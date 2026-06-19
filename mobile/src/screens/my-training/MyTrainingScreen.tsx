@@ -3,6 +3,8 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
+import { Skeleton } from '~/components/ui/skeleton';
+import { Button } from '~/components/ui/button';
 import { useTrainingStore } from '../../stores/training.store';
 import { useSelfTrainingStore } from '../../stores/self-training.store';
 import { AppStackParamList } from '../../navigation/index';
@@ -135,20 +137,21 @@ export function MyTrainingScreen() {
       {/* Segmented view switch */}
       <View className="flex-row border-b border-foreground/[.06] px-4">
         {VIEW_TABS.map((tab) => (
-          <Pressable
+          <Button
             key={tab}
             testID={`view-tab-${tab}`}
             onPress={() => setActiveTab(tab)}
             accessibilityLabel={tab}
             accessibilityRole="tab"
-            className={`mr-4 py-2.5 border-b-2 ${activeTab === tab ? 'border-primary' : 'border-transparent'}`}
+            variant="ghost"
+            className={`mr-4 py-2.5 border-b-2 h-auto rounded-none px-0 ${activeTab === tab ? 'border-primary' : 'border-transparent'}`}
           >
             <Text
               className={`text-sm font-medium ${activeTab === tab ? 'text-foreground' : 'text-foreground/65'}`}
             >
               {tab}
             </Text>
-          </Pressable>
+          </Button>
         ))}
       </View>
 
@@ -159,7 +162,7 @@ export function MyTrainingScreen() {
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
               <View className="px-4 py-4 gap-2">
                 {[0, 1, 2].map((i) => (
-                  <View key={i} className="rounded-xl bg-muted h-16 opacity-60" />
+                  <Skeleton key={i} testID="skeleton-item" className="rounded-xl h-16" />
                 ))}
               </View>
             </ScrollView>

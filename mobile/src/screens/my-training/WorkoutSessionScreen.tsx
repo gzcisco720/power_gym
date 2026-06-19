@@ -1,11 +1,13 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TextInput, Pressable } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useReducedMotion } from 'react-native-reanimated';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 import { useTrainingStore } from '../../stores/training.store';
 import { AppStackParamList } from '../../navigation/index';
 import { SessionSet, PatchSetInput } from '../../types/training';
@@ -171,119 +173,110 @@ export function WorkoutSessionScreen() {
 
                 return (
                   <View
-                    key={`${set.exerciseId}-${set.setNumber}`}
-                    testID={`workout-set-${set.exerciseId}-${set.setNumber}`}
+                    key={set.exerciseId + '-' + set.setNumber}
+                    testID={'workout-set-' + set.exerciseId + '-' + set.setNumber}
                     className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2"
                   >
                     <View className="flex-row items-center justify-between gap-2">
                       <Text className="text-xs text-foreground/65 w-8">
-                        {`Set ${set.setNumber}`}
+                        {'Set ' + set.setNumber}
                       </Text>
 
                       <View className="flex-row items-center gap-2 flex-1">
-                        {/* Reps input */}
                         <View className="flex-1">
                           <Text className="text-[10px] text-foreground/65 mb-0.5">
-                            {`Reps (${set.prescribedRepsMin}–${set.prescribedRepsMax})`}
+                            {'Reps (' + set.prescribedRepsMin + '-' + set.prescribedRepsMax + ')'}
                           </Text>
-                          <TextInput
-                            testID={`set-reps-${set.exerciseId}-${set.setNumber}`}
+                          <Input
+                            testID={'set-reps-' + set.exerciseId + '-' + set.setNumber}
                             value={input.reps}
                             onChangeText={(v) => setInput(set.exerciseId, set.setNumber, { reps: v })}
                             keyboardType="number-pad"
-                            placeholder={`${set.prescribedRepsMin}`}
-                            placeholderTextColor="rgba(255,255,255,0.3)"
+                            placeholder={'' + set.prescribedRepsMin}
                             editable={!isLogged}
-                            className="bg-input rounded-lg px-2 py-1.5 text-sm text-foreground"
+                            className="bg-input rounded-lg px-2 py-1.5 text-sm text-foreground h-auto"
                           />
                         </View>
 
-                        {/* Weight input (hidden for bodyweight) */}
                         {!set.isBodyweight ? (
                           <View className="flex-1">
                             <Text className="text-[10px] text-foreground/65 mb-0.5">
                               Weight (kg)
                             </Text>
-                            <TextInput
-                              testID={`set-weight-${set.exerciseId}-${set.setNumber}`}
+                            <Input
+                              testID={'set-weight-' + set.exerciseId + '-' + set.setNumber}
                               value={input.weight}
                               onChangeText={(v) => setInput(set.exerciseId, set.setNumber, { weight: v })}
                               keyboardType="decimal-pad"
                               placeholder="0"
-                              placeholderTextColor="rgba(255,255,255,0.3)"
                               editable={!isLogged}
-                              className="bg-input rounded-lg px-2 py-1.5 text-sm text-foreground"
+                              className="bg-input rounded-lg px-2 py-1.5 text-sm text-foreground h-auto"
                             />
                           </View>
                         ) : null}
                       </View>
 
-                      {/* Log / logged indicator */}
                       {isLogged ? (
                         <View
-                          testID={`set-logged-${set.exerciseId}-${set.setNumber}`}
+                          testID={'set-logged-' + set.exerciseId + '-' + set.setNumber}
                           className="w-7 h-7 rounded-full bg-emerald-500/20 items-center justify-center"
                         >
-                          <Text className="text-emerald-300 text-xs font-semibold">✓</Text>
+                          <Text className="text-emerald-300 text-xs font-semibold">ok</Text>
                         </View>
                       ) : (
-                        <Pressable
-                          testID={`log-set-${set.exerciseId}-${set.setNumber}`}
+                        <Button
+                          testID={'log-set-' + set.exerciseId + '-' + set.setNumber}
                           onPress={() => void handleLogSet(set)}
-                          accessibilityLabel={`Log set ${set.setNumber}`}
-                          accessibilityRole="button"
-                          className="rounded-lg bg-primary px-2.5 py-1.5"
+                          accessibilityLabel={'Log set ' + set.setNumber}
+                          size="sm"
+                          className="rounded-lg bg-primary px-2.5 h-auto"
                         >
                           <Text className="text-xs font-semibold text-foreground">Log</Text>
-                        </Pressable>
+                        </Button>
                       )}
 
-                      {/* Delete button for extra sets */}
                       {set.isExtraSet ? (
-                        <Pressable
-                          testID={`delete-set-${set.exerciseId}-${set.setNumber}`}
+                        <Button
+                          testID={'delete-set-' + set.exerciseId + '-' + set.setNumber}
                           onPress={() => void handleDeleteSet(set.exerciseId, set.setNumber)}
-                          accessibilityLabel={`Delete extra set ${set.setNumber}`}
-                          accessibilityRole="button"
-                          className="w-7 h-7 items-center justify-center"
+                          accessibilityLabel={'Delete extra set ' + set.setNumber}
+                          variant="ghost"
+                          className="w-7 h-7 items-center justify-center p-0"
                         >
-                          <Text className="text-destructive text-sm font-semibold">×</Text>
-                        </Pressable>
+                          <Text className="text-destructive text-sm font-semibold">x</Text>
+                        </Button>
                       ) : null}
                     </View>
                   </View>
                 );
               })}
 
-              {/* Add Set button per exercise group */}
-              <Pressable
-                testID={`add-set-${group.exerciseId}`}
+              <Button
+                testID={'add-set-' + group.exerciseId}
                 onPress={() => void handleAddSet(group.exerciseId)}
-                accessibilityLabel={`Add set for ${group.exerciseName}`}
-                accessibilityRole="button"
-                className="rounded-lg border border-foreground/10 items-center py-1.5"
+                accessibilityLabel={'Add set for ' + group.exerciseName}
+                variant="outline"
+                className="rounded-lg border border-foreground/10 items-center py-1.5 h-auto"
               >
                 <Text className="text-xs text-foreground/65">+ Add Set</Text>
-              </Pressable>
+              </Button>
             </View>
           ))}
         </View>
       </ScrollView>
 
-      {/* Sticky finish button */}
       <View
         className="border-t border-foreground/10 bg-background/95 px-4 py-3"
         style={{ paddingBottom: insets.bottom || 12 }}
       >
-        <Pressable
+        <Button
           testID="finish-workout-button"
           onPress={handleFinishPress}
           accessibilityLabel="Finish workout"
-          accessibilityRole="button"
-          className="rounded-xl bg-primary items-center py-3"
+          className="rounded-xl bg-primary items-center py-3 h-auto"
         >
           <Text className="text-sm font-semibold text-foreground">Finish Workout</Text>
-        </Pressable>
+        </Button>
       </View>
 
       <RpeSheet

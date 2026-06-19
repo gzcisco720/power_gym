@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Button } from '~/components/ui/button';
 import { DailyLogMeal } from '../../../types/nutrition';
 import { AppStackParamList } from '../../../navigation/index';
 
@@ -26,15 +27,14 @@ export function MealCard({ meal }: MealCardProps) {
       {/* Meal header */}
       <View className="flex-row items-center justify-between">
         <Text className="text-sm font-semibold text-foreground">{meal.name}</Text>
-        <Pressable
+        <Button
           testID="log-food-button"
           onPress={handleLogFood}
           accessibilityLabel={`Log food for ${meal.name}`}
-          accessibilityRole="button"
-          className="rounded-lg bg-primary/10 px-2.5 py-1"
+          className="rounded-lg bg-primary/10 px-2.5 h-auto py-1"
         >
           <Text className="text-xs font-semibold text-primary-light">+ Log</Text>
-        </Pressable>
+        </Button>
       </View>
 
       {/* Logged food items */}

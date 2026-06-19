@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
+import { Button } from '~/components/ui/button';
 import { useNutritionStore } from '../../stores/nutrition.store';
 import { MacroSummary } from './components/MacroSummary';
 import { MealCard } from './components/MealCard';
@@ -103,15 +104,14 @@ export function MyNutritionScreen() {
               Ask your trainer to assign a nutrition plan.
             </Text>
           </View>
-          <Pressable
+          <Button
             testID="log-freely-cta"
             onPress={() => navigation.navigate('FreeLog')}
             accessibilityLabel="Log food freely"
-            accessibilityRole="button"
-            className="rounded-xl bg-primary px-6 py-3 items-center"
+            className="rounded-xl bg-primary px-6 py-3 items-center h-auto"
           >
             <Text className="text-sm font-semibold text-foreground">Log freely</Text>
-          </Pressable>
+          </Button>
         </View>
       ) : (
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -141,16 +141,16 @@ export function MyNutritionScreen() {
 
           {/* Log freely secondary option */}
           <View className="px-4 pt-4 pb-24">
-            <Pressable
+            <Button
               testID="log-freely-option"
               onPress={() => navigation.navigate('FreeLog')}
               accessibilityLabel="Log food freely"
-              accessibilityRole="button"
-              className="rounded-xl bg-muted ring-1 ring-foreground/10 px-4 py-3 flex-row items-center justify-between"
+              variant="outline"
+              className="rounded-xl bg-muted ring-1 ring-foreground/10 px-4 py-3 h-auto flex-row items-center justify-between"
             >
               <Text className="text-sm font-medium text-foreground">Log freely</Text>
               <Text className="text-sm text-foreground/65">→</Text>
-            </Pressable>
+            </Button>
           </View>
         </ScrollView>
       )}

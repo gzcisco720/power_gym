@@ -130,4 +130,17 @@ describe('LogFoodScreen', () => {
       }),
     );
   });
+
+
+  // Stage 10
+  it('submit > calls log with selected food and quantity', async () => {
+    const chicken = makeFood({ name: 'Chicken Breast' });
+    setupNutritionStore();
+    setupFoodsStore([chicken]);
+    const { getByTestId } = render(<LogFoodScreen />);
+    await act(async () => { fireEvent.press(getByTestId('food-result-Chicken Breast')); });
+    fireEvent.changeText(getByTestId('quantity-input'), '200');
+    await act(async () => { fireEvent.press(getByTestId('confirm-log-food')); });
+    expect(mockLogFood).toHaveBeenCalledWith(expect.objectContaining({ mealName: 'Breakfast', foodName: 'Chicken Breast', quantityG: 200 }));
+  });
 });

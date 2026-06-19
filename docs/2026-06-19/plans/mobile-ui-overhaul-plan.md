@@ -443,7 +443,20 @@ Every interactive/styled UI element in `mobile/` is rendered through a React Nat
 2. Migrate the screens → Green
 3. Run my-training + my-nutrition Detox specs → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 10 Checkpoint
+- [x] `WorkoutSessionScreen` — already using Button/Input; Skeleton added to MyTrainingScreen
+- [x] `MyTrainingScreen` — Skeleton import + loading state
+- [x] `TrainerWorkoutSessionScreen` — TextInput → Input, Pressable → Button
+- [x] `MyNutritionScreen` — Pressable(button) → Button
+- [x] `MealCard` — Pressable(button) → Button
+- [x] `LogFoodScreen` — already migrated (TextInput → Input, Pressable → Button, ActivityIndicator removed)
+- [x] `FreeLogScreen` — already migrated (TextInput → Input, Pressable → Button, ActivityIndicator removed)
+- [x] `ActivityIndicator` count = 0
+- [x] Unit tests: 4/4 pass
+- [x] Full test suite: 756 tests, all pass (baseline 746)
+- [x] Lint: clean
 
 ---
 

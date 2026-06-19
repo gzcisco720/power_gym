@@ -1,14 +1,15 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, ScrollView, TextInput, Pressable } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 import { useTrainingStore } from '../../stores/training.store';
 import { AppStackParamList } from '../../navigation/index';
 import { SessionSet, PatchSetInput } from '../../types/training';
-import { colors } from '../../lib/theme';
 
 type SessionRouteProp = RouteProp<AppStackParamList, 'TrainerWorkoutSession'>;
 type Nav = NativeStackNavigationProp<AppStackParamList>;
@@ -121,15 +122,14 @@ export function TrainerWorkoutSessionScreen() {
                           <Text className="text-[10px] text-foreground/65 mb-0.5">
                             {`Reps (${set.prescribedRepsMin}–${set.prescribedRepsMax})`}
                           </Text>
-                          <TextInput
+                          <Input
                             testID={`set-reps-${set.exerciseId}-${set.setNumber}`}
                             value={input.reps}
                             onChangeText={(v) => setInput(set.exerciseId, set.setNumber, { reps: v })}
                             keyboardType="number-pad"
                             placeholder={`${set.prescribedRepsMin}`}
-                            placeholderTextColor={colors.placeholderText}
                             editable={!isLogged}
-                            className="bg-input rounded-lg px-2 py-1.5 text-sm text-foreground"
+                            className="bg-input rounded-lg px-2 py-1.5 text-sm text-foreground h-auto"
                           />
                         </View>
 
@@ -139,15 +139,14 @@ export function TrainerWorkoutSessionScreen() {
                             <Text className="text-[10px] text-foreground/65 mb-0.5">
                               Weight (kg)
                             </Text>
-                            <TextInput
+                            <Input
                               testID={`set-weight-${set.exerciseId}-${set.setNumber}`}
                               value={input.weight}
                               onChangeText={(v) => setInput(set.exerciseId, set.setNumber, { weight: v })}
                               keyboardType="decimal-pad"
                               placeholder="0"
-                              placeholderTextColor={colors.placeholderText}
                               editable={!isLogged}
-                              className="bg-input rounded-lg px-2 py-1.5 text-sm text-foreground"
+                              className="bg-input rounded-lg px-2 py-1.5 text-sm text-foreground h-auto"
                             />
                           </View>
                         ) : null}
@@ -162,15 +161,15 @@ export function TrainerWorkoutSessionScreen() {
                           <Text className="text-emerald-300 text-xs font-semibold">✓</Text>
                         </View>
                       ) : (
-                        <Pressable
+                        <Button
                           testID={`log-set-${set.exerciseId}-${set.setNumber}`}
                           onPress={() => void handleLogSet(set)}
                           accessibilityLabel={`Log set ${set.setNumber}`}
-                          accessibilityRole="button"
-                          className="rounded-lg bg-primary px-2.5 py-1.5"
+                          size="sm"
+                          className="rounded-lg bg-primary px-2.5 h-auto"
                         >
                           <Text className="text-xs font-semibold text-foreground">Log</Text>
-                        </Pressable>
+                        </Button>
                       )}
                     </View>
                   </View>
@@ -186,15 +185,14 @@ export function TrainerWorkoutSessionScreen() {
         className="border-t border-foreground/10 bg-background/95 px-4 py-3"
         style={{ paddingBottom: insets.bottom || 12 }}
       >
-        <Pressable
+        <Button
           testID="finish-workout-button"
           onPress={() => void handleFinish()}
           accessibilityLabel="Finish workout"
-          accessibilityRole="button"
-          className="rounded-xl bg-primary items-center py-3"
+          className="rounded-xl bg-primary items-center py-3 h-auto"
         >
           <Text className="text-sm font-semibold text-foreground">Finish Workout</Text>
-        </Pressable>
+        </Button>
       </View>
     </Screen>
   );

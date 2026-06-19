@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Modal, Pressable, ScrollView } from 'react-native';
+import { Button } from '~/components/ui/button';
 
 const RPE_LABELS: Record<number, string> = {
   1: 'Very Easy',
@@ -71,25 +72,24 @@ export function RpeSheet({ visible, onConfirm, onDismiss }: RpeSheetProps) {
             {RPE_LABELS[selected]}
           </Text>
 
-          <Pressable
+          <Button
             testID="rpe-confirm-button"
             onPress={() => onConfirm(selected)}
             accessibilityLabel="Confirm RPE and finish workout"
-            accessibilityRole="button"
-            className="rounded-xl bg-primary items-center py-3 mb-3"
+            className="rounded-xl bg-primary items-center py-3 mb-3 h-auto"
           >
             <Text className="text-sm font-semibold text-foreground">Finish Workout</Text>
-          </Pressable>
+          </Button>
 
-          <Pressable
+          <Button
             testID="rpe-cancel-button"
             onPress={onDismiss}
             accessibilityLabel="Cancel"
-            accessibilityRole="button"
-            className="items-center py-2"
+            variant="ghost"
+            className="items-center py-2 h-auto"
           >
             <Text className="text-sm text-foreground/65">Cancel</Text>
-          </Pressable>
+          </Button>
         </View>
       </View>
     </Modal>

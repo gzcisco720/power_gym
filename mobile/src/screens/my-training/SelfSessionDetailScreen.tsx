@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
+import { Button } from '~/components/ui/button';
 import { useSelfTrainingStore } from '../../stores/self-training.store';
 import { AppStackParamList } from '../../navigation/index';
 import { SessionSet } from '../../types/training';
@@ -55,14 +56,14 @@ export function SelfSessionDetailScreen() {
     return (
       <Screen testID="screen-SelfSessionDetail">
         <View className="flex-row items-center border-b border-foreground/[.06] bg-background px-4 py-4">
-          <Pressable
+          <Button
             onPress={() => navigation.goBack()}
             accessibilityLabel="Go back"
-            accessibilityRole="button"
-            className="mr-3"
+            variant="ghost"
+            className="mr-3 px-0 h-auto"
           >
             <Text className="text-primary text-base">‹ Back</Text>
-          </Pressable>
+          </Button>
           <Text className="text-[18px] font-semibold tracking-[-0.3px] text-foreground">
             Session Detail
           </Text>
@@ -88,14 +89,14 @@ export function SelfSessionDetailScreen() {
     <Screen testID="screen-SelfSessionDetail">
       {/* Header */}
       <View className="flex-row items-center border-b border-foreground/[.06] bg-background px-4 py-4">
-        <Pressable
+        <Button
           onPress={() => navigation.goBack()}
           accessibilityLabel="Go back"
-          accessibilityRole="button"
-          className="mr-3"
+          variant="ghost"
+          className="mr-3 px-0 h-auto"
         >
           <Text className="text-primary text-base">‹ Back</Text>
-        </Pressable>
+        </Button>
         <View className="flex-1">
           <Text className="text-[18px] font-semibold tracking-[-0.3px] text-foreground" numberOfLines={1}>
             {selectedSession.dayName}
