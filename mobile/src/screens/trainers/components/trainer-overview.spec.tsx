@@ -1,6 +1,11 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
+jest.mock('react-native-gifted-charts', () => ({
+  BarChart: () => null,
+  LineChart: () => null,
+}));
+
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
@@ -209,14 +214,12 @@ describe('WeeklyScheduleBar', () => {
 
 describe('SessionsTrendChart', () => {
   describe('renders', () => {
-    it('renders one bar per month for the 6-month trend', () => {
+    it('renders the chart with 6-month trend data', () => {
       const { getByTestId } = render(
         <SessionsTrendChart trend={MOCK_STATS.sessionsTrend} />,
       );
 
-      MOCK_STATS.sessionsTrend.forEach(({ month }) => {
-        expect(getByTestId(`trend-bar-${month}`)).toBeTruthy();
-      });
+      expect(getByTestId('sessions-trend-chart')).toBeTruthy();
     });
 
     it('renders without crashing when all counts are zero', () => {
@@ -226,7 +229,7 @@ describe('SessionsTrendChart', () => {
         <SessionsTrendChart trend={zeroTrend} />,
       );
 
-      expect(getByTestId(`trend-bar-${zeroTrend[0].month}`)).toBeTruthy();
+      expect(getByTestId('sessions-trend-chart')).toBeTruthy();
     });
   });
 });

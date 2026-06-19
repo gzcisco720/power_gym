@@ -1,12 +1,17 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
+import { BarChart } from 'react-native-gifted-charts';
 import { SessionsTrendEntry } from '../../../types/trainers';
 
 interface SessionsTrendChartProps {
   trend: SessionsTrendEntry[];
 }
 
-const BAR_MAX_HEIGHT = 60;
+const CHART_COLORS = {
+  primary: '#4f46e5',
+  primaryLight: '#818cf8',
+  axisLabel: 'rgba(255,255,255,0.65)',
+} as const;
 
 function formatMonthLabel(month: string): string {
   const [, mm] = month.split('-');
@@ -16,23 +21,23 @@ function formatMonthLabel(month: string): string {
 }
 
 export function SessionsTrendChart({ trend }: SessionsTrendChartProps) {
-  const maxCount = Math.max(...trend.map((e) => e.count), 1);
+  const barData = trend.map((entry, index) => ({
+    value: entry.count,
+    label: formatMonthLabel(entry.month),
+    frontColor: index === trend.length - 1 ? CHART_COLORS.primaryLight : CHART_COLORS.primary,
+  }));
 
   return (
-    <View className="flex-row items-end justify-between gap-1" style={{ height: BAR_MAX_HEIGHT + 20 }}>
-      {trend.map((entry) => {
-        const barHeight = Math.max((entry.count / maxCount) * BAR_MAX_HEIGHT, entry.count > 0 ? 4 : 2);
-        return (
-          <View key={entry.month} className="flex-1 items-center gap-1">
-            <View
-              testID={`trend-bar-${entry.month}`}
-              className="w-full rounded-sm bg-primary/80"
-              style={{ height: barHeight }}
-            />
-            <Text className="text-[10px] text-foreground/65">{formatMonthLabel(entry.month)}</Text>
-          </View>
-        );
-      })}
+    <View testID="sessions-trend-chart">
+      <BarChart
+        data={barData}
+        barWidth={22}
+        spacing={8}
+        hideRules
+        hideAxesAndRules
+        xAxisLabelTextStyle={{ color: CHART_COLORS.axisLabel, fontSize: 10 }}
+        height={80}
+      />
     </View>
   );
 }
