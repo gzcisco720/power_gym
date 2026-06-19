@@ -1,8 +1,7 @@
 import React from 'react';
-import { View, Text, TextInput, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
+import { Input } from '~/components/ui/input';
 import { StuckToDiet } from '../../../types/check-ins';
-
-const COLORS = { placeholder: 'rgba(255,255,255,0.4)' } as const;
 
 const DIET_OPTIONS: { value: StuckToDiet; label: string; testID: string }[] = [
   { value: 'yes', label: 'Yes', testID: 'checkin-diet-yes' },
@@ -63,14 +62,12 @@ export function DietSection({ values, onChange }: DietSectionProps) {
         <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
           Diet Details <Text className="text-foreground/65">(optional)</Text>
         </Text>
-        <TextInput
+        <Input
           value={values.dietDetails}
           onChangeText={(text) => onChange({ ...values, dietDetails: text })}
           placeholder="What did you eat?"
-          placeholderTextColor={COLORS.placeholder}
           multiline
           numberOfLines={2}
-          className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
         />
       </View>
 
@@ -79,14 +76,12 @@ export function DietSection({ values, onChange }: DietSectionProps) {
         <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
           Wellbeing <Text className="text-foreground/65">(optional)</Text>
         </Text>
-        <TextInput
+        <Input
           value={values.wellbeing}
           onChangeText={(text) => onChange({ ...values, wellbeing: text })}
           placeholder="How are you feeling overall?"
-          placeholderTextColor={COLORS.placeholder}
           multiline
           numberOfLines={2}
-          className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
         />
       </View>
 
@@ -95,14 +90,12 @@ export function DietSection({ values, onChange }: DietSectionProps) {
         <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
           Notes <Text className="text-foreground/65">(optional)</Text>
         </Text>
-        <TextInput
+        <Input
           value={values.notes}
           onChangeText={(text) => onChange({ ...values, notes: text })}
           placeholder="Anything else to note?"
-          placeholderTextColor={COLORS.placeholder}
           multiline
           numberOfLines={2}
-          className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
         />
       </View>
     </View>

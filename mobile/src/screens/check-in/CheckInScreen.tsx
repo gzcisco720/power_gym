@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
+import { Button } from '~/components/ui/button';
 import { useCheckInsStore } from '../../stores/check-ins.store';
 import { CheckIn } from '../../types/check-ins';
 import { AppStackParamList } from '../../navigation/index';
@@ -62,7 +63,6 @@ export function CheckInScreen() {
   const submitted = hasCheckedInThisWeek();
   const latestCheckIn = items[0] ?? null;
 
-  // Derived data for the rich sections
   const streakWeeks = computeCheckInStreakWeeks(items);
   const achievements = computeAchievements(items);
   const bodyMetricsCheckIn = latestWithBodyMetrics(items);
@@ -132,17 +132,16 @@ export function CheckInScreen() {
                 )}
               </View>
             ) : (
-              <Pressable
+              <Button
                 testID="checkin-start-button"
                 onPress={handleStartCheckIn}
                 accessibilityLabel="Start this week's check-in"
-                accessibilityRole="button"
-                className="bg-primary rounded-xl py-3 items-center"
+                className="w-full"
               >
                 <Text className="text-sm font-semibold text-foreground">
                   {"Start This Week's Check-In"}
                 </Text>
-              </Pressable>
+              </Button>
             )}
 
             {/* Consistency heatmap — last 16 weeks */}
@@ -226,7 +225,6 @@ export function CheckInScreen() {
                       {formatDate(checkIn.submittedAt)}
                     </Text>
                     <View className="flex-row items-center gap-1.5">
-                      {/* 7 wellness dots — color-coded like web */}
                       {[
                         { v: checkIn.sleepQuality, inv: false },
                         { v: checkIn.energy, inv: false },

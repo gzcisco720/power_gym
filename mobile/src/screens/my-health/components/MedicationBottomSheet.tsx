@@ -1,22 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  ScrollView,
-  Pressable,
-  Modal,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, ScrollView, Pressable, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
 import {
   Medication,
   CreateMedicationDto,
   UpdateMedicationDto,
   MedicationDuration,
 } from '../../../types/health';
-
-const WHITE = '#ffffff';
 
 const DURATIONS: Array<{ value: MedicationDuration; label: string }> = [
   { value: 'long_term', label: 'Long-term' },
@@ -129,14 +121,15 @@ export function MedicationBottomSheet({
             <Text className="text-[18px] font-semibold tracking-[-0.3px] text-foreground">
               {isEdit ? 'Edit Medication' : 'Add Medication'}
             </Text>
-            <Pressable
+            <Button
               testID="medication-sheet-cancel"
               onPress={handleClose}
               accessibilityLabel="Cancel"
-              accessibilityRole="button"
+              variant="ghost"
+              size="sm"
             >
               <Text className="text-sm text-foreground/65">Cancel</Text>
-            </Pressable>
+            </Button>
           </View>
 
           <ScrollView keyboardShouldPersistTaps="handled">
@@ -146,7 +139,7 @@ export function MedicationBottomSheet({
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Name <Text className="text-destructive">*</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="medication-name-input"
                   value={name}
                   onChangeText={(t) => {
@@ -154,8 +147,6 @@ export function MedicationBottomSheet({
                     if (nameError) setNameError(null);
                   }}
                   placeholder="e.g. Ibuprofen"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   autoCapitalize="words"
                   accessibilityLabel="Medication name"
                   aria-invalid={nameError != null}
@@ -172,7 +163,7 @@ export function MedicationBottomSheet({
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Purpose <Text className="text-destructive">*</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="medication-purpose-input"
                   value={purpose}
                   onChangeText={(t) => {
@@ -180,8 +171,6 @@ export function MedicationBottomSheet({
                     if (purposeError) setPurposeError(null);
                   }}
                   placeholder="e.g. Pain relief"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   autoCapitalize="sentences"
                   accessibilityLabel="Medication purpose"
                   aria-invalid={purposeError != null}
@@ -230,7 +219,7 @@ export function MedicationBottomSheet({
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Start Date <Text className="text-destructive">*</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="medication-start-date-input"
                   value={startDate}
                   onChangeText={(t) => {
@@ -238,9 +227,7 @@ export function MedicationBottomSheet({
                     if (startDateError) setStartDateError(null);
                   }}
                   placeholder="YYYY-MM-DD"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
                   keyboardType="numbers-and-punctuation"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   accessibilityLabel="Start date"
                   aria-invalid={startDateError != null}
                 />
@@ -256,14 +243,12 @@ export function MedicationBottomSheet({
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   End Date <Text className="text-foreground/65">(optional)</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="medication-end-date-input"
                   value={endDate}
                   onChangeText={setEndDate}
                   placeholder="YYYY-MM-DD"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
                   keyboardType="numbers-and-punctuation"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   accessibilityLabel="End date"
                 />
               </View>
@@ -273,19 +258,16 @@ export function MedicationBottomSheet({
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Notes <Text className="text-foreground/65">(optional)</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="medication-notes-input"
                   value={notes}
                   onChangeText={setNotes}
                   placeholder="Additional notes..."
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-                  multiline
                   accessibilityLabel="Notes"
+                  multiline
                 />
               </View>
 
-              {/* Error feedback */}
               {errorMsg ? (
                 <Text className="text-xs text-destructive text-center">{errorMsg}</Text>
               ) : null}
@@ -294,21 +276,16 @@ export function MedicationBottomSheet({
 
           {/* Footer */}
           <View className="px-4 py-3 border-t border-foreground/10 bg-background/95">
-            <Pressable
+            <Button
               testID="medication-save-button"
-              onPress={handleSave}
+              onPress={() => void handleSave()}
               disabled={isSaving}
               accessibilityLabel="Save medication"
-              accessibilityRole="button"
               accessibilityState={{ disabled: isSaving }}
-              className={`py-3 rounded-xl items-center ${isSaving ? 'bg-primary/40' : 'bg-primary'}`}
+              className="w-full"
             >
-              {isSaving ? (
-                <ActivityIndicator color={WHITE} />
-              ) : (
-                <Text className="text-sm font-semibold text-foreground">Save</Text>
-              )}
-            </Pressable>
+              <Text className="text-sm font-semibold text-foreground">Save</Text>
+            </Button>
           </View>
         </View>
       </View>

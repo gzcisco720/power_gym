@@ -34,7 +34,7 @@ export function MyHealthScreen() {
         </View>
       </View>
 
-      {/* Tab bar */}
+      {/* Tab bar — Pressable used as tab container (allowed per design rules) */}
       <View className="flex-row border-b border-foreground/[.06] bg-background">
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;

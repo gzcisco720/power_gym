@@ -1,15 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  ScrollView,
-  Pressable,
-  Modal,
-  ActivityIndicator,
-  Switch,
-} from 'react-native';
+import { View, Text, ScrollView, Pressable, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
+import { Switch } from '~/components/ui/switch';
 import {
   Injury,
   CreateInjuryDto,
@@ -19,8 +13,6 @@ import {
   BodySide,
   RehabStatus,
 } from '../../../types/health';
-
-const WHITE = '#ffffff';
 
 const INJURY_TYPES: Array<{ value: InjuryType; label: string }> = [
   { value: 'acute', label: 'Acute' },
@@ -127,7 +119,6 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
   const [isSaving, setIsSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Reset when sheet opens/closes or injury changes
   useEffect(() => {
     if (visible) {
       setTitle(injury?.title ?? '');
@@ -208,14 +199,15 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
             <Text className="text-[18px] font-semibold tracking-[-0.3px] text-foreground">
               {isEdit ? 'Edit Injury' : 'Report Injury'}
             </Text>
-            <Pressable
+            <Button
               testID="injury-sheet-cancel"
               onPress={handleClose}
               accessibilityLabel="Cancel"
-              accessibilityRole="button"
+              variant="ghost"
+              size="sm"
             >
               <Text className="text-sm text-foreground/65">Cancel</Text>
-            </Pressable>
+            </Button>
           </View>
 
           <ScrollView keyboardShouldPersistTaps="handled">
@@ -225,7 +217,7 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Title <Text className="text-destructive">*</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="injury-title-input"
                   value={title}
                   onChangeText={(t) => {
@@ -233,8 +225,6 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
                     if (titleError) setTitleError(null);
                   }}
                   placeholder="e.g. Left knee strain"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   autoCapitalize="sentences"
                   accessibilityLabel="Injury title"
                   aria-invalid={titleError != null}
@@ -246,7 +236,6 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
                 ) : null}
               </View>
 
-              {/* Injury Type */}
               <SelectRow
                 label="Injury Type"
                 value={injuryType}
@@ -255,7 +244,6 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
                 testIDPrefix="injury-type"
               />
 
-              {/* Body Part */}
               <SelectRow
                 label="Body Part"
                 value={bodyPart}
@@ -264,7 +252,6 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
                 testIDPrefix="injury-bodypart"
               />
 
-              {/* Body Side */}
               <SelectRow
                 label="Body Side"
                 value={bodySide}
@@ -278,14 +265,12 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Pain at Rest <Text className="text-foreground/65">(0–10, optional)</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="injury-pain-rest-input"
                   value={painAtRest}
                   onChangeText={setPainAtRest}
                   placeholder="0"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
                   keyboardType="decimal-pad"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   accessibilityLabel="Pain at rest"
                 />
               </View>
@@ -295,14 +280,12 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Pain During Exercise <Text className="text-foreground/65">(0–10, optional)</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="injury-pain-exercise-input"
                   value={painDuringExercise}
                   onChangeText={setPainDuringExercise}
                   placeholder="0"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
                   keyboardType="decimal-pad"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   accessibilityLabel="Pain during exercise"
                 />
               </View>
@@ -312,13 +295,11 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Affected Movements <Text className="text-foreground/65">(optional)</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="injury-movements-input"
                   value={affectedMovements}
                   onChangeText={setAffectedMovements}
                   placeholder="e.g. squatting, climbing stairs"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   accessibilityLabel="Affected movements"
                 />
               </View>
@@ -328,13 +309,11 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   How did it happen <Text className="text-foreground/65">(optional)</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="injury-mechanism-input"
                   value={mechanism}
                   onChangeText={setMechanism}
                   placeholder="e.g. twisted during a run"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   accessibilityLabel="Mechanism of injury"
                 />
               </View>
@@ -344,13 +323,11 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Aggravating Factors <Text className="text-foreground/65">(optional)</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="injury-aggravating-input"
                   value={aggravatingFactors}
                   onChangeText={setAggravatingFactors}
                   placeholder="e.g. running, bending"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   accessibilityLabel="Aggravating factors"
                 />
               </View>
@@ -360,13 +337,11 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Relieving Factors <Text className="text-foreground/65">(optional)</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="injury-relieving-input"
                   value={relievingFactors}
                   onChangeText={setRelievingFactors}
                   placeholder="e.g. rest, ice"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   accessibilityLabel="Relieving factors"
                 />
               </View>
@@ -378,10 +353,9 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
                 </Text>
                 <Switch
                   testID="injury-seen-doctor-toggle"
-                  value={seenDoctor}
-                  onValueChange={setSeenDoctor}
+                  checked={seenDoctor}
+                  onCheckedChange={setSeenDoctor}
                   accessibilityLabel="Seen a doctor"
-                  accessibilityRole="switch"
                 />
               </View>
 
@@ -390,18 +364,15 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Doctor Restrictions <Text className="text-foreground/65">(optional)</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="injury-doctor-restrictions-input"
                   value={doctorRestrictions}
                   onChangeText={setDoctorRestrictions}
                   placeholder="e.g. no running for 2 weeks"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   accessibilityLabel="Doctor restrictions"
                 />
               </View>
 
-              {/* Rehabilitation Status */}
               <SelectRow
                 label="Rehabilitation Status"
                 value={rehabilitationStatus}
@@ -415,19 +386,16 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   My Notes <Text className="text-foreground/65">(optional)</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="injury-notes-input"
                   value={memberNotes}
                   onChangeText={setMemberNotes}
                   placeholder="Any additional notes..."
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-                  multiline
                   accessibilityLabel="My notes"
+                  multiline
                 />
               </View>
 
-              {/* Error feedback */}
               {errorMsg ? (
                 <Text className="text-xs text-destructive text-center">{errorMsg}</Text>
               ) : null}
@@ -436,21 +404,16 @@ export function InjuryBottomSheet({ visible, onClose, injury, onSave }: InjuryBo
 
           {/* Footer */}
           <View className="px-4 py-3 border-t border-foreground/10 bg-background/95">
-            <Pressable
+            <Button
               testID="injury-save-button"
-              onPress={handleSave}
+              onPress={() => void handleSave()}
               disabled={isSaving}
               accessibilityLabel="Save injury"
-              accessibilityRole="button"
               accessibilityState={{ disabled: isSaving }}
-              className={`py-3 rounded-xl items-center ${isSaving ? 'bg-primary/40' : 'bg-primary'}`}
+              className="w-full"
             >
-              {isSaving ? (
-                <ActivityIndicator color={WHITE} />
-              ) : (
-                <Text className="text-sm font-semibold text-foreground">Save</Text>
-              )}
-            </Pressable>
+              <Text className="text-sm font-semibold text-foreground">Save</Text>
+            </Button>
           </View>
         </View>
       </View>

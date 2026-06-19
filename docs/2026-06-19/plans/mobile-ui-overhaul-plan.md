@@ -446,16 +446,21 @@ Every interactive/styled UI element in `mobile/` is rendered through a React Nat
 **Status**: Complete
 
 ### Stage 10 Checkpoint
-- [x] `WorkoutSessionScreen` — already using Button/Input; Skeleton added to MyTrainingScreen
-- [x] `MyTrainingScreen` — Skeleton import + loading state
-- [x] `TrainerWorkoutSessionScreen` — TextInput → Input, Pressable → Button
-- [x] `MyNutritionScreen` — Pressable(button) → Button
-- [x] `MealCard` — Pressable(button) → Button
-- [x] `LogFoodScreen` — already migrated (TextInput → Input, Pressable → Button, ActivityIndicator removed)
-- [x] `FreeLogScreen` — already migrated (TextInput → Input, Pressable → Button, ActivityIndicator removed)
-- [x] `ActivityIndicator` count = 0
-- [x] Unit tests: 4/4 pass
-- [x] Full test suite: 756 tests, all pass (baseline 746)
+- [x] `WorkoutSessionScreen` — TextInput → Input, Pressable-as-button → Button, removed unused Pressable import
+- [x] `MyTrainingScreen` — Skeleton loading state, tab buttons → Button, list row Pressables kept
+- [x] `SelfSessionDetailScreen` — back button Pressable → Button
+- [x] `TrainerWorkoutSessionScreen` — already migrated (Input + Button)
+- [x] `RpeSheet` — confirm/cancel Pressable → Button; RPE option Pressables kept
+- [x] `SelfWorkoutCalendar` — calendar day/nav Pressables kept (calendar widget pattern)
+- [x] `MyNutritionScreen` — already migrated (Button)
+- [x] `MealCard` — already migrated (Button)
+- [x] `LogFoodScreen` — already migrated (Input, Button, no ActivityIndicator)
+- [x] `FreeLogScreen` — already migrated (Input, Button, no ActivityIndicator)
+- [x] `MacroSummary` — no interactive elements
+- [x] `ActivityIndicator` count = 0 in all scope files
+- [x] `TextInput` count = 0 in all scope files
+- [x] Unit tests: 4/4 pass (stage10.spec.tsx in both directories)
+- [x] Full test suite: 756 tests, all pass
 - [x] Lint: clean
 
 ---
@@ -481,7 +486,25 @@ Every interactive/styled UI element in `mobile/` is rendered through a React Nat
 2. Migrate the screens → Green
 3. Run check-in + my-health Detox specs → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 11 Checkpoint
+- [x] `InjuryBottomSheet.tsx` — `TextInput` → `Input`, `Switch` (native) → Reusables `Switch`, `ActivityIndicator` removed, cancel `Pressable` → `Button`, save `Pressable` → `Button`
+- [x] `MedicationBottomSheet.tsx` — `TextInput` → `Input`, `ActivityIndicator` removed, cancel `Pressable` → `Button`, save `Pressable` → `Button`
+- [x] `MedicalBackgroundTab.tsx` — `TextInput` → `Input`, `ActivityIndicator` → `Skeleton`, save `Pressable` → `Button`, condition-add `Pressable` → `Button`
+- [x] `InjuriesTab.tsx` — report `Pressable` → `Button`, confirm dialog `Pressable`s → `Button`
+- [x] `MedicationsTab.tsx` — add `Pressable` → `Button`, confirm dialog `Pressable`s → `Button`
+- [x] `CheckInFormScreen.tsx` — submit `Pressable` → `Button`, `ActivityIndicator` removed
+- [x] `CheckInScreen.tsx` — start check-in `Pressable` → `Button`
+- [x] `BodyMetricsSection.tsx` — `TextInput` → `Input`
+- [x] `DietSection.tsx` — `TextInput` → `Input` (diet option `Pressable`s kept as radio containers)
+- [x] `PhotosSection.tsx` — `ActivityIndicator` removed (replaced with disabled opacity + `…` text)
+- [x] `src/screens/check-in/stage11.spec.tsx` — 5 Sprint Contract tests (all passing)
+- [x] `ActivityIndicator` count = 0 in target directories
+- [x] `Switch` from `react-native` = 0 in target directories
+- [x] `@rn-primitives` direct imports = 0 in target directories
+- [x] 756 tests pass (746 baseline + 10 new)
+- [x] Lint: clean (no new errors)
 
 ---
 

@@ -57,4 +57,19 @@ describe('CheckInScheduleForm', () => {
     const saveBtn = getByTestId('schedule-save-button');
     expect(saveBtn.props.accessibilityState?.disabled).toBe(false);
   });
+
+  describe('Switch', () => {
+    it('toggles a day on/off', async () => {
+      const { getByTestId } = render(
+        <CheckInScheduleForm memberId="mem1" />,
+      );
+
+      await act(async () => {
+        fireEvent.press(getByTestId('schedule-active-switch'));
+      });
+
+      const saveBtn = getByTestId('schedule-save-button');
+      expect(saveBtn.props.accessibilityState?.disabled).toBe(false);
+    });
+  });
 });

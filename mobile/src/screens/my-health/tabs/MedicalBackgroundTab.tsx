@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHealthStore } from '../../../stores/health.store';
 import { PregnancyStatus, UpdateMedicalHistoryDto } from '../../../types/health';
-
-const WHITE = '#ffffff';
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
+import { Skeleton } from '~/components/ui/skeleton';
 
 const PREGNANCY_OPTIONS: Array<{ value: PregnancyStatus; label: string }> = [
   { value: 'n/a', label: 'N/A' },
@@ -22,7 +23,6 @@ export function MedicalBackgroundTab() {
     void fetchMedicalHistory();
   }, [fetchMedicalHistory]);
 
-  // Form fields — always mirrors medicalHistory when loaded
   const [chronicConditions, setChronicConditions] = useState<string[]>(
     medicalHistory?.chronicConditions ?? [],
   );
@@ -40,7 +40,6 @@ export function MedicalBackgroundTab() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Re-sync form when medicalHistory loads (first time)
   useEffect(() => {
     if (medicalHistory) {
       setChronicConditions(medicalHistory.chronicConditions);
@@ -120,8 +119,10 @@ export function MedicalBackgroundTab() {
 
   if (medicalHistoryLoading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator color={WHITE} />
+      <View className="px-4 py-4 gap-4">
+        <Skeleton className="h-10 w-full rounded-xl" />
+        <Skeleton className="h-10 w-full rounded-xl" />
+        <Skeleton className="h-10 w-full rounded-xl" />
       </View>
     );
   }
@@ -136,7 +137,6 @@ export function MedicalBackgroundTab() {
               Chronic Conditions
             </Text>
 
-            {/* Existing chips */}
             {chronicConditions.length > 0 ? (
               <View className="flex-row flex-wrap gap-1.5 mb-1">
                 {chronicConditions.map((condition, index) => (
@@ -159,28 +159,25 @@ export function MedicalBackgroundTab() {
               </View>
             ) : null}
 
-            {/* Input row */}
             <View className="flex-row gap-2">
-              <TextInput
+              <Input
                 testID="background-condition-input"
                 value={conditionInput}
                 onChangeText={setConditionInput}
                 placeholder="e.g. Asthma"
-                placeholderTextColor="rgba(255,255,255,0.4)"
-                className="flex-1 bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                 autoCapitalize="sentences"
                 accessibilityLabel="Add chronic condition"
                 onSubmitEditing={handleAddCondition}
+                className="flex-1"
               />
-              <Pressable
+              <Button
                 testID="background-condition-add-btn"
                 onPress={handleAddCondition}
                 accessibilityLabel="Add condition"
-                accessibilityRole="button"
-                className="bg-primary rounded-xl px-3 py-2 items-center justify-center"
+                size="sm"
               >
                 <Text className="text-xs font-semibold text-foreground">Add</Text>
-              </Pressable>
+              </Button>
             </View>
           </View>
 
@@ -189,15 +186,13 @@ export function MedicalBackgroundTab() {
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Surgeries <Text className="text-foreground/65">(optional)</Text>
             </Text>
-            <TextInput
+            <Input
               testID="background-surgeries-input"
               value={surgeries}
               onChangeText={setSurgeries}
               placeholder="Any previous surgeries..."
-              placeholderTextColor="rgba(255,255,255,0.4)"
-              className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-              multiline
               accessibilityLabel="Surgeries"
+              multiline
             />
           </View>
 
@@ -206,15 +201,13 @@ export function MedicalBackgroundTab() {
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Allergies <Text className="text-foreground/65">(optional)</Text>
             </Text>
-            <TextInput
+            <Input
               testID="background-allergies-input"
               value={allergies}
               onChangeText={setAllergies}
               placeholder="e.g. Penicillin, peanuts"
-              placeholderTextColor="rgba(255,255,255,0.4)"
-              className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-              multiline
               accessibilityLabel="Allergies"
+              multiline
             />
           </View>
 
@@ -223,15 +216,13 @@ export function MedicalBackgroundTab() {
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Family History <Text className="text-foreground/65">(optional)</Text>
             </Text>
-            <TextInput
+            <Input
               testID="background-family-history-input"
               value={familyHistory}
               onChangeText={setFamilyHistory}
               placeholder="Relevant family medical history..."
-              placeholderTextColor="rgba(255,255,255,0.4)"
-              className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-              multiline
               accessibilityLabel="Family history"
+              multiline
             />
           </View>
 
@@ -240,13 +231,11 @@ export function MedicalBackgroundTab() {
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Current Doctor <Text className="text-foreground/65">(optional)</Text>
             </Text>
-            <TextInput
+            <Input
               testID="background-doctor-input"
               value={currentDoctor}
               onChangeText={setCurrentDoctor}
               placeholder="e.g. Dr. Smith"
-              placeholderTextColor="rgba(255,255,255,0.4)"
-              className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
               autoCapitalize="words"
               accessibilityLabel="Current doctor"
             />
@@ -257,13 +246,11 @@ export function MedicalBackgroundTab() {
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Emergency Contact <Text className="text-foreground/65">(optional)</Text>
             </Text>
-            <TextInput
+            <Input
               testID="background-emergency-contact-input"
               value={emergencyContact}
               onChangeText={setEmergencyContact}
               placeholder="Name and phone number"
-              placeholderTextColor="rgba(255,255,255,0.4)"
-              className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
               autoCapitalize="words"
               accessibilityLabel="Emergency contact"
             />
@@ -299,7 +286,6 @@ export function MedicalBackgroundTab() {
             </View>
           </View>
 
-          {/* Feedback */}
           {successMsg ? (
             <Text className="text-xs text-emerald-300 text-center">{successMsg}</Text>
           ) : errorMsg ? (
@@ -313,23 +299,16 @@ export function MedicalBackgroundTab() {
         className="border-t border-foreground/10 bg-background/95 px-4 py-3"
         style={{ paddingBottom: insets.bottom || 12 }}
       >
-        <Pressable
+        <Button
           testID="background-save-btn"
           onPress={() => void handleSave()}
           disabled={!isDirty || isSaving}
           accessibilityLabel="Save medical background"
-          accessibilityRole="button"
           accessibilityState={{ disabled: !isDirty || isSaving }}
-          className={`py-3 rounded-xl items-center ${
-            isDirty && !isSaving ? 'bg-primary' : 'bg-primary/40'
-          }`}
+          className="w-full"
         >
-          {isSaving ? (
-            <ActivityIndicator color={WHITE} />
-          ) : (
-            <Text className="text-sm font-semibold text-foreground">Save</Text>
-          )}
-        </Pressable>
+          <Text className="text-sm font-semibold text-foreground">Save</Text>
+        </Button>
       </View>
     </View>
   );

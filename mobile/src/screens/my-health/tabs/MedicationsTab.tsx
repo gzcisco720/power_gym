@@ -4,6 +4,7 @@ import { useHealthStore } from '../../../stores/health.store';
 import { Medication, CreateMedicationDto, UpdateMedicationDto } from '../../../types/health';
 import { MedicationCard } from '../components/MedicationCard';
 import { MedicationBottomSheet } from '../components/MedicationBottomSheet';
+import { Button } from '~/components/ui/button';
 
 interface ConfirmDialogProps {
   visible: boolean;
@@ -32,24 +33,23 @@ function ConfirmDialog({
       <View className="w-full rounded-2xl bg-card px-6 pb-6 pt-6 gap-4">
         <Text className="text-sm text-foreground/65 text-center">{message}</Text>
         <View className="flex-row gap-3">
-          <Pressable
+          <Button
             testID={cancelTestID}
             onPress={onCancel}
             accessibilityLabel="Cancel"
-            accessibilityRole="button"
-            className="flex-1 py-2.5 rounded-xl bg-muted items-center"
+            variant="secondary"
+            className="flex-1"
           >
             <Text className="text-sm font-medium text-foreground/65">Cancel</Text>
-          </Pressable>
-          <Pressable
+          </Button>
+          <Button
             testID={confirmTestID}
             onPress={onConfirm}
             accessibilityLabel="Confirm"
-            accessibilityRole="button"
-            className="flex-1 py-2.5 rounded-xl bg-primary items-center"
+            className="flex-1"
           >
             <Text className="text-sm font-semibold text-foreground">Confirm</Text>
-          </Pressable>
+          </Button>
         </View>
       </View>
     </View>
@@ -131,15 +131,14 @@ export function MedicationsTab() {
         <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
           Active Medications
         </Text>
-        <Pressable
+        <Button
           testID="medications-add-btn"
           onPress={handleOpenCreate}
           accessibilityLabel="Add medication"
-          accessibilityRole="button"
-          className="bg-primary rounded-lg px-3 py-1.5"
+          size="sm"
         >
           <Text className="text-xs font-semibold text-foreground">+ Add Medication</Text>
-        </Pressable>
+        </Button>
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>

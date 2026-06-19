@@ -1,7 +1,6 @@
 import React from 'react';
-import { View, Text, TextInput } from 'react-native';
-
-const COLORS = { placeholder: 'rgba(255,255,255,0.4)' } as const;
+import { View, Text } from 'react-native';
+import { Input } from '~/components/ui/input';
 
 export interface BodyMetricsValues {
   weight: string;
@@ -42,14 +41,12 @@ export function BodyMetricsSection({ values, onChange }: BodyMetricsSectionProps
             {label}
             {unit ? <Text className="text-foreground/40"> {unit}</Text> : null}
           </Text>
-          <TextInput
+          <Input
             testID={testID}
             value={values[key]}
             onChangeText={(text) => onChange({ ...values, [key]: text })}
             keyboardType="decimal-pad"
             placeholder="—"
-            placeholderTextColor={COLORS.placeholder}
-            className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
           />
         </View>
       ))}

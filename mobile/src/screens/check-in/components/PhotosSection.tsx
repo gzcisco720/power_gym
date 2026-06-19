@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, Image, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, Image, Pressable, ScrollView } from 'react-native';
 import { pickAndUploadCheckInImage } from '../../../lib/check-in-image-upload';
 import { FullscreenPhotoModal } from './FullscreenPhotoModal';
 
-const COLORS = { white: '#ffffff' } as const;
 const MAX_PHOTOS = 5;
 
 interface PhotosSectionProps {
@@ -72,17 +71,13 @@ export function PhotosSection({ photos, onChange }: PhotosSectionProps) {
 
           {photos.length < MAX_PHOTOS && (
             <Pressable
-              onPress={handleAdd}
+              onPress={() => void handleAdd()}
               disabled={uploading}
               accessibilityLabel="Add photo"
               accessibilityRole="button"
-              className="w-14 h-14 rounded-lg bg-input border border-foreground/10 items-center justify-center"
+              className={`w-14 h-14 rounded-lg bg-input border border-foreground/10 items-center justify-center ${uploading ? 'opacity-50' : ''}`}
             >
-              {uploading ? (
-                <ActivityIndicator color={COLORS.white} size="small" />
-              ) : (
-                <Text className="text-xl text-foreground/65">+</Text>
-              )}
+              <Text className="text-xl text-foreground/65">{uploading ? '…' : '+'}</Text>
             </Pressable>
           )}
         </View>

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { Button } from '~/components/ui/button';
 import { WellnessSliders, WellnessValues } from './components/WellnessSliders';
 import { BodyMetricsSection, BodyMetricsValues } from './components/BodyMetricsSection';
 import { DietSection, DietValues } from './components/DietSection';
@@ -11,8 +12,6 @@ import { PhotosSection } from './components/PhotosSection';
 import { useCheckInsStore } from '../../stores/check-ins.store';
 import { createCheckIn } from '../../lib/api/check-ins.api';
 import { CreateCheckInDto } from '../../types/check-ins';
-
-const COLORS = { white: '#ffffff' } as const;
 
 const DEFAULT_WELLNESS: WellnessValues = {
   sleepQuality: 5,
@@ -155,23 +154,16 @@ export function CheckInFormScreen() {
         className="border-t border-foreground/10 px-4 py-3"
         style={{ paddingBottom: insets.bottom || 12 }}
       >
-        <Pressable
+        <Button
           testID="checkin-form-submit-button"
-          onPress={handleSubmit}
+          onPress={() => void handleSubmit()}
           disabled={!isValid || submitting}
           accessibilityLabel="Submit Check-In"
-          accessibilityRole="button"
           accessibilityState={{ disabled: !isValid || submitting }}
-          className={`py-3 rounded-xl items-center ${
-            isValid && !submitting ? 'bg-primary' : 'bg-primary/40'
-          }`}
+          className="w-full"
         >
-          {submitting ? (
-            <ActivityIndicator color={COLORS.white} />
-          ) : (
-            <Text className="text-sm font-semibold text-foreground">Submit Check-In</Text>
-          )}
-        </Pressable>
+          <Text className="text-sm font-semibold text-foreground">Submit Check-In</Text>
+        </Button>
       </View>
     </Screen>
   );
