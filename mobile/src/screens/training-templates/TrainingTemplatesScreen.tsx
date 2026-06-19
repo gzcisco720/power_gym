@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
+import { Button } from '~/components/ui/button';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
@@ -49,15 +50,16 @@ export function TrainingTemplatesScreen() {
             Manage your workout templates
           </Text>
         </View>
-        <Pressable
+        <Button
           testID="templates-add-button"
           onPress={handleCreate}
           accessibilityLabel="Create template"
-          accessibilityRole="button"
+          variant="default"
+          size="sm"
           className="rounded-lg bg-primary px-3 py-1.5"
         >
           <Text className="text-xs font-semibold text-foreground">+ Create</Text>
-        </Pressable>
+        </Button>
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>

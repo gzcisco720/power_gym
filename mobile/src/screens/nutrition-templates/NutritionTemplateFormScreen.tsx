@@ -2,12 +2,13 @@ import React, { useCallback, useMemo, useReducer, useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   Pressable,
   Modal,
   ActivityIndicator,
 } from 'react-native';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -350,12 +351,11 @@ export function NutritionTemplateFormScreen() {
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Name <Text className="text-destructive">*</Text>
             </Text>
-            <TextInput
+            <Input
               testID="template-name-input"
               value={formState.name}
               onChangeText={(v) => dispatch({ type: 'SET_NAME', value: v })}
               placeholder="e.g. High Protein Plan"
-              placeholderTextColor="rgba(255,255,255,0.4)"
               accessibilityLabel="Template name"
               className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
             />
@@ -367,15 +367,16 @@ export function NutritionTemplateFormScreen() {
               <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
                 Day Types
               </Text>
-              <Pressable
+              <Button
                 testID="add-day-type-button"
                 onPress={() => dispatch({ type: 'ADD_DAY_TYPE' })}
                 accessibilityLabel="Add day type"
-                accessibilityRole="button"
+                variant="ghost"
+                size="sm"
                 className="rounded-lg bg-primary/10 px-2.5 py-1"
               >
                 <Text className="text-xs font-semibold text-primary-light">+ Add Day Type</Text>
-              </Pressable>
+              </Button>
             </View>
 
             {formState.dayTypes.length === 0 ? (
@@ -390,13 +391,12 @@ export function NutritionTemplateFormScreen() {
                 >
                   {/* Day type header */}
                   <View className="flex-row items-center gap-2">
-                    <TextInput
+                    <Input
                       value={dayType.name}
                       onChangeText={(v) =>
                         dispatch({ type: 'SET_DAY_TYPE_NAME', index: dayTypeIndex, value: v })
                       }
                       placeholder="Day type name"
-                      placeholderTextColor="rgba(255,255,255,0.4)"
                       accessibilityLabel={`Day type ${dayTypeIndex + 1} name`}
                       className="flex-1 rounded-xl bg-input px-2.5 py-1.5 text-sm text-foreground"
                     />
@@ -419,7 +419,7 @@ export function NutritionTemplateFormScreen() {
                     >
                       {/* Meal header */}
                       <View className="flex-row items-center gap-2">
-                        <TextInput
+                        <Input
                           value={meal.name}
                           onChangeText={(v) =>
                             dispatch({
@@ -430,7 +430,6 @@ export function NutritionTemplateFormScreen() {
                             })
                           }
                           placeholder="Meal name"
-                          placeholderTextColor="rgba(255,255,255,0.4)"
                           accessibilityLabel={`Meal ${mealIndex + 1} name`}
                           className="flex-1 rounded-lg bg-input px-2 py-1.5 text-sm text-foreground"
                         />
@@ -458,7 +457,7 @@ export function NutritionTemplateFormScreen() {
                           >
                             {item.foodName}
                           </Text>
-                          <TextInput
+                          <Input
                             value={item.quantityG}
                             onChangeText={(v) => {
                               // We need food data to rescale — store food reference via a lookup
@@ -486,7 +485,6 @@ export function NutritionTemplateFormScreen() {
                             }}
                             keyboardType="decimal-pad"
                             placeholder="100"
-                            placeholderTextColor="rgba(255,255,255,0.4)"
                             accessibilityLabel={`Quantity for ${item.foodName}`}
                             className="rounded-lg bg-input px-2 py-1 text-sm text-foreground text-center w-16"
                           />
@@ -543,21 +541,21 @@ export function NutritionTemplateFormScreen() {
         className="border-t border-foreground/10 bg-background/95 px-4 py-3 flex-row gap-2"
         style={{ paddingBottom: insets.bottom || 12 }}
       >
-        <Pressable
+        <Button
           onPress={() => navigation.goBack()}
           accessibilityLabel="Cancel"
-          accessibilityRole="button"
+          variant="ghost"
           className="flex-1 py-3 rounded-xl bg-muted items-center"
         >
           <Text className="text-sm font-semibold text-foreground/65">Cancel</Text>
-        </Pressable>
-        <Pressable
+        </Button>
+        <Button
           testID="template-save-button"
           onPress={handleSave}
           disabled={!isDirty || !isValid || saving}
           accessibilityLabel="Save template"
-          accessibilityRole="button"
           accessibilityState={{ disabled: !isDirty || !isValid || saving }}
+          variant="default"
           className={`flex-1 py-3 rounded-xl items-center ${
             isDirty && isValid && !saving ? 'bg-primary' : 'bg-primary/30'
           }`}
@@ -567,7 +565,7 @@ export function NutritionTemplateFormScreen() {
           ) : (
             <Text className="text-sm font-semibold text-foreground">Save</Text>
           )}
-        </Pressable>
+        </Button>
       </View>
 
       {/* Food Search Sheet Modal */}

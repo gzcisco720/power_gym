@@ -308,10 +308,10 @@ Every interactive/styled UI element in `mobile/` is rendered through a React Nat
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `TrainingTemplateFormScreen > submit > calls save with name and exercises` — entering a name in a Reusables `Input` and adding exercises, then pressing save, calls the existing handler with that payload
-- [ ] `ExercisePicker > search > filters list on query` — typing in the Reusables `Input` filters the exercise list (existing behavior preserved)
-- [ ] `NutritionTemplateFormScreen > add food > opens FoodSearchSheet and adds selection` — selecting from the sheet adds the food to the day
-- [ ] `TrainingTemplateDetailScreen > delete > opens Reusables Dialog and confirms` — delete trigger opens the CLI dialog; confirm calls delete
+- [x] `TrainingTemplateFormScreen > submit > calls save with name and exercises` — entering a name in a Reusables `Input` and adding exercises, then pressing save, calls the existing handler with that payload
+- [x] `ExercisePicker > search > filters list on query` — typing in the Reusables `Input` filters the exercise list (existing behavior preserved)
+- [x] `NutritionTemplateFormScreen > add food > opens FoodSearchSheet and adds selection` — selecting from the sheet adds the food to the day
+- [x] `TrainingTemplateDetailScreen > delete > opens Reusables Dialog and confirms` — delete trigger opens the CLI dialog; confirm calls delete
 
 *Integration / E2E:*
 - [ ] `mobile/e2e/trainer/training-templates.spec.ts` — Trainer creates a template, adds an exercise, saves → template appears in list (golden path)
@@ -322,7 +322,24 @@ Every interactive/styled UI element in `mobile/` is rendered through a React Nat
 2. Migrate screens → Green
 3. Run template Detox specs → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 7 Checkpoint
+- [x] `TrainingTemplatesScreen.tsx` — create `Pressable` → `Button`
+- [x] `TrainingTemplateFormScreen.tsx` — all `TextInput` → `Input`, button `Pressable`s → `Button`
+- [x] `TrainingTemplateDetailScreen.tsx` — header/dialog `Pressable` → `Button`, `Pressable` import removed
+- [x] `ExercisePicker.tsx` — search `TextInput` → `Input`, close/create `Pressable` → `Button`
+- [x] `NutritionTemplatesScreen.tsx` — create `Pressable` → `Button`
+- [x] `NutritionTemplateFormScreen.tsx` — all `TextInput` → `Input`, button `Pressable`s → `Button`
+- [x] `NutritionTemplateDetailScreen.tsx` — header/dialog `Pressable` → `Button`, `Pressable` import removed
+- [x] `components/FoodSearchSheet.tsx` — search `TextInput` → `Input`, close/create `Pressable` → `Button`
+- [x] `TrainingTemplateFormScreen.spec.tsx` — added `submit > calls save with name and exercises`
+- [x] `ExercisePicker.spec.tsx` — added `search > filters list on query`
+- [x] `NutritionTemplateFormScreen.test.tsx` — added `add food > opens FoodSearchSheet and adds selection`
+- [x] `TrainingTemplateDetailScreen.spec.tsx` — added `delete > opens Reusables Dialog and confirms`
+- [x] 738 tests pass (734 baseline + 4 new)
+- [x] Lint clean
+- [x] No new TypeScript errors in production files
 
 ---
 

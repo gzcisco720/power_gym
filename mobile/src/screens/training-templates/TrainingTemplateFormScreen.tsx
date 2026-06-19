@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useReducer, useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   Pressable,
   Modal,
@@ -13,6 +12,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 import { ExercisePicker } from './ExercisePicker';
 import { useTrainingTemplatesStore } from '../../stores/training-templates.store';
 import { Exercise, PlanDay, PlanDayExercise } from '../../types/training-templates';
@@ -288,12 +289,11 @@ export function TrainingTemplateFormScreen() {
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Name <Text className="text-destructive">*</Text>
             </Text>
-            <TextInput
+            <Input
               testID="template-name-input"
               value={formState.name}
               onChangeText={(v) => dispatch({ type: 'SET_NAME', value: v })}
               placeholder="e.g. Push Pull Legs"
-              placeholderTextColor="rgba(255,255,255,0.4)"
               accessibilityLabel="Template name"
               className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
             />
@@ -305,11 +305,10 @@ export function TrainingTemplateFormScreen() {
               Description{' '}
               <Text className="text-foreground/65 text-[11px] normal-case">(optional)</Text>
             </Text>
-            <TextInput
+            <Input
               value={formState.description}
               onChangeText={(v) => dispatch({ type: 'SET_DESCRIPTION', value: v })}
               placeholder="Brief description..."
-              placeholderTextColor="rgba(255,255,255,0.4)"
               accessibilityLabel="Template description"
               multiline
               numberOfLines={2}
@@ -323,15 +322,16 @@ export function TrainingTemplateFormScreen() {
               <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65">
                 Days
               </Text>
-              <Pressable
+              <Button
                 testID="add-day-button"
                 onPress={() => dispatch({ type: 'ADD_DAY' })}
                 accessibilityLabel="Add day"
-                accessibilityRole="button"
+                variant="ghost"
+                size="sm"
                 className="rounded-lg bg-primary/10 px-2.5 py-1"
               >
                 <Text className="text-xs font-semibold text-primary-light">+ Add Day</Text>
-              </Pressable>
+              </Button>
             </View>
 
             {formState.days.length === 0 ? (
@@ -368,13 +368,12 @@ export function TrainingTemplateFormScreen() {
                       </Pressable>
                     </View>
 
-                    <TextInput
+                    <Input
                       value={day.name}
                       onChangeText={(v) =>
                         dispatch({ type: 'SET_DAY_NAME', index: dayIndex, value: v })
                       }
                       placeholder="Day name"
-                      placeholderTextColor="rgba(255,255,255,0.4)"
                       accessibilityLabel={`Day ${dayIndex + 1} name`}
                       className="flex-1 rounded-xl bg-input px-2.5 py-1.5 text-sm text-foreground"
                     />
@@ -414,7 +413,7 @@ export function TrainingTemplateFormScreen() {
                           <Text className="text-[10px] uppercase tracking-wider text-foreground/65">
                             Sets
                           </Text>
-                          <TextInput
+                          <Input
                             value={ex.sets}
                             onChangeText={(v) =>
                               dispatch({
@@ -427,7 +426,6 @@ export function TrainingTemplateFormScreen() {
                             }
                             keyboardType="decimal-pad"
                             placeholder="3"
-                            placeholderTextColor="rgba(255,255,255,0.4)"
                             accessibilityLabel={`Sets for ${ex.exerciseName}`}
                             className="rounded-lg bg-input px-2 py-1.5 text-sm text-foreground text-center"
                           />
@@ -436,7 +434,7 @@ export function TrainingTemplateFormScreen() {
                           <Text className="text-[10px] uppercase tracking-wider text-foreground/65">
                             Min reps
                           </Text>
-                          <TextInput
+                          <Input
                             value={ex.repsMin}
                             onChangeText={(v) =>
                               dispatch({
@@ -449,7 +447,6 @@ export function TrainingTemplateFormScreen() {
                             }
                             keyboardType="decimal-pad"
                             placeholder="8"
-                            placeholderTextColor="rgba(255,255,255,0.4)"
                             accessibilityLabel={`Min reps for ${ex.exerciseName}`}
                             className="rounded-lg bg-input px-2 py-1.5 text-sm text-foreground text-center"
                           />
@@ -458,7 +455,7 @@ export function TrainingTemplateFormScreen() {
                           <Text className="text-[10px] uppercase tracking-wider text-foreground/65">
                             Max reps
                           </Text>
-                          <TextInput
+                          <Input
                             value={ex.repsMax}
                             onChangeText={(v) =>
                               dispatch({
@@ -471,7 +468,6 @@ export function TrainingTemplateFormScreen() {
                             }
                             keyboardType="decimal-pad"
                             placeholder="12"
-                            placeholderTextColor="rgba(255,255,255,0.4)"
                             accessibilityLabel={`Max reps for ${ex.exerciseName}`}
                             className="rounded-lg bg-input px-2 py-1.5 text-sm text-foreground text-center"
                           />
@@ -480,7 +476,7 @@ export function TrainingTemplateFormScreen() {
                           <Text className="text-[10px] uppercase tracking-wider text-foreground/65">
                             Rest (s)
                           </Text>
-                          <TextInput
+                          <Input
                             value={ex.restSeconds}
                             onChangeText={(v) =>
                               dispatch({
@@ -493,7 +489,6 @@ export function TrainingTemplateFormScreen() {
                             }
                             keyboardType="decimal-pad"
                             placeholder="90"
-                            placeholderTextColor="rgba(255,255,255,0.4)"
                             accessibilityLabel={`Rest seconds for ${ex.exerciseName}`}
                             className="rounded-lg bg-input px-2 py-1.5 text-sm text-foreground text-center"
                           />
@@ -528,21 +523,21 @@ export function TrainingTemplateFormScreen() {
         className="border-t border-foreground/10 bg-background/95 px-4 py-3 flex-row gap-2"
         style={{ paddingBottom: insets.bottom || 12 }}
       >
-        <Pressable
+        <Button
           onPress={() => navigation.goBack()}
           accessibilityLabel="Cancel"
-          accessibilityRole="button"
+          variant="ghost"
           className="flex-1 py-3 rounded-xl bg-muted items-center"
         >
           <Text className="text-sm font-semibold text-foreground/65">Cancel</Text>
-        </Pressable>
-        <Pressable
+        </Button>
+        <Button
           testID="template-save-button"
           onPress={handleSave}
           disabled={!isDirty || !isValid || saving}
           accessibilityLabel="Save template"
-          accessibilityRole="button"
           accessibilityState={{ disabled: !isDirty || !isValid || saving }}
+          variant="default"
           className={`flex-1 py-3 rounded-xl items-center ${
             isDirty && isValid && !saving ? 'bg-primary' : 'bg-primary/30'
           }`}
@@ -552,7 +547,7 @@ export function TrainingTemplateFormScreen() {
           ) : (
             <Text className="text-sm font-semibold text-foreground">Save</Text>
           )}
-        </Pressable>
+        </Button>
       </View>
 
       {/* Exercise Picker Modal */}

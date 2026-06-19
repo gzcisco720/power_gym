@@ -2,12 +2,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   Pressable,
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 import { useFoodsStore } from '../../../stores/foods.store';
 import { createFood } from '../../../lib/api/foods.api';
 import { Food } from '../../../types/nutrition-templates';
@@ -73,36 +74,36 @@ export function FoodSearchSheet({ onSelect, onClose }: FoodSearchSheetProps) {
         <Text className="text-[18px] font-semibold tracking-[-0.3px] text-foreground">
           Search Foods
         </Text>
-        <Pressable
+        <Button
           onPress={onClose}
           accessibilityLabel="Close food search"
-          accessibilityRole="button"
+          variant="ghost"
+          size="icon"
           className="p-1"
         >
           <Text className="text-[18px] text-foreground/65">✕</Text>
-        </Pressable>
+        </Button>
       </View>
 
       {/* Search input */}
       <View className="px-4 py-3 border-b border-foreground/[.06]">
-        <TextInput
+        <Input
           testID="food-search-input"
           value={query}
           onChangeText={handleQueryChange}
           placeholder="Search foods..."
-          placeholderTextColor="rgba(255,255,255,0.4)"
           accessibilityLabel="Search foods"
           className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
         />
       </View>
 
       {/* Create custom food option */}
-      <Pressable
+      <Button
         testID="create-custom-food-button"
         onPress={handleCreateCustom}
         disabled={creating}
         accessibilityLabel="Create custom food"
-        accessibilityRole="button"
+        variant="ghost"
         className="mx-4 mt-3 mb-1 flex-row items-center gap-2 rounded-xl bg-primary/10 px-3 py-2.5"
       >
         {creating ? (
@@ -112,7 +113,7 @@ export function FoodSearchSheet({ onSelect, onClose }: FoodSearchSheetProps) {
             {query.trim() ? `Create "${query.trim()}"` : 'Create custom food'}
           </Text>
         )}
-      </Pressable>
+      </Button>
       {createError ? (
         <Text className="mx-4 text-xs text-destructive">{createError}</Text>
       ) : null}

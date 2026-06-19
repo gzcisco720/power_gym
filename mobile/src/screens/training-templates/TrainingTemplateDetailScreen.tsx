@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { Button } from '~/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -66,24 +67,26 @@ export function TrainingTemplateDetailScreen() {
         onBack={() => navigation.goBack()}
         right={
           <View className="flex-row gap-2">
-            <Pressable
+            <Button
               testID="template-edit-button"
               onPress={handleEdit}
               accessibilityLabel="Edit template"
-              accessibilityRole="button"
+              variant="ghost"
+              size="sm"
               className="px-3 py-1.5 rounded-xl bg-primary/10"
             >
               <Text className="text-sm font-semibold text-primary-light">Edit</Text>
-            </Pressable>
-            <Pressable
+            </Button>
+            <Button
               testID="template-delete-button"
               onPress={() => setDeleteDialogVisible(true)}
               accessibilityLabel="Delete template"
-              accessibilityRole="button"
+              variant="ghost"
+              size="sm"
               className="px-3 py-1.5 rounded-xl bg-destructive/10"
             >
               <Text className="text-sm font-semibold text-destructive">Delete</Text>
-            </Pressable>
+            </Button>
           </View>
         }
       />
@@ -143,21 +146,21 @@ export function TrainingTemplateDetailScreen() {
             This cannot be undone.
           </Text>
           <View className="flex-row gap-3">
-            <Pressable
+            <Button
               onPress={() => setDeleteDialogVisible(false)}
               disabled={isDeleting}
               accessibilityLabel="Cancel delete"
-              accessibilityRole="button"
+              variant="ghost"
               className="flex-1 py-3 rounded-xl bg-muted items-center"
             >
               <Text className="text-sm font-semibold text-foreground/65">Cancel</Text>
-            </Pressable>
-            <Pressable
+            </Button>
+            <Button
               testID="template-delete-confirm"
               onPress={handleDeleteConfirm}
               disabled={isDeleting}
               accessibilityLabel="Confirm delete"
-              accessibilityRole="button"
+              variant="ghost"
               className="flex-1 py-3 rounded-xl bg-destructive/10 items-center"
             >
               {isDeleting ? (
@@ -165,7 +168,7 @@ export function TrainingTemplateDetailScreen() {
               ) : (
                 <Text className="text-sm font-semibold text-destructive">Delete</Text>
               )}
-            </Pressable>
+            </Button>
           </View>
         </DialogContent>
       </Dialog>

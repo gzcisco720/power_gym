@@ -55,6 +55,28 @@ afterEach(() => {
 });
 
 describe('ExercisePicker', () => {
+  describe('search', () => {
+    it('filters list on query', () => {
+      const exercises = [
+        makeExercise({ _id: 'ex1', name: 'Bench Press' }),
+        makeExercise({ _id: 'ex2', name: 'Squat', muscleGroup: 'Legs' }),
+      ];
+      const { search } = setupExercisesStore(exercises);
+
+      const { getByTestId } = render(
+        <ExercisePicker onSelect={jest.fn()} onClose={jest.fn()} />,
+      );
+
+      // Type a query into the Reusables Input
+      fireEvent.changeText(getByTestId('exercise-search-input'), 'squat');
+      jest.advanceTimersByTime(350);
+
+      expect(search).toHaveBeenCalledWith('squat');
+      // Results rendered
+      expect(getByTestId('exercise-result-Squat')).toBeTruthy();
+    });
+  });
+
   it('calls exercisesStore.search with the typed query and renders a result row per returned exercise', () => {
     const exercises = [
       makeExercise({ _id: 'ex1', name: 'Bench Press' }),

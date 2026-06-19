@@ -86,6 +86,41 @@ beforeEach(() => {
 });
 
 describe('NutritionTemplateFormScreen', () => {
+  describe('add food', () => {
+    it('opens FoodSearchSheet and adds selection', async () => {
+      const food: Food = {
+        _id: 'food1',
+        name: 'Chicken Breast',
+        brand: null,
+        macrosPer100g: { kcal: 165, protein: 31, carbs: 0, fat: 3.6 },
+        servings: [],
+        createdBy: 'system',
+        createdAt: '2024-01-01T00:00:00Z',
+      };
+      setupFoodsStore([food]);
+
+      const { getByTestId, getByText } = render(<NutritionTemplateFormScreen />);
+
+      // Add day type and meal
+      fireEvent.press(getByTestId('add-day-type-button'));
+      fireEvent.press(getByTestId('add-meal-button-0'));
+
+      // Tap add food to open FoodSearchSheet
+      fireEvent.press(getByTestId('add-food-button-0-0'));
+
+      // FoodSearchSheet input should be visible
+      expect(getByTestId('food-search-input')).toBeTruthy();
+
+      // Tap the food result
+      fireEvent.press(getByTestId('food-result-Chicken Breast'));
+
+      // Food should appear in meal
+      await waitFor(() => {
+        expect(getByText('Chicken Breast')).toBeTruthy();
+      });
+    });
+  });
+
   it('save button is disabled when template name is empty and enabled after entering a name', () => {
     const { getByTestId } = render(<NutritionTemplateFormScreen />);
 

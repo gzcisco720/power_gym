@@ -82,6 +82,27 @@ beforeEach(() => {
 });
 
 describe('TrainingTemplateFormScreen', () => {
+  describe('submit', () => {
+    it('calls save with name and exercises', async () => {
+      const store = setupTemplatesStore();
+      setupExercisesStore();
+
+      const { getByTestId } = render(<TrainingTemplateFormScreen />);
+
+      // Enter template name
+      fireEvent.changeText(getByTestId('template-name-input'), 'My Template');
+
+      // Save is enabled — press it
+      fireEvent.press(getByTestId('template-save-button'));
+
+      await new Promise((r) => setTimeout(r, 0));
+
+      expect(store.createAndAdd).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'My Template' }),
+      );
+    });
+  });
+
   it('save button is disabled until name is present and remains disabled while an added exercise is missing sets/reps', () => {
     const { getByTestId } = render(<TrainingTemplateFormScreen />);
 

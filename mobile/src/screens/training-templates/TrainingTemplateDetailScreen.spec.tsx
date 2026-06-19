@@ -82,6 +82,28 @@ beforeEach(() => {
 });
 
 describe('TrainingTemplateDetailScreen', () => {
+  describe('delete', () => {
+    it('opens Reusables Dialog and confirms', async () => {
+      const template = makeTemplate();
+      const state = setupStoreMock([template]);
+
+      const { getByTestId } = render(<TrainingTemplateDetailScreen />);
+
+      // Tap delete button
+      fireEvent.press(getByTestId('template-delete-button'));
+
+      // Dialog confirm button appears
+      expect(getByTestId('template-delete-confirm')).toBeTruthy();
+
+      // Confirm delete
+      fireEvent.press(getByTestId('template-delete-confirm'));
+
+      await new Promise((r) => setTimeout(r, 0));
+
+      expect(state.removeAndDelete).toHaveBeenCalledWith('tpl1');
+    });
+  });
+
   it('renders each day with its exercises showing "sets × repsMin–repsMax" and opens the confirm dialog when delete is pressed', () => {
     const template = makeTemplate();
     setupStoreMock([template]);

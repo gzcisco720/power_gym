@@ -2,12 +2,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   Pressable,
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 import { useExercisesStore } from '../../stores/exercises.store';
 import { Exercise } from '../../types/training-templates';
 import { createExercise } from '../../lib/api/exercises.api';
@@ -76,36 +77,36 @@ export function ExercisePicker({ onSelect, onClose }: ExercisePickerProps) {
         <Text className="text-[18px] font-semibold tracking-[-0.3px] text-foreground">
           Pick Exercise
         </Text>
-        <Pressable
+        <Button
           onPress={onClose}
           accessibilityLabel="Close exercise picker"
-          accessibilityRole="button"
+          variant="ghost"
+          size="icon"
           className="p-1"
         >
           <Text className="text-[18px] text-foreground/65">✕</Text>
-        </Pressable>
+        </Button>
       </View>
 
       {/* Search input */}
       <View className="px-4 py-3 border-b border-foreground/[.06]">
-        <TextInput
+        <Input
           testID="exercise-search-input"
           value={query}
           onChangeText={handleQueryChange}
           placeholder="Search exercises..."
-          placeholderTextColor="rgba(255,255,255,0.4)"
           accessibilityLabel="Search exercises"
           className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
         />
       </View>
 
       {/* Create custom option */}
-      <Pressable
+      <Button
         testID="create-custom-exercise-button"
         onPress={handleCreateCustom}
         disabled={creating}
         accessibilityLabel="Create custom exercise"
-        accessibilityRole="button"
+        variant="ghost"
         className="mx-4 mt-3 mb-1 flex-row items-center gap-2 rounded-xl bg-primary/10 px-3 py-2.5"
       >
         {creating ? (
@@ -115,7 +116,7 @@ export function ExercisePicker({ onSelect, onClose }: ExercisePickerProps) {
             {query.trim() ? `Create "${query.trim()}"` : 'Create custom exercise'}
           </Text>
         )}
-      </Pressable>
+      </Button>
       {createError ? (
         <Text className="mx-4 text-xs text-destructive">{createError}</Text>
       ) : null}
