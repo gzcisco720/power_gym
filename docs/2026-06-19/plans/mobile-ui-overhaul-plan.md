@@ -202,10 +202,10 @@ Every interactive/styled UI element in `mobile/` is rendered through a React Nat
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `AddEquipmentSheet > submit > calls create with form values` — filling Reusables `Input`s and toggling the Reusables `Switch`, then pressing the Reusables `Button`, calls the existing create handler with those values
-- [ ] `ServiceBottomSheet > Switch > toggles active flag` — toggling the Reusables `Switch` updates the active field passed on submit
-- [ ] `FoodFormScreen > delete > opens AlertDialog and confirms` — pressing delete opens a Reusables dialog; confirming calls the delete handler
-- [ ] `EquipmentScreen > loading > renders Skeleton rows` — loading state shows Reusables `Skeleton`, not `ActivityIndicator`
+- [x] `AddEquipmentSheet > submit > calls create with form values` — filling Reusables `Input`s and toggling the Reusables `Switch`, then pressing the Reusables `Button`, calls the existing create handler with those values
+- [x] `ServiceBottomSheet > Switch > toggles active flag` — toggling the Reusables `Switch` updates the active field passed on submit
+- [x] `FoodFormScreen > delete > opens AlertDialog and confirms` — pressing delete opens a Reusables dialog; confirming calls the delete handler
+- [x] `EquipmentScreen > loading > renders Skeleton rows` — loading state shows Reusables `Skeleton`, not `ActivityIndicator`
 
 *Integration / E2E:*
 - [ ] `mobile/e2e/owner/equipment.spec.ts` — Owner adds equipment via the sheet → new item appears in the list (golden path)
@@ -216,7 +216,7 @@ Every interactive/styled UI element in `mobile/` is rendered through a React Nat
 2. Migrate the screens → Green
 3. Run Detox specs for equipment add + food delete → passes
 
-**Status**: Not Started
+**Status**: Complete
 
 ---
 
