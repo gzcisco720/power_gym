@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
+import { Button } from '~/components/ui/button';
+import { Skeleton } from '~/components/ui/skeleton';
 import { fetchMemberNutritionHistory, fetchMemberNutritionPlan } from '../../../lib/api/nutrition.api';
 import { ActiveNutritionPlan, DayType, MemberNutritionPlan, MealItem, NutritionDailyLog } from '../../../types/nutrition';
 
@@ -199,28 +201,27 @@ export function MemberNutritionTab({
           {activePlan ? (
             <View className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 flex-row items-center justify-between">
               <Text className="text-sm font-medium text-foreground">{activePlan.name}</Text>
-              <Pressable
+              <Button
                 testID="assign-nutrition-plan-button"
                 onPress={onAssignPress}
                 accessibilityLabel="Reassign nutrition plan"
-                accessibilityRole="button"
-                className="rounded-lg bg-muted px-2.5 py-1"
+                variant="ghost"
+                size="sm"
               >
                 <Text className="text-xs text-foreground/65">Reassign</Text>
-              </Pressable>
+              </Button>
             </View>
           ) : (
             <View className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 flex-row items-center justify-between">
               <Text className="text-sm text-foreground/65">No plan assigned</Text>
-              <Pressable
+              <Button
                 testID="assign-nutrition-plan-button"
                 onPress={onAssignPress}
                 accessibilityLabel="Assign nutrition plan"
-                accessibilityRole="button"
-                className="rounded-lg bg-primary px-2.5 py-1"
+                size="sm"
               >
                 <Text className="text-xs font-semibold text-foreground">Assign</Text>
-              </Pressable>
+              </Button>
             </View>
           )}
         </View>
@@ -246,7 +247,7 @@ export function MemberNutritionTab({
           {loading ? (
             <>
               {[0, 1, 2].map((i) => (
-                <View key={i} className="rounded-xl bg-muted h-12 opacity-60" />
+                <Skeleton key={i} className="h-12 rounded-xl" />
               ))}
             </>
           ) : history.length === 0 ? (

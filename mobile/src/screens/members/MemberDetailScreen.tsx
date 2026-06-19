@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
+import { Skeleton } from '~/components/ui/skeleton';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
@@ -126,7 +127,7 @@ export function MemberDetailScreen() {
       {detailLoading || !detail ? (
         <View className="px-4 py-4 gap-2">
           {[0, 1, 2].map((i) => (
-            <View key={i} className="rounded-xl bg-muted h-12 opacity-60" />
+            <Skeleton key={i} className="h-12 rounded-xl" />
           ))}
         </View>
       ) : (

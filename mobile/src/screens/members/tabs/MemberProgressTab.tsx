@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useMemberProgressStore } from '../../../stores/member-progress.store';
+import { Progress } from '~/components/ui/progress';
+import { Skeleton } from '~/components/ui/skeleton';
 
 interface MemberProgressTabProps {
   memberId: string;
@@ -67,7 +69,7 @@ export function MemberProgressTab({ memberId }: MemberProgressTabProps) {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="px-4 py-4 gap-2">
           {[0, 1, 2].map((i) => (
-            <View key={i} className="rounded-xl bg-muted h-12 opacity-60" />
+            <Skeleton key={i} className="h-12 rounded-xl" />
           ))}
         </View>
       </ScrollView>
@@ -142,6 +144,26 @@ export function MemberProgressTab({ memberId }: MemberProgressTabProps) {
               })}
             </View>
           </ScrollView>
+
+          {/* Progress bars for each exercise */}
+          <View className="gap-2">
+            {exercises.map((ex) => (
+              <View key={`progress-${ex.exerciseId}`} className="gap-1">
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-xs text-foreground/65" numberOfLines={1}>
+                    {ex.exerciseName}
+                  </Text>
+                  {ex.completionRate !== undefined ? (
+                    <Text className="text-xs text-foreground/65">{`${ex.completionRate}%`}</Text>
+                  ) : null}
+                </View>
+                <Progress
+                  testID={`progress-bar-${ex.exerciseId}`}
+                  value={ex.completionRate ?? 0}
+                />
+              </View>
+            ))}
+          </View>
         </View>
 
         {/* Exercise history section */}
@@ -154,7 +176,7 @@ export function MemberProgressTab({ memberId }: MemberProgressTabProps) {
             {loadingHistory ? (
               <>
                 {[0, 1, 2].map((i) => (
-                  <View key={i} className="rounded-xl bg-muted h-16 opacity-60" />
+                  <Skeleton key={i} className="h-16 rounded-xl" />
                 ))}
               </>
             ) : history && history.sessions.length > 0 ? (

@@ -7,6 +7,8 @@ import {
   Image,
   Modal,
 } from 'react-native';
+import { Button } from '~/components/ui/button';
+import { Skeleton } from '~/components/ui/skeleton';
 import { useMemberPhotosStore } from '../../../stores/member-photos.store';
 import { MemberPhoto } from '../../../types/check-ins';
 
@@ -76,7 +78,7 @@ export function MemberPhotosTab({ memberId }: MemberPhotosTabProps) {
     return (
       <View className="px-4 py-4 gap-2">
         {[0, 1, 2].map((i) => (
-          <View key={i} className="rounded-xl bg-muted h-24 opacity-60" />
+          <Skeleton key={i} className="h-24 rounded-xl" />
         ))}
       </View>
     );
@@ -108,28 +110,30 @@ export function MemberPhotosTab({ memberId }: MemberPhotosTabProps) {
                     ? 'Tap to select photos'
                     : `${selected.length} of 2 selected`}
                 </Text>
-                <Pressable
+                <Button
                   testID="photos-cancel-button"
                   onPress={exitSelectMode}
                   accessibilityLabel="Cancel selection"
-                  accessibilityRole="button"
+                  variant="ghost"
+                  size="sm"
                 >
                   <Text className="text-xs text-foreground/65">Cancel</Text>
-                </Pressable>
+                </Button>
               </>
             ) : (
               <>
                 <Text className="text-xs text-foreground/40">{photos.length} photos</Text>
                 {photos.length >= 2 && (
-                  <Pressable
+                  <Button
                     testID="photos-select-button"
                     onPress={enterSelectMode}
                     accessibilityLabel="Select photos to compare"
-                    accessibilityRole="button"
-                    className="rounded-lg bg-primary/10 border border-primary/25 px-3 py-1.5"
+                    variant="outline"
+                    size="sm"
+                    className="rounded-lg"
                   >
                     <Text className="text-xs font-semibold text-primary-light">Select</Text>
-                  </Pressable>
+                  </Button>
                 )}
               </>
             )}
@@ -182,15 +186,15 @@ export function MemberPhotosTab({ memberId }: MemberPhotosTabProps) {
                 {' · '}
                 {compareRight && formatShortDate(compareRight.submittedAt)}
               </Text>
-              <Pressable
+              <Button
                 testID="photos-compare-button"
                 onPress={() => setCompareOpen(true)}
                 accessibilityLabel="Compare selected photos"
-                accessibilityRole="button"
-                className="rounded-lg bg-primary px-4 py-2"
+                size="sm"
+                className="rounded-lg"
               >
                 <Text className="text-xs font-semibold text-foreground">Compare Photos</Text>
-              </Pressable>
+              </Button>
             </View>
           )}
         </View>
@@ -228,14 +232,14 @@ export function MemberPhotosTab({ memberId }: MemberPhotosTabProps) {
                   </Text>
                 ) : null}
               </View>
-              <Pressable
+              <Button
                 accessibilityLabel="Close photo"
-                accessibilityRole="button"
                 onPress={() => setSelectedPhoto(null)}
-                className="mx-4 mb-4 rounded-xl bg-muted items-center py-2"
+                variant="ghost"
+                className="mx-4 mb-4 rounded-xl"
               >
                 <Text className="text-sm font-medium text-foreground/65">Close</Text>
-              </Pressable>
+              </Button>
             </View>
           ) : null}
         </View>
@@ -255,14 +259,15 @@ export function MemberPhotosTab({ memberId }: MemberPhotosTabProps) {
           {/* Header */}
           <View className="flex-row items-center justify-between px-4 py-3 border-b border-foreground/[.06]">
             <Text className="text-sm font-semibold text-foreground">Photo Comparison</Text>
-            <Pressable
+            <Button
               accessibilityLabel="Close comparison"
-              accessibilityRole="button"
               onPress={() => setCompareOpen(false)}
-              className="rounded-lg bg-muted px-3 py-1.5"
+              variant="ghost"
+              size="sm"
+              className="rounded-lg"
             >
               <Text className="text-xs text-foreground/65">Close</Text>
-            </Pressable>
+            </Button>
           </View>
 
           {/* Two-column comparison */}

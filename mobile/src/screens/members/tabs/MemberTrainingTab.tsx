@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Button } from '~/components/ui/button';
+import { Skeleton } from '~/components/ui/skeleton';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   fetchMemberHistory,
@@ -115,14 +117,14 @@ export function MemberTrainingTab({ memberId, memberName, activePlan, onAssignPr
       <View className="px-4 py-4 gap-4">
         {/* Active session continue banner */}
         {activeSession !== null ? (
-          <Pressable
+          <Button
             testID="active-session-banner"
-            accessibilityRole="button"
             accessibilityLabel="Continue active session"
             onPress={() => navigation.navigate('TrainerWorkoutSession', { memberId, memberName })}
-            className="rounded-xl bg-primary/15 ring-1 ring-primary/30 px-3 py-2 flex-row items-center justify-between"
+            variant="outline"
+            className="rounded-xl bg-primary/15 ring-1 ring-primary/30 px-3 py-2 flex-row items-center justify-between h-auto"
           >
-            <View className="flex-1">
+            <View className="flex-1 items-start">
               <Text className="text-xs font-semibold text-primary-light">
                 Session In Progress
               </Text>
@@ -131,7 +133,7 @@ export function MemberTrainingTab({ memberId, memberName, activePlan, onAssignPr
               </Text>
             </View>
             <Text className="text-xs font-semibold text-primary-light ml-2">Continue →</Text>
-          </Pressable>
+          </Button>
         ) : null}
 
         {/* Active plan section */}
@@ -143,28 +145,27 @@ export function MemberTrainingTab({ memberId, memberName, activePlan, onAssignPr
           {activePlan ? (
             <View className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 flex-row items-center justify-between">
               <Text className="text-sm font-medium text-foreground">{activePlan.name}</Text>
-              <Pressable
+              <Button
                 testID="assign-plan-button"
                 onPress={onAssignPress}
                 accessibilityLabel="Reassign plan"
-                accessibilityRole="button"
-                className="rounded-lg bg-muted px-2.5 py-1"
+                variant="ghost"
+                size="sm"
               >
                 <Text className="text-xs text-foreground/65">Reassign</Text>
-              </Pressable>
+              </Button>
             </View>
           ) : (
             <View className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2 flex-row items-center justify-between">
               <Text className="text-sm text-foreground/65">No plan assigned</Text>
-              <Pressable
+              <Button
                 testID="assign-plan-button"
                 onPress={onAssignPress}
                 accessibilityLabel="Assign plan"
-                accessibilityRole="button"
-                className="rounded-lg bg-primary px-2.5 py-1"
+                size="sm"
               >
                 <Text className="text-xs font-semibold text-foreground">Assign</Text>
-              </Pressable>
+              </Button>
             </View>
           )}
         </View>
@@ -177,16 +178,15 @@ export function MemberTrainingTab({ memberId, memberName, activePlan, onAssignPr
             </Text>
             <View className="flex-row flex-wrap gap-2">
               {logPlan.days.map((day) => (
-                <Pressable
+                <Button
                   key={day.dayNumber}
                   testID={`log-session-day-${day.dayNumber}`}
                   onPress={() => void handleLogSessionDay(day)}
                   accessibilityLabel={`Log session for ${day.name}`}
-                  accessibilityRole="button"
-                  className="rounded-xl bg-primary px-3 py-2 min-h-11 min-w-11 items-center justify-center"
+                  className="rounded-xl min-h-11 min-w-11"
                 >
                   <Text className="text-xs font-semibold text-foreground">{day.name}</Text>
-                </Pressable>
+                </Button>
               ))}
             </View>
           </View>
@@ -219,7 +219,7 @@ export function MemberTrainingTab({ memberId, memberName, activePlan, onAssignPr
           {loading ? (
             <>
               {[0, 1, 2].map((i) => (
-                <View key={i} className="rounded-xl bg-muted h-12 opacity-60" />
+                <Skeleton key={i} className="h-12 rounded-xl" />
               ))}
             </>
           ) : history.length === 0 ? (
@@ -247,9 +247,12 @@ export function MemberTrainingTab({ memberId, memberName, activePlan, onAssignPr
                     const volume = computeVolume(session);
                     const accentClass = accentColorForDay(session.dayName);
                     return (
-                      <View
+                      <Pressable
                         key={session._id}
                         testID={`history-session-${session._id}`}
+                        accessibilityRole="button"
+                        accessibilityLabel={`View session ${session.dayName}`}
+                        onPress={() => navigation.navigate('SelfSessionDetail', { sessionId: session._id })}
                         className="rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden"
                       >
                         <View
@@ -275,7 +278,7 @@ export function MemberTrainingTab({ memberId, memberName, activePlan, onAssignPr
                             ) : null}
                           </View>
                         </View>
-                      </View>
+                      </Pressable>
                     );
                   })}
                 </View>

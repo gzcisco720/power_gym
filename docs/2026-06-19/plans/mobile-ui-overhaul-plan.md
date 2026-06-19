@@ -350,10 +350,10 @@ Every interactive/styled UI element in `mobile/` is rendered through a React Nat
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `MemberDetailScreen > Tabs > switches between member tabs` — Reusables `Tabs` triggers swap the rendered tab (Overview/Training/Progress/CheckIns)
-- [ ] `MemberProgressTab > renders Progress bar from props` — a Reusables `Progress` reflects the supplied completion value
-- [ ] `MemberTrainingTab > row press > navigates to session/plan` — pressing a training row triggers the existing navigation call
-- [ ] `MemberOverviewTab > loading > renders Skeleton` — loading shows Reusables `Skeleton`, not `ActivityIndicator`
+- [x] `MemberDetailScreen > Tabs > switches between member tabs` — Reusables `Tabs` triggers swap the rendered tab (Overview/Training/Progress/CheckIns)
+- [x] `MemberProgressTab > renders Progress bar from props` — a Reusables `Progress` reflects the supplied completion value
+- [x] `MemberTrainingTab > row press > navigates to session/plan` — pressing a training row triggers the existing navigation call
+- [x] `MemberOverviewTab > loading > renders Skeleton` — loading shows Reusables `Skeleton`, not `ActivityIndicator`
 
 *Integration / E2E:*
 - [ ] `mobile/e2e/owner/member-detail.spec.ts` — open a member, switch to Progress tab → progress bars/charts render (golden path)
@@ -364,7 +364,22 @@ Every interactive/styled UI element in `mobile/` is rendered through a React Nat
 2. Migrate the tab + component files → Green
 3. Run member-detail Detox spec → passes
 
-**Status**: Not Started
+**Status**: In Progress
+
+### Stage 8 Checkpoint
+- [x] `MemberOverviewTab.tsx` — added `loading` prop + Reusables `Skeleton` loading state
+- [x] `MemberProgressTab.tsx` — added Reusables `Progress` bars per exercise, Reusables `Skeleton` for loading states
+- [x] `MemberTrainingTab.tsx` — history row `View` → `Pressable` with navigation, assign/log buttons `Pressable` → `Button`, loading → `Skeleton`
+- [x] `MemberNutritionTab.tsx` — assign buttons `Pressable` → `Button`, loading → `Skeleton`
+- [x] `MemberPhotosTab.tsx` — select/cancel/compare/close buttons `Pressable` → `Button`, loading → `Skeleton`
+- [x] `MemberBillingTab.tsx` — period nav buttons `Pressable` → `Button`, loading → `Skeleton`
+- [x] `MemberDetailScreen.tsx` — loading `View` → `Skeleton`
+- [x] `tabs/components/CheckInScheduleForm.tsx` — `TextInput` → `Input`, native `Switch` → Reusables `Switch`, save `Pressable` → `Button`
+- [x] `members/components/ReassignTrainerSheet.tsx` — cancel `Pressable` → `Button`
+- [x] `__mocks__/react-native-reanimated.js` — added `useDerivedValue`, `interpolate`, `Extrapolation` to support `Progress` component in tests
+- [x] `tabs/__tests__/stage8.spec.tsx` — 4 Sprint Contract tests (all passing)
+- [x] `types/member-progress.ts` — added optional `completionRate` to `ExerciseRef`
+- [x] 742 tests pass (738 baseline + 4 new)
 
 ---
 

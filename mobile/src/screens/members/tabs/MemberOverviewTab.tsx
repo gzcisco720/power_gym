@@ -2,12 +2,14 @@ import React from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { MemberOverviewStats } from '../../../types/members';
 import { TrainingHeatmap } from '../components/TrainingHeatmap';
+import { Skeleton } from '~/components/ui/skeleton';
 
 type TabId = 'overview' | 'bodytests' | 'health';
 
 interface MemberOverviewTabProps {
   overviewStats: MemberOverviewStats | null;
   onNavigateToTab: (tab: TabId) => void;
+  loading?: boolean;
 }
 
 function formatDelta(value: number, suffix: string): string {
@@ -15,7 +17,17 @@ function formatDelta(value: number, suffix: string): string {
   return `${sign}${value.toFixed(1)}${suffix}`;
 }
 
-export function MemberOverviewTab({ overviewStats, onNavigateToTab }: MemberOverviewTabProps) {
+export function MemberOverviewTab({ overviewStats, onNavigateToTab, loading }: MemberOverviewTabProps) {
+  if (loading) {
+    return (
+      <View testID="overview-skeleton" className="px-4 py-4 gap-2">
+        <Skeleton className="h-16 rounded-xl" />
+        <Skeleton className="h-16 rounded-xl" />
+        <Skeleton className="h-12 rounded-xl" />
+      </View>
+    );
+  }
+
   return (
     <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
       <View className="px-4 py-4 gap-4">

@@ -5,11 +5,19 @@ const useAnimatedStyle = (worklet) => {
   try { worklet(); } catch (_) {}
   return {};
 };
+const useDerivedValue = (worklet) => {
+  try { return { value: worklet() }; } catch (_) { return { value: 0 }; }
+};
 const withRepeat = (animation) => animation;
 const withSequence = (...animations) => animations[0];
 const withTiming = (toValue, _config) => toValue;
 const withSpring = (toValue, _config) => toValue;
 const useReducedMotion = () => false;
+const interpolate = (value, inputRange, outputRange) => {
+  if (outputRange.length === 0) return 0;
+  return outputRange[0];
+};
+const Extrapolation = { CLAMP: 'clamp', EXTEND: 'extend', IDENTITY: 'identity' };
 
 const Animated = {
   View,
@@ -44,11 +52,14 @@ module.exports = {
   __esModule: true,
   useSharedValue,
   useAnimatedStyle,
+  useDerivedValue,
   withRepeat,
   withSequence,
   withTiming,
   withSpring,
   useReducedMotion,
+  interpolate,
+  Extrapolation,
   Animated,
   FadeIn,
   FadeOut,

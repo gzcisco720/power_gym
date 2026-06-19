@@ -1,6 +1,7 @@
 export interface ExerciseRef {
   exerciseId: string;
   exerciseName: string;
+  completionRate?: number;
 }
 
 export interface ExerciseHistorySet {

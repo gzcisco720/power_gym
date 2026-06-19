@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Switch, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { useCheckInScheduleStore } from '../../../../stores/check-in-schedule.store';
 import { CheckInSchedule } from '../../../../lib/api/check-in-schedule.api';
+import { Input } from '~/components/ui/input';
+import { Switch } from '~/components/ui/switch';
+import { Button } from '~/components/ui/button';
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -96,7 +99,7 @@ export function CheckInScheduleForm({ memberId }: CheckInScheduleFormProps) {
         <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
           Hour (0–23)
         </Text>
-        <TextInput
+        <Input
           testID="schedule-hour-input"
           value={String(form.hour)}
           onChangeText={(text) => {
@@ -109,7 +112,6 @@ export function CheckInScheduleForm({ memberId }: CheckInScheduleFormProps) {
           }}
           keyboardType="number-pad"
           accessibilityLabel="Hour"
-          className="rounded-xl bg-input px-3 py-2 text-sm text-foreground"
         />
       </View>
 
@@ -118,26 +120,25 @@ export function CheckInScheduleForm({ memberId }: CheckInScheduleFormProps) {
         <Text className="text-sm text-foreground">Active</Text>
         <Switch
           testID="schedule-active-switch"
-          value={form.active}
-          onValueChange={(value) => setForm((f) => ({ ...f, active: value }))}
+          checked={form.active}
+          onCheckedChange={(value) => setForm((f) => ({ ...f, active: value }))}
           accessibilityLabel="Schedule active"
         />
       </View>
 
       {/* Save button */}
-      <Pressable
+      <Button
         testID="schedule-save-button"
         onPress={() => void handleSave()}
         disabled={!dirty || loading}
         accessibilityLabel="Save schedule"
-        accessibilityRole="button"
         accessibilityState={{ disabled: !dirty || loading }}
-        className={`rounded-xl py-2.5 items-center ${dirty && !loading ? 'bg-primary' : 'bg-muted'}`}
+        className="rounded-xl"
       >
-        <Text className={`text-sm font-semibold ${dirty && !loading ? 'text-foreground' : 'text-foreground/40'}`}>
+        <Text className="text-sm font-semibold text-foreground">
           {loading ? 'Saving...' : 'Save'}
         </Text>
-      </Pressable>
+      </Button>
     </View>
   );
 }

@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { useBillingStore } from '../../../stores/billing.store';
+import { Button } from '~/components/ui/button';
+import { Skeleton } from '~/components/ui/skeleton';
 
 interface MemberBillingTabProps {
   memberId: string;
@@ -29,7 +31,7 @@ export function MemberBillingTab({ memberId }: MemberBillingTabProps) {
     return (
       <View className="px-4 py-4 gap-2">
         {[0, 1, 2].map((i) => (
-          <View key={i} className="rounded-xl bg-muted h-12 opacity-60" />
+          <Skeleton key={i} className="h-12 rounded-xl" />
         ))}
       </View>
     );
@@ -40,15 +42,16 @@ export function MemberBillingTab({ memberId }: MemberBillingTabProps) {
       <View className="px-4 py-4 gap-4">
         {/* Period navigation */}
         <View className="flex-row items-center justify-between">
-          <Pressable
+          <Button
             testID="billing-period-prev"
             onPress={() => setPeriod('prev')}
             accessibilityLabel="Previous month"
-            accessibilityRole="button"
-            className="rounded-lg bg-muted px-2.5 py-1.5"
+            variant="ghost"
+            size="sm"
+            className="rounded-lg"
           >
             <Text className="text-xs font-medium text-foreground/65">{'‹'}</Text>
-          </Pressable>
+          </Button>
 
           <Text
             testID="billing-period-label"
@@ -57,15 +60,16 @@ export function MemberBillingTab({ memberId }: MemberBillingTabProps) {
             {period.label}
           </Text>
 
-          <Pressable
+          <Button
             testID="billing-period-next"
             onPress={() => setPeriod('next')}
             accessibilityLabel="Next month"
-            accessibilityRole="button"
-            className="rounded-lg bg-muted px-2.5 py-1.5"
+            variant="ghost"
+            size="sm"
+            className="rounded-lg"
           >
             <Text className="text-xs font-medium text-foreground/65">{'›'}</Text>
-          </Pressable>
+          </Button>
         </View>
 
         {/* Summary cards */}

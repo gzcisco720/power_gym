@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { TrainerListItem } from '../../../types/trainers';
+import { Button } from '~/components/ui/button';
 
 interface ReassignTrainerSheetProps {
   trainers: TrainerListItem[];
@@ -16,13 +17,14 @@ export function ReassignTrainerSheet({ trainers, onSelect, onClose }: ReassignTr
         <Text className="text-[18px] font-semibold tracking-[-0.3px] text-foreground">
           Reassign Trainer
         </Text>
-        <Pressable
+        <Button
           onPress={onClose}
           accessibilityLabel="Close"
-          accessibilityRole="button"
+          variant="ghost"
+          size="sm"
         >
           <Text className="text-sm text-foreground/65">Cancel</Text>
-        </Pressable>
+        </Button>
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
