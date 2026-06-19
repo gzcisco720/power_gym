@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { apiClient } from '../lib/api/client';
-import { colors } from '../lib/theme';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 
 interface ResetPasswordRouteParams {
   token: string;
@@ -52,15 +53,14 @@ export function ResetPasswordScreen() {
         <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
           New Password
         </Text>
-        <TextInput
+        <Input
           testID="reset-password-new-password-input"
           value={newPassword}
           onChangeText={setNewPassword}
           placeholder="New password"
-          placeholderTextColor={colors.placeholderText}
           secureTextEntry
           accessibilityLabel="New Password"
-          className="h-12 rounded-xl border border-border bg-input px-4 text-[14px] text-foreground"
+          className="h-12 rounded-xl px-4 text-[14px]"
         />
       </View>
 
@@ -68,15 +68,14 @@ export function ResetPasswordScreen() {
         <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
           Confirm Password
         </Text>
-        <TextInput
+        <Input
           testID="reset-password-confirm-password-input"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           placeholder="Confirm password"
-          placeholderTextColor={colors.placeholderText}
           secureTextEntry
           accessibilityLabel="Confirm Password"
-          className="h-12 rounded-xl border border-border bg-input px-4 text-[14px] text-foreground"
+          className="h-12 rounded-xl px-4 text-[14px]"
         />
       </View>
 
@@ -96,16 +95,15 @@ export function ResetPasswordScreen() {
         </View>
       ) : null}
 
-      <Pressable
+      <Button
         testID="reset-password-submit-button"
         accessibilityLabel="Reset Password"
-        accessibilityRole="button"
         onPress={handleSubmit}
         disabled={isLoading}
-        className="h-12 items-center justify-center rounded-xl bg-white"
+        className="h-12 rounded-xl bg-white"
       >
         <Text className="text-[15px] font-semibold text-black">Reset Password</Text>
-      </Pressable>
+      </Button>
     </View>
   );
 }

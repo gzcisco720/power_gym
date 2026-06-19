@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { apiClient } from '../lib/api/client';
-import { colors } from '../lib/theme';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 
 export function ForgotPasswordScreen() {
   const navigation = useNavigation();
@@ -56,30 +57,28 @@ export function ForgotPasswordScreen() {
         <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
           Email
         </Text>
-        <TextInput
+        <Input
           testID="forgot-password-email-input"
           value={email}
           onChangeText={setEmail}
           placeholder="your@email.com"
-          placeholderTextColor={colors.placeholderText}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
           accessibilityLabel="Email"
-          className="h-12 rounded-xl border border-border bg-input px-4 text-[14px] text-foreground"
+          className="h-12 rounded-xl px-4 text-[14px]"
         />
       </View>
 
-      <Pressable
+      <Button
         testID="forgot-password-submit-button"
         accessibilityLabel="Send Reset Link"
-        accessibilityRole="button"
         onPress={handleSubmit}
         disabled={isLoading || !email}
-        className="h-12 items-center justify-center rounded-xl bg-white"
+        className="h-12 rounded-xl bg-white"
       >
         <Text className="text-[15px] font-semibold text-black">Send Reset Link</Text>
-      </Pressable>
+      </Button>
     </View>
   );
 }

@@ -141,7 +141,16 @@ Every interactive/styled UI element in `mobile/` is rendered through a React Nat
 2. Add the three CLI Blocks, wire them to the existing store/api calls and `testID`s, replace raw `TextInput`/`Pressable` → Green
 3. Run the Detox `auth.spec.ts` golden + forgot-password path against the simulator → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 2 Checkpoint
+- [x] `LoginScreen.tsx` — TextInput → Input, Pressable (Sign In) → Button
+- [x] `ForgotPasswordScreen.tsx` — TextInput → Input, Pressable (submit) → Button
+- [x] `ResetPasswordScreen.tsx` — TextInput → Input (x2), Pressable (submit) → Button
+- [x] `__tests__/screens/auth.spec.tsx` — 5 Sprint Contract unit tests (all green)
+- [x] `e2e/auth.spec.ts` — already present with golden path + forgot-password flow
+- [x] All 714 tests pass (709 pre-existing + 5 new)
+- [x] Lint clean
 
 ---
 

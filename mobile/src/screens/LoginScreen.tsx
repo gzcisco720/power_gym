@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../stores/auth.store';
 import { FaceIdIcon } from '../components/FaceIdIcon';
-import { colors } from '../lib/theme';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 
 export function LoginScreen() {
   const navigation = useNavigation<{ navigate: (screen: string) => void }>();
@@ -56,17 +57,16 @@ export function LoginScreen() {
         <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
           Email
         </Text>
-        <TextInput
+        <Input
           testID="login-email-input"
           value={email}
           onChangeText={setEmail}
           placeholder="your@email.com"
-          placeholderTextColor={colors.placeholderText}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
           accessibilityLabel="Email"
-          className="h-12 rounded-xl border border-border bg-input px-4 text-[14px] text-foreground"
+          className="h-12 rounded-xl px-4 text-[14px]"
         />
       </View>
 
@@ -74,17 +74,16 @@ export function LoginScreen() {
         <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
           Password
         </Text>
-        <TextInput
+        <Input
           testID="login-password-input"
           value={password}
           onChangeText={setPassword}
           placeholder="••••••••"
-          placeholderTextColor={colors.placeholderText}
           secureTextEntry
           textContentType="none"
           autoComplete="off"
           accessibilityLabel="Password"
-          className="h-12 rounded-xl border border-border bg-input px-4 text-[14px] text-foreground"
+          className="h-12 rounded-xl px-4 text-[14px]"
         />
       </View>
 
@@ -102,16 +101,15 @@ export function LoginScreen() {
         <Text testID="login-error-message" className="mb-4 text-[13px] text-destructive">{error}</Text>
       ) : null}
 
-      <Pressable
+      <Button
         testID="login-sign-in-button"
         accessibilityLabel="Sign In"
-        accessibilityRole="button"
         onPress={handleSignIn}
         disabled={isLoading}
-        className="mb-3 h-12 items-center justify-center rounded-xl bg-white"
+        className="mb-3 h-12 rounded-xl bg-white"
       >
         <Text className="text-[15px] font-semibold text-black">Sign In</Text>
-      </Pressable>
+      </Button>
 
       {biometricsEnabled ? (
         <>
