@@ -166,28 +166,19 @@ export function CreateInviteBottomSheet({ visible, onClose }: CreateInviteBottom
                   <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                     Assign to Trainer <Text className="text-destructive">*</Text>
                   </Text>
-                  <View className="gap-1.5">
-                    {trainers.map((t) => (
-                      <Button
-                        key={t._id}
-                        testID={`invite-trainer-option-${t._id}`}
-                        variant={trainerId === t._id ? 'default' : 'outline'}
-                        onPress={() => setTrainerId(t._id)}
-                        accessibilityLabel={`Assign to ${t.name}`}
-                      >
-                        <Text
-                          className={`text-sm font-medium ${
-                            trainerId === t._id ? 'text-primary-foreground' : 'text-foreground/65'
-                          }`}
-                        >
-                          {t.name}
-                        </Text>
-                      </Button>
-                    ))}
-                    {trainers.length === 0 && (
-                      <Text className="text-xs text-foreground/65">No trainers available.</Text>
-                    )}
-                  </View>
+                  <Select
+                    value={trainerId ? { value: trainerId, label: trainers.find((t) => t._id === trainerId)?.name ?? '' } : undefined}
+                    onValueChange={(opt) => setTrainerId(opt?.value ?? null)}
+                  >
+                    <SelectTrigger testID="invite-trainer-select-trigger" className="bg-input border-none rounded-xl px-3">
+                      <SelectValue placeholder="Select a trainer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {trainers.map((t) => (
+                        <SelectItem key={t._id} value={t._id} label={t.name} />
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </View>
               )}
 

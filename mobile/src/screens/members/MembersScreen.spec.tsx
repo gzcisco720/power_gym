@@ -24,6 +24,50 @@ jest.mock('../../stores/trainers.store', () => ({
   useTrainersStore: jest.fn(),
 }));
 
+// Mock Reusables Select (same pattern as invites spec)
+jest.mock('~/components/ui/select', () => {
+  const mockReact = require('react');
+  const mockRN = require('react-native');
+
+  const mockCtx = mockReact.createContext<{ value: { value: string; label: string } | undefined; onValueChange: ((opt: { value: string; label: string } | undefined) => void) | undefined }>({ value: undefined, onValueChange: undefined });
+
+  const mockSelect = ({ value, onValueChange, children }: { value: { value: string; label: string } | undefined; onValueChange: ((opt: { value: string; label: string } | undefined) => void) | undefined; children: unknown }) =>
+    mockReact.createElement(mockCtx.Provider, { value: { value, onValueChange } }, children);
+
+  const mockSelectTrigger = ({ children, testID }: { children: unknown; testID?: string }) =>
+    mockReact.createElement(mockRN.View, { testID }, children);
+
+  const mockSelectValue = ({ placeholder }: { placeholder?: string }) => {
+    const ctx = mockReact.useContext(mockCtx);
+    return mockReact.createElement(mockRN.Text, null, ctx.value?.label || placeholder || '');
+  };
+
+  const mockSelectContent = ({ children }: { children: unknown }) =>
+    mockReact.createElement(mockRN.View, null, children);
+
+  const mockSelectItem = ({ value: itemValue, label }: { value: string; label: string }) => {
+    const ctx = mockReact.useContext(mockCtx);
+    return mockReact.createElement(
+      mockRN.Pressable,
+      {
+        testID: 'select-item-' + itemValue,
+        onPress: () => ctx.onValueChange && ctx.onValueChange({ value: itemValue, label }),
+        accessibilityLabel: label,
+      },
+      mockReact.createElement(mockRN.Text, null, label),
+    );
+  };
+
+  return {
+    __esModule: true,
+    Select: mockSelect,
+    SelectTrigger: mockSelectTrigger,
+    SelectValue: mockSelectValue,
+    SelectContent: mockSelectContent,
+    SelectItem: mockSelectItem,
+  };
+});
+
 // ── Imports ───────────────────────────────────────────────────────────────────
 
 import { useMembersStore } from '../../stores/members.store';
@@ -150,26 +194,48 @@ describe('MembersScreen', () => {
     expect(mockNavigate).toHaveBeenCalledWith('MemberDetail', { memberId: 'mem1' });
   });
 
-  it('trainer filter: tapping a trainer chip filters the list to that trainer members client-side', () => {
-    const trainer: TrainerListItem = { id: 'tr1', name: 'Bob Trainer', email: 'bob@example.com', memberCount: 2 };
-    makeTrainersStoreState([trainer]);
+  // ── Stage 1 Sprint Contract: trainer filter Select ───────────────────────
 
-    const setTrainerFilter = jest.fn();
-    const allMembers = [
-      makeMember({ id: 'mem1', trainerId: 'tr1', trainerName: 'Bob Trainer' }),
-      makeMember({ id: 'mem2', trainerId: null, trainerName: null }),
-    ];
-    setupStore(makeStoreState(allMembers, {
-      trainerFilter: null,
-      setTrainerFilter,
-      filteredMembers: jest.fn(() => allMembers),
-    }));
+  describe('trainer filter', () => {
+    it('renders a Select (no picker Modal) with an "All trainers" placeholder and one item per trainer', () => {
+      const trainer: TrainerListItem = { id: 'tr1', name: 'Bob Trainer', email: 'bob@example.com', memberCount: 2 };
+      makeTrainersStoreState([trainer]);
+      setupStore(makeStoreState([], { filteredMembers: jest.fn(() => []) }));
 
-    const { getByTestId } = render(<MembersScreen />);
-    fireEvent.press(getByTestId('trainer-filter-select'));
-    fireEvent.press(getByTestId('trainer-filter-chip-tr1'));
+      const { getByTestId, getAllByText, getByText, queryByTestId } = render(<MembersScreen />);
 
-    expect(setTrainerFilter).toHaveBeenCalledWith('tr1');
+      // Select trigger must be present with testID
+      expect(getByTestId('trainer-filter-select')).toBeTruthy();
+      // Shows the placeholder and the "All trainers" SelectItem (both rendered by mock)
+      expect(getAllByText('All trainers').length).toBeGreaterThanOrEqual(1);
+      // One item per trainer (rendered by Select mock)
+      expect(getByText('Bob Trainer')).toBeTruthy();
+      // Old Modal chip nodes must be absent
+      expect(queryByTestId('trainer-filter-chip-all')).toBeNull();
+      expect(queryByTestId('trainer-filter-chip-tr1')).toBeNull();
+    });
+
+    it('choosing a trainer calls setTrainerFilter with that id; choosing All calls setTrainerFilter(null)', () => {
+      const trainer: TrainerListItem = { id: 'tr1', name: 'Bob Trainer', email: 'bob@example.com', memberCount: 2 };
+      makeTrainersStoreState([trainer]);
+
+      const setTrainerFilter = jest.fn();
+      setupStore(makeStoreState([], {
+        trainerFilter: null,
+        setTrainerFilter,
+        filteredMembers: jest.fn(() => []),
+      }));
+
+      const { getByTestId } = render(<MembersScreen />);
+
+      // Select a specific trainer
+      fireEvent.press(getByTestId('select-item-tr1'));
+      expect(setTrainerFilter).toHaveBeenCalledWith('tr1');
+
+      // Select undefined (All trainers) — the select-item-undefined placeholder
+      fireEvent.press(getByTestId('select-item-'));
+      expect(setTrainerFilter).toHaveBeenCalledWith(null);
+    });
   });
 
   it('stats strip shows total member count and unassigned count', () => {
@@ -202,19 +268,22 @@ describe('MembersScreen', () => {
     const member = makeMember({ id: 'mem1', trainerId: 'tr1', trainerName: 'Bob Trainer' });
     setupStore(makeStoreState([member], { assignTrainer, filteredMembers: jest.fn(() => [member]) }));
 
-    const { getByTestId, queryByTestId } = render(<MembersScreen />);
+    const { getAllByTestId, getByTestId, queryByTestId } = render(<MembersScreen />);
 
     expect(queryByTestId('toast-message')).toBeNull();
 
     // Open reassign sheet
     fireEvent.press(getByTestId('reassign-btn-mem1'));
 
-    // Pick the trainer option in the sheet and flush all async work
+    // The trainer appears in both the filter Select and the reassign sheet Select.
+    // Use the second occurrence (reassign sheet) to trigger the selection.
     await act(async () => {
-      fireEvent.press(getByTestId('reassign-trainer-option-tr1'));
+      const trainerItems = getAllByTestId('select-item-tr1');
+      fireEvent.press(trainerItems[trainerItems.length - 1]);
     });
 
     expect(getByTestId('toast-message').props.children).toBe('Trainer assigned');
+    expect(assignTrainer).toHaveBeenCalledWith('mem1', 'tr1');
   });
 
   it('unassign action: Unassign button is shown only when the member has a trainer assigned', () => {

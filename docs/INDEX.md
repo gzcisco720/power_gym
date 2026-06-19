@@ -6,6 +6,7 @@ Sprint Contract plans only. One row per active plan.
 
 | Feature | Plan File | Status |
 |---|---|---|
+| Mobile Select Migration | [2026-06-19/plans/mobile-select-migration-plan.md](2026-06-19/plans/mobile-select-migration-plan.md) | In Progress |
 
 ## Management Files
 

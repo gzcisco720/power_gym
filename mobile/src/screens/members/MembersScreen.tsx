@@ -3,12 +3,19 @@ import {
   View,
   Text,
   ScrollView,
-  Pressable,
   Modal,
 } from 'react-native';
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
 import { Skeleton } from '~/components/ui/skeleton';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  type Option,
+} from '~/components/ui/select';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
@@ -39,7 +46,6 @@ export function MembersScreen() {
 
   const [reassignMember, setReassignMember] = useState<Member | null>(null);
   const [unassignTarget, setUnassignTarget] = useState<Member | null>(null);
-  const [showTrainerPicker, setShowTrainerPicker] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -147,20 +153,20 @@ export function MembersScreen() {
       {/* Trainer filter */}
       {trainers.length > 0 && (
         <View className="px-4 py-2 border-b border-foreground/[.06]">
-          <Pressable
-            testID="trainer-filter-select"
-            onPress={() => setShowTrainerPicker(true)}
-            accessibilityLabel="Filter by trainer"
-            accessibilityRole="button"
-            className="flex-row items-center justify-between rounded-xl bg-input px-3 py-2"
+          <Select
+            value={trainerFilter ? { value: trainerFilter, label: trainers.find((t) => t.id === trainerFilter)?.name ?? '' } : undefined}
+            onValueChange={(opt: Option | undefined) => setTrainerFilter(opt?.value || null)}
           >
-            <Text className="text-sm text-foreground">
-              {trainerFilter
-                ? (trainers.find((t) => t.id === trainerFilter)?.name ?? 'All trainers')
-                : 'All trainers'}
-            </Text>
-            <Text className="text-xs text-foreground/65">▾</Text>
-          </Pressable>
+            <SelectTrigger testID="trainer-filter-select" className="bg-input border-none rounded-xl px-3">
+              <SelectValue placeholder="All trainers" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="" label="All trainers" />
+              {trainers.map((t) => (
+                <SelectItem key={t.id} value={t.id} label={t.name} />
+              ))}
+            </SelectContent>
+          </Select>
         </View>
       )}
 
@@ -239,52 +245,6 @@ export function MembersScreen() {
           </View>
         </View>
       )}
-
-      {/* Trainer picker */}
-      <Modal
-        visible={showTrainerPicker}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowTrainerPicker(false)}
-      >
-        <Pressable
-          className="flex-1 justify-end bg-background/80"
-          onPress={() => setShowTrainerPicker(false)}
-          accessibilityLabel="Close trainer filter"
-          accessibilityRole="button"
-        >
-          <View className="bg-card rounded-t-2xl ring-1 ring-foreground/10 px-4 pt-4 pb-8 gap-1.5">
-            <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65 mb-1">
-              Filter by trainer
-            </Text>
-            <Pressable
-              testID="trainer-filter-chip-all"
-              onPress={() => { setTrainerFilter(null); setShowTrainerPicker(false); }}
-              accessibilityLabel="Show all members"
-              accessibilityRole="button"
-              className={`flex-row items-center px-3 py-2.5 rounded-xl ${trainerFilter === null ? 'bg-primary/10' : 'bg-muted'}`}
-            >
-              <Text className={`text-sm font-medium ${trainerFilter === null ? 'text-primary-light' : 'text-foreground'}`}>
-                All trainers
-              </Text>
-            </Pressable>
-            {trainers.map((trainer) => (
-              <Pressable
-                key={trainer.id}
-                testID={`trainer-filter-chip-${trainer.id}`}
-                onPress={() => { setTrainerFilter(trainer.id); setShowTrainerPicker(false); }}
-                accessibilityLabel={`Filter by ${trainer.name}`}
-                accessibilityRole="button"
-                className={`flex-row items-center px-3 py-2.5 rounded-xl ${trainerFilter === trainer.id ? 'bg-primary/10' : 'bg-muted'}`}
-              >
-                <Text className={`text-sm font-medium ${trainerFilter === trainer.id ? 'text-primary-light' : 'text-foreground'}`}>
-                  {trainer.name}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </Pressable>
-      </Modal>
 
       {/* Unassign confirmation */}
       {unassignTarget !== null && (

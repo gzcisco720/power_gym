@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
@@ -8,6 +8,60 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('../../../stores/trainers.store', () => ({
   useTrainersStore: jest.fn(),
 }));
+
+// Mock Reusables Select
+jest.mock('~/components/ui/select', () => {
+  const mockReact = require('react');
+  const mockRN = require('react-native');
+
+  const mockCtx = mockReact.createContext<{
+    value: { value: string; label: string } | undefined;
+    onValueChange: ((opt: { value: string; label: string } | undefined) => void) | undefined;
+  }>({ value: undefined, onValueChange: undefined });
+
+  const mockSelect = ({
+    value,
+    onValueChange,
+    children,
+  }: {
+    value: { value: string; label: string } | undefined;
+    onValueChange: ((opt: { value: string; label: string } | undefined) => void) | undefined;
+    children: unknown;
+  }) => mockReact.createElement(mockCtx.Provider, { value: { value, onValueChange } }, children);
+
+  const mockSelectTrigger = ({ children, testID }: { children: unknown; testID?: string }) =>
+    mockReact.createElement(mockRN.View, { testID }, children);
+
+  const mockSelectValue = ({ placeholder }: { placeholder?: string }) => {
+    const ctx = mockReact.useContext(mockCtx);
+    return mockReact.createElement(mockRN.Text, null, ctx.value?.label || placeholder || '');
+  };
+
+  const mockSelectContent = ({ children }: { children: unknown }) =>
+    mockReact.createElement(mockRN.View, null, children);
+
+  const mockSelectItem = ({ value: itemValue, label }: { value: string; label: string }) => {
+    const ctx = mockReact.useContext(mockCtx);
+    return mockReact.createElement(
+      mockRN.Pressable,
+      {
+        testID: 'select-item-' + itemValue,
+        onPress: () => ctx.onValueChange && ctx.onValueChange({ value: itemValue, label }),
+        accessibilityLabel: label,
+      },
+      mockReact.createElement(mockRN.Text, null, label),
+    );
+  };
+
+  return {
+    __esModule: true,
+    Select: mockSelect,
+    SelectTrigger: mockSelectTrigger,
+    SelectValue: mockSelectValue,
+    SelectContent: mockSelectContent,
+    SelectItem: mockSelectItem,
+  };
+});
 
 import { useTrainersStore } from '../../../stores/trainers.store';
 import { TrainerMembersTab } from './TrainerMembersTab';
@@ -102,5 +156,38 @@ describe('TrainerMembersTab', () => {
     render(<TrainerMembersTab trainerId="tr1" />);
 
     expect(fetchTrainerMembers).toHaveBeenCalledWith('tr1');
+  });
+
+  // ── Stage 1 Sprint Contract: reassign sheet uses Select ──────────────────
+
+  describe('reassign sheet', () => {
+    it('renders a Select of otherTrainers and triggers reassign on change', async () => {
+      const reassignMember = jest.fn().mockResolvedValue(undefined);
+      const otherTrainer = { id: 'tr2', name: 'Carol Trainer', email: 'carol@example.com', memberCount: 0 };
+      setupStoreMock({
+        trainerMembers: MOCK_MEMBERS,
+        reassignMember,
+        trainers: [
+          { id: 'tr1', name: 'Current Trainer', email: 'current@example.com', memberCount: 2 },
+          otherTrainer,
+        ],
+        fetchTrainers: jest.fn().mockResolvedValue(undefined),
+      });
+
+      const { getByTestId, getByText } = render(<TrainerMembersTab trainerId="tr1" />);
+
+      // Open the reassign sheet for first member
+      fireEvent.press(getByTestId('reassign-member-m1'));
+
+      // Select trigger for the trainer picker
+      expect(getByTestId('reassign-target-select-trigger')).toBeTruthy();
+
+      // The other trainer should be listed
+      expect(getByText('Carol Trainer')).toBeTruthy();
+
+      // Selecting a trainer calls reassignMember with (currentTrainerId, memberId, targetTrainerId)
+      fireEvent.press(getByTestId('select-item-tr2'));
+      expect(reassignMember).toHaveBeenCalledWith('tr1', 'm1', 'tr2');
+    });
   });
 });

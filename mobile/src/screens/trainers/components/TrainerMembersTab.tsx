@@ -1,9 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Modal } from 'react-native';
+import { View, Text, ScrollView, Modal } from 'react-native';
 import { useTrainersStore } from '../../../stores/trainers.store';
 import { TrainerMemberMetrics } from '../../../types/trainers';
 import { Button } from '~/components/ui/button';
 import { Skeleton } from '~/components/ui/skeleton';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  type Option,
+} from '~/components/ui/select';
 
 interface TrainerMembersTabProps {
   trainerId: string;
@@ -101,23 +109,30 @@ function ReassignMemberSheet({
                 <Skeleton key={i} className="h-14 rounded-xl" />
               ))}
             </View>
-          ) : otherTrainers.length === 0 ? (
-            <Text className="text-[13px] text-foreground/65 text-center py-4">
-              No other trainers available.
-            </Text>
           ) : (
-            otherTrainers.map((trainer) => (
-              <Pressable
-                key={trainer.id}
-                testID={`reassign-target-${trainer.id}`}
-                onPress={() => { void handleReassign(trainer.id); }}
-                accessibilityLabel={`Reassign to ${trainer.name}`}
-                className="rounded-xl bg-muted px-3 py-3 mb-2"
-              >
-                <Text className="text-sm font-medium text-foreground">{trainer.name}</Text>
-                <Text className="text-xs text-foreground/65">{trainer.email}</Text>
-              </Pressable>
-            ))
+            <Select
+              value={undefined}
+              onValueChange={(opt: Option | undefined) => {
+                if (opt?.value) {
+                  void handleReassign(opt.value);
+                }
+              }}
+            >
+              <SelectTrigger testID="reassign-target-select-trigger" className="bg-input border-none rounded-xl px-3">
+                <SelectValue placeholder="Select a trainer" />
+              </SelectTrigger>
+              <SelectContent>
+                {otherTrainers.length === 0 ? (
+                  <View className="px-3 py-2">
+                    <Text className="text-[13px] text-foreground/65">No other trainers available.</Text>
+                  </View>
+                ) : (
+                  otherTrainers.map((trainer) => (
+                    <SelectItem key={trainer.id} value={trainer.id} label={trainer.name} />
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           )}
         </View>
       </View>

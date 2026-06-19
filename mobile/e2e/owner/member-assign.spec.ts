@@ -1,5 +1,5 @@
 /**
- * Owner Member Assign/Reassign/Unassign E2E — Detox on iOS Simulator
+ * Owner Member Assign / Reassign / Unassign E2E — Detox on iOS Simulator
  *
  * SETUP REQUIRED BEFORE RUNNING:
  * 1. Build the Detox app (if not already built):
@@ -87,30 +87,40 @@ describe('Owner: Member Assign / Reassign / Unassign', () => {
     await waitFor(element(by.id('screen-Members'))).toBeVisible().withTimeout(10000);
   });
 
-  it('golden path: owner taps Reassign on a member, picks a trainer → toast confirms; member appears under the new trainer filter', async () => {
+  it('golden path: owner taps Reassign on a member, opens the trainer Select and taps a trainer by name → toast confirms', async () => {
     // Wait for at least one member card
     await waitFor(element(by.id(/^member-card-/))).toBeVisible().withTimeout(10000);
 
     // Tap the Reassign button on the first member
     await element(by.id(/^reassign-btn-/)).atIndex(0).tap();
 
-    // Reassign sheet opens — pick a trainer
-    await waitFor(element(by.id(/^reassign-trainer-option-/))).toBeVisible().withTimeout(5000);
-    await element(by.id(/^reassign-trainer-option-/)).atIndex(0).tap();
+    // Reassign sheet opens — open the Select and pick a trainer by name
+    await waitFor(element(by.id('reassign-trainer-select-trigger'))).toBeVisible().withTimeout(5000);
+    await element(by.id('reassign-trainer-select-trigger')).tap();
+
+    // Tap the first available trainer by table cell (trainer name appears as a SelectItem label)
+    await waitFor(element(by.type('UITableViewCell'))).toBeVisible().withTimeout(5000);
+    await element(by.type('UITableViewCell')).atIndex(0).tap();
 
     // Toast confirms the reassignment
     await waitFor(element(by.id('toast-message'))).toBeVisible().withTimeout(5000);
+    await detoxExpect(element(by.id('toast-message'))).toHaveText('Trainer assigned');
 
     // Member card is still visible (reassign succeeded)
     await waitFor(element(by.id(/^member-card-/))).toBeVisible().withTimeout(10000);
   });
 
-  it('edge: trainer filter chips appear when trainers exist; tapping a chip filters the member list', async () => {
-    // Wait for filter chips (trainers were seeded)
-    await waitFor(element(by.id(/^trainer-filter-chip-/))).toBeVisible().withTimeout(10000);
+  it('edge: trainer filter Select appears when trainers exist; picking a trainer filters the member list', async () => {
+    // Wait for the trainer filter Select (trainers were seeded)
+    await waitFor(element(by.id('trainer-filter-select'))).toBeVisible().withTimeout(10000);
 
-    // Tap first non-All chip
-    await element(by.id(/^trainer-filter-chip-/)).atIndex(1).tap();
+    // Open the trainer filter Select
+    await element(by.id('trainer-filter-select')).tap();
+
+    // Pick a trainer by table cell (first non-All item)
+    await waitFor(element(by.type('UITableViewCell'))).toBeVisible().withTimeout(5000);
+    // Index 0 = "All trainers", index 1 = first trainer
+    await element(by.type('UITableViewCell')).atIndex(1).tap();
 
     // Members screen still visible
     await waitFor(element(by.id('screen-Members'))).toBeVisible().withTimeout(5000);

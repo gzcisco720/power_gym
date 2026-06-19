@@ -1,7 +1,15 @@
 import React from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
 import { TrainerListItem } from '../../../types/trainers';
 import { Button } from '~/components/ui/button';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  type Option,
+} from '~/components/ui/select';
 
 interface ReassignTrainerSheetProps {
   trainers: TrainerListItem[];
@@ -27,33 +35,31 @@ export function ReassignTrainerSheet({ trainers, onSelect, onClose }: ReassignTr
         </Button>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="px-4 py-4 gap-1.5">
-          {trainers.length === 0 ? (
-            <Text className="text-[13px] text-foreground/65 text-center mt-4">
-              No trainers available.
-            </Text>
-          ) : (
-            trainers.map((trainer) => (
-              <Pressable
-                key={trainer.id}
-                testID={`reassign-trainer-option-${trainer.id}`}
-                onPress={() => onSelect(trainer.id)}
-                accessibilityLabel={`Assign to ${trainer.name}`}
-                accessibilityRole="button"
-                className="rounded-xl bg-card ring-1 ring-foreground/10 px-3 py-2"
-              >
-                <Text className="text-sm font-medium text-foreground" numberOfLines={1}>
-                  {trainer.name}
-                </Text>
-                <Text className="text-xs text-foreground/65 mt-0.5" numberOfLines={1}>
-                  {trainer.memberCount === 1 ? '1 member' : `${trainer.memberCount} members`}
-                </Text>
-              </Pressable>
-            ))
-          )}
-        </View>
-      </ScrollView>
+      <View className="px-4 py-4">
+        <Select
+          value={undefined}
+          onValueChange={(opt: Option | undefined) => {
+            if (opt?.value) {
+              onSelect(opt.value);
+            }
+          }}
+        >
+          <SelectTrigger testID="reassign-trainer-select-trigger" className="bg-input border-none rounded-xl px-3">
+            <SelectValue placeholder="Select a trainer" />
+          </SelectTrigger>
+          <SelectContent>
+            {trainers.length === 0 ? (
+              <View className="px-3 py-2">
+                <Text className="text-[13px] text-foreground/65">No trainers available.</Text>
+              </View>
+            ) : (
+              trainers.map((trainer) => (
+                <SelectItem key={trainer.id} value={trainer.id} label={trainer.name} />
+              ))
+            )}
+          </SelectContent>
+        </Select>
+      </View>
     </View>
   );
 }

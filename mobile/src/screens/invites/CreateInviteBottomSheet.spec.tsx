@@ -250,6 +250,62 @@ describe('CreateInviteBottomSheet', () => {
     });
   });
 
+  // ── Stage 1 Sprint Contract: trainer picker via Select ───────────────────
+
+  describe('trainer picker', () => {
+    it('renders a Select with one SelectItem per trainer (label = trainer name)', () => {
+      setupStoreMock({ trainers: trainerOptions });
+      setupAuthMock('owner');
+
+      const { getByTestId, getByText } = render(
+        <CreateInviteBottomSheet visible onClose={jest.fn()} />,
+      );
+
+      // Switch to member role to reveal the trainer picker
+      fireEvent.press(getByTestId('select-item-member'));
+
+      expect(getByTestId('invite-trainer-select-trigger')).toBeTruthy();
+      expect(getByText('Alice Trainer')).toBeTruthy();
+      expect(getByText('Bob Trainer')).toBeTruthy();
+    });
+
+    it('selecting a trainer sets trainerId and enables Send when owner+member+valid email', () => {
+      setupStoreMock({ trainers: trainerOptions });
+      setupAuthMock('owner');
+
+      const { getByTestId } = render(
+        <CreateInviteBottomSheet visible onClose={jest.fn()} />,
+      );
+
+      // Switch to member role
+      fireEvent.press(getByTestId('select-item-member'));
+      // Enter valid email
+      fireEvent.changeText(getByTestId('invite-email-input'), 'member@example.com');
+      // No trainer yet — save disabled
+      expect(getByTestId('invite-save-button').props.accessibilityState?.disabled).toBe(true);
+      // Select trainer via Select item
+      fireEvent.press(getByTestId('select-item-trainer1'));
+      // Now save is enabled
+      expect(getByTestId('invite-save-button').props.accessibilityState?.disabled).toBe(false);
+    });
+
+    it('Send is disabled while needsTrainer and no trainer chosen', () => {
+      setupStoreMock({ trainers: trainerOptions });
+      setupAuthMock('owner');
+
+      const { getByTestId } = render(
+        <CreateInviteBottomSheet visible onClose={jest.fn()} />,
+      );
+
+      // Switch to member role and enter valid email
+      fireEvent.press(getByTestId('select-item-member'));
+      fireEvent.changeText(getByTestId('invite-email-input'), 'member@example.com');
+
+      // Save must be disabled — no trainer selected
+      expect(getByTestId('invite-save-button').props.accessibilityState?.disabled).toBe(true);
+    });
+  });
+
   it('successful trainer-role save calls createInvite with trainer role', async () => {
     const addItem = jest.fn();
     setupStoreMock({ trainers: trainerOptions, addItem });

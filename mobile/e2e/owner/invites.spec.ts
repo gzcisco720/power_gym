@@ -69,11 +69,10 @@ describe('Owner: Invites management', () => {
     const recipientEmail = `trainer-invite-${Date.now()}@example.com`;
 
     await element(by.id('invites-create-button')).tap();
-    await waitFor(element(by.id('invite-role-trainer'))).toBeVisible().withTimeout(5000);
+    await waitFor(element(by.id('invite-role-select-trigger'))).toBeVisible().withTimeout(5000);
 
-    // Select trainer role
-    await element(by.id('invite-role-trainer')).tap();
-
+    // Select trainer role via the role Select (default is Trainer, so just confirm it's selected)
+    // The role Select trigger shows the current value; default is Trainer for owners
     // Enter email
     await element(by.id('invite-email-input')).typeText(recipientEmail);
 
@@ -90,8 +89,8 @@ describe('Owner: Invites management', () => {
     const recipientEmail = `revoke-invite-${Date.now()}@example.com`;
 
     await element(by.id('invites-create-button')).tap();
-    await waitFor(element(by.id('invite-role-trainer'))).toBeVisible().withTimeout(5000);
-    await element(by.id('invite-role-trainer')).tap();
+    await waitFor(element(by.id('invite-role-select-trigger'))).toBeVisible().withTimeout(5000);
+    // Default role is Trainer — enter email and save
     await element(by.id('invite-email-input')).typeText(recipientEmail);
     await element(by.id('invite-save-button')).tap();
 
@@ -114,10 +113,12 @@ describe('Owner: Invites management', () => {
 
   it('member invite gating: save stays disabled until a trainer is chosen', async () => {
     await element(by.id('invites-create-button')).tap();
-    await waitFor(element(by.id('invite-role-member'))).toBeVisible().withTimeout(5000);
+    await waitFor(element(by.id('invite-role-select-trigger'))).toBeVisible().withTimeout(5000);
 
-    // Select member role
-    await element(by.id('invite-role-member')).tap();
+    // Open the role Select and tap "Member"
+    await element(by.id('invite-role-select-trigger')).tap();
+    await waitFor(element(by.text('Member'))).toBeVisible().withTimeout(3000);
+    await element(by.text('Member')).tap();
 
     // Enter valid email
     await element(by.id('invite-email-input')).typeText('member@example.com');
@@ -128,8 +129,13 @@ describe('Owner: Invites management', () => {
     // Save button must be disabled
     await detoxExpect(element(by.id('invite-save-button'))).not.toBeEnabled();
 
-    // Select a trainer — save becomes enabled
-    await element(by.id(/^invite-trainer-option-/)).tap();
+    // Open the trainer Select and pick a trainer by name
+    await element(by.id('invite-trainer-select-trigger')).tap();
+    // Tap the seeded trainer name (we only know it appears in the list)
+    await waitFor(element(by.id('invite-trainer-select-trigger'))).toBeVisible().withTimeout(3000);
+    // The trainer option is rendered as a SelectItem — tap by its label text
+    await element(by.type('UITableViewCell')).atIndex(0).tap();
+
     await detoxExpect(element(by.id('invite-save-button'))).toBeEnabled();
   });
 });
