@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { Screen } from '../../components/Screen';
 import { useInvitesStore } from '../../stores/invites.store';
@@ -8,6 +8,15 @@ import { revokeInvite } from '../../lib/api/invites.api';
 import { Invite, InviteStatus } from '../../types/invites';
 import { inviteStatus } from '../../lib/invite-status';
 import { CreateInviteBottomSheet } from './CreateInviteBottomSheet';
+import { Button } from '~/components/ui/button';
+import { Skeleton } from '~/components/ui/skeleton';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '~/components/ui/dialog';
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-GB', {
@@ -79,25 +88,29 @@ function InviteCard({ invite, onRevoke, copiedId, onCopy }: InviteCardProps) {
             : `Expires ${formatDate(invite.expiresAt)}`}
         </Text>
         <View className="flex-row items-center gap-2">
-          <Pressable
+          <Button
             testID={`invite-copy-${invite._id}`}
             onPress={() => onCopy(invite)}
             accessibilityLabel={`Copy invite link for ${invite.recipientEmail}`}
-            accessibilityRole="button"
+            variant="link"
+            size="sm"
+            className="h-auto px-0 py-0"
           >
             <Text className="text-[12px] text-primary-light">
               {copiedId === invite._id ? 'Copied!' : 'Copy link'}
             </Text>
-          </Pressable>
+          </Button>
           {isPending && (
-            <Pressable
+            <Button
               testID={`invite-revoke-${invite._id}`}
               onPress={() => onRevoke(invite)}
               accessibilityLabel={`Revoke invite for ${invite.recipientEmail}`}
-              accessibilityRole="button"
+              variant="link"
+              size="sm"
+              className="h-auto px-0 py-0"
             >
               <Text className="text-[12px] text-destructive">Revoke</Text>
-            </Pressable>
+            </Button>
           )}
         </View>
       </View>
@@ -175,15 +188,14 @@ export function InvitesScreen() {
           </Text>
           <Text className="mt-0.5 text-[12px] text-foreground/65">Manage pending invitations</Text>
         </View>
-        <Pressable
+        <Button
           testID="invites-create-button"
           onPress={() => setCreateSheetVisible(true)}
           accessibilityLabel="Create invite"
-          accessibilityRole="button"
-          className="rounded-xl bg-primary px-3 py-2"
+          size="sm"
         >
           <Text className="text-sm font-semibold text-foreground">+ Create Invite</Text>
-        </Pressable>
+        </Button>
       </View>
 
       {/* List */}
@@ -192,7 +204,7 @@ export function InvitesScreen() {
           {loading ? (
             <>
               {[0, 1, 2, 3].map((i) => (
-                <View key={i} className="rounded-xl bg-muted px-3 py-2 h-14 opacity-60" />
+                <Skeleton key={i} className="h-14 rounded-xl" />
               ))}
             </>
           ) : items.length === 0 ? (
@@ -215,48 +227,46 @@ export function InvitesScreen() {
         onClose={() => setCreateSheetVisible(false)}
       />
 
-      {/* Revoke confirmation modal */}
-      <Modal
-        visible={revokeTarget !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setRevokeTarget(null)}
+      {/* Revoke confirmation dialog */}
+      <Dialog
+        open={revokeTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setRevokeTarget(null);
+        }}
       >
-        <View className="flex-1 justify-center items-center bg-black/60 px-6">
-          <View className="rounded-2xl bg-card px-5 py-5 gap-4 w-full">
-            <Text className="text-[18px] font-semibold text-foreground">Revoke Invite</Text>
-            <Text className="text-sm text-foreground/65">
-              This will permanently revoke the invite for{' '}
-              <Text className="text-foreground">{revokeTarget?.recipientEmail}</Text>.
-            </Text>
-            <View className="flex-row gap-3">
-              <Pressable
-                testID="invite-revoke-cancel"
-                onPress={() => setRevokeTarget(null)}
-                accessibilityLabel="Cancel revoke"
-                accessibilityRole="button"
-                className="flex-1 py-3 rounded-xl bg-muted items-center"
-              >
-                <Text className="text-sm font-semibold text-foreground/65">Cancel</Text>
-              </Pressable>
-              <Pressable
-                testID="invite-revoke-confirm"
-                onPress={handleRevokeConfirm}
-                disabled={isRevoking}
-                accessibilityLabel="Confirm revoke"
-                accessibilityRole="button"
-                className="flex-1 py-3 rounded-xl bg-destructive/10 items-center"
-              >
-                {isRevoking ? (
-                  <ActivityIndicator color="#ef4444" />
-                ) : (
-                  <Text className="text-sm font-semibold text-destructive">Revoke</Text>
-                )}
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Revoke Invite</DialogTitle>
+          </DialogHeader>
+          <Text className="text-sm text-foreground/65">
+            This will permanently revoke the invite for{' '}
+            <Text className="text-foreground">{revokeTarget?.recipientEmail}</Text>.
+          </Text>
+          <DialogFooter className="flex-row gap-3">
+            <Button
+              testID="invite-revoke-cancel"
+              variant="outline"
+              onPress={() => setRevokeTarget(null)}
+              accessibilityLabel="Cancel revoke"
+              className="flex-1"
+            >
+              <Text className="text-sm font-semibold text-foreground/65">Cancel</Text>
+            </Button>
+            <Button
+              testID="invite-revoke-confirm"
+              variant="destructive"
+              onPress={handleRevokeConfirm}
+              disabled={isRevoking}
+              accessibilityLabel="Confirm revoke"
+              className="flex-1"
+            >
+              <Text className="text-sm font-semibold text-white">
+                {isRevoking ? 'Revoking…' : 'Revoke'}
+              </Text>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Screen>
   );
 }
