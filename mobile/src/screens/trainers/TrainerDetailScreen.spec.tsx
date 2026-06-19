@@ -190,4 +190,30 @@ describe('TrainerDetailScreen', () => {
     expect(getByTestId('trainer-detail-tab-training')).toBeTruthy();
     expect(getByTestId('trainer-detail-tab-nutrition')).toBeTruthy();
   });
+
+  describe('Tabs', () => {
+    it('switches between Overview/Training/Nutrition tabs', () => {
+      setupRoute('trainer1', 'Alice Smith');
+      const detail = makeDetail();
+      setupStoreMock({
+        detail,
+        overviewStats: MOCK_OVERVIEW_STATS,
+        trainerTrainingPlans: [{ id: 'tp1', name: 'Strength Plan', dayCount: 4, createdAt: '2026-01-01T00:00:00.000Z' }],
+        trainerNutritionPlans: [{ id: 'np1', name: 'Cut Plan', dayCount: 7, createdAt: '2026-01-01T00:00:00.000Z' }],
+      });
+
+      const { getByTestId, getByText } = render(<TrainerDetailScreen />);
+
+      // Default tab is Overview — KPI cells present
+      expect(getByTestId('kpi-memberCount')).toBeTruthy();
+
+      // Switch to Training tab
+      fireEvent.press(getByTestId('trainer-detail-tab-training'));
+      expect(getByText('Strength Plan')).toBeTruthy();
+
+      // Switch to Nutrition tab
+      fireEvent.press(getByTestId('trainer-detail-tab-nutrition'));
+      expect(getByText('Cut Plan')).toBeTruthy();
+    });
+  });
 });

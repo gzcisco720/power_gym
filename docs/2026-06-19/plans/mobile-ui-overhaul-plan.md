@@ -268,10 +268,10 @@ Every interactive/styled UI element in `mobile/` is rendered through a React Nat
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `TrainerDetailScreen > Tabs > switches between Overview/Training/Nutrition tabs` — Reusables `Tabs` triggers swap the rendered tab content
-- [ ] `TrainersScreen > loading > renders Skeleton list` — loading shows Reusables `Skeleton`, not `ActivityIndicator`
-- [ ] `TrainerOverviewTab > renders trainer fields` — name/stat fields render from props
-- [ ] `TrainerTrainingPlansTab > row press > navigates to plan detail` — pressing a plan row (Reusables `Button`/Card) triggers the existing navigation call
+- [x] `TrainerDetailScreen > Tabs > switches between Overview/Training/Nutrition tabs` — Reusables `Tabs` triggers swap the rendered tab content
+- [x] `TrainersScreen > loading > renders Skeleton list` — loading shows Reusables `Skeleton`, not `ActivityIndicator`
+- [x] `TrainerOverviewTab > renders trainer fields` — name/stat fields render from props
+- [x] `TrainerTrainingPlansTab > row press > navigates to plan detail` — pressing a plan row (Reusables `Button`/Card) triggers the existing navigation call
 
 *Integration / E2E:*
 - [ ] `mobile/e2e/owner/trainers.spec.ts` — Owner opens a trainer, switches to the Training tab → that trainer's plans list renders (golden path)
@@ -282,7 +282,22 @@ Every interactive/styled UI element in `mobile/` is rendered through a React Nat
 2. Migrate screens → Green
 3. Run trainers Detox spec → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 6 Checkpoint
+- [x] `TrainersScreen.tsx` — loading `View` placeholders → Reusables `Skeleton` (testID `trainer-skeleton`), `Pressable` buttons → Reusables `Button`
+- [x] `TrainerDetailScreen.tsx` — custom Pressable tab bar → Reusables `Tabs/TabsList/TabsTrigger/TabsContent` (controlled), loading `View` → `Skeleton`
+- [x] `TrainerMembersTab.tsx` — `ActivityIndicator` (reassigning) → `Skeleton`, loading `View` → `Skeleton`, `Pressable` buttons → `Button`
+- [x] `TrainerOverviewTab.tsx` — loading `View` placeholders → `Skeleton`
+- [x] `TrainerTrainingPlansTab.tsx` — plan rows `View` → `Pressable` with navigation to `TrainingTemplateDetail`, loading `View` → `Skeleton`
+- [x] `TrainerNutritionPlansTab.tsx` — loading `View` → `Skeleton`
+- [x] `TrainerCalendarTab.tsx` — loading `View` → `Skeleton`
+- [x] `TrainersScreen.spec.tsx` — added `loading > renders Skeleton list` test
+- [x] `TrainerDetailScreen.spec.tsx` — added `Tabs > switches between Overview/Training/Nutrition tabs` test
+- [x] `trainer-overview.spec.tsx` — added `renders trainer fields` test
+- [x] `TrainerTrainingPlansTab.spec.tsx` — added `row press > navigates to plan detail` test
+- [x] 734 tests pass (730 baseline + 4 new)
+- [x] Lint clean
 
 ---
 

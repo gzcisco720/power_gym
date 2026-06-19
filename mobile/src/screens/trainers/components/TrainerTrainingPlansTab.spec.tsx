@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
@@ -7,6 +7,11 @@ jest.mock('react-native-safe-area-context', () => ({
 
 jest.mock('../../../stores/trainers.store', () => ({
   useTrainersStore: jest.fn(),
+}));
+
+const mockNavigate = jest.fn();
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: () => ({ navigate: mockNavigate }),
 }));
 
 import { useTrainersStore } from '../../../stores/trainers.store';
@@ -41,6 +46,7 @@ const MOCK_PLANS: TrainerTemplateItem[] = [
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockNavigate.mockReset();
 });
 
 describe('TrainerTrainingPlansTab', () => {
@@ -70,5 +76,20 @@ describe('TrainerTrainingPlansTab', () => {
     render(<TrainerTrainingPlansTab trainerId="tr1" />);
 
     expect(fetchTrainerTrainingPlans).toHaveBeenCalledWith('tr1');
+  });
+
+  describe('row press', () => {
+    it('navigates to plan detail when a plan row is pressed', () => {
+      setupStoreMock({ trainerTrainingPlans: MOCK_PLANS });
+
+      const { getByTestId } = render(<TrainerTrainingPlansTab trainerId="tr1" />);
+
+      fireEvent.press(getByTestId('training-plan-row-tp1'));
+
+      expect(mockNavigate).toHaveBeenCalledWith('TrainingTemplateDetail', {
+        templateId: 'tp1',
+        templateName: 'Strength Plan',
+      });
+    });
   });
 });

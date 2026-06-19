@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Modal, ActivityIndicator } from 'react-native';
-
-const COLORS = { primary: '#4f46e5' } as const;
+import { View, Text, ScrollView, Pressable, Modal } from 'react-native';
 import { useTrainersStore } from '../../../stores/trainers.store';
 import { TrainerMemberMetrics } from '../../../types/trainers';
+import { Button } from '~/components/ui/button';
+import { Skeleton } from '~/components/ui/skeleton';
 
 interface TrainerMembersTabProps {
   trainerId: string;
@@ -80,13 +80,15 @@ function ReassignMemberSheet({
             <Text className="text-[16px] font-semibold text-foreground">
               Reassign {member?.name ?? ''}
             </Text>
-            <Pressable
+            <Button
               onPress={onClose}
               accessibilityLabel="Close reassign sheet"
+              variant="ghost"
+              size="sm"
               className="px-2 py-1"
             >
               <Text className="text-sm text-foreground/65">Cancel</Text>
-            </Pressable>
+            </Button>
           </View>
 
           <Text className="text-xs text-foreground/65 mb-3">
@@ -94,7 +96,11 @@ function ReassignMemberSheet({
           </Text>
 
           {reassigning ? (
-            <ActivityIndicator color={COLORS.primary} />
+            <View className="gap-2">
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} className="h-14 rounded-xl" />
+              ))}
+            </View>
           ) : otherTrainers.length === 0 ? (
             <Text className="text-[13px] text-foreground/65 text-center py-4">
               No other trainers available.
@@ -134,7 +140,7 @@ export function TrainerMembersTab({ trainerId }: TrainerMembersTabProps) {
     return (
       <View className="px-4 py-4 gap-2">
         {[0, 1, 2].map((i) => (
-          <View key={i} className="rounded-xl bg-muted h-14 opacity-60" />
+          <Skeleton key={i} className="h-14 rounded-xl" />
         ))}
       </View>
     );
@@ -192,14 +198,16 @@ export function TrainerMembersTab({ trainerId }: TrainerMembersTabProps) {
 
                 {/* Reassign button */}
                 <View className="flex-row justify-end mt-2">
-                  <Pressable
+                  <Button
                     testID={`reassign-member-${member.id}`}
                     onPress={() => setReassignTarget(member)}
                     accessibilityLabel={`Reassign ${member.name}`}
+                    variant="ghost"
+                    size="sm"
                     className="px-2 py-1 rounded-lg bg-muted"
                   >
                     <Text className="text-xs font-medium text-foreground/65">Reassign</Text>
-                  </Pressable>
+                  </Button>
                 </View>
               </View>
             ))

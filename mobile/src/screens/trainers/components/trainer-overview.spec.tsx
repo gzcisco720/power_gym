@@ -231,6 +231,22 @@ describe('SessionsTrendChart', () => {
   });
 });
 
+describe('TrainerOverviewTab > renders trainer fields', () => {
+  it('renders trainer name and stat fields from props', () => {
+    setupStoreMock({ overviewStats: MOCK_STATS });
+
+    const { getByText } = render(
+      <TrainerOverviewTab trainerId="tr1" detail={MOCK_DETAIL} />,
+    );
+
+    // Trainer email from detail prop must appear
+    expect(getByText('alice@example.com')).toBeTruthy();
+
+    // KPI value for memberCount from overviewStats must appear
+    expect(getByText('5')).toBeTruthy();
+  });
+});
+
 describe('trainersStore > fetchTrainerOverviewStats', () => {
   it('stores stats and clears loading on success', async () => {
     // This test verifies the store contract from the Sprint Contract.

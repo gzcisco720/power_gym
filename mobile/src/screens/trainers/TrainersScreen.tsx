@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Modal } from 'react-native';
+import { View, Text, ScrollView, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
@@ -7,6 +7,8 @@ import { useTrainersStore } from '../../stores/trainers.store';
 import { TrainerListItem } from '../../types/trainers';
 import { TrainerRow } from './components/TrainerRow';
 import { AppStackParamList } from '../../navigation/index';
+import { Button } from '~/components/ui/button';
+import { Skeleton } from '~/components/ui/skeleton';
 
 type Nav = NativeStackNavigationProp<AppStackParamList, 'Drawer'>;
 
@@ -85,7 +87,7 @@ export function TrainersScreen() {
           {loading ? (
             <>
               {[0, 1, 2].map((i) => (
-                <View key={i} className="rounded-xl bg-muted px-3 py-2 h-14 opacity-60" />
+                <Skeleton key={i} testID="trainer-skeleton" className="h-14 rounded-xl" />
               ))}
             </>
           ) : trainers.length === 0 ? (
@@ -96,15 +98,16 @@ export function TrainersScreen() {
             trainers.map((trainer) => (
               <View key={trainer.id} className="gap-1">
                 <TrainerRow trainer={trainer} onPress={handleRowPress} />
-                <Pressable
+                <Button
                   testID={`remove-trainer-btn-${trainer.id}`}
                   onPress={() => setRemoveTarget(trainer)}
                   accessibilityLabel={`Remove ${trainer.name}`}
-                  accessibilityRole="button"
+                  variant="ghost"
+                  size="sm"
                   className="rounded-lg bg-destructive/10 px-3 py-1.5 items-center"
                 >
                   <Text className="text-xs font-medium text-destructive">Remove</Text>
-                </Pressable>
+                </Button>
               </View>
             ))
           )}
@@ -128,23 +131,23 @@ export function TrainersScreen() {
                   : `${removeTarget.memberCount} members will become unassigned`}
               </Text>
               <View className="flex-row gap-2">
-                <Pressable
+                <Button
                   onPress={() => setRemoveTarget(null)}
                   accessibilityLabel="Cancel remove trainer"
-                  accessibilityRole="button"
+                  variant="ghost"
                   className="flex-1 rounded-xl bg-muted px-3 py-2.5 items-center"
                 >
                   <Text className="text-sm font-medium text-foreground/65">Cancel</Text>
-                </Pressable>
-                <Pressable
+                </Button>
+                <Button
                   testID="confirm-remove-trainer"
                   onPress={() => void handleRemoveConfirm()}
                   accessibilityLabel="Confirm remove trainer"
-                  accessibilityRole="button"
+                  variant="ghost"
                   className="flex-1 rounded-xl bg-destructive/10 px-3 py-2.5 items-center"
                 >
                   <Text className="text-sm font-medium text-destructive">Remove</Text>
-                </Pressable>
+                </Button>
               </View>
             </View>
           </View>

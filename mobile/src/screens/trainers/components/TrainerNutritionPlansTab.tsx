@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { useTrainersStore } from '../../../stores/trainers.store';
+import { Skeleton } from '~/components/ui/skeleton';
 
 interface TrainerNutritionPlansTabProps {
   trainerId: string;
@@ -19,7 +20,7 @@ export function TrainerNutritionPlansTab({ trainerId }: TrainerNutritionPlansTab
     return (
       <View className="px-4 py-4 gap-2">
         {[0, 1, 2].map((i) => (
-          <View key={i} className="rounded-xl bg-muted h-12 opacity-60" />
+          <Skeleton key={i} className="h-12 rounded-xl" />
         ))}
       </View>
     );

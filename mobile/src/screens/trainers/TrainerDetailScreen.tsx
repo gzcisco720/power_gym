@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
@@ -10,18 +10,13 @@ import { TrainerCalendarTab } from './components/TrainerCalendarTab';
 import { TrainerTrainingPlansTab } from './components/TrainerTrainingPlansTab';
 import { TrainerNutritionPlansTab } from './components/TrainerNutritionPlansTab';
 import { AppStackParamList } from '../../navigation/index';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+import { Text as UIText } from '~/components/ui/text';
+import { Skeleton } from '~/components/ui/skeleton';
 
 type DetailRouteProp = RouteProp<AppStackParamList, 'TrainerDetail'>;
 
 type TabId = 'overview' | 'members' | 'calendar' | 'training' | 'nutrition';
-
-const TABS: { id: TabId; label: string; testID: string }[] = [
-  { id: 'overview', label: 'Overview', testID: 'trainer-detail-tab-overview' },
-  { id: 'members', label: 'Members', testID: 'trainer-detail-tab-members' },
-  { id: 'calendar', label: 'Calendar', testID: 'trainer-detail-tab-calendar' },
-  { id: 'training', label: 'Training', testID: 'trainer-detail-tab-training' },
-  { id: 'nutrition', label: 'Nutrition', testID: 'trainer-detail-tab-nutrition' },
-];
 
 export function TrainerDetailScreen() {
   const navigation = useNavigation();
@@ -49,65 +44,80 @@ export function TrainerDetailScreen() {
         </View>
       ) : null}
 
-      {/* Tab bar — scrollable to accommodate 5 tabs */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        className="flex-grow-0 border-b border-foreground/[.06] bg-background"
-        contentContainerStyle={{ flexDirection: 'row' }}
-      >
-        {TABS.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <Pressable
-              key={tab.id}
-              testID={tab.testID}
-              onPress={() => setActiveTab(tab.id)}
-              accessibilityLabel={tab.label}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isActive }}
-              className={`items-center px-4 py-2.5 border-b-2 ${
-                isActive ? 'border-primary' : 'border-transparent'
-              }`}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)} className="flex-1">
+        {/* Tab bar — scrollable to accommodate 5 tabs */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          className="flex-grow-0 border-b border-foreground/[.06] bg-background"
+          contentContainerStyle={{ flexDirection: 'row' }}
+        >
+          <TabsList className="bg-transparent rounded-none h-auto p-0">
+            <TabsTrigger
+              testID="trainer-detail-tab-overview"
+              value="overview"
+              className="px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
             >
-              <Text
-                className={`text-xs font-medium ${
-                  isActive ? 'text-primary-light' : 'text-foreground/65'
-                }`}
-              >
-                {tab.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+              <UIText className="text-xs font-medium">Overview</UIText>
+            </TabsTrigger>
+            <TabsTrigger
+              testID="trainer-detail-tab-members"
+              value="members"
+              className="px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+            >
+              <UIText className="text-xs font-medium">Members</UIText>
+            </TabsTrigger>
+            <TabsTrigger
+              testID="trainer-detail-tab-calendar"
+              value="calendar"
+              className="px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+            >
+              <UIText className="text-xs font-medium">Calendar</UIText>
+            </TabsTrigger>
+            <TabsTrigger
+              testID="trainer-detail-tab-training"
+              value="training"
+              className="px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+            >
+              <UIText className="text-xs font-medium">Training</UIText>
+            </TabsTrigger>
+            <TabsTrigger
+              testID="trainer-detail-tab-nutrition"
+              value="nutrition"
+              className="px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+            >
+              <UIText className="text-xs font-medium">Nutrition</UIText>
+            </TabsTrigger>
+          </TabsList>
+        </ScrollView>
 
-      {/* Tab content */}
-      {detailLoading || !detail ? (
-        <View className="px-4 py-4 gap-2">
-          {[0, 1, 2].map((i) => (
-            <View key={i} className="rounded-xl bg-muted h-12 opacity-60" />
-          ))}
-        </View>
-      ) : (
-        <>
-          {activeTab === 'overview' ? (
-            <TrainerOverviewTab trainerId={trainerId} detail={detail} />
-          ) : null}
-          {activeTab === 'members' ? (
-            <TrainerMembersTab trainerId={trainerId} />
-          ) : null}
-          {activeTab === 'calendar' ? (
-            <TrainerCalendarTab trainerId={trainerId} />
-          ) : null}
-          {activeTab === 'training' ? (
-            <TrainerTrainingPlansTab trainerId={trainerId} />
-          ) : null}
-          {activeTab === 'nutrition' ? (
-            <TrainerNutritionPlansTab trainerId={trainerId} />
-          ) : null}
-        </>
-      )}
+        {/* Loading state — shown across all tabs while detail fetches */}
+        {detailLoading || !detail ? (
+          <View className="px-4 py-4 gap-2">
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} className="h-12 rounded-xl" />
+            ))}
+          </View>
+        ) : (
+          <>
+            <TabsContent value="overview" className="flex-1">
+              <TrainerOverviewTab trainerId={trainerId} detail={detail} />
+            </TabsContent>
+            <TabsContent value="members" className="flex-1">
+              <TrainerMembersTab trainerId={trainerId} />
+            </TabsContent>
+            <TabsContent value="calendar" className="flex-1">
+              <TrainerCalendarTab trainerId={trainerId} />
+            </TabsContent>
+            <TabsContent value="training" className="flex-1">
+              <TrainerTrainingPlansTab trainerId={trainerId} />
+            </TabsContent>
+            <TabsContent value="nutrition" className="flex-1">
+              <TrainerNutritionPlansTab trainerId={trainerId} />
+            </TabsContent>
+          </>
+        )}
+      </Tabs>
     </Screen>
   );
 }

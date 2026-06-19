@@ -4,6 +4,7 @@ import { TrainerDetail } from '../../../types/trainers';
 import { useTrainersStore } from '../../../stores/trainers.store';
 import { WeeklyScheduleBar } from './WeeklyScheduleBar';
 import { SessionsTrendChart } from './SessionsTrendChart';
+import { Skeleton } from '~/components/ui/skeleton';
 
 interface TrainerOverviewTabProps {
   trainerId: string;
@@ -48,7 +49,7 @@ export function TrainerOverviewTab({ trainerId, detail }: TrainerOverviewTabProp
     return (
       <View testID="overview-loading" className="px-4 py-4 gap-2">
         {[0, 1, 2, 3].map((i) => (
-          <View key={i} className="rounded-xl bg-muted h-12 opacity-60" />
+          <Skeleton key={i} className="h-12 rounded-xl" />
         ))}
       </View>
     );

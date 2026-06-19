@@ -96,6 +96,18 @@ describe('TrainersScreen', () => {
     expect(getByTestId('screen-Trainers')).toBeTruthy();
   });
 
+  describe('loading', () => {
+    it('renders Skeleton list when loading is true', () => {
+      setupStoreMock({ loading: true });
+
+      const { getAllByTestId } = render(<TrainersScreen />);
+
+      // Reusables Skeleton components must be present (not raw View placeholders)
+      const skeletons = getAllByTestId('trainer-skeleton');
+      expect(skeletons.length).toBeGreaterThanOrEqual(3);
+    });
+  });
+
   it('stats strip shows total trainer count and avg members per trainer', () => {
     const trainers = [
       makeTrainer({ id: 't1', memberCount: 4 }),
