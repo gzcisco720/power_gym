@@ -1,5 +1,6 @@
 /**
- * Stage 3 unit tests — CreateInviteBottomSheet
+ * Stage 5 unit tests — CreateInviteBottomSheet
+ * Updated to work with Reusables Select for role picker (owner only)
  */
 
 import React from 'react';
@@ -22,6 +23,56 @@ jest.mock('../../stores/auth.store', () => ({
 jest.mock('../../lib/api/invites.api', () => ({
   createInvite: jest.fn(),
 }));
+
+// Mock Reusables Select to be testable — renders a flat list of pressable items.
+// SelectItem presses immediately call the parent's onValueChange via a ref pattern.
+jest.mock('~/components/ui/select', () => {
+  const mockReact = require('react');
+  const mockRN = require('react-native');
+
+  const mockCtx = mockReact.createContext({ value: undefined, onValueChange: undefined });
+
+  const mockSelect = ({ value, onValueChange, children }) =>
+    mockReact.createElement(mockCtx.Provider, { value: { value, onValueChange } }, children);
+
+  const mockSelectTrigger = ({ children, testID }) =>
+    mockReact.createElement(mockRN.View, { testID }, children);
+
+  const mockSelectValue = ({ placeholder }) => {
+    const ctx = mockReact.useContext(mockCtx);
+    return mockReact.createElement(mockRN.Text, null, ctx.value?.label || placeholder || '');
+  };
+
+  const mockSelectContent = ({ children }) =>
+    mockReact.createElement(mockRN.View, null, children);
+
+  const mockSelectItem = ({ value: itemValue, label, testID }) => {
+    const ctx = mockReact.useContext(mockCtx);
+    return mockReact.createElement(
+      mockRN.Pressable,
+      {
+        testID: testID || ('select-item-' + itemValue),
+        onPress: () => ctx.onValueChange && ctx.onValueChange({ value: itemValue, label }),
+        accessibilityLabel: label,
+      },
+      mockReact.createElement(mockRN.Text, null, label),
+    );
+  };
+
+  return {
+    __esModule: true,
+    Select: mockSelect,
+    SelectTrigger: mockSelectTrigger,
+    SelectValue: mockSelectValue,
+    SelectContent: mockSelectContent,
+    SelectItem: mockSelectItem,
+    SelectGroup: ({ children }) => mockReact.createElement(mockReact.Fragment, null, children),
+    SelectLabel: ({ children }) => mockReact.createElement(mockRN.Text, null, children),
+    SelectSeparator: () => null,
+    SelectScrollUpButton: () => null,
+    SelectScrollDownButton: () => null,
+  };
+});
 
 // ── Imports ───────────────────────────────────────────────────────────────────
 
@@ -108,7 +159,7 @@ beforeEach(() => {
 });
 
 describe('CreateInviteBottomSheet', () => {
-  it('owner sees both trainer and member role options', () => {
+  it('owner sees role selector (Select trigger visible)', () => {
     setupStoreMock({ trainers: trainerOptions });
     setupAuthMock('owner');
 
@@ -116,21 +167,19 @@ describe('CreateInviteBottomSheet', () => {
       <CreateInviteBottomSheet visible onClose={jest.fn()} />,
     );
 
-    expect(getByTestId('invite-role-trainer')).toBeTruthy();
-    expect(getByTestId('invite-role-member')).toBeTruthy();
+    expect(getByTestId('invite-role-select-trigger')).toBeTruthy();
   });
 
-  it('trainer sees member role only and no trainer picker', () => {
+  it('trainer does not see role selector (fixed Member role)', () => {
     setupStoreMock();
     setupAuthMock('trainer');
 
-    const { getByTestId, queryByTestId: qByTestId } = render(
+    const { queryByTestId, getByText } = render(
       <CreateInviteBottomSheet visible onClose={jest.fn()} />,
     );
 
-    expect(getByTestId('invite-role-member')).toBeTruthy();
-    expect(qByTestId('invite-role-trainer')).toBeNull();
-    expect(qByTestId('invite-trainer-picker')).toBeNull();
+    expect(queryByTestId('invite-role-select-trigger')).toBeNull();
+    expect(getByText('Member')).toBeTruthy();
   });
 
   it('owner selecting role "member" reveals the trainer picker and keeps save disabled until a trainer is chosen', () => {
@@ -141,8 +190,8 @@ describe('CreateInviteBottomSheet', () => {
       <CreateInviteBottomSheet visible onClose={jest.fn()} />,
     );
 
-    // Initially trainer role is selected (or member), check picker not visible before selecting member
-    fireEvent.press(getByTestId('invite-role-member'));
+    // Select member role via mocked Select item
+    fireEvent.press(getByTestId('select-item-member'));
 
     // Trainer picker should now be visible
     expect(getByTestId('invite-trainer-picker')).toBeTruthy();
@@ -160,8 +209,8 @@ describe('CreateInviteBottomSheet', () => {
       <CreateInviteBottomSheet visible onClose={jest.fn()} />,
     );
 
-    // Select trainer role (doesn't need trainerId)
-    fireEvent.press(getByTestId('invite-role-trainer'));
+    // Select trainer role
+    fireEvent.press(getByTestId('select-item-trainer'));
 
     // Save must be disabled with empty email
     expect(getByTestId('invite-save-button').props.accessibilityState?.disabled).toBe(true);
@@ -171,7 +220,37 @@ describe('CreateInviteBottomSheet', () => {
     expect(getByTestId('invite-save-button').props.accessibilityState?.disabled).toBe(true);
   });
 
-  it('successful save calls createInvite with the form values and addItem with the result', async () => {
+  // Stage 5 Sprint Contract: CreateInviteBottomSheet > submit > calls create invite with role
+  it('submit > calls create invite with role — selecting role via Select and submitting calls handler with that role', async () => {
+    const addItem = jest.fn();
+    setupStoreMock({ trainers: trainerOptions, addItem });
+    setupAuthMock('owner');
+
+    const createdInvite = makeInvite({ role: 'trainer', recipientEmail: 'trainer@example.com', trainerId: null });
+    mockCreateInvite.mockResolvedValueOnce(createdInvite);
+
+    const onClose = jest.fn();
+    const { getByTestId } = render(
+      <CreateInviteBottomSheet visible onClose={onClose} />,
+    );
+
+    // Select trainer role via Reusables Select mock
+    fireEvent.press(getByTestId('select-item-trainer'));
+    // Enter email
+    fireEvent.changeText(getByTestId('invite-email-input'), 'trainer@example.com');
+    // Save
+    fireEvent.press(getByTestId('invite-save-button'));
+
+    await waitFor(() => {
+      expect(mockCreateInvite).toHaveBeenCalledWith(
+        expect.objectContaining({ role: 'trainer', recipientEmail: 'trainer@example.com' }),
+      );
+      expect(addItem).toHaveBeenCalledWith(createdInvite);
+      expect(onClose).toHaveBeenCalled();
+    });
+  });
+
+  it('successful trainer-role save calls createInvite with trainer role', async () => {
     const addItem = jest.fn();
     setupStoreMock({ trainers: trainerOptions, addItem });
     setupAuthMock('owner');
@@ -185,7 +264,7 @@ describe('CreateInviteBottomSheet', () => {
     );
 
     // Select trainer role
-    fireEvent.press(getByTestId('invite-role-trainer'));
+    fireEvent.press(getByTestId('select-item-trainer'));
     // Enter email
     fireEvent.changeText(getByTestId('invite-email-input'), 'trainer@example.com');
     // Save

@@ -2,19 +2,24 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
-  Pressable,
   Modal,
-  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useInvitesStore } from '../../stores/invites.store';
 import { useAuthStore } from '../../stores/auth.store';
 import { createInvite } from '../../lib/api/invites.api';
 import { InviteRole } from '../../types/invites';
-
-const COLORS = { white: '#ffffff' } as const;
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  type Option,
+} from '~/components/ui/select';
 
 function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
@@ -34,23 +39,33 @@ export function CreateInviteBottomSheet({ visible, onClose }: CreateInviteBottom
 
   const isOwner = role === 'owner';
 
-  const [selectedRole, setSelectedRole] = useState<InviteRole>(isOwner ? 'trainer' : 'member');
+  const defaultRole: Option = isOwner
+    ? { value: 'trainer', label: 'Trainer' }
+    : { value: 'member', label: 'Member' };
+
+  const [selectedRole, setSelectedRole] = useState<Option | undefined>(defaultRole);
   const [email, setEmail] = useState('');
   const [trainerId, setTrainerId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const needsTrainer = isOwner && selectedRole === 'member';
+  const inviteRole = (selectedRole?.value ?? 'member') as InviteRole;
+  const needsTrainer = isOwner && inviteRole === 'member';
   const canSave =
     isValidEmail(email) &&
     (!needsTrainer || trainerId !== null);
 
   function handleClose() {
-    setSelectedRole(isOwner ? 'trainer' : 'member');
+    setSelectedRole(defaultRole);
     setEmail('');
     setTrainerId(null);
     setErrorMsg(null);
     onClose();
+  }
+
+  function handleRoleChange(option: Option | undefined) {
+    setSelectedRole(option);
+    setTrainerId(null);
   }
 
   async function handleSave() {
@@ -59,7 +74,7 @@ export function CreateInviteBottomSheet({ visible, onClose }: CreateInviteBottom
     setErrorMsg(null);
     try {
       const dto = {
-        role: selectedRole,
+        role: inviteRole,
         recipientEmail: email.trim(),
         ...(needsTrainer && trainerId ? { trainerId } : {}),
       };
@@ -85,87 +100,46 @@ export function CreateInviteBottomSheet({ visible, onClose }: CreateInviteBottom
             <Text className="text-[18px] font-semibold tracking-[-0.3px] text-foreground">
               Create Invite
             </Text>
-            <Pressable
+            <Button
               testID="invite-sheet-cancel"
+              variant="ghost"
+              size="sm"
               onPress={handleClose}
               accessibilityLabel="Cancel"
-              accessibilityRole="button"
             >
               <Text className="text-sm text-foreground/65">Cancel</Text>
-            </Pressable>
+            </Button>
           </View>
 
           <ScrollView keyboardShouldPersistTaps="handled">
             <View className="px-4 py-4 gap-4">
-              {/* Role picker — owner sees both; trainer sees member only */}
-              {isOwner && (
+              {/* Role picker — owner sees Select; trainer sees fixed Member label */}
+              {isOwner ? (
                 <View className="gap-1.5">
                   <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                     Role <Text className="text-destructive">*</Text>
                   </Text>
-                  <View className="flex-row gap-2">
-                    <Pressable
-                      testID="invite-role-trainer"
-                      onPress={() => {
-                        setSelectedRole('trainer');
-                        setTrainerId(null);
-                      }}
-                      accessibilityLabel="Trainer role"
-                      accessibilityRole="radio"
-                      accessibilityState={{ selected: selectedRole === 'trainer' }}
-                      className={`flex-1 py-2.5 rounded-xl items-center border ${
-                        selectedRole === 'trainer'
-                          ? 'border-primary bg-primary/10'
-                          : 'border-foreground/10 bg-muted'
-                      }`}
-                    >
-                      <Text
-                        className={`text-sm font-semibold ${
-                          selectedRole === 'trainer' ? 'text-primary-light' : 'text-foreground/65'
-                        }`}
-                      >
-                        Trainer
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      testID="invite-role-member"
-                      onPress={() => setSelectedRole('member')}
-                      accessibilityLabel="Member role"
-                      accessibilityRole="radio"
-                      accessibilityState={{ selected: selectedRole === 'member' }}
-                      className={`flex-1 py-2.5 rounded-xl items-center border ${
-                        selectedRole === 'member'
-                          ? 'border-primary bg-primary/10'
-                          : 'border-foreground/10 bg-muted'
-                      }`}
-                    >
-                      <Text
-                        className={`text-sm font-semibold ${
-                          selectedRole === 'member' ? 'text-primary-light' : 'text-foreground/65'
-                        }`}
-                      >
-                        Member
-                      </Text>
-                    </Pressable>
-                  </View>
+                  <Select value={selectedRole} onValueChange={handleRoleChange}>
+                    <SelectTrigger testID="invite-role-select-trigger" className="bg-input border-none rounded-xl px-3">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="trainer" label="Trainer" />
+                      <SelectItem value="member" label="Member" />
+                    </SelectContent>
+                  </Select>
                 </View>
-              )}
-
-              {/* Trainer sees only Member label, no picker */}
-              {!isOwner && (
+              ) : (
                 <View className="gap-1.5">
                   <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                     Role
                   </Text>
-                  <Pressable
+                  <View
                     testID="invite-role-member"
-                    accessibilityLabel="Member role"
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected: true }}
                     className="py-2.5 rounded-xl items-center border border-primary bg-primary/10"
                   >
                     <Text className="text-sm font-semibold text-primary-light">Member</Text>
-                  </Pressable>
+                  </View>
                 </View>
               )}
 
@@ -174,13 +148,11 @@ export function CreateInviteBottomSheet({ visible, onClose }: CreateInviteBottom
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Recipient Email <Text className="text-destructive">*</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="invite-email-input"
                   value={email}
                   onChangeText={setEmail}
                   placeholder="name@example.com"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -196,27 +168,21 @@ export function CreateInviteBottomSheet({ visible, onClose }: CreateInviteBottom
                   </Text>
                   <View className="gap-1.5">
                     {trainers.map((t) => (
-                      <Pressable
+                      <Button
                         key={t._id}
                         testID={`invite-trainer-option-${t._id}`}
+                        variant={trainerId === t._id ? 'default' : 'outline'}
                         onPress={() => setTrainerId(t._id)}
                         accessibilityLabel={`Assign to ${t.name}`}
-                        accessibilityRole="radio"
-                        accessibilityState={{ selected: trainerId === t._id }}
-                        className={`px-3 py-2.5 rounded-xl border ${
-                          trainerId === t._id
-                            ? 'border-primary bg-primary/10'
-                            : 'border-foreground/10 bg-muted'
-                        }`}
                       >
                         <Text
                           className={`text-sm font-medium ${
-                            trainerId === t._id ? 'text-primary-light' : 'text-foreground/65'
+                            trainerId === t._id ? 'text-primary-foreground' : 'text-foreground/65'
                           }`}
                         >
                           {t.name}
                         </Text>
-                      </Pressable>
+                      </Button>
                     ))}
                     {trainers.length === 0 && (
                       <Text className="text-xs text-foreground/65">No trainers available.</Text>
@@ -234,23 +200,15 @@ export function CreateInviteBottomSheet({ visible, onClose }: CreateInviteBottom
 
           {/* Footer action bar */}
           <View className="px-4 py-3 border-t border-foreground/10 bg-background/95">
-            <Pressable
+            <Button
               testID="invite-save-button"
               onPress={handleSave}
               disabled={!canSave || isSaving}
               accessibilityLabel="Save invite"
-              accessibilityRole="button"
               accessibilityState={{ disabled: !canSave || isSaving }}
-              className={`py-3 rounded-xl items-center ${
-                canSave && !isSaving ? 'bg-primary' : 'bg-primary/40'
-              }`}
             >
-              {isSaving ? (
-                <ActivityIndicator color={COLORS.white} />
-              ) : (
-                <Text className="text-sm font-semibold text-foreground">Send Invite</Text>
-              )}
-            </Pressable>
+              <Text className="text-sm font-semibold text-foreground">Send Invite</Text>
+            </Button>
           </View>
         </View>
       </View>

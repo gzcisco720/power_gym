@@ -2,10 +2,8 @@ import React, { useReducer, useMemo, useCallback, useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   Pressable,
-  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../../components/Screen';
@@ -16,6 +14,9 @@ import { useTrainersStore } from '../../../stores/trainers.store';
 import { useServiceTypesStore } from '../../../stores/service-types.store';
 import { useAuthStore } from '../../../stores/auth.store';
 import { StaffSession, CreateSessionInput, UpdateSessionInput } from '../../../types/scheduled-sessions';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
+import { Switch } from '~/components/ui/switch';
 
 interface SessionFormProps {
   session?: StaffSession;
@@ -272,14 +273,12 @@ export function SessionForm({ session, onClose }: SessionFormProps) {
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Date <Text className="text-destructive">*</Text>
             </Text>
-            <TextInput
+            <Input
               testID="session-form-date-input"
               value={formState.date}
               onChangeText={(v) => dispatch({ type: 'SET_DATE', value: v })}
               placeholder="YYYY-MM-DD"
-              placeholderTextColor="rgba(255,255,255,0.4)"
               accessibilityLabel="Session date"
-              className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
             />
           </View>
 
@@ -288,14 +287,12 @@ export function SessionForm({ session, onClose }: SessionFormProps) {
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Start Time <Text className="text-destructive">*</Text>
             </Text>
-            <TextInput
+            <Input
               testID="session-form-start-input"
               value={formState.startTime}
               onChangeText={(v) => dispatch({ type: 'SET_START', value: v })}
               placeholder="HH:MM"
-              placeholderTextColor="rgba(255,255,255,0.4)"
               accessibilityLabel="Start time"
-              className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
             />
           </View>
 
@@ -304,14 +301,12 @@ export function SessionForm({ session, onClose }: SessionFormProps) {
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               End Time <Text className="text-destructive">*</Text>
             </Text>
-            <TextInput
+            <Input
               testID="session-form-end-input"
               value={formState.endTime}
               onChangeText={(v) => dispatch({ type: 'SET_END', value: v })}
               placeholder="HH:MM"
-              placeholderTextColor="rgba(255,255,255,0.4)"
               accessibilityLabel="End time"
-              className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
             />
           </View>
 
@@ -360,50 +355,36 @@ export function SessionForm({ session, onClose }: SessionFormProps) {
               Custom Name{' '}
               <Text className="text-foreground/65 text-[11px] normal-case">(optional)</Text>
             </Text>
-            <TextInput
+            <Input
               testID="session-form-custom-name-input"
               value={formState.customServiceName}
               onChangeText={(v) => dispatch({ type: 'SET_CUSTOM_NAME', value: v })}
               placeholder="e.g. Yoga, Swimming..."
-              placeholderTextColor="rgba(255,255,255,0.4)"
               accessibilityLabel="Custom session name"
-              className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
             />
           </View>
 
           {/* Recurrence (create only) */}
           {!isEditMode && (
             <View className="gap-2">
-              <Pressable
-                testID="session-form-recurrence-toggle"
-                onPress={() => dispatch({ type: 'TOGGLE_RECURRENCE' })}
-                accessibilityLabel="Toggle recurrence"
-                accessibilityRole="switch"
-                accessibilityState={{ checked: formState.recurrenceEnabled }}
+              <View
                 className="flex-row items-center justify-between px-3 py-2.5 rounded-xl bg-card ring-1 ring-foreground/10"
               >
                 <Text className="text-sm text-foreground">Repeat weekly</Text>
-                <View
-                  className={`rounded-full px-2 py-0.5 ${
-                    formState.recurrenceEnabled ? 'bg-primary/20' : 'bg-muted'
-                  }`}
-                >
-                  <Text
-                    className={`text-xs font-semibold ${
-                      formState.recurrenceEnabled ? 'text-primary-light' : 'text-foreground/65'
-                    }`}
-                  >
-                    {formState.recurrenceEnabled ? 'On' : 'Off'}
-                  </Text>
-                </View>
-              </Pressable>
+                <Switch
+                  testID="session-form-recurrence-toggle"
+                  checked={formState.recurrenceEnabled}
+                  onCheckedChange={() => dispatch({ type: 'TOGGLE_RECURRENCE' })}
+                  accessibilityLabel="Toggle recurrence"
+                />
+              </View>
 
               {formState.recurrenceEnabled && (
                 <View className="gap-1.5">
                   <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                     Number of weeks (2–12)
                   </Text>
-                  <TextInput
+                  <Input
                     testID="session-form-recurrence-weeks-input"
                     value={formState.recurrenceWeeks}
                     onChangeText={(v) =>
@@ -411,9 +392,7 @@ export function SessionForm({ session, onClose }: SessionFormProps) {
                     }
                     keyboardType="decimal-pad"
                     placeholder="4"
-                    placeholderTextColor="rgba(255,255,255,0.4)"
                     accessibilityLabel="Recurrence weeks"
-                    className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
                   />
                 </View>
               )}
@@ -469,32 +448,26 @@ export function SessionForm({ session, onClose }: SessionFormProps) {
         className="border-t border-foreground/10 bg-background/95 px-4 py-3 flex-row gap-2"
         style={{ paddingBottom: insets.bottom || 12 }}
       >
-        <Pressable
+        <Button
           testID="session-form-cancel-button"
+          variant="ghost"
           onPress={onClose}
           accessibilityLabel="Cancel"
-          accessibilityRole="button"
-          className="flex-1 py-3 rounded-xl bg-muted items-center"
+          accessibilityState={{ disabled: false }}
+          className="flex-1"
         >
           <Text className="text-sm font-semibold text-foreground/65">Cancel</Text>
-        </Pressable>
-        <Pressable
+        </Button>
+        <Button
           testID="session-form-save-button"
           onPress={handleSave}
           disabled={!isValid || saving}
           accessibilityLabel="Save session"
-          accessibilityRole="button"
           accessibilityState={{ disabled: !isValid || saving }}
-          className={`flex-1 py-3 rounded-xl items-center ${
-            isValid && !saving ? 'bg-primary' : 'bg-primary/30'
-          }`}
+          className="flex-1"
         >
-          {saving ? (
-            <ActivityIndicator size="small" />
-          ) : (
-            <Text className="text-sm font-semibold text-foreground">Save</Text>
-          )}
-        </Pressable>
+          <Text className="text-sm font-semibold text-foreground">Save</Text>
+        </Button>
       </View>
     </Screen>
   );

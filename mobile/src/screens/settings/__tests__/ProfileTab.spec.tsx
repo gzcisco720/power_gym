@@ -125,4 +125,24 @@ describe('ProfileTab', () => {
       expect(getByTestId('settings-save-success')).toBeTruthy();
     });
   });
+
+  // Stage 5 Sprint Contract: ProfileTab > save > calls update with edited fields
+  it('save > calls update with edited fields — editing Reusables Input and pressing Reusables Button calls saveProfile', async () => {
+    const mockSave = jest.fn().mockResolvedValue(undefined);
+    mockUseProfileStore.mockReturnValue(makeProfileState({ saveProfile: mockSave }));
+
+    const { getByDisplayValue, getByText } = render(<ProfileTab role="owner" />);
+
+    // Edit first name using Reusables Input (wraps TextInput — changeText works)
+    fireEvent.changeText(getByDisplayValue('John'), 'Jane');
+
+    // Press save via Reusables Button
+    fireEvent.press(getByText('Save Profile'));
+
+    await waitFor(() => {
+      expect(mockSave).toHaveBeenCalledWith(
+        expect.objectContaining({ firstName: 'Jane', lastName: 'Doe' }),
+      );
+    });
+  });
 });

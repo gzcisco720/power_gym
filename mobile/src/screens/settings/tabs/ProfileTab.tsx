@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useProfileStore } from '../../../stores/profile.store';
 import { validateProfile } from '../../../lib/validation/profile';
 import { uploadAvatar, changeEmail, UpdateProfileDto, ProfileData } from '../../../lib/api/profile.api';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 
 type UserRole = 'owner' | 'trainer' | 'member';
 
@@ -197,11 +199,9 @@ export function ProfileTab({ role }: Props) {
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             First Name <Text className="text-destructive">*</Text>
           </Text>
-          <TextInput
+          <Input
             value={form.firstName}
             onChangeText={(v) => update('firstName', v)}
-            className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-            placeholderTextColor="#616161"
             placeholder="First name"
           />
           {errors.firstName ? (
@@ -214,11 +214,9 @@ export function ProfileTab({ role }: Props) {
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             Last Name <Text className="text-destructive">*</Text>
           </Text>
-          <TextInput
+          <Input
             value={form.lastName}
             onChangeText={(v) => update('lastName', v)}
-            className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-            placeholderTextColor="#616161"
             placeholder="Last name"
           />
           {errors.lastName ? (
@@ -245,22 +243,18 @@ export function ProfileTab({ role }: Props) {
           </View>
           {emailEditing ? (
             <View className="gap-2">
-              <TextInput
+              <Input
                 testID="email-new-input"
                 value={newEmail}
                 onChangeText={setNewEmail}
-                className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-                placeholderTextColor="#616161"
                 placeholder="New email address"
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
-              <TextInput
+              <Input
                 testID="email-password-input"
                 value={emailPassword}
                 onChangeText={setEmailPassword}
-                className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-                placeholderTextColor="#616161"
                 placeholder="Current password"
                 secureTextEntry
               />
@@ -322,11 +316,9 @@ export function ProfileTab({ role }: Props) {
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             Date of Birth <Text className="text-foreground/40">(optional)</Text>
           </Text>
-          <TextInput
+          <Input
             value={form.dateOfBirth}
             onChangeText={(v) => update('dateOfBirth', v)}
-            className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-            placeholderTextColor="#616161"
             placeholder="YYYY-MM-DD"
           />
         </View>
@@ -336,11 +328,9 @@ export function ProfileTab({ role }: Props) {
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             Mobile <Text className="text-foreground/40">(optional)</Text>
           </Text>
-          <TextInput
+          <Input
             value={form.mobile}
             onChangeText={(v) => update('mobile', v)}
-            className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-            placeholderTextColor="#616161"
             placeholder="Phone number"
             keyboardType="phone-pad"
           />
@@ -351,11 +341,9 @@ export function ProfileTab({ role }: Props) {
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             Address <Text className="text-foreground/40">(optional)</Text>
           </Text>
-          <TextInput
+          <Input
             value={form.address}
             onChangeText={(v) => update('address', v)}
-            className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-            placeholderTextColor="#616161"
             placeholder="Street, City, State"
           />
         </View>
@@ -366,11 +354,9 @@ export function ProfileTab({ role }: Props) {
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Bio <Text className="text-foreground/40">(optional)</Text>
             </Text>
-            <TextInput
+            <Input
               value={form.bio}
               onChangeText={(v) => update('bio', v)}
-              className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-              placeholderTextColor="#616161"
               placeholder="Tell members about yourself"
               multiline
               numberOfLines={3}
@@ -384,11 +370,9 @@ export function ProfileTab({ role }: Props) {
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Specializations <Text className="text-foreground/40">(optional)</Text>
             </Text>
-            <TextInput
+            <Input
               value={form.specializations}
               onChangeText={(v) => update('specializations', v)}
-              className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-              placeholderTextColor="#616161"
               placeholder="e.g. Strength, HIIT, Yoga"
             />
           </View>
@@ -400,11 +384,9 @@ export function ProfileTab({ role }: Props) {
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Certifications <Text className="text-foreground/40">(optional)</Text>
             </Text>
-            <TextInput
+            <Input
               value={form.certifications}
               onChangeText={(v) => update('certifications', v)}
-              className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-              placeholderTextColor="#616161"
               placeholder="e.g. ACE, NASM, CSCS"
             />
           </View>
@@ -490,19 +472,13 @@ export function ProfileTab({ role }: Props) {
         ) : null}
 
         {/* Save Button */}
-        <Pressable
+        <Button
           onPress={handleSave}
           disabled={!isDirty || isSaving}
           accessibilityLabel="Save Profile"
-          accessibilityState={{ disabled: !isDirty || isSaving }}
-          className={`py-3 rounded-xl items-center ${isDirty && !isSaving ? 'bg-primary' : 'bg-primary/40'}`}
         >
-          {isSaving ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text className="text-sm font-semibold text-foreground">Save Profile</Text>
-          )}
-        </Pressable>
+          <Text className="text-sm font-semibold text-foreground">Save Profile</Text>
+        </Button>
       </View>
     </ScrollView>
   );

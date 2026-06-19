@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../stores/auth.store';
 import { Screen } from '../../components/Screen';
@@ -7,66 +7,64 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { ProfileTab } from './tabs/ProfileTab';
 import { SecurityTab } from './tabs/SecurityTab';
 import { GymInfoTab } from './tabs/GymInfoTab';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '~/components/ui/tabs';
 
 type TabId = 'profile' | 'security' | 'gym';
-
-interface Tab {
-  id: TabId;
-  label: string;
-  testID: string;
-}
-
-const TABS_BASE: Tab[] = [
-  { id: 'profile', label: 'Profile', testID: 'settings-tab-profile' },
-  { id: 'security', label: 'Security', testID: 'settings-tab-security' },
-];
-
-const GYM_TAB: Tab = { id: 'gym', label: 'Gym Info', testID: 'settings-tab-gym' };
 
 export function SettingsScreen() {
   const navigation = useNavigation();
   const user = useAuthStore((s) => s.user);
   const role = user?.role ?? 'member';
-
-  const tabs = role === 'owner' ? [...TABS_BASE, GYM_TAB] : TABS_BASE;
   const [activeTab, setActiveTab] = useState<TabId>('profile');
 
   return (
     <Screen>
       <ScreenHeader title="Settings" onBack={() => navigation.goBack()} />
 
-      {/* Horizontal tab bar */}
-      <View className="flex-row border-b border-foreground/[.06] bg-background">
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <Pressable
-              key={tab.id}
-              testID={tab.testID}
-              onPress={() => setActiveTab(tab.id)}
-              accessibilityLabel={tab.label}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isActive }}
-              className={`flex-1 items-center py-3 border-b-2 ${
-                isActive ? 'border-primary' : 'border-transparent'
-              }`}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)} className="flex-1">
+        {/* Horizontal tab bar */}
+        <TabsList className="flex-row rounded-none border-b border-foreground/[.06] bg-background h-auto py-0">
+          <TabsTrigger
+            testID="settings-tab-profile"
+            value="profile"
+            accessibilityLabel="Profile"
+            className="flex-1 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
+          >
+            <Text className="text-sm font-medium text-foreground/65">Profile</Text>
+          </TabsTrigger>
+          <TabsTrigger
+            testID="settings-tab-security"
+            value="security"
+            accessibilityLabel="Security"
+            className="flex-1 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
+          >
+            <Text className="text-sm font-medium text-foreground/65">Security</Text>
+          </TabsTrigger>
+          {role === 'owner' && (
+            <TabsTrigger
+              testID="settings-tab-gym"
+              value="gym"
+              accessibilityLabel="Gym Info"
+              className="flex-1 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
             >
-              <Text
-                className={`text-sm font-medium ${
-                  isActive ? 'text-primary-light' : 'text-foreground/65'
-                }`}
-              >
-                {tab.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+              <Text className="text-sm font-medium text-foreground/65">Gym Info</Text>
+            </TabsTrigger>
+          )}
+        </TabsList>
 
-      {/* Tab content */}
-      {activeTab === 'profile' ? <ProfileTab role={role} /> : null}
-      {activeTab === 'security' ? <SecurityTab /> : null}
-      {activeTab === 'gym' && role === 'owner' ? <GymInfoTab /> : null}
+        {/* Tab content */}
+        <TabsContent value="profile" className="flex-1">
+          <ProfileTab role={role} />
+        </TabsContent>
+        <TabsContent value="security" className="flex-1">
+          <SecurityTab />
+        </TabsContent>
+        {role === 'owner' && (
+          <TabsContent value="gym" className="flex-1">
+            <GymInfoTab />
+          </TabsContent>
+        )}
+      </Tabs>
     </Screen>
   );
 }

@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -113,5 +113,18 @@ describe('SettingsScreen', () => {
 
     const { getByTestId } = render(<SettingsScreen />);
     expect(getByTestId('screen-header-back')).toBeTruthy();
+  });
+
+  // Stage 5 Sprint Contract: SettingsScreen > Tabs > switches active tab content
+  it('Tabs > switches active tab content — pressing Security tab shows SecurityTab panel', () => {
+    makeAuthState('owner');
+
+    const { getByTestId, getByText } = render(<SettingsScreen />);
+
+    // Press the Security tab trigger
+    fireEvent.press(getByTestId('settings-tab-security'));
+
+    // SecurityTab panel should be visible (it has "Current Password" label)
+    expect(getByText('Current Password')).toBeTruthy();
   });
 });

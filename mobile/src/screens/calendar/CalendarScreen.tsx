@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { Screen } from '../../components/Screen';
 import { useCalendarStore } from '../../stores/calendar.store';
@@ -8,6 +8,8 @@ import { useServiceTypesStore } from '../../stores/service-types.store';
 import { StaffSession } from '../../types/scheduled-sessions';
 import { AgendaSessionCard } from './components/AgendaSessionCard';
 import { SessionForm } from './components/SessionForm';
+import { Button } from '~/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs';
 
 type DeleteScope = 'single' | 'series';
 
@@ -25,9 +27,9 @@ export function CalendarScreen() {
   const { loading, range } = calendarStore;
   const groups = calendarStore.groupedByDay();
 
-  const [formVisible, setFormVisible] = useState(false);
-  const [editSession, setEditSession] = useState<StaffSession | undefined>(undefined);
-  const [deleteState, setDeleteState] = useState<DeleteState | null>(null);
+  const [formVisible, setFormVisible] = React.useState(false);
+  const [editSession, setEditSession] = React.useState<StaffSession | undefined>(undefined);
+  const [deleteState, setDeleteState] = React.useState<DeleteState | null>(null);
 
   const calendarFetch = calendarStore.fetch;
 
@@ -83,44 +85,40 @@ export function CalendarScreen() {
             Scheduled sessions
           </Text>
         </View>
-        <Pressable
+        <Button
           testID="calendar-add-button"
+          size="sm"
           onPress={handleAddPress}
           accessibilityLabel="Add session"
-          accessibilityRole="button"
-          className="rounded-lg bg-primary px-3 py-1.5"
         >
           <Text className="text-xs font-semibold text-foreground">+ Add</Text>
-        </Pressable>
+        </Button>
       </View>
 
-      {/* Tab bar */}
-      <View className="flex-row border-b border-foreground/[.06] bg-background">
-        {(['upcoming', 'past'] as const).map((tab) => {
-          const isActive = range === tab;
-          return (
-            <Pressable
-              key={tab}
-              testID={`calendar-tab-${tab}`}
-              onPress={() => void calendarStore.fetch(tab)}
-              accessibilityLabel={tab === 'upcoming' ? 'Upcoming' : 'Past'}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isActive }}
-              className={`flex-1 items-center py-3 border-b-2 ${
-                isActive ? 'border-primary' : 'border-transparent'
-              }`}
-            >
-              <Text
-                className={`text-sm font-medium ${
-                  isActive ? 'text-primary-light' : 'text-foreground/65'
-                }`}
-              >
-                {tab === 'upcoming' ? 'Upcoming' : 'Past'}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      {/* Tab bar — using Tabs for view switch (upcoming/past) */}
+      <Tabs
+        value={range}
+        onValueChange={(v) => void calendarStore.fetch(v as 'upcoming' | 'past')}
+      >
+        <TabsList className="flex-row rounded-none border-b border-foreground/[.06] bg-background h-auto py-0">
+          <TabsTrigger
+            testID="calendar-tab-upcoming"
+            value="upcoming"
+            accessibilityLabel="Upcoming"
+            className="flex-1 py-3 rounded-none"
+          >
+            <Text className="text-sm font-medium text-foreground/65">Upcoming</Text>
+          </TabsTrigger>
+          <TabsTrigger
+            testID="calendar-tab-past"
+            value="past"
+            accessibilityLabel="Past"
+            className="flex-1 py-3 rounded-none"
+          >
+            <Text className="text-sm font-medium text-foreground/65">Past</Text>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* Content */}
       {loading ? (
@@ -234,24 +232,24 @@ export function CalendarScreen() {
             )}
 
             <View className="flex-row gap-2">
-              <Pressable
+              <Button
                 testID="delete-cancel-button"
+                variant="ghost"
                 onPress={handleDeleteCancel}
                 accessibilityLabel="Cancel delete"
-                accessibilityRole="button"
-                className="flex-1 py-2.5 rounded-xl bg-muted items-center"
+                className="flex-1"
               >
                 <Text className="text-sm font-semibold text-foreground/65">Cancel</Text>
-              </Pressable>
-              <Pressable
+              </Button>
+              <Button
                 testID="delete-confirm-button"
+                variant="destructive"
                 onPress={() => void handleDeleteConfirm()}
                 accessibilityLabel="Confirm delete"
-                accessibilityRole="button"
-                className="flex-1 py-2.5 rounded-xl bg-destructive/10 items-center ring-1 ring-destructive/20"
+                className="flex-1"
               >
-                <Text className="text-sm font-semibold text-destructive">Delete</Text>
-              </Pressable>
+                <Text className="text-sm font-semibold text-white">Delete</Text>
+              </Button>
             </View>
           </View>
         </View>

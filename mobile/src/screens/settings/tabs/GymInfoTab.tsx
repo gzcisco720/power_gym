@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { getGymInfo, updateGymInfo, uploadLogo, GymInfo, UpdateGymInfoDto } from '../../../lib/api/gym.api';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
+import { Skeleton } from '~/components/ui/skeleton';
 
 interface FormState {
   name: string;
@@ -110,8 +113,10 @@ export function GymInfoTab() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <ActivityIndicator color="#4f46e5" />
+      <View className="flex-1 bg-background px-4 py-6 gap-4">
+        <Skeleton className="h-10 w-full rounded-xl" />
+        <Skeleton className="h-10 w-full rounded-xl" />
+        <Skeleton className="h-10 w-full rounded-xl" />
       </View>
     );
   }
@@ -156,11 +161,9 @@ export function GymInfoTab() {
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             Gym Name
           </Text>
-          <TextInput
+          <Input
             value={form.name}
             onChangeText={(v) => update('name', v)}
-            className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-            placeholderTextColor="#616161"
             placeholder="Your gym name"
           />
         </View>
@@ -170,11 +173,9 @@ export function GymInfoTab() {
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             Address
           </Text>
-          <TextInput
+          <Input
             value={form.address}
             onChangeText={(v) => update('address', v)}
-            className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-            placeholderTextColor="#616161"
             placeholder="Street, City, State"
           />
         </View>
@@ -184,11 +185,9 @@ export function GymInfoTab() {
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             Phone
           </Text>
-          <TextInput
+          <Input
             value={form.phone}
             onChangeText={(v) => update('phone', v)}
-            className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-            placeholderTextColor="#616161"
             placeholder="Phone number"
             keyboardType="phone-pad"
           />
@@ -199,11 +198,9 @@ export function GymInfoTab() {
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             Email
           </Text>
-          <TextInput
+          <Input
             value={form.email}
             onChangeText={(v) => update('email', v)}
-            className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-            placeholderTextColor="#616161"
             placeholder="contact@yourgym.com"
             keyboardType="email-address"
             autoCapitalize="none"
@@ -215,11 +212,9 @@ export function GymInfoTab() {
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             Website
           </Text>
-          <TextInput
+          <Input
             value={form.website}
             onChangeText={(v) => update('website', v)}
-            className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-            placeholderTextColor="#616161"
             placeholder="https://yourgym.com"
             autoCapitalize="none"
           />
@@ -230,11 +225,9 @@ export function GymInfoTab() {
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             Hours
           </Text>
-          <TextInput
+          <Input
             value={form.hours}
             onChangeText={(v) => update('hours', v)}
-            className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-            placeholderTextColor="#616161"
             placeholder="Mon–Fri 6am–10pm"
           />
         </View>
@@ -244,11 +237,9 @@ export function GymInfoTab() {
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             Description
           </Text>
-          <TextInput
+          <Input
             value={form.description}
             onChangeText={(v) => update('description', v)}
-            className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-            placeholderTextColor="#616161"
             placeholder="Describe your gym"
             multiline
             numberOfLines={3}
@@ -266,19 +257,13 @@ export function GymInfoTab() {
         ) : null}
 
         {/* Save Button */}
-        <Pressable
+        <Button
           onPress={handleSave}
           disabled={!isDirty || isSaving}
           accessibilityLabel="Save Gym Info"
-          accessibilityState={{ disabled: !isDirty || isSaving }}
-          className={`py-3 rounded-xl items-center ${isDirty && !isSaving ? 'bg-primary' : 'bg-primary/40'}`}
         >
-          {isSaving ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text className="text-sm font-semibold text-foreground">Save Gym Info</Text>
-          )}
-        </Pressable>
+          <Text className="text-sm font-semibold text-foreground">Save Gym Info</Text>
+        </Button>
       </View>
     </ScrollView>
   );

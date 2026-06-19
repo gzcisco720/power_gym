@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { useProfileStore } from '../../../stores/profile.store';
+import { useAuthStore } from '../../../stores/auth.store';
 import { validatePassword } from '../../../lib/validation/profile';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
+import { Switch } from '~/components/ui/switch';
 
 export function SecurityTab() {
   const { changePassword } = useProfileStore();
+  const biometricsEnabled = useAuthStore((s) => s.biometricsEnabled);
+  const setBiometricsEnabled = useAuthStore((s) => s.setBiometricsEnabled);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -45,12 +51,23 @@ export function SecurityTab() {
   return (
     <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled">
       <View className="px-4 py-6 gap-6">
+        {/* Biometric login toggle */}
+        <View className="flex-row items-center justify-between px-3 py-2.5 rounded-xl bg-card ring-1 ring-foreground/10">
+          <Text className="text-sm text-foreground">Biometric Login</Text>
+          <Switch
+            testID="security-biometric-switch"
+            checked={biometricsEnabled}
+            onCheckedChange={(enabled) => void setBiometricsEnabled(enabled)}
+            accessibilityLabel="Toggle biometric login"
+          />
+        </View>
+
         {/* Current Password */}
         <View className="gap-1.5">
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             Current Password
           </Text>
-          <TextInput
+          <Input
             value={currentPassword}
             onChangeText={(v) => {
               setCurrentPassword(v);
@@ -58,8 +75,6 @@ export function SecurityTab() {
               setServerError(null);
             }}
             secureTextEntry
-            className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-            placeholderTextColor="#616161"
             placeholder="••••••••"
             autoCapitalize="none"
             autoCorrect={false}
@@ -74,15 +89,13 @@ export function SecurityTab() {
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             New Password
           </Text>
-          <TextInput
+          <Input
             value={newPassword}
             onChangeText={(v) => {
               setNewPassword(v);
               setSuccess(false);
             }}
             secureTextEntry
-            className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-            placeholderTextColor="#616161"
             placeholder="Min 8 chars, 1 uppercase, 1 number"
             autoCapitalize="none"
             autoCorrect={false}
@@ -97,15 +110,13 @@ export function SecurityTab() {
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             Confirm New Password
           </Text>
-          <TextInput
+          <Input
             value={confirmPassword}
             onChangeText={(v) => {
               setConfirmPassword(v);
               setSuccess(false);
             }}
             secureTextEntry
-            className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
-            placeholderTextColor="#616161"
             placeholder="Repeat new password"
             autoCapitalize="none"
             autoCorrect={false}
@@ -130,19 +141,13 @@ export function SecurityTab() {
         ) : null}
 
         {/* Submit Button */}
-        <Pressable
+        <Button
           onPress={handleSubmit}
           disabled={isSubmitting}
           accessibilityLabel="Update Password"
-          accessibilityState={{ disabled: isSubmitting }}
-          className={`py-3 rounded-xl items-center ${!isSubmitting ? 'bg-primary' : 'bg-primary/40'}`}
         >
-          {isSubmitting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text className="text-sm font-semibold text-foreground">Update Password</Text>
-          )}
-        </Pressable>
+          <Text className="text-sm font-semibold text-foreground">Update Password</Text>
+        </Button>
       </View>
     </ScrollView>
   );

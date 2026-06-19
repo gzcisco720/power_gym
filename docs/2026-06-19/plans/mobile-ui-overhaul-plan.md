@@ -241,7 +241,23 @@ Every interactive/styled UI element in `mobile/` is rendered through a React Nat
 2. Migrate the screens → Green
 3. Run the settings + invites Detox specs → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 5 Checkpoint
+- [x] `SettingsScreen` — Reusables `Tabs` (controlled value/onValueChange), testID on triggers
+- [x] `ProfileTab` — `TextInput` → `Input`, save `Pressable` → `Button`
+- [x] `SecurityTab` — `TextInput` → `Input`, save `Pressable` → `Button`, added Reusables `Switch` for biometric login (testID `security-biometric-switch`)
+- [x] `GymInfoTab` — `TextInput` → `Input`, save `Pressable` → `Button`, loading `ActivityIndicator` → `Skeleton`
+- [x] `CreateInviteBottomSheet` — role picker `Pressable` buttons → Reusables `Select`, email `TextInput` → `Input`, save `Pressable` → `Button`, cancel `Pressable` → `Button`
+- [x] `CalendarScreen` — add button `Pressable` → `Button`, tab bar Pressables → Reusables `Tabs`
+- [x] `SessionForm` — `TextInput` fields → `Input`, recurrence toggle `Pressable` → `Switch`, footer `Pressable` buttons → `Button`
+- [x] `src/screens/settings/__tests__/SettingsScreen.spec.tsx` — added Sprint Contract test (tab content switching)
+- [x] `src/screens/settings/__tests__/ProfileTab.spec.tsx` — added Sprint Contract test (save calls update)
+- [x] `src/screens/settings/__tests__/SecurityTab.spec.tsx` — new file with Sprint Contract test (biometric Switch)
+- [x] `src/screens/invites/CreateInviteBottomSheet.spec.tsx` — updated to work with Reusables Select mock, added Sprint Contract test
+- [x] 730 tests pass (725 baseline + 5 new)
+- [x] Lint clean
+- [x] No new TypeScript errors in production files
 
 ---
 
