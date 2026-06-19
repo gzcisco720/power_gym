@@ -200,20 +200,24 @@ beforeEach(() => {
 
 describe('MemberDetailScreen', () => {
   describe('Tabs', () => {
-    it('switches between member tabs', () => {
+    it('switches between member tabs — pressing a tab renders that tab content', () => {
       setupRoute('mem1');
       setupStore(makeMember(), makeDetailSlice());
 
-      const { getByTestId } = render(<MemberDetailScreen />);
+      const { getByTestId, getByText, queryByTestId } = render(<MemberDetailScreen />);
 
-      // Initially overview tab is active
+      // Initially overview tab is active — kpi-sessions is a unique overview element
       expect(getByTestId('member-detail-tab-overview')).toBeTruthy();
+      expect(getByTestId('kpi-sessions')).toBeTruthy();
 
       // Press the body tests tab
       fireEvent.press(getByTestId('member-detail-tab-bodytests'));
 
-      // Body tests tab content should now be visible
-      expect(getByTestId('member-detail-tab-bodytests')).toBeTruthy();
+      // Body tests tab content visible ("No body tests recorded yet." empty state)
+      expect(getByText('No body tests recorded yet.')).toBeTruthy();
+
+      // Overview content (kpi-sessions) should no longer be rendered
+      expect(queryByTestId('kpi-sessions')).toBeNull();
     });
   });
 });

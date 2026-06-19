@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { Skeleton } from '~/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+import { Text as UIText } from '~/components/ui/text';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
@@ -28,17 +30,6 @@ type Nav = NativeStackNavigationProp<AppStackParamList>;
 
 type TabId = 'overview' | 'bodytests' | 'health' | 'checkins' | 'training' | 'nutrition' | 'progress' | 'photos' | 'billing';
 
-const TABS: { id: TabId; label: string; testID: string }[] = [
-  { id: 'overview', label: 'Overview', testID: 'member-detail-tab-overview' },
-  { id: 'bodytests', label: 'Body Tests', testID: 'member-detail-tab-bodytests' },
-  { id: 'health', label: 'Health', testID: 'member-detail-tab-health' },
-  { id: 'checkins', label: 'Check-ins', testID: 'member-detail-tab-checkins' },
-  { id: 'training', label: 'Training', testID: 'member-detail-tab-training' },
-  { id: 'nutrition', label: 'Nutrition', testID: 'member-detail-tab-nutrition' },
-  { id: 'progress', label: 'Progress', testID: 'member-detail-tab-progress' },
-  { id: 'photos', label: 'Photos', testID: 'member-detail-tab-photos' },
-  { id: 'billing', label: 'Billing', testID: 'member-detail-tab-billing' },
-];
 
 export function MemberDetailScreen() {
   const navigation = useNavigation<Nav>();
@@ -95,91 +86,139 @@ export function MemberDetailScreen() {
         </View>
       </View>
 
-      {/* Tab bar */}
-      <View className="flex-row border-b border-foreground/[.06] bg-background">
-        {TABS.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <Pressable
-              key={tab.id}
-              testID={tab.testID}
-              onPress={() => setActiveTab(tab.id)}
-              accessibilityLabel={tab.label}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isActive }}
-              className={`flex-1 items-center py-2.5 border-b-2 ${
-                isActive ? 'border-primary' : 'border-transparent'
-              }`}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)} className="flex-1">
+        {/* Tab bar — scrollable to accommodate 9 tabs */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          className="flex-grow-0 border-b border-foreground/[.06] bg-background"
+          contentContainerStyle={{ flexDirection: 'row' }}
+        >
+          <TabsList className="bg-transparent rounded-none h-auto p-0">
+            <TabsTrigger
+              testID="member-detail-tab-overview"
+              value="overview"
+              className="px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
             >
-              <Text
-                className={`text-xs font-medium ${
-                  isActive ? 'text-primary-light' : 'text-foreground/65'
-                }`}
-              >
-                {tab.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+              <UIText className="text-xs font-medium">Overview</UIText>
+            </TabsTrigger>
+            <TabsTrigger
+              testID="member-detail-tab-bodytests"
+              value="bodytests"
+              className="px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+            >
+              <UIText className="text-xs font-medium">Body Tests</UIText>
+            </TabsTrigger>
+            <TabsTrigger
+              testID="member-detail-tab-health"
+              value="health"
+              className="px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+            >
+              <UIText className="text-xs font-medium">Health</UIText>
+            </TabsTrigger>
+            <TabsTrigger
+              testID="member-detail-tab-checkins"
+              value="checkins"
+              className="px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+            >
+              <UIText className="text-xs font-medium">Check-ins</UIText>
+            </TabsTrigger>
+            <TabsTrigger
+              testID="member-detail-tab-training"
+              value="training"
+              className="px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+            >
+              <UIText className="text-xs font-medium">Training</UIText>
+            </TabsTrigger>
+            <TabsTrigger
+              testID="member-detail-tab-nutrition"
+              value="nutrition"
+              className="px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+            >
+              <UIText className="text-xs font-medium">Nutrition</UIText>
+            </TabsTrigger>
+            <TabsTrigger
+              testID="member-detail-tab-progress"
+              value="progress"
+              className="px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+            >
+              <UIText className="text-xs font-medium">Progress</UIText>
+            </TabsTrigger>
+            <TabsTrigger
+              testID="member-detail-tab-photos"
+              value="photos"
+              className="px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+            >
+              <UIText className="text-xs font-medium">Photos</UIText>
+            </TabsTrigger>
+            <TabsTrigger
+              testID="member-detail-tab-billing"
+              value="billing"
+              className="px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+            >
+              <UIText className="text-xs font-medium">Billing</UIText>
+            </TabsTrigger>
+          </TabsList>
+        </ScrollView>
 
-      {/* Tab content */}
-      {detailLoading || !detail ? (
-        <View className="px-4 py-4 gap-2">
-          {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-12 rounded-xl" />
-          ))}
-        </View>
-      ) : (
-        <>
-          {activeTab === 'overview' ? (
-            <MemberOverviewTab
-              overviewStats={detail.overviewStats ?? null}
-              onNavigateToTab={setActiveTab}
-            />
-          ) : null}
-          {activeTab === 'bodytests' ? (
-            <MemberBodyTestsTab
-              bodyTests={detail.bodyTests}
-              onPressBodyTest={handleBodyTestPress}
-            />
-          ) : null}
-          {activeTab === 'health' ? (
-            <MemberHealthTab injuries={detail.injuries} medications={detail.medications} />
-          ) : null}
-          {activeTab === 'checkins' ? (
-            <MemberCheckInsTab
-              memberId={memberId}
-              checkIns={detail.checkIns}
-              onPressCheckIn={(c: CheckIn) => navigation.navigate('CheckInDetail', { checkIn: c })}
-            />
-          ) : null}
-          {activeTab === 'training' ? (
-            <MemberTrainingTab
-              memberId={memberId}
-              memberName={member.name}
-              activePlan={memberActivePlan}
-              onAssignPress={() => setAssignSheetVisible(true)}
-            />
-          ) : null}
-          {activeTab === 'nutrition' ? (
-            <MemberNutritionTab
-              memberId={memberId}
-              activePlan={memberActiveNutritionPlan}
-              onAssignPress={() => setAssignNutritionSheetVisible(true)}
-            />
-          ) : null}
-          {activeTab === 'progress' ? (
-            <MemberProgressTab memberId={memberId} />
-          ) : null}
-          {activeTab === 'photos' ? (
-            <MemberPhotosTab memberId={memberId} />
-          ) : null}
-          {activeTab === 'billing' ? (
-            <MemberBillingTab memberId={memberId} />
-          ) : null}
-        </>
-      )}
+        {/* Tab content */}
+        {detailLoading || !detail ? (
+          <View className="px-4 py-4 gap-2">
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} className="h-12 rounded-xl" />
+            ))}
+          </View>
+        ) : (
+          <>
+            <TabsContent value="overview" className="flex-1">
+              <MemberOverviewTab
+                overviewStats={detail.overviewStats ?? null}
+                onNavigateToTab={setActiveTab}
+              />
+            </TabsContent>
+            <TabsContent value="bodytests" className="flex-1">
+              <MemberBodyTestsTab
+                bodyTests={detail.bodyTests}
+                onPressBodyTest={handleBodyTestPress}
+              />
+            </TabsContent>
+            <TabsContent value="health" className="flex-1">
+              <MemberHealthTab injuries={detail.injuries} medications={detail.medications} />
+            </TabsContent>
+            <TabsContent value="checkins" className="flex-1">
+              <MemberCheckInsTab
+                memberId={memberId}
+                checkIns={detail.checkIns}
+                onPressCheckIn={(c: CheckIn) => navigation.navigate('CheckInDetail', { checkIn: c })}
+              />
+            </TabsContent>
+            <TabsContent value="training" className="flex-1">
+              <MemberTrainingTab
+                memberId={memberId}
+                memberName={member.name}
+                activePlan={memberActivePlan}
+                onAssignPress={() => setAssignSheetVisible(true)}
+              />
+            </TabsContent>
+            <TabsContent value="nutrition" className="flex-1">
+              <MemberNutritionTab
+                memberId={memberId}
+                activePlan={memberActiveNutritionPlan}
+                onAssignPress={() => setAssignNutritionSheetVisible(true)}
+              />
+            </TabsContent>
+            <TabsContent value="progress" className="flex-1">
+              <MemberProgressTab memberId={memberId} />
+            </TabsContent>
+            <TabsContent value="photos" className="flex-1">
+              <MemberPhotosTab memberId={memberId} />
+            </TabsContent>
+            <TabsContent value="billing" className="flex-1">
+              <MemberBillingTab memberId={memberId} />
+            </TabsContent>
+          </>
+        )}
+      </Tabs>
 
       {/* Assign training plan sheet overlay */}
       {assignSheetVisible ? (
