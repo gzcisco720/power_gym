@@ -1,5 +1,5 @@
 /**
- * Stage 3 unit tests — SessionForm
+ * Stage 2 unit tests — SessionForm (single-select member, Select pickers, customFee)
  */
 
 import React from 'react';
@@ -28,6 +28,64 @@ jest.mock('../../../stores/service-types.store', () => ({
 jest.mock('../../../stores/auth.store', () => ({
   useAuthStore: jest.fn(),
 }));
+
+// Mock Reusables Select: SelectItem presses call parent onValueChange immediately.
+jest.mock('~/components/ui/select', () => {
+  const mockReact = require('react');
+  const mockRN = require('react-native');
+
+  const mockCtx = mockReact.createContext<{
+    value: { value: string; label: string } | undefined;
+    onValueChange: ((opt: { value: string; label: string } | undefined) => void) | undefined;
+  }>({ value: undefined, onValueChange: undefined });
+
+  const Select = ({ value, onValueChange, children }: {
+    value?: { value: string; label: string };
+    onValueChange?: (opt: { value: string; label: string } | undefined) => void;
+    children?: React.ReactNode;
+  }) =>
+    mockReact.createElement(mockCtx.Provider, { value: { value, onValueChange } }, children);
+
+  const SelectTrigger = ({ children, testID }: { children?: React.ReactNode; testID?: string }) =>
+    mockReact.createElement(mockRN.View, { testID }, children);
+
+  const SelectValue = ({ placeholder }: { placeholder?: string }) => {
+    const ctx = mockReact.useContext(mockCtx);
+    return mockReact.createElement(mockRN.Text, null, ctx.value?.label ?? placeholder ?? '');
+  };
+
+  const SelectContent = ({ children }: { children?: React.ReactNode }) =>
+    mockReact.createElement(mockRN.View, null, children);
+
+  const SelectItem = ({ value: itemValue, label, testID }: { value: string; label: string; testID?: string }) => {
+    const ctx = mockReact.useContext(mockCtx);
+    return mockReact.createElement(
+      mockRN.Pressable,
+      {
+        testID: testID ?? ('select-item-' + itemValue),
+        onPress: () => ctx.onValueChange && ctx.onValueChange({ value: itemValue, label }),
+        accessibilityLabel: label,
+      },
+      mockReact.createElement(mockRN.Text, null, label),
+    );
+  };
+
+  return {
+    __esModule: true,
+    Select,
+    SelectTrigger,
+    SelectValue,
+    SelectContent,
+    SelectItem,
+    SelectGroup: ({ children }: { children?: React.ReactNode }) =>
+      mockReact.createElement(mockReact.Fragment, null, children),
+    SelectLabel: ({ children }: { children?: React.ReactNode }) =>
+      mockReact.createElement(mockRN.Text, null, children),
+    SelectSeparator: () => null,
+    SelectScrollUpButton: () => null,
+    SelectScrollDownButton: () => null,
+  };
+});
 
 import { useCalendarStore } from '../../../stores/calendar.store';
 import { useMembersStore } from '../../../stores/members.store';
@@ -202,7 +260,7 @@ describe('SessionForm', () => {
     expect(getByTestId('screen-SessionForm')).toBeTruthy();
   });
 
-  it('save button disabled when no members, date, startTime, endTime set', () => {
+  it('save button disabled when no member, date, startTime, endTime set', () => {
     const { getByTestId } = render(
       <SessionForm onClose={jest.fn()} />,
     );
@@ -210,42 +268,186 @@ describe('SessionForm', () => {
     expect(saveBtn.props.accessibilityState?.disabled).toBe(true);
   });
 
-  it('save button enabled after member, date, startTime, endTime are set', async () => {
-    const { getByTestId } = render(
-      <SessionForm onClose={jest.fn()} />,
-    );
+  // ── formReducer: SET_MEMBER ──────────────────────────────────────────────────
 
-    // Select a member
-    fireEvent.press(getByTestId('member-option-m1'));
+  describe('formReducer > SET_MEMBER', () => {
+    it('replaces memberId with the given id (single id stored, not appended)', () => {
+      // Verify the member Select trigger is present
+      const { getByTestId } = render(<SessionForm onClose={jest.fn()} />);
+      expect(getByTestId('member-select-trigger')).toBeTruthy();
+    });
 
-    // Set date
-    fireEvent.changeText(getByTestId('session-form-date-input'), '2026-07-15');
+    it('save button enabled after single member is chosen plus date/startTime/endTime', () => {
+      const { getByTestId } = render(<SessionForm onClose={jest.fn()} />);
 
-    // Set startTime
-    fireEvent.changeText(getByTestId('session-form-start-input'), '09:00');
+      // Select a member via mocked SelectItem
+      fireEvent.press(getByTestId('select-item-m1'));
 
-    // Set endTime
-    fireEvent.changeText(getByTestId('session-form-end-input'), '10:00');
+      fireEvent.changeText(getByTestId('session-form-date-input'), '2026-07-15');
+      fireEvent.changeText(getByTestId('session-form-start-input'), '09:00');
+      fireEvent.changeText(getByTestId('session-form-end-input'), '10:00');
 
-    const saveBtn = getByTestId('session-form-save-button');
-    expect(saveBtn.props.accessibilityState?.disabled).toBe(false);
+      const saveBtn = getByTestId('session-form-save-button');
+      expect(saveBtn.props.accessibilityState?.disabled).toBe(false);
+    });
+
+    it('save button remains disabled when memberId is empty string', () => {
+      const { getByTestId } = render(<SessionForm onClose={jest.fn()} />);
+
+      fireEvent.changeText(getByTestId('session-form-date-input'), '2026-07-15');
+      fireEvent.changeText(getByTestId('session-form-start-input'), '09:00');
+      fireEvent.changeText(getByTestId('session-form-end-input'), '10:00');
+
+      // No member chosen
+      const saveBtn = getByTestId('session-form-save-button');
+      expect(saveBtn.props.accessibilityState?.disabled).toBe(true);
+    });
   });
 
-  it('selecting a service type auto-fills endTime from durationMin', () => {
-    const { getByTestId } = render(
-      <SessionForm onClose={jest.fn()} />,
-    );
+  // ── formReducer: SET_SERVICE_TYPE ────────────────────────────────────────────
 
-    // Set startTime first
-    fireEvent.changeText(getByTestId('session-form-start-input'), '09:00');
+  describe('formReducer > SET_SERVICE_TYPE', () => {
+    it('stores serviceTypeId and recomputes endTime from durationMin', () => {
+      const { getByTestId } = render(<SessionForm onClose={jest.fn()} />);
 
-    // Select service type
-    fireEvent.press(getByTestId('service-type-option-st1'));
+      // Set startTime first
+      fireEvent.changeText(getByTestId('session-form-start-input'), '09:00');
 
-    // endTime should be auto-filled: 09:00 + 60 min = 10:00
-    const endInput = getByTestId('session-form-end-input');
-    expect(endInput.props.value).toBe('10:00');
+      // Select service type via mocked SelectItem (value = st1, durationMin = 60)
+      fireEvent.press(getByTestId('select-item-st1'));
+
+      // endTime should be auto-filled: 09:00 + 60 min = 10:00
+      const endInput = getByTestId('session-form-end-input');
+      expect(endInput.props.value).toBe('10:00');
+    });
   });
+
+  // ── formReducer: SET_CUSTOM_FEE ──────────────────────────────────────────────
+
+  describe('formReducer > SET_CUSTOM_FEE', () => {
+    it('stores the raw string value', () => {
+      const { getByTestId } = render(<SessionForm onClose={jest.fn()} />);
+
+      const feeInput = getByTestId('session-form-custom-fee-input');
+      fireEvent.changeText(feeInput, '49.99');
+      expect(feeInput.props.value).toBe('49.99');
+    });
+  });
+
+  // ── buildInitialState ────────────────────────────────────────────────────────
+
+  describe('buildInitialState', () => {
+    it('seeds memberId from session.memberIds[0] in edit mode', () => {
+      const session = makeSession({ memberIds: ['m1'] });
+      const { getByTestId } = render(<SessionForm session={session} onClose={jest.fn()} />);
+
+      // The member Select trigger should be present
+      expect(getByTestId('member-select-trigger')).toBeTruthy();
+      // Edit mode pre-fills date/start/end/member, so save button is enabled
+      const saveBtn = getByTestId('session-form-save-button');
+      expect(saveBtn.props.accessibilityState?.disabled).toBe(false);
+    });
+
+    it('defaults memberId to empty string in create mode (save disabled until chosen)', () => {
+      const { getByTestId } = render(<SessionForm onClose={jest.fn()} />);
+
+      const saveBtn = getByTestId('session-form-save-button');
+      expect(saveBtn.props.accessibilityState?.disabled).toBe(true);
+    });
+  });
+
+  // ── isValid ──────────────────────────────────────────────────────────────────
+
+  describe('isValid', () => {
+    it('requires memberId non-empty plus date/start/end', () => {
+      const { getByTestId } = render(<SessionForm onClose={jest.fn()} />);
+
+      fireEvent.changeText(getByTestId('session-form-date-input'), '2026-07-15');
+      fireEvent.changeText(getByTestId('session-form-start-input'), '09:00');
+      fireEvent.changeText(getByTestId('session-form-end-input'), '10:00');
+
+      // Still disabled — no member
+      expect(getByTestId('session-form-save-button').props.accessibilityState?.disabled).toBe(true);
+
+      // Choose member
+      fireEvent.press(getByTestId('select-item-m1'));
+
+      expect(getByTestId('session-form-save-button').props.accessibilityState?.disabled).toBe(false);
+    });
+  });
+
+  // ── handleSave: create DTO ───────────────────────────────────────────────────
+
+  describe('handleSave > create DTO', () => {
+    it('sends memberIds:[memberId] and omits customFee when blank', async () => {
+      const create = jest.fn().mockResolvedValue(undefined);
+      setupMocks('owner', { create });
+
+      const { getByTestId } = render(<SessionForm onClose={jest.fn()} />);
+
+      fireEvent.press(getByTestId('select-item-m1'));
+      fireEvent.changeText(getByTestId('session-form-date-input'), '2026-07-15');
+      fireEvent.changeText(getByTestId('session-form-start-input'), '09:00');
+      fireEvent.changeText(getByTestId('session-form-end-input'), '10:00');
+
+      await act(async () => {
+        fireEvent.press(getByTestId('session-form-save-button'));
+      });
+
+      expect(create).toHaveBeenCalledWith(
+        expect.objectContaining({ memberIds: ['m1'] }),
+      );
+      const callArg = create.mock.calls[0][0];
+      expect(callArg.customFee).toBeUndefined();
+    });
+
+    it('sends customFee as a number when filled', async () => {
+      const create = jest.fn().mockResolvedValue(undefined);
+      setupMocks('owner', { create });
+
+      const { getByTestId } = render(<SessionForm onClose={jest.fn()} />);
+
+      fireEvent.press(getByTestId('select-item-m1'));
+      fireEvent.changeText(getByTestId('session-form-date-input'), '2026-07-15');
+      fireEvent.changeText(getByTestId('session-form-start-input'), '09:00');
+      fireEvent.changeText(getByTestId('session-form-end-input'), '10:00');
+      fireEvent.changeText(getByTestId('session-form-custom-fee-input'), '49.99');
+
+      await act(async () => {
+        fireEvent.press(getByTestId('session-form-save-button'));
+      });
+
+      const callArg = create.mock.calls[0][0];
+      expect(callArg.customFee).toBe(49.99);
+    });
+  });
+
+  // ── Select triggers present ──────────────────────────────────────────────────
+
+  describe('Select triggers', () => {
+    it('member-select-trigger is present', () => {
+      const { getByTestId } = render(<SessionForm onClose={jest.fn()} />);
+      expect(getByTestId('member-select-trigger')).toBeTruthy();
+    });
+
+    it('trainer-select-trigger is present for owner', () => {
+      const { getByTestId } = render(<SessionForm onClose={jest.fn()} />);
+      expect(getByTestId('trainer-select-trigger')).toBeTruthy();
+    });
+
+    it('service-type-select-trigger is present', () => {
+      const { getByTestId } = render(<SessionForm onClose={jest.fn()} />);
+      expect(getByTestId('service-type-select-trigger')).toBeTruthy();
+    });
+
+    it('trainer-select-trigger is absent for trainer role', () => {
+      setupMocks('trainer');
+      const { queryByTestId } = render(<SessionForm onClose={jest.fn()} />);
+      expect(queryByTestId('trainer-select-trigger')).toBeNull();
+    });
+  });
+
+  // ── Recurrence ───────────────────────────────────────────────────────────────
 
   it('setting recurrence weeks includes recurrence in submitted payload', async () => {
     const create = jest.fn().mockResolvedValue(undefined);
@@ -255,8 +457,9 @@ describe('SessionForm', () => {
       <SessionForm onClose={jest.fn()} />,
     );
 
-    // Fill required fields
-    fireEvent.press(getByTestId('member-option-m1'));
+    // Choose member via mocked SelectItem
+    fireEvent.press(getByTestId('select-item-m1'));
+
     fireEvent.changeText(getByTestId('session-form-date-input'), '2026-07-15');
     fireEvent.changeText(getByTestId('session-form-start-input'), '09:00');
     fireEvent.changeText(getByTestId('session-form-end-input'), '10:00');
@@ -276,6 +479,8 @@ describe('SessionForm', () => {
       expect.objectContaining({ recurrence: { weeks: 4 } }),
     );
   });
+
+  // ── Edit mode ────────────────────────────────────────────────────────────────
 
   it('in edit mode, pre-fills fields from session and calls update on save', async () => {
     const update = jest.fn().mockResolvedValue(undefined);

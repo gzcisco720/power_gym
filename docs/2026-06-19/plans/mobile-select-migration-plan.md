@@ -92,20 +92,20 @@ Replace every hand-rolled Pressable/Button single-select picker (trainer / membe
 **Sprint Contract**:
 
 *Unit tests (one per new or changed function/method):*
-- [ ] `SessionForm > formReducer > SET_MEMBER replaces memberId with the given id` — asserts single id stored, not appended
-- [ ] `SessionForm > formReducer > SET_SERVICE_TYPE stores serviceTypeId and recomputes endTime from durationMin` — asserts endTime = startTime + durationMin
-- [ ] `SessionForm > formReducer > SET_CUSTOM_FEE stores the raw string value` — asserts `customFee` updated
-- [ ] `SessionForm > buildInitialState > seeds memberId from session.memberIds[0] (empty string when none)` — asserts edit-mode prefill and create-mode default
-- [ ] `SessionForm > isValid > requires memberId non-empty plus date/start/end` — asserts save disabled until a single member is chosen
-- [ ] `SessionForm > handleSave > create DTO sends memberIds:[memberId] and customFee:parseFloat(customFee)||undefined` — asserts payload shape including omitted fee when blank
+- [x] `SessionForm > formReducer > SET_MEMBER replaces memberId with the given id` — asserts single id stored, not appended
+- [x] `SessionForm > formReducer > SET_SERVICE_TYPE stores serviceTypeId and recomputes endTime from durationMin` — asserts endTime = startTime + durationMin
+- [x] `SessionForm > formReducer > SET_CUSTOM_FEE stores the raw string value` — asserts `customFee` updated
+- [x] `SessionForm > buildInitialState > seeds memberId from session.memberIds[0] (empty string when none)` — asserts edit-mode prefill and create-mode default
+- [x] `SessionForm > isValid > requires memberId non-empty plus date/start/end` — asserts save disabled until a single member is chosen
+- [x] `SessionForm > handleSave > create DTO sends memberIds:[memberId] and customFee:parseFloat(customFee)||undefined` — asserts payload shape including omitted fee when blank
 
 *Integration / E2E (one per user-facing flow):*
-- [ ] Owner opens New Session, opens the member Select and taps a member by name, sets date/start/end, opens the service-type Select and taps a type (end time auto-fills), enters a Custom Fee, taps Save → session card appears in the agenda (`mobile/e2e/owner/calendar.spec.ts`)
-- [ ] Trainer opens New Session, selects a single member via the member Select, fills date/start/end, saves → session card appears; attempting save with no member selected leaves the Save button disabled (`mobile/e2e/trainer/calendar.spec.ts`)
+- [x] Owner opens New Session, opens the member Select and taps a member by name, sets date/start/end, opens the service-type Select and taps a type (end time auto-fills), enters a Custom Fee, taps Save → session card appears in the agenda (`mobile/e2e/owner/calendar.spec.ts`)
+- [x] Trainer opens New Session, selects a single member via the member Select, fills date/start/end, saves → session card appears; attempting save with no member selected leaves the Save button disabled (`mobile/e2e/trainer/calendar.spec.ts`)
 
 **TDD sequence**:
 1. Update `SessionForm.spec.tsx`: change `TOGGLE_MEMBER`→`SET_MEMBER`, single-select assertions, Select-driven member/trainer/service-type, `SET_CUSTOM_FEE`, and add `customFee?: number` expectation to the create DTO → Red
 2. Implement: rename `memberIds`→`memberId` in `FormState`/reducer/`buildInitialState`/`isValid`/`handleSave`; add `SET_MEMBER`, `SET_CUSTOM_FEE`, `customFee` to state and the Custom Fee numeric `Input` (`keyboardType="decimal-pad"`) after the custom-name field; swap member/trainer/service-type pickers to `Select` (service-type `onValueChange` looks the full `ServiceType` up from `serviceTypes` to dispatch `SET_SERVICE_TYPE` with `serviceTypeId` + `durationMin`); add `customFee?: number` to `CreateSessionInput` → Green
 3. Update both calendar Detox specs to select member/service-type through the Select (tap trigger → `by.text(name)`), add the Custom Fee step, and assert the save-disabled edge case; run against the simulator → passes
 
-**Status**: Not Started
+**Status**: Complete

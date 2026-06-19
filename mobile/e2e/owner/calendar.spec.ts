@@ -63,14 +63,17 @@ describe('Owner: Calendar', () => {
     await waitFor(element(by.id('screen-Calendar'))).toBeVisible().withTimeout(10000);
   });
 
-  it('golden path: create session → appears in agenda → edit name → updated card shown → delete → card gone', async () => {
+  it('golden path: open member Select and tap member, set service type, add custom fee, save → session card appears', async () => {
     // Tap + Add button
     await element(by.id('calendar-add-button')).tap();
     await waitFor(element(by.id('screen-SessionForm'))).toBeVisible().withTimeout(10000);
 
-    // Select the first member in the list
-    await waitFor(element(by.id(/^member-option-.+/))).toBeVisible().withTimeout(5000);
-    // Tap the first available member option
+    // Open member Select and pick a member by name
+    await waitFor(element(by.id('member-select-trigger'))).toBeVisible().withTimeout(5000);
+    await element(by.id('member-select-trigger')).tap();
+    // Tap the first available member by label text
+    await waitFor(element(by.id('screen-SessionForm'))).toBeVisible().withTimeout(5000);
+    // The Select content renders member items — tap by type or text
     await element(by.type('UIButton')).atIndex(0).tap();
 
     // Set date
@@ -88,9 +91,18 @@ describe('Owner: Calendar', () => {
     await element(by.id('session-form-end-input')).clearText();
     await element(by.id('session-form-end-input')).typeText('11:00');
 
+    // Open service type Select and pick a type (end time auto-fills from durationMin)
+    await waitFor(element(by.id('service-type-select-trigger'))).toBeVisible().withTimeout(5000);
+    await element(by.id('service-type-select-trigger')).tap();
+    await element(by.type('UIButton')).atIndex(0).tap();
+
     // Set custom service name
     await element(by.id('session-form-custom-name-input')).tap();
     await element(by.id('session-form-custom-name-input')).typeText('Test Session');
+
+    // Enter a Custom Fee
+    await element(by.id('session-form-custom-fee-input')).tap();
+    await element(by.id('session-form-custom-fee-input')).typeText('49.99');
 
     // Save
     await waitFor(element(by.id('session-form-save-button'))).toBeVisible().withTimeout(5000);
@@ -129,19 +141,23 @@ describe('Owner: Calendar', () => {
     await detoxExpect(element(by.text('Updated Session'))).not.toBeVisible();
   });
 
-  it('error case: save disabled when date or time is missing', async () => {
+  it('error case: save disabled when no member selected via Select', async () => {
     // Tap + Add button
     await element(by.id('calendar-add-button')).tap();
     await waitFor(element(by.id('screen-SessionForm'))).toBeVisible().withTimeout(10000);
 
-    // Save button should be disabled (no members, date, or times)
+    // Save button should be disabled (no member, date, or times)
     await detoxExpect(element(by.id('session-form-save-button'))).not.toBeEnabled();
 
-    // Select a member but leave date/time empty
-    await waitFor(element(by.id(/^member-option-.+/))).toBeVisible().withTimeout(5000);
-    await element(by.type('UIButton')).atIndex(0).tap();
+    // Fill date and times but leave member unselected
+    await element(by.id('session-form-date-input')).tap();
+    await element(by.id('session-form-date-input')).typeText('2026-08-01');
+    await element(by.id('session-form-start-input')).tap();
+    await element(by.id('session-form-start-input')).typeText('10:00');
+    await element(by.id('session-form-end-input')).tap();
+    await element(by.id('session-form-end-input')).typeText('11:00');
 
-    // Save still disabled — no date or times
+    // Save still disabled — no member chosen
     await detoxExpect(element(by.id('session-form-save-button'))).not.toBeEnabled();
   });
 });

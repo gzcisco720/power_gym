@@ -34,6 +34,7 @@ export interface CreateSessionInput {
   trainerId?: string;
   serviceTypeId?: string;
   customServiceName?: string;
+  customFee?: number;
   recurrence?: { weeks: number };
 }
 

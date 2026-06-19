@@ -17,6 +17,14 @@ import { StaffSession, CreateSessionInput, UpdateSessionInput } from '../../../t
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
 import { Switch } from '~/components/ui/switch';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  type Option,
+} from '~/components/ui/select';
 
 interface SessionFormProps {
   session?: StaffSession;
@@ -26,26 +34,28 @@ interface SessionFormProps {
 // ─── Form state ────────────────────────────────────────────────────────────────
 
 interface FormState {
-  memberIds: string[];
+  memberId: string;
   trainerId: string;
   date: string;
   startTime: string;
   endTime: string;
   serviceTypeId: string;
   customServiceName: string;
+  customFee: string;
   recurrenceEnabled: boolean;
   recurrenceWeeks: string;
   scope: 'single' | 'series';
 }
 
 type FormAction =
-  | { type: 'TOGGLE_MEMBER'; memberId: string }
+  | { type: 'SET_MEMBER'; memberId: string }
   | { type: 'SET_TRAINER'; trainerId: string }
   | { type: 'SET_DATE'; value: string }
   | { type: 'SET_START'; value: string }
   | { type: 'SET_END'; value: string }
   | { type: 'SET_SERVICE_TYPE'; serviceTypeId: string; durationMin: number }
   | { type: 'SET_CUSTOM_NAME'; value: string }
+  | { type: 'SET_CUSTOM_FEE'; value: string }
   | { type: 'TOGGLE_RECURRENCE' }
   | { type: 'SET_RECURRENCE_WEEKS'; value: string }
   | { type: 'SET_SCOPE'; scope: 'single' | 'series' };
@@ -60,15 +70,8 @@ function addMinutes(time: string, minutes: number): string {
 
 function formReducer(state: FormState, action: FormAction): FormState {
   switch (action.type) {
-    case 'TOGGLE_MEMBER': {
-      const exists = state.memberIds.includes(action.memberId);
-      return {
-        ...state,
-        memberIds: exists
-          ? state.memberIds.filter((id) => id !== action.memberId)
-          : [...state.memberIds, action.memberId],
-      };
-    }
+    case 'SET_MEMBER':
+      return { ...state, memberId: action.memberId };
     case 'SET_TRAINER':
       return { ...state, trainerId: action.trainerId };
     case 'SET_DATE':
@@ -90,6 +93,8 @@ function formReducer(state: FormState, action: FormAction): FormState {
     }
     case 'SET_CUSTOM_NAME':
       return { ...state, customServiceName: action.value };
+    case 'SET_CUSTOM_FEE':
+      return { ...state, customFee: action.value };
     case 'TOGGLE_RECURRENCE':
       return { ...state, recurrenceEnabled: !state.recurrenceEnabled };
     case 'SET_RECURRENCE_WEEKS':
@@ -104,26 +109,28 @@ function formReducer(state: FormState, action: FormAction): FormState {
 function buildInitialState(session: StaffSession | undefined): FormState {
   if (!session) {
     return {
-      memberIds: [],
+      memberId: '',
       trainerId: '',
       date: '',
       startTime: '',
       endTime: '',
       serviceTypeId: '',
       customServiceName: '',
+      customFee: '',
       recurrenceEnabled: false,
       recurrenceWeeks: '4',
       scope: 'single',
     };
   }
   return {
-    memberIds: session.memberIds,
+    memberId: session.memberIds[0] ?? '',
     trainerId: session.trainerId,
     date: session.date.slice(0, 10),
     startTime: session.startTime,
     endTime: session.endTime,
     serviceTypeId: session.serviceTypeId ?? '',
     customServiceName: session.customServiceName ?? '',
+    customFee: '',
     recurrenceEnabled: false,
     recurrenceWeeks: '4',
     scope: 'single',
@@ -151,11 +158,11 @@ export function SessionForm({ session, onClose }: SessionFormProps) {
 
   const isValid = useMemo(
     () =>
-      formState.memberIds.length > 0 &&
+      formState.memberId !== '' &&
       formState.date.trim() !== '' &&
       formState.startTime.trim() !== '' &&
       formState.endTime.trim() !== '',
-    [formState.memberIds, formState.date, formState.startTime, formState.endTime],
+    [formState.memberId, formState.date, formState.startTime, formState.endTime],
   );
 
   const handleSave = useCallback(async () => {
@@ -168,7 +175,7 @@ export function SessionForm({ session, onClose }: SessionFormProps) {
           date: formState.date || undefined,
           startTime: formState.startTime || undefined,
           endTime: formState.endTime || undefined,
-          memberIds: formState.memberIds,
+          memberIds: [formState.memberId],
           serviceTypeId: formState.serviceTypeId || null,
           customServiceName: formState.customServiceName || null,
           scope: formState.scope,
@@ -179,10 +186,11 @@ export function SessionForm({ session, onClose }: SessionFormProps) {
           date: formState.date,
           startTime: formState.startTime,
           endTime: formState.endTime,
-          memberIds: formState.memberIds,
+          memberIds: [formState.memberId],
           trainerId: isOwner && formState.trainerId ? formState.trainerId : undefined,
           serviceTypeId: formState.serviceTypeId || undefined,
           customServiceName: formState.customServiceName || undefined,
+          customFee: parseFloat(formState.customFee) || undefined,
           recurrence: formState.recurrenceEnabled
             ? { weeks: parseInt(formState.recurrenceWeeks, 10) || 4 }
             : undefined,
@@ -198,6 +206,18 @@ export function SessionForm({ session, onClose }: SessionFormProps) {
 
   const title = isEditMode ? 'Edit Session' : 'New Session';
 
+  const memberValue: Option | undefined = formState.memberId
+    ? { value: formState.memberId, label: members.find((m) => m.id === formState.memberId)?.name ?? '' }
+    : undefined;
+
+  const trainerValue: Option | undefined = formState.trainerId
+    ? { value: formState.trainerId, label: trainers.find((t) => t.id === formState.trainerId)?.name ?? '' }
+    : undefined;
+
+  const serviceTypeValue: Option | undefined = formState.serviceTypeId
+    ? { value: formState.serviceTypeId, label: serviceTypes.find((st) => st._id === formState.serviceTypeId)?.name ?? '' }
+    : undefined;
+
   return (
     <Screen testID="screen-SessionForm">
       <ScreenHeader title={title} onBack={onClose} safeTop={false} />
@@ -209,30 +229,19 @@ export function SessionForm({ session, onClose }: SessionFormProps) {
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Members <Text className="text-destructive">*</Text>
             </Text>
-            <View className="gap-1">
-              {members.map((member) => {
-                const selected = formState.memberIds.includes(member.id);
-                return (
-                  <Pressable
-                    key={member.id}
-                    testID={`member-option-${member.id}`}
-                    onPress={() => dispatch({ type: 'TOGGLE_MEMBER', memberId: member.id })}
-                    accessibilityLabel={member.name}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked: selected }}
-                    className={`flex-row items-center px-3 py-2 rounded-xl ring-1 ${
-                      selected
-                        ? 'bg-primary/10 ring-primary/30'
-                        : 'bg-card ring-foreground/10'
-                    }`}
-                  >
-                    <Text className={`text-sm ${selected ? 'text-primary-light font-medium' : 'text-foreground'}`}>
-                      {member.name}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+            <Select
+              value={memberValue}
+              onValueChange={(opt) => dispatch({ type: 'SET_MEMBER', memberId: opt?.value ?? '' })}
+            >
+              <SelectTrigger testID="member-select-trigger" className="bg-input border-none rounded-xl px-3">
+                <SelectValue placeholder="Select member" />
+              </SelectTrigger>
+              <SelectContent>
+                {members.map((m) => (
+                  <SelectItem key={m.id} value={m.id} label={m.name} />
+                ))}
+              </SelectContent>
+            </Select>
           </View>
 
           {/* Trainer picker (owner only) */}
@@ -241,30 +250,19 @@ export function SessionForm({ session, onClose }: SessionFormProps) {
               <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                 Trainer
               </Text>
-              <View className="gap-1">
-                {trainers.map((trainer) => {
-                  const selected = formState.trainerId === trainer.id;
-                  return (
-                    <Pressable
-                      key={trainer.id}
-                      testID={`trainer-option-${trainer.id}`}
-                      onPress={() => dispatch({ type: 'SET_TRAINER', trainerId: trainer.id })}
-                      accessibilityLabel={trainer.name}
-                      accessibilityRole="radio"
-                      accessibilityState={{ selected }}
-                      className={`flex-row items-center px-3 py-2 rounded-xl ring-1 ${
-                        selected
-                          ? 'bg-primary/10 ring-primary/30'
-                          : 'bg-card ring-foreground/10'
-                      }`}
-                    >
-                      <Text className={`text-sm ${selected ? 'text-primary-light font-medium' : 'text-foreground'}`}>
-                        {trainer.name}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
+              <Select
+                value={trainerValue}
+                onValueChange={(opt) => dispatch({ type: 'SET_TRAINER', trainerId: opt?.value ?? '' })}
+              >
+                <SelectTrigger testID="trainer-select-trigger" className="bg-input border-none rounded-xl px-3">
+                  <SelectValue placeholder="Select trainer" />
+                </SelectTrigger>
+                <SelectContent>
+                  {trainers.map((t) => (
+                    <SelectItem key={t.id} value={t.id} label={t.name} />
+                  ))}
+                </SelectContent>
+              </Select>
             </View>
           )}
 
@@ -316,37 +314,26 @@ export function SessionForm({ session, onClose }: SessionFormProps) {
               Service Type{' '}
               <Text className="text-foreground/65 text-[11px] normal-case">(optional)</Text>
             </Text>
-            <View className="gap-1">
-              {serviceTypes.map((st) => {
-                const selected = formState.serviceTypeId === st._id;
-                return (
-                  <Pressable
-                    key={st._id}
-                    testID={`service-type-option-${st._id}`}
-                    onPress={() =>
-                      dispatch({
-                        type: 'SET_SERVICE_TYPE',
-                        serviceTypeId: selected ? '' : st._id,
-                        durationMin: st.durationMin,
-                      })
-                    }
-                    accessibilityLabel={st.name}
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected }}
-                    className={`flex-row items-center justify-between px-3 py-2 rounded-xl ring-1 ${
-                      selected
-                        ? 'bg-primary/10 ring-primary/30'
-                        : 'bg-card ring-foreground/10'
-                    }`}
-                  >
-                    <Text className={`text-sm ${selected ? 'text-primary-light font-medium' : 'text-foreground'}`}>
-                      {st.name}
-                    </Text>
-                    <Text className="text-xs text-foreground/65">{st.durationMin} min</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+            <Select
+              value={serviceTypeValue}
+              onValueChange={(opt) => {
+                if (!opt) {
+                  dispatch({ type: 'SET_SERVICE_TYPE', serviceTypeId: '', durationMin: 0 });
+                  return;
+                }
+                const st = serviceTypes.find((s) => s._id === opt.value);
+                dispatch({ type: 'SET_SERVICE_TYPE', serviceTypeId: opt.value, durationMin: st?.durationMin ?? 0 });
+              }}
+            >
+              <SelectTrigger testID="service-type-select-trigger" className="bg-input border-none rounded-xl px-3">
+                <SelectValue placeholder="Select service type (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                {serviceTypes.map((st) => (
+                  <SelectItem key={st._id} value={st._id} label={`${st.name} (${st.durationMin} min)`} />
+                ))}
+              </SelectContent>
+            </Select>
           </View>
 
           {/* Custom service name */}
@@ -361,6 +348,22 @@ export function SessionForm({ session, onClose }: SessionFormProps) {
               onChangeText={(v) => dispatch({ type: 'SET_CUSTOM_NAME', value: v })}
               placeholder="e.g. Yoga, Swimming..."
               accessibilityLabel="Custom session name"
+            />
+          </View>
+
+          {/* Custom fee */}
+          <View className="gap-1.5">
+            <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
+              Custom Fee{' '}
+              <Text className="text-foreground/65 text-[11px] normal-case">(optional)</Text>
+            </Text>
+            <Input
+              testID="session-form-custom-fee-input"
+              value={formState.customFee}
+              onChangeText={(v) => dispatch({ type: 'SET_CUSTOM_FEE', value: v })}
+              keyboardType="decimal-pad"
+              placeholder="0.00"
+              accessibilityLabel="Custom fee"
             />
           </View>
 
