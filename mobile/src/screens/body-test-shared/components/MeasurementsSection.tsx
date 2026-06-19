@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TextInput } from 'react-native';
+import { View, Text } from 'react-native';
+import { Input } from '~/components/ui/input';
 import { Protocol, Sex } from '../../../types/body-tests';
 
 interface MeasurementField {
@@ -61,7 +62,7 @@ export function MeasurementsSection({
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             Body Fat %
           </Text>
-          <TextInput
+          <Input
             testID="measurement-bodyFatPct"
             value={values['bodyFatPct'] ?? ''}
             onChangeText={(v) => onChange('bodyFatPct', v)}
@@ -92,7 +93,7 @@ export function MeasurementsSection({
           <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
             {label}
           </Text>
-          <TextInput
+          <Input
             testID={`measurement-${key}`}
             value={values[key] ?? ''}
             onChangeText={(v) => onChange(key, v)}

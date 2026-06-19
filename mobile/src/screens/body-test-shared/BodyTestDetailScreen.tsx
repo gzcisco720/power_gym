@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
+import { Button } from '~/components/ui/button';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
@@ -85,15 +86,16 @@ export function BodyTestDetailScreen() {
         onBack={() => navigation.goBack()}
         right={
           isOwner ? (
-            <Pressable
+            <Button
               testID="bodytest-delete-button"
               onPress={() => setDeleteDialogVisible(true)}
               accessibilityLabel="Delete body test"
-              accessibilityRole="button"
-              className="ml-2 px-3 py-1.5 rounded-xl bg-destructive/10"
+              variant="destructive"
+              size="sm"
+              className="ml-2"
             >
               <Text className="text-sm font-semibold text-destructive">Delete</Text>
-            </Pressable>
+            </Button>
           ) : undefined
         }
       />
@@ -216,29 +218,27 @@ export function BodyTestDetailScreen() {
             This cannot be undone.
           </Text>
           <View className="flex-row gap-3">
-            <Pressable
+            <Button
               onPress={() => setDeleteDialogVisible(false)}
               disabled={isDeleting}
               accessibilityLabel="Cancel delete"
-              accessibilityRole="button"
-              className="flex-1 py-3 rounded-xl bg-muted items-center"
+              variant="secondary"
+              className="flex-1 py-3"
             >
               <Text className="text-sm font-semibold text-foreground/65">Cancel</Text>
-            </Pressable>
-            <Pressable
+            </Button>
+            <Button
               testID="bodytest-delete-confirm"
               onPress={handleDeleteConfirm}
               disabled={isDeleting}
               accessibilityLabel="Confirm delete"
-              accessibilityRole="button"
-              className="flex-1 py-3 rounded-xl bg-destructive/10 items-center"
+              variant="destructive"
+              className="flex-1 py-3"
             >
-              {isDeleting ? (
-                <ActivityIndicator className="text-destructive" />
-              ) : (
-                <Text className="text-sm font-semibold text-destructive">Delete</Text>
-              )}
-            </Pressable>
+              <Text className="text-sm font-semibold text-destructive">
+                {isDeleting ? 'Deleting…' : 'Delete'}
+              </Text>
+            </Button>
           </View>
         </DialogContent>
       </Dialog>

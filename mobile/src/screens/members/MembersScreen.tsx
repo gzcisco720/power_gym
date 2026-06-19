@@ -2,11 +2,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   Pressable,
   Modal,
 } from 'react-native';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
+import { Skeleton } from '~/components/ui/skeleton';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
@@ -131,7 +133,7 @@ export function MembersScreen() {
 
       {/* Search bar */}
       <View className="px-4 py-3 border-b border-foreground/[.06]">
-        <TextInput
+        <Input
           testID="members-search-input"
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -167,7 +169,7 @@ export function MembersScreen() {
           {loading ? (
             <>
               {[0, 1, 2].map((i) => (
-                <View key={i} className="rounded-xl bg-muted px-3 py-2 h-14 opacity-60" />
+                <Skeleton key={i} testID="skeleton-row" className="rounded-xl h-14" />
               ))}
             </>
           ) : members.length === 0 ? (
@@ -179,25 +181,27 @@ export function MembersScreen() {
               <View key={member.id} className="gap-1">
                 <MemberCard member={member} onPress={handleCardPress} />
                 <View className="flex-row gap-1.5 px-1">
-                  <Pressable
+                  <Button
                     testID={`reassign-btn-${member.id}`}
                     onPress={() => setReassignMember(member)}
                     accessibilityLabel={`Reassign ${member.name}`}
-                    accessibilityRole="button"
-                    className="flex-1 rounded-lg bg-muted px-3 py-1.5 items-center"
+                    variant="secondary"
+                    size="sm"
+                    className="flex-1"
                   >
                     <Text className="text-xs font-medium text-foreground/65">Reassign</Text>
-                  </Pressable>
+                  </Button>
                   {member.trainerId ? (
-                    <Pressable
+                    <Button
                       testID={`unassign-btn-${member.id}`}
                       onPress={() => setUnassignTarget(member)}
                       accessibilityLabel={`Unassign ${member.name}`}
-                      accessibilityRole="button"
-                      className="flex-1 rounded-lg bg-destructive/10 px-3 py-1.5 items-center"
+                      variant="destructive"
+                      size="sm"
+                      className="flex-1"
                     >
                       <Text className="text-xs font-medium text-destructive">Unassign</Text>
-                    </Pressable>
+                    </Button>
                   ) : null}
                 </View>
               </View>
@@ -297,22 +301,22 @@ export function MembersScreen() {
                 {unassignTarget.name} will no longer have a trainer assigned.
               </Text>
               <View className="flex-row gap-2">
-                <Pressable
+                <Button
                   onPress={() => setUnassignTarget(null)}
                   accessibilityLabel="Cancel unassign"
-                  accessibilityRole="button"
-                  className="flex-1 rounded-xl bg-muted px-3 py-2.5 items-center"
+                  variant="secondary"
+                  className="flex-1"
                 >
                   <Text className="text-sm font-medium text-foreground/65">Cancel</Text>
-                </Pressable>
-                <Pressable
+                </Button>
+                <Button
                   onPress={() => void handleUnassignConfirm(unassignTarget)}
                   accessibilityLabel="Confirm unassign"
-                  accessibilityRole="button"
-                  className="flex-1 rounded-xl bg-destructive/10 px-3 py-2.5 items-center"
+                  variant="destructive"
+                  className="flex-1"
                 >
                   <Text className="text-sm font-medium text-destructive">Unassign</Text>
-                </Pressable>
+                </Button>
               </View>
             </View>
           </View>

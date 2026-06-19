@@ -390,10 +390,10 @@ Every interactive/styled UI element in `mobile/` is rendered through a React Nat
 **Sprint Contract**:
 
 *Unit tests:*
-- [ ] `MembersScreen > search > filters member list` — typing in the Reusables `Input` filters the list (existing debounce behavior preserved)
-- [ ] `AddBodyTestScreen > submit > calls create with skinfold values` — entering measurements in Reusables `Input`s and saving calls the existing create handler
-- [ ] `BodyTestDetailScreen > delete > opens Reusables Dialog and confirms` — delete trigger opens CLI dialog; confirm calls delete
-- [ ] `MembersScreen > loading > renders Skeleton rows` — loading shows Reusables `Skeleton`
+- [x] `MembersScreen > search > filters member list` — typing in the Reusables `Input` filters the list (existing debounce behavior preserved)
+- [x] `AddBodyTestScreen > submit > calls create with skinfold values` — entering measurements in Reusables `Input`s and saving calls the existing create handler
+- [x] `BodyTestDetailScreen > delete > opens Reusables Dialog and confirms` — delete trigger opens CLI dialog; confirm calls delete
+- [x] `MembersScreen > loading > renders Skeleton rows` — loading shows Reusables `Skeleton`
 
 *Integration / E2E:*
 - [ ] `mobile/e2e/owner/members.spec.ts` — search a member name → list narrows to matches (golden path)
@@ -404,7 +404,21 @@ Every interactive/styled UI element in `mobile/` is rendered through a React Nat
 2. Migrate the screens → Green
 3. Run members + body-tests Detox specs → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 9 Checkpoint
+- [x] `MembersScreen.tsx` — `TextInput` → `Input`, loading `View` → `Skeleton`, reassign/unassign/unassign-dialog `Pressable` → `Button`
+- [x] `AssignPlanSheet.tsx` — cancel `Pressable` → `Button`
+- [x] `AssignNutritionPlanSheet.tsx` — cancel `Pressable` → `Button`
+- [x] `AddBodyTestScreen.tsx` — all `TextInput` → `Input`, `ActivityIndicator` removed, save `Pressable` → `Button`
+- [x] `BodyTestDetailScreen.tsx` — `ActivityIndicator` removed, delete header `Pressable` → `Button`, dialog buttons `Pressable` → `Button`, `Pressable` import removed
+- [x] `components/MeasurementsSection.tsx` — all `TextInput` → `Input`
+- [x] `BodyTestsScreen.tsx` — loading `View` placeholders → `Skeleton`
+- [x] `MyBodyTestsScreen.tsx` — add `Pressable` → `Button`, loading `View` placeholders → `Skeleton`
+- [x] `body-test-shared/__tests__/stage9.spec.tsx` — 4 Sprint Contract tests (all passing)
+- [x] 746 tests pass (742 baseline + 4 new)
+- [x] Lint clean
+- [x] No new TypeScript errors in production files
 
 ---
 

@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
+import { Button } from '~/components/ui/button';
+import { Skeleton } from '~/components/ui/skeleton';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
@@ -37,15 +39,15 @@ export function MyBodyTestsScreen() {
           </Text>
         </View>
         {user?.role !== 'member' && (
-          <Pressable
+          <Button
             testID="bodytests-add-button"
             onPress={() => navigation.navigate('AddBodyTest')}
             accessibilityLabel="Add body test"
-            accessibilityRole="button"
-            className="w-11 h-11 items-center justify-center rounded-xl bg-primary"
+            size="icon"
+            className="rounded-xl"
           >
             <Text className="text-sm font-semibold text-foreground">+</Text>
-          </Pressable>
+          </Button>
         )}
       </View>
 
@@ -54,7 +56,7 @@ export function MyBodyTestsScreen() {
           {loading ? (
             <>
               {[0, 1, 2].map((i) => (
-                <View key={i} className="rounded-xl bg-muted px-3 py-2 h-14 opacity-60" />
+                <Skeleton key={i} className="rounded-xl h-14" />
               ))}
             </>
           ) : items.length === 0 ? (

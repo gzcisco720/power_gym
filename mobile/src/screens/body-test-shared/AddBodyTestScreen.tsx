@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../components/Screen';
@@ -157,7 +159,7 @@ export function AddBodyTestScreen() {
               <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                 Age
               </Text>
-              <TextInput
+              <Input
                 testID="body-test-age-input"
                 value={age}
                 onChangeText={setAge}
@@ -204,7 +206,7 @@ export function AddBodyTestScreen() {
               <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                 Weight (kg)
               </Text>
-              <TextInput
+              <Input
                 testID="body-test-weight-input"
                 value={weight}
                 onChangeText={setWeight}
@@ -276,7 +278,7 @@ export function AddBodyTestScreen() {
               <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                 Target Weight (kg)
               </Text>
-              <TextInput
+              <Input
                 value={targetWeight}
                 onChangeText={setTargetWeight}
                 keyboardType="decimal-pad"
@@ -290,7 +292,7 @@ export function AddBodyTestScreen() {
               <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                 Target Body Fat %
               </Text>
-              <TextInput
+              <Input
                 value={targetBodyFatPct}
                 onChangeText={setTargetBodyFatPct}
                 keyboardType="decimal-pad"
@@ -315,23 +317,17 @@ export function AddBodyTestScreen() {
         className="border-t border-foreground/10 px-4 py-3"
         style={{ paddingBottom: insets.bottom || 12 }}
       >
-        <Pressable
+        <Button
           testID="bodytest-save-button"
           onPress={handleSave}
           disabled={!isValid || submitting}
           accessibilityLabel="Save body test"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !isValid || submitting }}
-          className={`py-3 rounded-xl items-center ${
-            isValid && !submitting ? 'bg-primary' : 'bg-primary/40'
-          }`}
+          className="py-3 rounded-xl"
         >
-          {submitting ? (
-            <ActivityIndicator className="text-foreground" />
-          ) : (
-            <Text className="text-sm font-semibold text-foreground">Save Test</Text>
-          )}
-        </Pressable>
+          <Text className="text-sm font-semibold text-foreground">
+            {submitting ? 'Saving…' : 'Save Test'}
+          </Text>
+        </Button>
       </View>
     </Screen>
   );

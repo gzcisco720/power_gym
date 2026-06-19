@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
+import { Button } from '~/components/ui/button';
 import { useTrainingTemplatesStore } from '../../stores/training-templates.store';
 import { assignPlan as apiAssignPlan } from '../../lib/api/training.api';
 
@@ -37,13 +38,14 @@ export function AssignPlanSheet({ testID, memberId, onAssigned, onClose }: Assig
         <Text className="text-[18px] font-semibold tracking-[-0.3px] text-foreground">
           Assign Plan
         </Text>
-        <Pressable
+        <Button
           onPress={onClose}
           accessibilityLabel="Close"
-          accessibilityRole="button"
+          variant="ghost"
+          size="sm"
         >
           <Text className="text-sm text-foreground/65">Cancel</Text>
-        </Pressable>
+        </Button>
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>

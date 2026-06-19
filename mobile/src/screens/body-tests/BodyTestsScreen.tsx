@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, ScrollView } from 'react-native';
+import { Skeleton } from '~/components/ui/skeleton';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
@@ -119,7 +120,7 @@ export function BodyTestsScreen() {
             {loading ? (
               <>
                 {[0, 1, 2].map((i) => (
-                  <View key={i} className="rounded-xl bg-muted px-3 py-2 h-14 opacity-60" />
+                  <Skeleton key={i} className="rounded-xl h-14" />
                 ))}
               </>
             ) : items.length === 0 ? (
