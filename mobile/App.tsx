@@ -12,6 +12,7 @@ import {
 } from '@expo-google-fonts/space-grotesk';
 import { View, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { PortalHost } from '@rn-primitives/portal';
 import { RootNavigator, linking } from './src/navigation';
 import { useAuthStore } from './src/stores/auth.store';
 
@@ -45,6 +46,7 @@ export default function App() {
         </NavigationContainer>
         <StatusBar style="light" />
       </SafeAreaProvider>
+      <PortalHost />
     </GestureHandlerRootView>
   );
 }
