@@ -1,23 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { Screen } from '../../components/Screen';
 import { InjuriesTab } from './tabs/InjuriesTab';
 import { MedicationsTab } from './tabs/MedicationsTab';
 import { MedicalBackgroundTab } from './tabs/MedicalBackgroundTab';
 
 type TabId = 'injuries' | 'medications' | 'background';
-
-interface Tab {
-  id: TabId;
-  label: string;
-  testID: string;
-}
-
-const TABS: Tab[] = [
-  { id: 'injuries', label: 'Injuries', testID: 'my-health-tab-injuries' },
-  { id: 'medications', label: 'Medications', testID: 'my-health-tab-medications' },
-  { id: 'background', label: 'Background', testID: 'my-health-tab-background' },
-];
 
 export function MyHealthScreen() {
   const [activeTab, setActiveTab] = useState<TabId>('injuries');
@@ -34,38 +23,41 @@ export function MyHealthScreen() {
         </View>
       </View>
 
-      {/* Tab bar — Pressable used as tab container (allowed per design rules) */}
-      <View className="flex-row border-b border-foreground/[.06] bg-background">
-        {TABS.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <Pressable
-              key={tab.id}
-              testID={tab.testID}
-              onPress={() => setActiveTab(tab.id)}
-              accessibilityLabel={tab.label}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isActive }}
-              className={`flex-1 items-center py-3 border-b-2 ${
-                isActive ? 'border-primary' : 'border-transparent'
-              }`}
-            >
-              <Text
-                className={`text-sm font-medium ${
-                  isActive ? 'text-primary-light' : 'text-foreground/65'
-                }`}
-              >
-                {tab.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)} className="flex-1">
+        <TabsList className="flex-row border-b border-foreground/[.06] bg-background rounded-none h-auto p-0">
+          <TabsTrigger
+            value="injuries"
+            testID="my-health-tab-injuries"
+            className="flex-1 py-3"
+          >
+            <Text className="text-sm font-medium">Injuries</Text>
+          </TabsTrigger>
+          <TabsTrigger
+            value="medications"
+            testID="my-health-tab-medications"
+            className="flex-1 py-3"
+          >
+            <Text className="text-sm font-medium">Medications</Text>
+          </TabsTrigger>
+          <TabsTrigger
+            value="background"
+            testID="my-health-tab-background"
+            className="flex-1 py-3"
+          >
+            <Text className="text-sm font-medium">Background</Text>
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Tab content */}
-      {activeTab === 'injuries' ? <InjuriesTab /> : null}
-      {activeTab === 'medications' ? <MedicationsTab /> : null}
-      {activeTab === 'background' ? <MedicalBackgroundTab /> : null}
+        <TabsContent value="injuries" className="flex-1">
+          <InjuriesTab />
+        </TabsContent>
+        <TabsContent value="medications" className="flex-1">
+          <MedicationsTab />
+        </TabsContent>
+        <TabsContent value="background" className="flex-1">
+          <MedicalBackgroundTab />
+        </TabsContent>
+      </Tabs>
     </Screen>
   );
 }

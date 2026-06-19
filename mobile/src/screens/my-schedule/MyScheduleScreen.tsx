@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, ScrollView } from 'react-native';
+import { Skeleton } from '~/components/ui/skeleton';
 import { Screen } from '../../components/Screen';
 import { useScheduledSessionsStore } from '../../stores/scheduled-sessions.store';
 import { SessionCard } from './components/SessionCard';
@@ -27,10 +28,10 @@ export function MyScheduleScreen() {
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           <View className="px-4 py-4 gap-2">
             {[0, 1, 2].map((i) => (
-              <View
+              <Skeleton
                 key={i}
                 testID="schedule-skeleton-row"
-                className="rounded-xl bg-muted h-16 opacity-60"
+                className="rounded-xl h-16"
               />
             ))}
           </View>

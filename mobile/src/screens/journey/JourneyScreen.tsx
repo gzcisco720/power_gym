@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
-import { View, Text, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList } from 'react-native';
+import { Skeleton } from '~/components/ui/skeleton';
 import { Screen } from '../../components/Screen';
 import { useJourneyStore } from '../../stores/journey.store';
 import { JourneyTimelineItem } from '../../types/journey';
@@ -56,7 +57,7 @@ export function JourneyScreen() {
       {loading && items.length === 0 ? (
         <View className="px-4 py-4 gap-2">
           {[0, 1, 2, 3].map((i) => (
-            <View key={i} className="rounded-xl bg-muted h-16 opacity-60" />
+            <Skeleton key={i} testID="journey-skeleton-row" className="rounded-xl h-16" />
           ))}
         </View>
       ) : isEmpty ? (
@@ -92,8 +93,8 @@ export function JourneyScreen() {
           onEndReachedThreshold={0.3}
           ListFooterComponent={
             loadingMore ? (
-              <View className="py-4 items-center">
-                <ActivityIndicator />
+              <View className="py-4">
+                <Skeleton className="h-16 rounded-xl" />
               </View>
             ) : null
           }
