@@ -28,7 +28,7 @@ function SelectValue({
       ref={ref}
       className={cn(
         'text-foreground line-clamp-1 flex flex-row items-center gap-2 text-sm',
-        !value && 'text-muted-foreground',
+        !value && 'text-foreground/40',
         className
       )}
       {...props}
@@ -77,6 +77,7 @@ function SelectContent({
     className?: string;
     portalHost?: string;
   }) {
+  const { triggerPosition } = SelectPrimitive.useRootContext();
   return (
     <SelectPrimitive.Portal hostName={portalHost}>
       <FullWindowOverlay>
@@ -84,6 +85,7 @@ function SelectContent({
           <TextClassContext.Provider value="text-popover-foreground">
             <NativeOnlyAnimatedView className="z-50" entering={FadeIn} exiting={FadeOut}>
               <SelectPrimitive.Content
+                style={Platform.OS !== 'web' ? { minWidth: triggerPosition?.width } : undefined}
                 className={cn(
                   'bg-popover border-border relative z-50 min-w-[8rem] rounded-md border shadow-md shadow-black/5',
                   Platform.select({
