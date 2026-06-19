@@ -3,7 +3,10 @@ import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-nati
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
-import { Dialog } from '../../components/ui/Dialog';
+import {
+  Dialog,
+  DialogContent,
+} from '../../components/ui/dialog';
 import { useBodyTestsStore } from '../../stores/body-tests.store';
 import { useAuthStore } from '../../stores/auth.store';
 import { deleteBodyTest } from '../../lib/api/body-tests.api';
@@ -204,43 +207,41 @@ export function BodyTestDetailScreen() {
       </ScrollView>
 
       {/* Delete confirmation dialog */}
-      <Dialog.Root open={deleteDialogVisible} onOpenChange={setDeleteDialogVisible}>
-        <Dialog.Overlay>
-          <Dialog.Content>
-            <Text className="text-[18px] font-semibold text-foreground mb-1">
-              Delete this test?
-            </Text>
-            <Text className="text-sm text-foreground/65 mb-4">
-              This cannot be undone.
-            </Text>
-            <View className="flex-row gap-3">
-              <Pressable
-                onPress={() => setDeleteDialogVisible(false)}
-                disabled={isDeleting}
-                accessibilityLabel="Cancel delete"
-                accessibilityRole="button"
-                className="flex-1 py-3 rounded-xl bg-muted items-center"
-              >
-                <Text className="text-sm font-semibold text-foreground/65">Cancel</Text>
-              </Pressable>
-              <Pressable
-                testID="bodytest-delete-confirm"
-                onPress={handleDeleteConfirm}
-                disabled={isDeleting}
-                accessibilityLabel="Confirm delete"
-                accessibilityRole="button"
-                className="flex-1 py-3 rounded-xl bg-destructive/10 items-center"
-              >
-                {isDeleting ? (
-                  <ActivityIndicator className="text-destructive" />
-                ) : (
-                  <Text className="text-sm font-semibold text-destructive">Delete</Text>
-                )}
-              </Pressable>
-            </View>
-          </Dialog.Content>
-        </Dialog.Overlay>
-      </Dialog.Root>
+      <Dialog open={deleteDialogVisible} onOpenChange={setDeleteDialogVisible}>
+        <DialogContent>
+          <Text className="text-[18px] font-semibold text-foreground mb-1">
+            Delete this test?
+          </Text>
+          <Text className="text-sm text-foreground/65 mb-4">
+            This cannot be undone.
+          </Text>
+          <View className="flex-row gap-3">
+            <Pressable
+              onPress={() => setDeleteDialogVisible(false)}
+              disabled={isDeleting}
+              accessibilityLabel="Cancel delete"
+              accessibilityRole="button"
+              className="flex-1 py-3 rounded-xl bg-muted items-center"
+            >
+              <Text className="text-sm font-semibold text-foreground/65">Cancel</Text>
+            </Pressable>
+            <Pressable
+              testID="bodytest-delete-confirm"
+              onPress={handleDeleteConfirm}
+              disabled={isDeleting}
+              accessibilityLabel="Confirm delete"
+              accessibilityRole="button"
+              className="flex-1 py-3 rounded-xl bg-destructive/10 items-center"
+            >
+              {isDeleting ? (
+                <ActivityIndicator className="text-destructive" />
+              ) : (
+                <Text className="text-sm font-semibold text-destructive">Delete</Text>
+              )}
+            </Pressable>
+          </View>
+        </DialogContent>
+      </Dialog>
     </Screen>
   );
 }

@@ -12,7 +12,10 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
-import { Dialog } from '../../components/ui/Dialog';
+import {
+  Dialog,
+  DialogContent,
+} from '../../components/ui/dialog';
 import { useFoodsStore } from '../../stores/foods.store';
 import { createFood } from '../../lib/api/foods.api';
 import { Food } from '../../types/nutrition-templates';
@@ -279,41 +282,39 @@ export function FoodFormScreen() {
       </View>
 
       {/* Unsaved changes dialog */}
-      <Dialog.Root
+      <Dialog
         open={showDiscardDialog}
         onOpenChange={(open) => { if (!open) setShowDiscardDialog(false); }}
       >
-        <Dialog.Overlay>
-          <Dialog.Content>
-            <Text className="text-[15px] font-semibold text-foreground mb-1">Discard changes?</Text>
-            <Text className="text-[13px] text-foreground/65 mb-4">
-              Your unsaved changes will be lost.
-            </Text>
-            <View className="flex-row gap-2">
-              <Pressable
-                onPress={() => setShowDiscardDialog(false)}
-                accessibilityLabel="Keep editing"
-                accessibilityRole="button"
-                className="flex-1 rounded-xl bg-muted py-3 items-center"
-              >
-                <Text className="text-sm font-semibold text-foreground/65">Keep editing</Text>
-              </Pressable>
-              <Pressable
-                testID="food-discard-confirm"
-                onPress={() => {
-                  setShowDiscardDialog(false);
-                  navigation.goBack();
-                }}
-                accessibilityLabel="Discard changes"
-                accessibilityRole="button"
-                className="flex-1 rounded-xl bg-destructive/10 py-3 items-center"
-              >
-                <Text className="text-sm font-semibold text-destructive">Discard</Text>
-              </Pressable>
-            </View>
-          </Dialog.Content>
-        </Dialog.Overlay>
-      </Dialog.Root>
+        <DialogContent>
+          <Text className="text-[15px] font-semibold text-foreground mb-1">Discard changes?</Text>
+          <Text className="text-[13px] text-foreground/65 mb-4">
+            Your unsaved changes will be lost.
+          </Text>
+          <View className="flex-row gap-2">
+            <Pressable
+              onPress={() => setShowDiscardDialog(false)}
+              accessibilityLabel="Keep editing"
+              accessibilityRole="button"
+              className="flex-1 rounded-xl bg-muted py-3 items-center"
+            >
+              <Text className="text-sm font-semibold text-foreground/65">Keep editing</Text>
+            </Pressable>
+            <Pressable
+              testID="food-discard-confirm"
+              onPress={() => {
+                setShowDiscardDialog(false);
+                navigation.goBack();
+              }}
+              accessibilityLabel="Discard changes"
+              accessibilityRole="button"
+              className="flex-1 rounded-xl bg-destructive/10 py-3 items-center"
+            >
+              <Text className="text-sm font-semibold text-destructive">Discard</Text>
+            </Pressable>
+          </View>
+        </DialogContent>
+      </Dialog>
     </Screen>
   );
 }

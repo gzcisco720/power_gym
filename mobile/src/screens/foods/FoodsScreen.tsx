@@ -3,7 +3,10 @@ import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator } from 
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
-import { Dialog } from '../../components/ui/Dialog';
+import {
+  Dialog,
+  DialogContent,
+} from '../../components/ui/dialog';
 import { useFoodsStore } from '../../stores/foods.store';
 import { Food } from '../../types/nutrition-templates';
 import { FoodCard } from './components/FoodCard';
@@ -136,38 +139,36 @@ export function FoodsScreen() {
       </ScrollView>
 
       {/* Delete confirm dialog */}
-      <Dialog.Root
+      <Dialog
         open={pendingDeleteFood !== null}
         onOpenChange={(open) => { if (!open) handleDeleteCancel(); }}
       >
-        <Dialog.Overlay>
-          <Dialog.Content>
-            <Text className="text-[15px] font-semibold text-foreground mb-1">Delete food?</Text>
-            <Text className="text-[13px] text-foreground/65 mb-4">
-              {`"${pendingDeleteFood?.name ?? ''}" will be permanently deleted.`}
-            </Text>
-            <View className="flex-row gap-2">
-              <Pressable
-                onPress={handleDeleteCancel}
-                accessibilityLabel="Cancel delete"
-                accessibilityRole="button"
-                className="flex-1 rounded-xl bg-muted py-3 items-center"
-              >
-                <Text className="text-sm font-semibold text-foreground/65">Cancel</Text>
-              </Pressable>
-              <Pressable
-                testID="food-delete-confirm"
-                onPress={handleDeleteConfirm}
-                accessibilityLabel="Confirm delete"
-                accessibilityRole="button"
-                className="flex-1 rounded-xl bg-destructive/10 py-3 items-center"
-              >
-                <Text className="text-sm font-semibold text-destructive">Delete</Text>
-              </Pressable>
-            </View>
-          </Dialog.Content>
-        </Dialog.Overlay>
-      </Dialog.Root>
+        <DialogContent>
+          <Text className="text-[15px] font-semibold text-foreground mb-1">Delete food?</Text>
+          <Text className="text-[13px] text-foreground/65 mb-4">
+            {`"${pendingDeleteFood?.name ?? ''}" will be permanently deleted.`}
+          </Text>
+          <View className="flex-row gap-2">
+            <Pressable
+              onPress={handleDeleteCancel}
+              accessibilityLabel="Cancel delete"
+              accessibilityRole="button"
+              className="flex-1 rounded-xl bg-muted py-3 items-center"
+            >
+              <Text className="text-sm font-semibold text-foreground/65">Cancel</Text>
+            </Pressable>
+            <Pressable
+              testID="food-delete-confirm"
+              onPress={handleDeleteConfirm}
+              accessibilityLabel="Confirm delete"
+              accessibilityRole="button"
+              className="flex-1 rounded-xl bg-destructive/10 py-3 items-center"
+            >
+              <Text className="text-sm font-semibold text-destructive">Delete</Text>
+            </Pressable>
+          </View>
+        </DialogContent>
+      </Dialog>
     </Screen>
   );
 }

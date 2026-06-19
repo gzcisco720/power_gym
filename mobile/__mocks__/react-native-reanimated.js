@@ -19,6 +19,27 @@ const Animated = {
   createAnimatedComponent: (component) => component,
 };
 
+// Entry/exit animation builders (FadeIn, FadeOut, SlideInUp, etc.)
+function makeAnimationBuilder() {
+  const builder = {
+    duration: () => builder,
+    delay: () => builder,
+    easing: () => builder,
+    springify: () => builder,
+    damping: () => builder,
+    stiffness: () => builder,
+    build: () => ({}),
+  };
+  return builder;
+}
+
+const FadeIn = makeAnimationBuilder();
+const FadeOut = makeAnimationBuilder();
+const SlideInUp = makeAnimationBuilder();
+const SlideOutDown = makeAnimationBuilder();
+const ZoomIn = makeAnimationBuilder();
+const ZoomOut = makeAnimationBuilder();
+
 module.exports = {
   __esModule: true,
   useSharedValue,
@@ -29,5 +50,11 @@ module.exports = {
   withSpring,
   useReducedMotion,
   Animated,
+  FadeIn,
+  FadeOut,
+  SlideInUp,
+  SlideOutDown,
+  ZoomIn,
+  ZoomOut,
   default: Animated,
 };
