@@ -124,6 +124,27 @@ describe('FoodFormScreen', () => {
     expect(mockGoBack).toHaveBeenCalled();
   });
 
+  it('delete > opens Dialog and confirms — back with dirty state opens discard dialog; confirming navigates back', async () => {
+    const { getByTestId, findByTestId } = render(<FoodFormScreen />);
+
+    // Make the form dirty
+    fireEvent.changeText(getByTestId('food-name-input'), 'Dirty Name');
+
+    // Press Cancel button which triggers handleBack
+    fireEvent.press(getByTestId('food-cancel-button'));
+
+    // The discard dialog should appear
+    const confirmBtn = await findByTestId('food-discard-confirm');
+    expect(confirmBtn).toBeTruthy();
+
+    // Confirm discard — should navigate back
+    await act(async () => {
+      fireEvent.press(confirmBtn);
+    });
+
+    expect(mockGoBack).toHaveBeenCalled();
+  });
+
   it('edit mode: pre-fills fields from the food param and Save calls store.update with the food _id', async () => {
     const food = makeFood({
       _id: 'food1',

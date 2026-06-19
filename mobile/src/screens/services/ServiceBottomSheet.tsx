@@ -2,19 +2,17 @@ import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   Pressable,
   Modal,
-  ActivityIndicator,
-  Switch,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
+import { Switch } from '~/components/ui/switch';
 import { useServiceTypesStore } from '../../stores/service-types.store';
 import { createServiceType, updateServiceType } from '../../lib/api/service-types.api';
 import { ServiceType } from '../../types/service-types';
-
-const COLORS = { white: '#ffffff' } as const;
 
 interface ServiceBottomSheetProps {
   visible: boolean;
@@ -132,13 +130,12 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Name <Text className="text-destructive">*</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="service-name-input"
                   value={name}
                   onChangeText={setName}
                   placeholder="e.g. PT Session"
                   placeholderTextColor="rgba(255,255,255,0.4)"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   autoCapitalize="words"
                   accessibilityLabel="Service name"
                 />
@@ -150,14 +147,13 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
                   Duration <Text className="text-foreground/65">(min)</Text>{' '}
                   <Text className="text-destructive">*</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="service-duration-input"
                   value={duration}
                   onChangeText={setDuration}
                   placeholder="60"
                   placeholderTextColor="rgba(255,255,255,0.4)"
                   keyboardType="decimal-pad"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   accessibilityLabel="Duration in minutes"
                 />
               </View>
@@ -168,14 +164,13 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
                   Price per session <Text className="text-foreground/65">(AUD)</Text>{' '}
                   <Text className="text-destructive">*</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="service-price-input"
                   value={price}
                   onChangeText={setPrice}
                   placeholder="80"
                   placeholderTextColor="rgba(255,255,255,0.4)"
                   keyboardType="decimal-pad"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   accessibilityLabel="Price per session"
                 />
               </View>
@@ -185,13 +180,12 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Note <Text className="text-foreground/65">(optional)</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="service-note-input"
                   value={note}
                   onChangeText={setNote}
                   placeholder="Additional details..."
                   placeholderTextColor="rgba(255,255,255,0.4)"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   multiline
                   accessibilityLabel="Note"
                 />
@@ -210,10 +204,9 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
                   </View>
                   <Switch
                     testID="service-active-toggle"
-                    value={isActive}
-                    onValueChange={setIsActive}
+                    checked={isActive}
+                    onCheckedChange={setIsActive}
                     accessibilityLabel="Active"
-                    accessibilityRole="switch"
                   />
                 </View>
               )}
@@ -229,23 +222,17 @@ export function ServiceBottomSheet({ visible, onClose, service }: ServiceBottomS
 
           {/* Footer action bar */}
           <View className="px-4 py-3 border-t border-foreground/10 bg-background/95">
-            <Pressable
+            <Button
               testID="service-save-button"
               onPress={handleSave}
               disabled={!canSave || isSaving}
               accessibilityLabel="Save service"
-              accessibilityRole="button"
               accessibilityState={{ disabled: !canSave || isSaving }}
-              className={`py-3 rounded-xl items-center ${
-                canSave && !isSaving ? 'bg-primary' : 'bg-primary/40'
-              }`}
             >
-              {isSaving ? (
-                <ActivityIndicator color={COLORS.white} />
-              ) : (
-                <Text className="text-sm font-semibold text-foreground">Save</Text>
-              )}
-            </Pressable>
+              <Text className="text-sm font-semibold text-foreground">
+                {isSaving ? 'Saving…' : 'Save'}
+              </Text>
+            </Button>
           </View>
         </View>
       </View>

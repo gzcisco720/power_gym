@@ -1,9 +1,8 @@
 import React from 'react';
-import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, Image } from 'react-native';
+import { Skeleton } from '~/components/ui/skeleton';
 
 const MAX_IMAGES = 5;
-
-const COLORS = { white: '#ffffff', primary: '#4f46e5', destructive: '#ef4444' } as const;
 
 interface EquipmentImagePickerProps {
   imageUrls: string[];
@@ -45,19 +44,18 @@ export function EquipmentImagePicker({
           </View>
         ))}
         {canAdd ? (
-          <Pressable
-            onPress={onAdd}
-            accessibilityLabel="Add image"
-            accessibilityRole="button"
-            disabled={isUploading}
-            className="h-16 w-16 items-center justify-center rounded-xl bg-input border border-foreground/10"
-          >
-            {isUploading ? (
-              <ActivityIndicator size="small" color={COLORS.primary} />
-            ) : (
+          isUploading ? (
+            <Skeleton className="h-16 w-16" />
+          ) : (
+            <Pressable
+              onPress={onAdd}
+              accessibilityLabel="Add image"
+              accessibilityRole="button"
+              className="h-16 w-16 items-center justify-center rounded-xl bg-input border border-foreground/10"
+            >
               <Text className="text-2xl text-foreground/40">+</Text>
-            )}
-          </Pressable>
+            </Pressable>
+          )
         ) : null}
       </View>
       {imageUrls.length >= MAX_IMAGES ? (

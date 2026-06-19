@@ -2,16 +2,16 @@ import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   Pressable,
-  ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -136,14 +136,13 @@ export function FoodFormScreen() {
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Name <Text className="text-destructive">*</Text>
             </Text>
-            <TextInput
+            <Input
               testID="food-name-input"
               value={form.name}
               onChangeText={(v) => setField('name', v)}
               placeholder="e.g. Chicken Breast"
               placeholderTextColor={colors.placeholderText}
               accessibilityLabel="Food name"
-              className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
             />
           </View>
 
@@ -153,14 +152,13 @@ export function FoodFormScreen() {
               Brand{' '}
               <Text className="text-foreground/65 normal-case tracking-normal">(optional)</Text>
             </Text>
-            <TextInput
+            <Input
               testID="food-brand-input"
               value={form.brand}
               onChangeText={(v) => setField('brand', v)}
               placeholder="e.g. FreshFarm"
               placeholderTextColor={colors.placeholderText}
               accessibilityLabel="Brand"
-              className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground"
             />
           </View>
 
@@ -176,7 +174,7 @@ export function FoodFormScreen() {
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Kcal <Text className="text-destructive">*</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="food-kcal-input"
                   value={form.kcal}
                   onChangeText={(v) => setField('kcal', v)}
@@ -184,7 +182,7 @@ export function FoodFormScreen() {
                   placeholderTextColor={colors.placeholderText}
                   keyboardType="decimal-pad"
                   accessibilityLabel="Calories per 100g"
-                  className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground text-center"
+                  className="text-center"
                 />
               </View>
 
@@ -193,7 +191,7 @@ export function FoodFormScreen() {
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-emerald-300/80">
                   Protein <Text className="text-destructive">*</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="food-protein-input"
                   value={form.protein}
                   onChangeText={(v) => setField('protein', v)}
@@ -201,7 +199,7 @@ export function FoodFormScreen() {
                   placeholderTextColor={colors.placeholderText}
                   keyboardType="decimal-pad"
                   accessibilityLabel="Protein per 100g"
-                  className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground text-center"
+                  className="text-center"
                 />
               </View>
             </View>
@@ -212,7 +210,7 @@ export function FoodFormScreen() {
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-amber-300/80">
                   Carbs <Text className="text-destructive">*</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="food-carbs-input"
                   value={form.carbs}
                   onChangeText={(v) => setField('carbs', v)}
@@ -220,7 +218,7 @@ export function FoodFormScreen() {
                   placeholderTextColor={colors.placeholderText}
                   keyboardType="decimal-pad"
                   accessibilityLabel="Carbs per 100g"
-                  className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground text-center"
+                  className="text-center"
                 />
               </View>
 
@@ -229,7 +227,7 @@ export function FoodFormScreen() {
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-pink-300/80">
                   Fat <Text className="text-destructive">*</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="food-fat-input"
                   value={form.fat}
                   onChangeText={(v) => setField('fat', v)}
@@ -237,7 +235,7 @@ export function FoodFormScreen() {
                   placeholderTextColor={colors.placeholderText}
                   keyboardType="decimal-pad"
                   accessibilityLabel="Fat per 100g"
-                  className="rounded-xl bg-input px-3 py-2.5 text-sm text-foreground text-center"
+                  className="text-center"
                 />
               </View>
             </View>
@@ -254,31 +252,27 @@ export function FoodFormScreen() {
         className="border-t border-foreground/10 bg-background/95 px-4 py-3 flex-row gap-2"
         style={{ paddingBottom: insets.bottom || 12 }}
       >
-        <Pressable
-          onPress={() => navigation.goBack()}
+        <Button
+          testID="food-cancel-button"
+          variant="ghost"
+          onPress={handleBack}
           accessibilityLabel="Cancel"
-          accessibilityRole="button"
-          className="flex-1 py-3 rounded-xl bg-muted items-center"
+          className="flex-1"
         >
           <Text className="text-sm font-semibold text-foreground/65">Cancel</Text>
-        </Pressable>
-        <Pressable
+        </Button>
+        <Button
           testID="food-save-button"
           onPress={handleSave}
           disabled={!isDirty || !isValid || saving}
           accessibilityLabel="Save food"
-          accessibilityRole="button"
           accessibilityState={{ disabled: !isDirty || !isValid || saving }}
-          className={`flex-1 py-3 rounded-xl items-center ${
-            isDirty && isValid && !saving ? 'bg-primary' : 'bg-primary/30'
-          }`}
+          className="flex-1"
         >
-          {saving ? (
-            <ActivityIndicator size="small" />
-          ) : (
-            <Text className="text-sm font-semibold text-foreground">Save</Text>
-          )}
-        </Pressable>
+          <Text className="text-sm font-semibold text-foreground">
+            {saving ? 'Saving…' : 'Save'}
+          </Text>
+        </Button>
       </View>
 
       {/* Unsaved changes dialog */}

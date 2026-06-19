@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { Screen } from '../../components/Screen';
+import { Button } from '~/components/ui/button';
+import { Skeleton } from '~/components/ui/skeleton';
 import { useServiceTypesStore } from '../../stores/service-types.store';
 import { FilterTab, ServiceType } from '../../types/service-types';
 import { ServiceBottomSheet } from './ServiceBottomSheet';
@@ -50,15 +52,14 @@ export function ServicesScreen() {
           </Text>
           <Text className="mt-0.5 text-[12px] text-foreground/65">Manage gym services</Text>
         </View>
-        <Pressable
+        <Button
           testID="services-add-button"
           onPress={() => setAddSheetVisible(true)}
           accessibilityLabel="Add service"
-          accessibilityRole="button"
-          className="rounded-xl bg-primary px-3 py-2"
+          size="sm"
         >
           <Text className="text-sm font-semibold text-foreground">+ Add</Text>
-        </Pressable>
+        </Button>
       </View>
 
       {/* Filter tabs */}
@@ -95,7 +96,7 @@ export function ServicesScreen() {
           {loading ? (
             <>
               {[0, 1, 2, 3].map((i) => (
-                <View key={i} className="rounded-xl bg-muted px-3 py-2 h-14 opacity-60" />
+                <Skeleton key={i} className="h-14 w-full" />
               ))}
             </>
           ) : filtered.length === 0 ? (

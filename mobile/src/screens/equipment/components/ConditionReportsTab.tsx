@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, ActivityIndicator } from 'react-native';
-
-const COLORS = { white: '#ffffff', primary: '#4f46e5', destructive: '#ef4444' } as const;
+import { View, Text, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 import { ConditionReport, EquipmentItem } from '../../../types/equipment';
 import { fetchConditionReports, createConditionReport } from '../../../lib/api/equipment.api';
 
@@ -60,7 +60,7 @@ export function ConditionReportsTab({ item }: ConditionReportsTabProps) {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="px-4 py-4 gap-2">
           {loading ? (
-            <ActivityIndicator color={COLORS.primary} />
+            <Text className="text-[13px] text-foreground/65 text-center mt-4">Loading…</Text>
           ) : reports.length === 0 ? (
             <Text className="text-[13px] text-foreground/65 text-center mt-4">
               No reports yet.
@@ -94,32 +94,25 @@ export function ConditionReportsTab({ item }: ConditionReportsTabProps) {
         className="border-t border-foreground/10 px-4 py-3 gap-2"
         style={{ paddingBottom: insets.bottom || 12 }}
       >
-        <TextInput
+        <Input
           testID="report-note-input"
           value={note}
           onChangeText={setNote}
           placeholder="Add a condition note…"
           placeholderTextColor="rgba(255,255,255,0.4)"
-          className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
           multiline
         />
-        <Pressable
+        <Button
           testID="report-submit"
           onPress={handleSubmit}
           disabled={!note.trim() || isSubmitting}
           accessibilityLabel="Submit condition report"
-          accessibilityRole="button"
           accessibilityState={{ disabled: !note.trim() || isSubmitting }}
-          className={`py-2.5 rounded-xl items-center ${
-            note.trim() && !isSubmitting ? 'bg-primary' : 'bg-primary/40'
-          }`}
         >
-          {isSubmitting ? (
-            <ActivityIndicator color={COLORS.white} />
-          ) : (
-            <Text className="text-sm font-semibold text-foreground">Submit Report</Text>
-          )}
-        </Pressable>
+          <Text className="text-sm font-semibold text-foreground">
+            {isSubmitting ? 'Submitting…' : 'Submit Report'}
+          </Text>
+        </Button>
       </View>
     </View>
   );

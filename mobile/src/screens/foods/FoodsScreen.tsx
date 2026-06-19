@@ -1,8 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
+import { Skeleton } from '~/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
@@ -74,33 +77,30 @@ export function FoodsScreen() {
           </Text>
           <Text className="mt-0.5 text-[12px] text-foreground/65">Manage food database</Text>
         </View>
-        <Pressable
+        <Button
           testID="foods-add-button"
           onPress={handleAddPress}
           accessibilityLabel="Add food"
-          accessibilityRole="button"
-          className="h-11 w-11 items-center justify-center rounded-xl bg-primary"
+          size="icon"
         >
           <Text className="text-sm font-semibold text-foreground">+</Text>
-        </Pressable>
+        </Button>
       </View>
 
       {/* Search input */}
       <View className="border-b border-foreground/[.06] bg-background px-4 py-2.5">
         <View className="flex-row items-center rounded-xl bg-input px-3 gap-2">
           <Text className="text-foreground/40 text-sm">⌕</Text>
-          <TextInput
+          <Input
             testID="foods-search-input"
             value={query}
             onChangeText={handleQueryChange}
             placeholder="Search foods..."
             placeholderTextColor={colors.placeholderText}
             accessibilityLabel="Search foods"
-            className="flex-1 py-2.5 text-sm text-foreground"
+            className="flex-1 py-2.5 border-0 bg-transparent shadow-none"
           />
-          {loading ? (
-            <ActivityIndicator size="small" color={colors.placeholderText} />
-          ) : query.length > 0 ? (
+          {query.length > 0 && !loading ? (
             <Pressable
               onPress={() => handleQueryChange('')}
               accessibilityLabel="Clear search"
@@ -118,7 +118,7 @@ export function FoodsScreen() {
           {loading ? (
             <>
               {[0, 1, 2, 3].map((i) => (
-                <View key={i} className="rounded-xl bg-muted px-3 py-2 h-12 opacity-60" />
+                <Skeleton key={i} className="h-12 w-full" />
               ))}
             </>
           ) : results.length === 0 ? (

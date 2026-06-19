@@ -158,4 +158,32 @@ describe('AddEquipmentSheet', () => {
       expect(mockPickAndUploadImage).toHaveBeenCalled();
     });
   });
+
+  it('submit > calls create with form values including trackCondition toggled via Reusables Switch', async () => {
+    const addItem = jest.fn();
+    setupStoreMock({ addItem });
+    const createdItem = makeItem({ name: 'Bike', trackCondition: true });
+    mockCreateEquipment.mockResolvedValueOnce(createdItem);
+
+    const { getByTestId, findByText } = render(
+      <AddEquipmentSheet visible onClose={jest.fn()} />,
+    );
+
+    fireEvent.changeText(getByTestId('add-name-input'), 'Bike');
+
+    // Reusables Switch uses accessibilityState.checked (not value prop)
+    const toggle = getByTestId('add-track-condition-toggle');
+    expect(toggle.props.accessibilityState?.checked).toBe(false);
+    fireEvent.press(toggle);
+
+    fireEvent.press(getByTestId('add-save-button'));
+
+    await waitFor(() => {
+      expect(mockCreateEquipment).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'Bike', trackCondition: true }),
+      );
+      expect(addItem).toHaveBeenCalledWith(createdItem);
+    });
+    expect(await findByText('Equipment added')).toBeTruthy();
+  });
 });

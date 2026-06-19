@@ -170,4 +170,10 @@ describe('EquipmentScreen', () => {
     fireEvent.press(getByTestId('equipment-filter-active'));
     expect(setFilter).toHaveBeenCalledWith('active');
   });
+
+  it('loading > renders Skeleton rows', () => {
+    mockUseEquipmentStore.mockReturnValue(makeStoreState({ loading: true }));
+    const { getAllByTestId } = render(<EquipmentScreen />);
+    expect(getAllByTestId('equipment-skeleton-row').length).toBeGreaterThan(0);
+  });
 });

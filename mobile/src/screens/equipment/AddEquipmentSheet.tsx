@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   Pressable,
   Modal,
-  ActivityIndicator,
-  Switch,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
+import { Switch } from '~/components/ui/switch';
 import { useEquipmentStore } from '../../stores/equipment.store';
 import { createEquipment } from '../../lib/api/equipment.api';
 import { searchCatalog } from '../../lib/equipment-catalog';
@@ -18,8 +18,6 @@ import { EquipmentStatus } from '../../types/equipment';
 import { EquipmentImagePicker } from './components/EquipmentImagePicker';
 
 const MAX_IMAGES = 5;
-
-const COLORS = { white: '#ffffff', primary: '#4f46e5', destructive: '#ef4444' } as const;
 
 interface AddEquipmentSheetProps {
   visible: boolean;
@@ -142,13 +140,12 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Name <Text className="text-destructive">*</Text>
                 </Text>
-                <TextInput
+                <Input
                   testID="add-name-input"
                   value={name}
                   onChangeText={handleNameChange}
                   placeholder="e.g. Treadmill"
                   placeholderTextColor="rgba(255,255,255,0.4)"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                   autoCapitalize="words"
                 />
                 {/* Catalog suggestions */}
@@ -175,12 +172,11 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Brand <Text className="text-foreground/65">(optional)</Text>
                 </Text>
-                <TextInput
+                <Input
                   value={brand}
                   onChangeText={setBrand}
                   placeholder="e.g. Life Fitness"
                   placeholderTextColor="rgba(255,255,255,0.4)"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                 />
               </View>
 
@@ -189,12 +185,11 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
                 <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
                   Quantity
                 </Text>
-                <TextInput
+                <Input
                   value={quantity}
                   onChangeText={setQuantity}
                   keyboardType="decimal-pad"
                   placeholderTextColor="rgba(255,255,255,0.4)"
-                  className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
                 />
               </View>
 
@@ -241,10 +236,9 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
                 </View>
                 <Switch
                   testID="add-track-condition-toggle"
-                  value={trackCondition}
-                  onValueChange={setTrackCondition}
+                  checked={trackCondition}
+                  onCheckedChange={setTrackCondition}
                   accessibilityLabel="Track condition"
-                  accessibilityRole="switch"
                 />
               </View>
 
@@ -268,23 +262,17 @@ export function AddEquipmentSheet({ visible, onClose }: AddEquipmentSheetProps) 
 
           {/* Footer action bar */}
           <View className="px-4 py-3 border-t border-foreground/10">
-            <Pressable
+            <Button
               testID="add-save-button"
               onPress={handleSave}
               disabled={!canSave || isSaving}
               accessibilityLabel="Save equipment"
-              accessibilityRole="button"
               accessibilityState={{ disabled: !canSave || isSaving }}
-              className={`py-3 rounded-xl items-center ${
-                canSave && !isSaving ? 'bg-primary' : 'bg-primary/40'
-              }`}
             >
-              {isSaving ? (
-                <ActivityIndicator color={COLORS.white} />
-              ) : (
-                <Text className="text-sm font-semibold text-foreground">Save</Text>
-              )}
-            </Pressable>
+              <Text className="text-sm font-semibold text-foreground">
+                {isSaving ? 'Saving…' : 'Save'}
+              </Text>
+            </Button>
           </View>
         </View>
       </View>

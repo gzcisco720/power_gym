@@ -159,4 +159,22 @@ describe('ServiceBottomSheet (Edit mode)', () => {
     fireEvent.changeText(getByTestId('service-name-input'), 'PT Session Updated');
     expect(getByTestId('service-save-button').props.accessibilityState?.disabled).toBe(false);
   });
+
+  it('Switch > toggles active flag — toggling the Reusables Switch calls onCheckedChange with negated value', () => {
+    setupStoreMock();
+    const service = makeService({ isActive: true, name: 'PT Session', durationMin: 60, pricePerSession: 80 });
+    const { getByTestId } = render(
+      <ServiceBottomSheet visible onClose={jest.fn()} service={service} />,
+    );
+
+    const toggle = getByTestId('service-active-toggle');
+    // Reusables Switch uses accessibilityState.checked
+    expect(toggle.props.accessibilityState?.checked).toBe(true);
+
+    // Pressing the toggle marks it dirty (isActive flipped)
+    fireEvent.press(toggle);
+
+    // Now dirty — save should be enabled (service unchanged otherwise)
+    expect(getByTestId('service-save-button').props.accessibilityState?.disabled).toBe(false);
+  });
 });

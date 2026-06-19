@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
+import { Button } from '~/components/ui/button';
 import { BillingPeriod } from '../../types/billing';
 
 function buildPeriod(year: number, month: number): BillingPeriod {
@@ -33,15 +34,15 @@ export function BillingPeriodNav({ period, onChange }: BillingPeriodNavProps) {
 
   return (
     <View className="flex-row items-center gap-2">
-      <Pressable
+      <Button
         testID="billing-period-prev"
+        variant="ghost"
+        size="icon"
         onPress={handlePrev}
         accessibilityLabel="Previous month"
-        accessibilityRole="button"
-        className="p-1 rounded-lg"
       >
         <Text className="text-[18px] text-foreground/65">{'‹'}</Text>
-      </Pressable>
+      </Button>
 
       <Text
         testID="billing-period-label"
@@ -50,15 +51,15 @@ export function BillingPeriodNav({ period, onChange }: BillingPeriodNavProps) {
         {period.label}
       </Text>
 
-      <Pressable
+      <Button
         testID="billing-period-next"
+        variant="ghost"
+        size="icon"
         onPress={handleNext}
         accessibilityLabel="Next month"
-        accessibilityRole="button"
-        className="p-1 rounded-lg"
       >
         <Text className="text-[18px] text-foreground/65">{'›'}</Text>
-      </Pressable>
+      </Button>
     </View>
   );
 }

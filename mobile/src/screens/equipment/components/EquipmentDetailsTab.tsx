@@ -2,18 +2,19 @@ import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   Pressable,
-  ActivityIndicator,
-  Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+} from '~/components/ui/dialog';
 import { EquipmentItem, EquipmentStatus, UpdateEquipmentDto } from '../../../types/equipment';
 import { EquipmentImagePicker } from './EquipmentImagePicker';
 import { pickAndUploadImage } from '../../../lib/image-upload';
-
-const COLORS = { white: '#ffffff', primary: '#4f46e5', destructive: '#ef4444' } as const;
 
 const STATUS_OPTIONS: { value: EquipmentStatus; label: string }[] = [
   { value: 'active', label: 'Active' },
@@ -113,13 +114,12 @@ export function EquipmentDetailsTab({
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Name <Text className="text-destructive">*</Text>
             </Text>
-            <TextInput
+            <Input
               testID="equipment-detail-name-input"
               value={name}
               onChangeText={setName}
               placeholder="e.g. Treadmill"
               placeholderTextColor="rgba(255,255,255,0.4)"
-              className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
               autoCapitalize="words"
             />
           </View>
@@ -129,12 +129,11 @@ export function EquipmentDetailsTab({
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Brand <Text className="text-foreground/65">(optional)</Text>
             </Text>
-            <TextInput
+            <Input
               value={brand}
               onChangeText={setBrand}
               placeholder="e.g. Life Fitness"
               placeholderTextColor="rgba(255,255,255,0.4)"
-              className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
             />
           </View>
 
@@ -143,12 +142,11 @@ export function EquipmentDetailsTab({
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Quantity
             </Text>
-            <TextInput
+            <Input
               value={quantity}
               onChangeText={setQuantity}
               keyboardType="decimal-pad"
               placeholderTextColor="rgba(255,255,255,0.4)"
-              className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
             />
           </View>
 
@@ -188,14 +186,13 @@ export function EquipmentDetailsTab({
             <Text className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground/65">
               Notes <Text className="text-foreground/65">(optional)</Text>
             </Text>
-            <TextInput
+            <Input
               value={notes}
               onChangeText={setNotes}
               placeholder="Any notes…"
               placeholderTextColor="rgba(255,255,255,0.4)"
               multiline
               numberOfLines={3}
-              className="bg-input rounded-xl px-3 py-2 text-sm text-foreground"
             />
           </View>
 
@@ -222,81 +219,66 @@ export function EquipmentDetailsTab({
         className="border-t border-foreground/10 px-4 py-3 gap-2"
         style={{ paddingBottom: insets.bottom || 12 }}
       >
-        <Pressable
+        <Button
           testID="equipment-detail-save"
           onPress={handleSave}
           disabled={!isDirty || isSaving}
           accessibilityLabel="Save changes"
-          accessibilityRole="button"
           accessibilityState={{ disabled: !isDirty || isSaving }}
-          className={`py-3 rounded-xl items-center ${
-            isDirty && !isSaving ? 'bg-primary' : 'bg-primary/40'
-          }`}
         >
-          {isSaving ? (
-            <ActivityIndicator color={COLORS.white} />
-          ) : (
-            <Text className="text-sm font-semibold text-foreground">Save Changes</Text>
-          )}
-        </Pressable>
+          <Text className="text-sm font-semibold text-foreground">
+            {isSaving ? 'Saving…' : 'Save Changes'}
+          </Text>
+        </Button>
 
-        <Pressable
+        <Button
           testID="equipment-detail-delete"
+          variant="destructive"
           onPress={() => setDeleteDialogVisible(true)}
           accessibilityLabel="Delete equipment"
-          accessibilityRole="button"
-          className="py-2.5 rounded-xl items-center bg-destructive/10"
         >
-          <Text className="text-sm font-medium text-destructive">Delete Equipment</Text>
-        </Pressable>
+          <Text className="text-sm font-medium text-white">Delete Equipment</Text>
+        </Button>
       </View>
 
       {/* Delete confirmation dialog */}
-      <Modal
-        visible={deleteDialogVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setDeleteDialogVisible(false)}
+      <Dialog
+        open={deleteDialogVisible}
+        onOpenChange={(open) => { if (!open) setDeleteDialogVisible(false); }}
       >
-        <View className="flex-1 items-center justify-center bg-black/60 px-6">
-          <View className="w-full rounded-2xl bg-card p-6">
-            <Text className="text-[18px] font-semibold text-foreground mb-2">
-              Delete Equipment
-            </Text>
-            <Text className="text-sm text-foreground/65 mb-6">
-              This will permanently delete this equipment and all its condition reports. This action
-              cannot be undone.
-            </Text>
-            <View className="flex-row gap-3">
-              <Pressable
-                onPress={() => setDeleteDialogVisible(false)}
-                accessibilityLabel="Cancel delete"
-                accessibilityRole="button"
-                className="flex-1 py-2.5 rounded-xl items-center bg-muted"
-              >
-                <Text className="text-sm font-medium text-foreground/65">Cancel</Text>
-              </Pressable>
-              <Pressable
-                testID="equipment-delete-confirm"
-                onPress={async () => {
-                  setDeleteDialogVisible(false);
-                  await onDelete();
-                }}
-                disabled={isDeleting}
-                accessibilityLabel="Confirm delete"
-                accessibilityRole="button"
-                className="flex-1 py-2.5 rounded-xl items-center bg-destructive/10"
-              >
-                {isDeleting ? (
-                  <ActivityIndicator color={COLORS.destructive} />
-                ) : (
-                  <Text className="text-sm font-medium text-destructive">Delete</Text>
-                )}
-              </Pressable>
-            </View>
+        <DialogContent>
+          <Text className="text-[18px] font-semibold text-foreground mb-2">
+            Delete Equipment
+          </Text>
+          <Text className="text-sm text-foreground/65 mb-6">
+            This will permanently delete this equipment and all its condition reports. This action
+            cannot be undone.
+          </Text>
+          <View className="flex-row gap-3">
+            <Pressable
+              onPress={() => setDeleteDialogVisible(false)}
+              accessibilityLabel="Cancel delete"
+              accessibilityRole="button"
+              className="flex-1 py-2.5 rounded-xl items-center bg-muted"
+            >
+              <Text className="text-sm font-medium text-foreground/65">Cancel</Text>
+            </Pressable>
+            <Pressable
+              testID="equipment-delete-confirm"
+              onPress={async () => {
+                setDeleteDialogVisible(false);
+                await onDelete();
+              }}
+              disabled={isDeleting}
+              accessibilityLabel="Confirm delete"
+              accessibilityRole="button"
+              className="flex-1 py-2.5 rounded-xl items-center bg-destructive/10"
+            >
+              <Text className="text-sm font-medium text-destructive">Delete</Text>
+            </Pressable>
           </View>
-        </View>
-      </Modal>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
