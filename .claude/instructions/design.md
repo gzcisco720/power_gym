@@ -464,13 +464,114 @@ Never `keyboardType="numeric"` for decimals — it shows no decimal point on som
 
 ## Component Patterns
 
-**Use React Native Reusables** for all common components (Button, Dialog, Input, etc.). Do not build custom implementations when a Reusables component exists.
+### 🔴 CRITICAL: React Native Reusables First — No Exceptions
 
-**Touchable elements:** use Reusables `<Button>` or `<Pressable>` with `accessibilityLabel`. Never raw `<TouchableOpacity>` without an accessibility label.
+**Before writing any UI component, check https://reactnativereusables.com/docs first.**
 
-**List items:** `<Pressable>` wrapping a `flex-row items-center justify-between` View. Destructive action is a sibling inside the row, not nested in the primary Pressable.
+**Decision tree — follow in order, do not skip steps:**
 
-**Loading state:** Skeleton components matching final card shape. Never a centered "Loading…" text.
+1. **Need a UI component?** → Check the list below first
+2. **It's in the list?** → Run the CLI to add it, then import from `~/components/ui/`
+3. **Not in the list?** → Build a custom component in `mobile/src/components/ui/`, never inline in a screen file
+4. **Already exists in `components/ui/`?** → Just import it — do not re-add or duplicate
+
+**How to add a Reusables component (CLI — do not copy-paste manually):**
+```bash
+cd mobile && npx @react-native-reusables/cli@latest add <component-name>
+```
+Example: `npx @react-native-reusables/cli@latest add dialog`
+
+The CLI copies the styled component code into `mobile/src/components/ui/` automatically.
+
+**Hard rules:**
+- Never `import @rn-primitives/*` directly in feature screens — only `components/ui/` files may use it
+- Never build a custom implementation of any component that exists in the list below
+- Never inline a reusable component inside a screen file — it always goes in `components/ui/`
+- `View`, `Text`, `ScrollView`, `FlatList` are fine for layout — the rule applies to **interactive and styled UI components**
+- "It already works with raw RN primitives" is NOT a valid excuse to skip this rule
+
+**Complete Reusables component list (30 components):**
+
+| Component | CLI name |
+|---|---|
+| Accordion | accordion |
+| Alert | alert |
+| Alert Dialog | alert-dialog |
+| Aspect Ratio | aspect-ratio |
+| Avatar | avatar |
+| Badge | badge |
+| Button | button |
+| Card | card |
+| Checkbox | checkbox |
+| Collapsible | collapsible |
+| Context Menu | context-menu |
+| Dialog | dialog |
+| Dropdown Menu | dropdown-menu |
+| Hover Card | hover-card |
+| Input | input |
+| Label | label |
+| Menubar | menubar |
+| Popover | popover |
+| Progress | progress |
+| Radio Group | radio-group |
+| Select | select |
+| Separator | separator |
+| Skeleton | skeleton |
+| Switch | switch |
+| Tabs | tabs |
+| Text | text |
+| Textarea | textarea |
+| Toggle | toggle |
+| Toggle Group | toggle-group |
+| Tooltip | tooltip |
+
+**List items:** `<Pressable>` from RN is acceptable as a row/card container (no Reusables equivalent). Destructive action is a sibling inside the row, never nested inside the primary Pressable.
+
+**Loading state:** Use the Reusables `Skeleton` component. Never a centered "Loading…" text.
+
+---
+
+### 🔴 CRITICAL: Reusables Blocks for Authentication Screens
+
+Reusables provides full pre-built screen blocks for authentication flows. **Check blocks before building any auth screen from scratch.**
+
+Docs: https://reactnativereusables.com/docs/blocks/authentication
+
+| Block | CLI name | Replaces |
+|---|---|---|
+| Sign in form | `sign-in-form` | LoginScreen |
+| Sign up form | `sign-up-form` | RegisterScreen / SignUpScreen |
+| Verify email form | `verify-email-form` | VerifyEmailScreen |
+| Reset password form | `reset-password-form` | ResetPasswordScreen |
+| Forgot password form | `forgot-password-form` | ForgotPasswordScreen |
+| Social connections | `social-connections` | OAuth / social login UI |
+| User menu | `user-menu` | Profile/account dropdown |
+
+**How to add a block:**
+```bash
+cd mobile && npx @react-native-reusables/cli@latest add <block-name>
+```
+
+**Rule:** Any auth screen that has a matching block above must use that block as the starting point, not a hand-built screen. Customise after adding — never start from scratch.
+
+---
+
+### 🔴 CRITICAL: Charts — react-native-gifted-charts Only
+
+All charts in `mobile/` must use **react-native-gifted-charts**.
+
+Repo: https://github.com/Abhinandan-Kushwaha/react-native-gifted-charts
+
+```bash
+cd mobile && pnpm add react-native-gifted-charts
+```
+
+Available chart types: `BarChart`, `LineChart`, `PieChart`, `PopulationPyramid`. Check the repo README for props and usage.
+
+**Hard rules:**
+- Never build a custom chart with `react-native-svg` primitives or `<View>` sizing tricks when gifted-charts covers the use case
+- Never use any other charting library (Victory Native, Recharts RN, etc.)
+- Chart wrapper components go in `mobile/src/components/charts/` — never inline in a screen
 
 ---
 

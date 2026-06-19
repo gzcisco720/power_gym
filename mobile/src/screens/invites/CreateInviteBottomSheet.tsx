@@ -29,10 +29,8 @@ export function CreateInviteBottomSheet({ visible, onClose }: CreateInviteBottom
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
   const role = user?.role ?? 'member';
-  const { trainers, addItem } = useInvitesStore((s) => ({
-    trainers: s.trainers,
-    addItem: s.addItem,
-  }));
+  const trainers = useInvitesStore((s) => s.trainers);
+  const addItem = useInvitesStore((s) => s.addItem);
 
   const isOwner = role === 'owner';
 

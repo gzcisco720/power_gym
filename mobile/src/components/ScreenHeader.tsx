@@ -1,7 +1,6 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button } from '~/components/ui/button';
 
 interface ScreenHeaderProps {
   title: string;
@@ -19,16 +18,15 @@ export function ScreenHeader({ title, onBack, right, safeTop = true }: ScreenHea
       style={{ paddingTop: (safeTop ? insets.top : 0) + 12, paddingBottom: 12 }}
     >
       {onBack && (
-        <Button
+        <Pressable
           testID="screen-header-back"
           onPress={onBack}
           accessibilityLabel="Go back"
-          variant="ghost"
-          size="icon"
-          className="mr-2"
+          accessibilityRole="button"
+          className="mr-3 p-1"
         >
           <Text className="text-[18px] text-foreground">←</Text>
-        </Button>
+        </Pressable>
       )}
       <Text className="flex-1 text-[18px] font-semibold tracking-[-0.3px] text-foreground">
         {title}

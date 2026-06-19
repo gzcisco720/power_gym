@@ -37,6 +37,7 @@ export function MembersScreen() {
 
   const [reassignMember, setReassignMember] = useState<Member | null>(null);
   const [unassignTarget, setUnassignTarget] = useState<Member | null>(null);
+  const [showTrainerPicker, setShowTrainerPicker] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -141,40 +142,24 @@ export function MembersScreen() {
         />
       </View>
 
-      {/* Trainer filter chips */}
+      {/* Trainer filter */}
       {trainers.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="border-b border-foreground/[.06]"
-          contentContainerClassName="px-4 py-2 gap-2 flex-row"
-        >
+        <View className="px-4 py-2 border-b border-foreground/[.06]">
           <Pressable
-            testID="trainer-filter-chip-all"
-            onPress={() => setTrainerFilter(null)}
-            accessibilityLabel="Show all members"
+            testID="trainer-filter-select"
+            onPress={() => setShowTrainerPicker(true)}
+            accessibilityLabel="Filter by trainer"
             accessibilityRole="button"
-            className={`rounded-full px-3 py-1 ${trainerFilter === null ? 'bg-primary' : 'bg-muted'}`}
+            className="flex-row items-center justify-between rounded-xl bg-input px-3 py-2"
           >
-            <Text className={`text-xs font-medium ${trainerFilter === null ? 'text-foreground' : 'text-foreground/65'}`}>
-              All
+            <Text className="text-sm text-foreground">
+              {trainerFilter
+                ? (trainers.find((t) => t.id === trainerFilter)?.name ?? 'All trainers')
+                : 'All trainers'}
             </Text>
+            <Text className="text-xs text-foreground/65">▾</Text>
           </Pressable>
-          {trainers.map((trainer) => (
-            <Pressable
-              key={trainer.id}
-              testID={`trainer-filter-chip-${trainer.id}`}
-              onPress={() => setTrainerFilter(trainer.id)}
-              accessibilityLabel={`Filter by ${trainer.name}`}
-              accessibilityRole="button"
-              className={`rounded-full px-3 py-1 ${trainerFilter === trainer.id ? 'bg-primary' : 'bg-muted'}`}
-            >
-              <Text className={`text-xs font-medium ${trainerFilter === trainer.id ? 'text-foreground' : 'text-foreground/65'}`}>
-                {trainer.name}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
+        </View>
       )}
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -250,6 +235,52 @@ export function MembersScreen() {
           </View>
         </View>
       )}
+
+      {/* Trainer picker */}
+      <Modal
+        visible={showTrainerPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowTrainerPicker(false)}
+      >
+        <Pressable
+          className="flex-1 justify-end bg-background/80"
+          onPress={() => setShowTrainerPicker(false)}
+          accessibilityLabel="Close trainer filter"
+          accessibilityRole="button"
+        >
+          <View className="bg-card rounded-t-2xl ring-1 ring-foreground/10 px-4 pt-4 pb-8 gap-1.5">
+            <Text className="text-[11px] font-semibold uppercase tracking-wider text-foreground/65 mb-1">
+              Filter by trainer
+            </Text>
+            <Pressable
+              testID="trainer-filter-chip-all"
+              onPress={() => { setTrainerFilter(null); setShowTrainerPicker(false); }}
+              accessibilityLabel="Show all members"
+              accessibilityRole="button"
+              className={`flex-row items-center px-3 py-2.5 rounded-xl ${trainerFilter === null ? 'bg-primary/10' : 'bg-muted'}`}
+            >
+              <Text className={`text-sm font-medium ${trainerFilter === null ? 'text-primary-light' : 'text-foreground'}`}>
+                All trainers
+              </Text>
+            </Pressable>
+            {trainers.map((trainer) => (
+              <Pressable
+                key={trainer.id}
+                testID={`trainer-filter-chip-${trainer.id}`}
+                onPress={() => { setTrainerFilter(trainer.id); setShowTrainerPicker(false); }}
+                accessibilityLabel={`Filter by ${trainer.name}`}
+                accessibilityRole="button"
+                className={`flex-row items-center px-3 py-2.5 rounded-xl ${trainerFilter === trainer.id ? 'bg-primary/10' : 'bg-muted'}`}
+              >
+                <Text className={`text-sm font-medium ${trainerFilter === trainer.id ? 'text-primary-light' : 'text-foreground'}`}>
+                  {trainer.name}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
 
       {/* Unassign confirmation */}
       {unassignTarget !== null && (

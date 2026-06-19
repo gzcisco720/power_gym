@@ -166,6 +166,7 @@ describe('MembersScreen', () => {
     }));
 
     const { getByTestId } = render(<MembersScreen />);
+    fireEvent.press(getByTestId('trainer-filter-select'));
     fireEvent.press(getByTestId('trainer-filter-chip-tr1'));
 
     expect(setTrainerFilter).toHaveBeenCalledWith('tr1');

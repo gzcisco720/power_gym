@@ -14,6 +14,7 @@ export function DayTypeTabs({ dayTypes, activeIndex, onTabPress }: DayTypeTabsPr
       showsHorizontalScrollIndicator={false}
       className="border-b border-foreground/[.06]"
       contentContainerStyle={{ paddingHorizontal: 16, gap: 4 }}
+      style={{ flexGrow: 0 }}
     >
       {dayTypes.map((name, index) => {
         const isActive = index === activeIndex;

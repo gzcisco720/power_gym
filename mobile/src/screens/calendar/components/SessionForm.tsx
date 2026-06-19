@@ -199,7 +199,7 @@ export function SessionForm({ session, onClose }: SessionFormProps) {
 
   return (
     <Screen testID="screen-SessionForm">
-      <ScreenHeader title={title} onBack={onClose} />
+      <ScreenHeader title={title} onBack={onClose} safeTop={false} />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="px-4 py-4 gap-4">

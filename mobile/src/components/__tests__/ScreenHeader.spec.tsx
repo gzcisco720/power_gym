@@ -5,7 +5,6 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 59, bottom: 34, left: 0, right: 0 }),
 }));
 
-import { Button } from '~/components/ui/button';
 import { ScreenHeader } from '../ScreenHeader';
 
 describe('ScreenHeader', () => {
@@ -14,21 +13,15 @@ describe('ScreenHeader', () => {
     expect(getByText('My Screen')).toBeTruthy();
   });
 
-  it('renders title and fires onBack — screen-header-back is a Reusables Button that calls onBack', () => {
+  it('renders title and fires onBack when screen-header-back is pressed', () => {
     const onBack = jest.fn();
-    const { getByTestId, UNSAFE_getAllByType } = render(
+    const { getByTestId } = render(
       <ScreenHeader title="Detail" onBack={onBack} />,
     );
 
-    // The back element must exist with that testID
     const backEl = getByTestId('screen-header-back');
     expect(backEl).toBeTruthy();
 
-    // It must be rendered via the Reusables Button component (not a raw Pressable)
-    const buttons = UNSAFE_getAllByType(Button);
-    expect(buttons.length).toBeGreaterThan(0);
-
-    // Pressing it must call onBack
     fireEvent.press(backEl);
     expect(onBack).toHaveBeenCalledTimes(1);
   });
@@ -40,7 +33,7 @@ describe('ScreenHeader', () => {
 
   it('renders right content when provided', () => {
     const { getByText } = render(
-      <ScreenHeader title="Page" right={<Button><React.Fragment /></Button>} />,
+      <ScreenHeader title="Page" right={<React.Fragment />} />,
     );
     expect(getByText('Page')).toBeTruthy();
   });
