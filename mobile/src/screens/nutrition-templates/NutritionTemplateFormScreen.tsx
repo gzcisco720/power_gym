@@ -5,7 +5,6 @@ import {
   ScrollView,
   Pressable,
   Modal,
-  ActivityIndicator,
 } from 'react-native';
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
@@ -560,11 +559,9 @@ export function NutritionTemplateFormScreen() {
             isDirty && isValid && !saving ? 'bg-primary' : 'bg-primary/30'
           }`}
         >
-          {saving ? (
-            <ActivityIndicator size="small" />
-          ) : (
-            <Text className="text-sm font-semibold text-foreground">Save</Text>
-          )}
+          <Text className="text-sm font-semibold text-foreground">
+            {saving ? 'Saving…' : 'Save'}
+          </Text>
         </Button>
       </View>
 

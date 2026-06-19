@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   Pressable,
-  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Input } from '~/components/ui/input';
@@ -106,13 +105,9 @@ export function FoodSearchSheet({ onSelect, onClose }: FoodSearchSheetProps) {
         variant="ghost"
         className="mx-4 mt-3 mb-1 flex-row items-center gap-2 rounded-xl bg-primary/10 px-3 py-2.5"
       >
-        {creating ? (
-          <ActivityIndicator size="small" />
-        ) : (
-          <Text className="text-sm font-semibold text-primary-light">
-            {query.trim() ? `Create "${query.trim()}"` : 'Create custom food'}
-          </Text>
-        )}
+        <Text className="text-sm font-semibold text-primary-light">
+          {creating ? 'Creating…' : (query.trim() ? `Create "${query.trim()}"` : 'Create custom food')}
+        </Text>
       </Button>
       {createError ? (
         <Text className="mx-4 text-xs text-destructive">{createError}</Text>

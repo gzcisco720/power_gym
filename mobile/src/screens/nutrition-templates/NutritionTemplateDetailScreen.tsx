@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { Button } from '~/components/ui/button';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -235,11 +235,9 @@ export function NutritionTemplateDetailScreen() {
               variant="ghost"
               className="flex-1 py-3 rounded-xl bg-destructive/10 items-center"
             >
-              {isDeleting ? (
-                <ActivityIndicator />
-              ) : (
-                <Text className="text-sm font-semibold text-destructive">Delete</Text>
-              )}
+              <Text className="text-sm font-semibold text-destructive">
+                {isDeleting ? 'Deleting…' : 'Delete'}
+              </Text>
             </Button>
           </View>
         </DialogContent>

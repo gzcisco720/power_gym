@@ -5,7 +5,6 @@ import {
   ScrollView,
   Pressable,
   Modal,
-  ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -542,11 +541,9 @@ export function TrainingTemplateFormScreen() {
             isDirty && isValid && !saving ? 'bg-primary' : 'bg-primary/30'
           }`}
         >
-          {saving ? (
-            <ActivityIndicator size="small" />
-          ) : (
-            <Text className="text-sm font-semibold text-foreground">Save</Text>
-          )}
+          <Text className="text-sm font-semibold text-foreground">
+            {saving ? 'Saving…' : 'Save'}
+          </Text>
         </Button>
       </View>
 
