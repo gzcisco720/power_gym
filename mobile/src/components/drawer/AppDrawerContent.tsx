@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView, LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Button } from '~/components/ui/button';
 import type { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { useAuthStore } from '../../stores/auth.store';
 import { useBrandingStore } from '../../stores/branding.store';
@@ -134,25 +135,25 @@ export function AppDrawerContent(props: DrawerContentComponentProps) {
             className="absolute left-3 right-3 rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden"
             style={{ bottom: footerHeight + 8 }}
           >
-            <Pressable
+            <Button
               testID="drawer-menu-settings"
               accessibilityLabel="Settings"
-              accessibilityRole="button"
               onPress={handleSettings}
-              className="px-4 py-3.5"
+              variant="ghost"
+              className="justify-start rounded-none px-4 py-3.5 h-auto"
             >
               <Text className="text-[14px] font-medium text-foreground">Settings</Text>
-            </Pressable>
+            </Button>
             <View className="h-px bg-foreground/10 mx-1" />
-            <Pressable
+            <Button
               testID="drawer-menu-logout"
               accessibilityLabel="Log Out"
-              accessibilityRole="button"
               onPress={handleLogout}
-              className="px-4 py-3.5"
+              variant="ghost"
+              className="justify-start rounded-none px-4 py-3.5 h-auto"
             >
               <Text className="text-[14px] font-medium text-destructive">Log Out</Text>
-            </Pressable>
+            </Button>
           </View>
         </View>
       )}

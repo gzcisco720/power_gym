@@ -29,6 +29,7 @@ const RealDate = global.Date;
 
 import { useMemberDashboardStore } from '../../../stores/member-dashboard.store';
 import { MemberDashboard } from '../MemberDashboard';
+import { Skeleton } from '~/components/ui/skeleton';
 
 const mockUseMemberDashboardStore = useMemberDashboardStore as jest.MockedFunction<
   typeof useMemberDashboardStore
@@ -105,6 +106,20 @@ beforeEach(() => {
 });
 
 describe('MemberDashboard', () => {
+  it('shows Skeleton while loading — renders Reusables Skeleton, not ActivityIndicator or "Loading…" text', () => {
+    mockUseMemberDashboardStore.mockReturnValue(
+      makeStoreState({ isLoading: true }) as ReturnType<typeof useMemberDashboardStore>,
+    );
+    const { UNSAFE_getAllByType, queryByText } = render(<MemberDashboard />);
+
+    // Must render at least one Reusables Skeleton
+    const skeletons = UNSAFE_getAllByType(Skeleton);
+    expect(skeletons.length).toBeGreaterThan(0);
+
+    // Must NOT show "Loading…" text
+    expect(queryByText(/loading/i)).toBeNull();
+  });
+
   it('renders the workout hero card when todaysPlan is not null', () => {
     mockUseMemberDashboardStore.mockReturnValue(
       makeStoreState({ data: BASE_DATA }) as ReturnType<typeof useMemberDashboardStore>,

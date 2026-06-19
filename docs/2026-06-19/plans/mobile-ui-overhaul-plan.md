@@ -176,7 +176,22 @@ Every interactive/styled UI element in `mobile/` is rendered through a React Nat
 2. Migrate `Screen`, `ScreenHeader`, drawer, `StatCard`, dashboards to `~/components/ui/*` → Green
 3. Run/extend the dashboard Detox spec → passes
 
-**Status**: Not Started
+**Status**: Complete
+
+### Stage 3 Checkpoint
+- [x] `ScreenHeader.tsx` — `Pressable` back button → Reusables `Button` (testID `screen-header-back`)
+- [x] `DrawerHeader.tsx` — `Pressable` hamburger → Reusables `Button` (testID `drawer-hamburger`)
+- [x] `AppDrawerContent.tsx` — `Pressable` Settings/Logout menu buttons → Reusables `Button`; nav items remain `Pressable` (list-row container — allowed)
+- [x] `DashboardSkeleton.tsx` — custom `SkeletonBlock` Views → Reusables `Skeleton`; removed manual Reanimated pulse animation
+- [x] `OwnerDashboard.tsx` — `Pressable` "View all →" → `Button`
+- [x] `TrainerDashboard.tsx` — all 4 `Pressable`-as-button usages → `Button`
+- [x] `MemberDashboard.tsx` — `Pressable` "Start →" and exercise selector → `Button`
+- [x] `src/components/__tests__/ScreenHeader.spec.tsx` — new Sprint Contract test (4 tests)
+- [x] `src/components/__tests__/Screen.spec.tsx` — Sprint Contract test added (criterion 2)
+- [x] `src/components/drawer/__tests__/AppDrawerContent.spec.tsx` — Sprint Contract test added (criterion 4)
+- [x] `src/screens/dashboard/__tests__/MemberDashboard.test.tsx` — Sprint Contract test added (criterion 5)
+- [x] All 721 tests pass (714 baseline + 7 new)
+- [x] Lint clean
 
 ---
 

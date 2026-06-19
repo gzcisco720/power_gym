@@ -68,4 +68,18 @@ describe('Screen', () => {
     );
     expect(getByTestId('my-screen')).toBeTruthy();
   });
+
+  it('renders children inside scroll container when scrollable', () => {
+    const { getByTestId, getByText, UNSAFE_getAllByType } = render(
+      <Screen scrollable testID="screen-container">
+        <Text>scrollable content</Text>
+      </Screen>,
+    );
+    // The outer container is present
+    expect(getByTestId('screen-container')).toBeTruthy();
+    // Children render
+    expect(getByText('scrollable content')).toBeTruthy();
+    // A ScrollView is present (scroll enabled)
+    expect(UNSAFE_getAllByType(ScrollView)).toHaveLength(1);
+  });
 });

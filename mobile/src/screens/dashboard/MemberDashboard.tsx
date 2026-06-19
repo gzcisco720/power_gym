@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -7,6 +7,7 @@ import { LineChart } from 'react-native-gifted-charts';
 import { useMemberDashboardStore } from '../../stores/member-dashboard.store';
 import { StatCard } from '../../components/dashboard/StatCard';
 import { DashboardSkeleton } from '../../components/dashboard/DashboardSkeleton';
+import { Button } from '~/components/ui/button';
 import { TrainingHeatmap, HeatmapMonthLabels } from '../../components/dashboard/TrainingHeatmap';
 import {
   MemberTodaysPlan,
@@ -86,14 +87,15 @@ function WorkoutHeroCard({
         <Text className="text-[11px] text-foreground/65">
           {plan.exerciseCount} exercises · {plan.setCount} sets · ~{plan.estimatedMinutes} min
         </Text>
-        <Pressable
+        <Button
           onPress={onStart}
           accessibilityLabel="Start workout"
-          accessibilityRole="button"
-          className="bg-primary rounded-lg px-3 py-1.5"
+          variant="default"
+          size="sm"
+          className="bg-primary rounded-lg px-3"
         >
           <Text className="text-[13px] font-semibold text-foreground">Start →</Text>
-        </Pressable>
+        </Button>
       </View>
       </View>
     </LinearGradient>
@@ -185,7 +187,7 @@ function StrengthProgressChart({
     <View>
       {/* Exercise selector pill */}
       <View className="flex-row items-center gap-2 mb-3">
-        <Pressable
+        <Button
           onPress={() => {
             // Cycle through exercises for simplicity (production: open picker)
             const idx = progress.exercises.indexOf(current);
@@ -195,12 +197,13 @@ function StrengthProgressChart({
             }
           }}
           accessibilityLabel="Select exercise"
-          accessibilityRole="button"
-          className="flex-row items-center bg-muted rounded-full px-3 py-1 gap-1"
+          variant="ghost"
+          size="sm"
+          className="flex-row items-center bg-muted rounded-full px-3 h-auto py-1 gap-1"
         >
           <Text className="text-[12px] font-medium text-foreground">{current}</Text>
           <Text className="text-[10px] text-foreground/65">▾</Text>
-        </Pressable>
+        </Button>
       </View>
 
       {progress.data.length === 0 ? (

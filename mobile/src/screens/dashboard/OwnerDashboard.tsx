@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
 import { BarChart } from 'react-native-gifted-charts';
 import { useOwnerDashboardStore } from '../../stores/owner-dashboard.store';
 import { StatCard } from '../../components/dashboard/StatCard';
 import { DashboardSkeleton } from '../../components/dashboard/DashboardSkeleton';
+import { Button } from '~/components/ui/button';
 import { EquipmentStatusItem } from '../../types/dashboard';
 
 type DrawerNav = DrawerNavigationProp<Record<string, undefined>>;
@@ -194,13 +195,15 @@ export function OwnerDashboard() {
                   </View>
                 ))
               )}
-              <Pressable
+              <Button
                 onPress={() => navigation.navigate('Trainers')}
                 accessibilityLabel="View all trainers"
-                accessibilityRole="button"
+                variant="ghost"
+                size="sm"
+                className="self-start mt-1 px-0 h-auto"
               >
-                <Text className="text-[12px] text-primary mt-1">View all →</Text>
-              </Pressable>
+                <Text className="text-[12px] text-primary">View all →</Text>
+              </Button>
             </View>
 
             {/* Equipment Status */}

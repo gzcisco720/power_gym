@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -7,6 +7,7 @@ import { useTrainerDashboardStore } from '../../stores/trainer-dashboard.store';
 import { StatCard } from '../../components/dashboard/StatCard';
 import { DashboardSkeleton } from '../../components/dashboard/DashboardSkeleton';
 import { TrainingHeatmap } from '../../components/dashboard/TrainingHeatmap';
+import { Button } from '~/components/ui/button';
 import { fetchMemberCheckIn } from '../../lib/api/check-ins.api';
 import { AppStackParamList } from '../../navigation/index';
 import {
@@ -258,13 +259,15 @@ export function TrainerDashboard() {
                   <SessionRow key={`${session.memberId}-${session.startTime}`} session={session} />
                 ))}
                 {todaysSessions.length > 6 && (
-                  <Pressable
+                  <Button
                     onPress={() => navigation.navigate('Calendar')}
                     accessibilityLabel="View in calendar"
-                    accessibilityRole="button"
+                    variant="ghost"
+                    size="sm"
+                    className="self-start mt-1 px-0 h-auto"
                   >
-                    <Text className="text-[12px] text-primary mt-1">View in calendar →</Text>
-                  </Pressable>
+                    <Text className="text-[12px] text-primary">View in calendar →</Text>
+                  </Button>
                 )}
               </>
             )}
@@ -284,13 +287,15 @@ export function TrainerDashboard() {
                   <AttentionRow key={item.memberId} item={item} />
                 ))
               )}
-              <Pressable
+              <Button
                 onPress={() => navigation.navigate('Members')}
                 accessibilityLabel="View all needs attention"
-                accessibilityRole="button"
+                variant="ghost"
+                size="sm"
+                className="self-start mt-1 px-0 h-auto"
               >
-                <Text className="text-[12px] text-primary mt-1">View all →</Text>
-              </Pressable>
+                <Text className="text-[12px] text-primary">View all →</Text>
+              </Button>
             </View>
 
             {/* Pending Check-ins */}
@@ -311,18 +316,20 @@ export function TrainerDashboard() {
                         {formatRelativeTime(ci.createdAt)}
                       </Text>
                     </View>
-                    <Pressable
+                    <Button
                       onPress={() => {
                         void fetchMemberCheckIn(ci.memberId, ci.checkinId).then((checkIn) => {
                           navigation.navigate('CheckInDetail', { checkIn });
                         });
                       }}
                       accessibilityLabel={`Review check-in for ${ci.memberName}`}
-                      accessibilityRole="button"
                       testID={`review-checkin-${ci.checkinId}`}
+                      variant="ghost"
+                      size="sm"
+                      className="ml-1 px-1 h-auto"
                     >
-                      <Text className="text-[11px] text-primary ml-1">Review →</Text>
-                    </Pressable>
+                      <Text className="text-[11px] text-primary">Review →</Text>
+                    </Button>
                   </View>
                 ))
               )}
@@ -399,13 +406,15 @@ export function TrainerDashboard() {
                 <Text className="text-[10px] text-foreground/40">
                   {sessionsThisWeek} sessions this week
                 </Text>
-                <Pressable
+                <Button
                   onPress={() => navigation.navigate('Calendar')}
                   accessibilityLabel="View calendar"
-                  accessibilityRole="button"
+                  variant="ghost"
+                  size="sm"
+                  className="px-0 h-auto"
                 >
                   <Text className="text-[10px] text-primary">View calendar →</Text>
-                </Pressable>
+                </Button>
               </View>
             </View>
           </View>

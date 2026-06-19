@@ -123,4 +123,11 @@ describe('AppDrawerContent', () => {
     const { queryByText } = renderDrawer();
     expect(queryByText('⚙')).toBeNull();
   });
+
+  it('navigates on item press — pressing a drawer item triggers the existing navigation call', () => {
+    const { getByTestId } = renderDrawer();
+    // For owner role, the first nav group item should be Dashboard
+    fireEvent.press(getByTestId('drawer-item-Dashboard'));
+    expect(mockNavigate).toHaveBeenCalledWith('Dashboard');
+  });
 });
